@@ -283,11 +283,82 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
 .nana-lang-btn{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:99px;padding:5px 11px;font-size:12px;font-weight:600;color:rgba(255,255,255,.85);cursor:pointer;font-family:'DM Sans',sans-serif;}
 body.lang-en [data-es]{display:none !important;}
 body.lang-es [data-en]{display:none !important;}
+
+/* ── MODAL PAGO ── */
+.modal-pago-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .3s;}
+.modal-pago-overlay.visible{opacity:1;pointer-events:all;}
+.modal-pago{background:#fff;border-radius:24px;width:100%;max-width:420px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.25);max-height:90vh;overflow-y:auto;}
+.modal-pago-header{background:var(--g2);padding:24px 28px;text-align:center;}
+.modal-pago-close{position:absolute;top:16px;right:16px;background:rgba(255,255,255,.15);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;}
+.modal-pago-body{padding:24px 28px;}
+.modal-pago-plan{border:1.5px solid var(--g4);border-radius:14px;padding:14px 16px;cursor:pointer;margin-bottom:10px;transition:all .2s;}
+.modal-pago-plan.selected{border-color:var(--g);background:var(--g3);}
+.modal-pago-submit{width:100%;background:var(--g);color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;padding:14px;border-radius:99px;border:none;cursor:pointer;margin-top:8px;transition:all .2s;}
+.modal-pago-submit:hover{background:var(--g2);}
+.modal-pago-submit:disabled{opacity:.6;cursor:not-allowed;}
+.modal-pago-back{width:100%;background:transparent;color:var(--txt2);font-family:'DM Sans',sans-serif;font-size:13px;padding:10px;border-radius:99px;border:1px solid var(--g4);cursor:pointer;margin-top:8px;}
 </style>
 </head>
 <body>
 
 <div class="toast" id="toast"></div>
+
+<!-- ══════════════════════ MODAL PAGO ══════════════════════ -->
+<div class="modal-pago-overlay" id="modalPagoOverlay">
+  <div class="modal-pago" style="position:relative;">
+    <button onclick="cerrarModalPago()" style="position:absolute;top:14px;right:14px;background:rgba(255,255,255,.15);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px;z-index:10;">✕</button>
+    <div class="modal-pago-header">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:#fff;font-weight:500;margin-bottom:4px;">My Nana</div>
+      <div style="font-size:14px;color:rgba(255,255,255,.7);">15 días gratis · sin compromiso</div>
+    </div>
+
+    <!-- PASO 1 -->
+    <div class="modal-pago-body" id="modalPasoDatos">
+      <div style="font-size:13px;font-weight:600;color:var(--txt);margin-bottom:16px;">Elige tu plan después de los 15 días</div>
+
+      <div class="modal-pago-plan selected" id="planFijaOpt" onclick="selectPlanPago('fija')">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div style="font-size:13px;font-weight:600;color:var(--txt);">👩‍👧 Hogar Completo</div>
+            <div style="font-size:11px;color:var(--txt2);margin-top:2px;">Para nana fija · Todo incluido</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:18px;font-weight:600;color:var(--g);">$9.99</div>
+            <div style="font-size:10px;color:var(--txt2);">al mes</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--txt2);margin-top:8px;padding-top:8px;border-top:1px solid var(--g4);">✓ Tareas ilimitadas &nbsp; ✓ Menú &nbsp; ✓ Nómina &nbsp; ✓ Contratos</div>
+      </div>
+
+      <div class="modal-pago-plan" id="planEventualOpt" onclick="selectPlanPago('eventual')">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div style="font-size:13px;font-weight:600;color:var(--txt);">📅 Hogar Flexible</div>
+            <div style="font-size:11px;color:var(--txt2);margin-top:2px;">Para nana eventual · Por días</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:18px;font-weight:600;color:var(--g);">$6.99</div>
+            <div style="font-size:10px;color:var(--txt2);">al mes</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--txt2);margin-top:8px;padding-top:8px;border-top:1px solid var(--g4);">✓ Tareas por visita &nbsp; ✓ Pago por días &nbsp; ✓ Contrato legal</div>
+      </div>
+
+      <div style="background:#FAEEDA;border-radius:10px;padding:10px 14px;margin:14px 0;font-size:12px;color:#633806;line-height:1.5;">
+        ⏰ <strong>15 días gratis.</strong> El día 16 comenzará el cobro automático. Te avisaremos por correo 3 días antes.
+      </div>
+
+      <button class="modal-pago-submit" onclick="irAPagueloFacil()">
+        💳 Registrar tarjeta y comenzar →
+      </button>
+      <div style="font-size:11px;color:#bbb;text-align:center;margin-top:10px;">
+        🔒 Tu tarjeta se registra de forma segura vía PagueloFacil. El cargo inicia el día 16.
+      </div>
+      <button class="modal-pago-back" onclick="cerrarModalPago()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 
 <!-- SPLASH DE CARGA - evita parpadeo del login -->
 <div id="splashCarga" style="position:fixed;inset:0;background:var(--g2);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;">
@@ -2113,7 +2184,34 @@ window.leerTareasVoz = async () => {
 };
 
 // ── NAVEGACIÓN ──
-window.irARegistro = () => mostrarScreen('registro');
+window.irARegistro = () => {
+  document.getElementById('modalPagoOverlay').classList.add('visible');
+};
+
+window.cerrarModalPago = () => {
+  document.getElementById('modalPagoOverlay').classList.remove('visible');
+};
+
+let _planPagoSeleccionado = 'fija';
+
+window.selectPlanPago = (plan) => {
+  _planPagoSeleccionado = plan;
+  document.getElementById('planFijaOpt').classList.toggle('selected', plan === 'fija');
+  document.getElementById('planEventualOpt').classList.toggle('selected', plan === 'eventual');
+};
+
+window.irAPagueloFacil = () => {
+  const url = _planPagoSeleccionado === 'fija'
+    ? 'https://checkout.paguelofacil.com/mynana/e089b39a'
+    : 'https://checkout.paguelofacil.com/mynana/586d0e75';
+  
+  // Cerrar modal y abrir registro después del pago
+  cerrarModalPago();
+  mostrarScreen('registro');
+  
+  // Abrir PagueloFacil en nueva pestaña
+  window.open(url, '_blank');
+};
 window.irALogin = () => mostrarScreen('login');
 
 // ── HELPERS ──
