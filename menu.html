@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>My Nana — Menú Semanal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Cormorant+Garamond:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{--g:#1A6B52;--g2:#0F4A38;--g3:#F0F7F4;--g4:#E1F0EB;--b:#D4A5A5;--b2:#BF9090;--b3:#F7EFEF;--cr:#F9F5F0;--txt:#1A2E25;--txt2:#4A6358;--r:12px;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{min-height:100vh;}
+body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);overflow-x:hidden;}
+
+/* SPLASH */
+#splash{position:fixed;inset:0;background:var(--g2);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;transition:opacity .4s;}
+#splash.oculto{opacity:0;pointer-events:none;}
+.splash-logo{width:72px;height:72px;border-radius:50%;background:var(--g);border:3px solid var(--b);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:24px;color:#fff;}
+
+/* NO AUTH */
+#noAuth{position:fixed;inset:0;background:var(--g2);z-index:998;display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px;gap:16px;}
+#noAuth.visible{display:flex;}
+.noauth-btn{background:var(--b);color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;padding:14px 32px;border-radius:99px;border:none;cursor:pointer;text-decoration:none;display:inline-block;}
+
+/* HEADER */
+.app-header{background:var(--g2);padding:48px 24px 16px;position:sticky;top:0;z-index:50;}
+@media(min-width:768px){.app-header{padding-top:16px;}}
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.header-logo{font-family:'Cormorant Garamond',serif;font-size:20px;color:#fff;}
+.header-logo em{color:var(--b);font-style:normal;}
+.header-nav{display:flex;align-items:center;gap:8px;}
+.header-back{background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.7);font-size:13px;padding:7px 14px;border-radius:99px;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;}
+.semana-label{font-size:12px;color:rgba(255,255,255,.5);}
+
+/* DIAS SELECTOR */
+.dias-wrap{background:var(--g2);padding:0 16px 14px;overflow-x:auto;-ms-overflow-style:none;scrollbar-width:none;}
+.dias-wrap::-webkit-scrollbar{display:none;}
+.dias-row{display:flex;gap:6px;min-width:max-content;}
+.dia-pill{flex-shrink:0;padding:7px 16px;border-radius:99px;border:1.5px solid rgba(255,255,255,.15);background:transparent;font-size:13px;font-weight:500;color:rgba(255,255,255,.65);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.dia-pill:hover{background:rgba(255,255,255,.1);}
+.dia-pill.activo{background:var(--b);border-color:var(--b);color:#fff;}
+.dia-pill.hoy{border-color:rgba(255,255,255,.4);color:#fff;}
+
+/* LAYOUT */
+.layout{max-width:1200px;margin:0 auto;padding:20px 16px;}
+@media(min-width:900px){.layout{display:grid;grid-template-columns:1fr 340px;gap:20px;}}
+
+/* PANEL */
+.panel{background:#fff;border-radius:var(--r);border:1px solid var(--g4);overflow:hidden;margin-bottom:16px;}
+.panel:last-child{margin-bottom:0;}
+.panel-header{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--g4);}
+.panel-title{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--txt);}
+.panel-badge{background:var(--g3);color:var(--g);font-size:11px;font-weight:600;padding:4px 10px;border-radius:99px;}
+
+/* TIEMPOS */
+.tiempos-grid{padding:12px;display:flex;flex-direction:column;gap:8px;}
+.tiempo-card{border-radius:10px;overflow:hidden;border:1px solid var(--g4);}
+.tiempo-header{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;}
+.tiempo-emoji{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.tiempo-info{flex:1;}
+.tiempo-nombre{font-size:12px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.04em;}
+.tiempo-plato{font-size:14px;font-weight:500;color:var(--txt);margin-top:2px;}
+.tiempo-plato.vacio{color:#bbb;font-weight:400;font-style:italic;}
+.tiempo-hora{font-size:11px;color:#bbb;margin-top:2px;}
+.tiempo-actions{display:flex;gap:6px;flex-shrink:0;}
+.btn-edit{background:var(--g3);border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:500;color:var(--g);cursor:pointer;font-family:'DM Sans',sans-serif;}
+.btn-edit:hover{background:var(--g4);}
+.btn-del{background:var(--b3);border:none;border-radius:8px;padding:6px 10px;font-size:12px;color:var(--b2);cursor:pointer;}
+.btn-del:hover{background:var(--b);color:#fff;}
+
+/* INGREDIENTES */
+.ingredientes-wrap{padding:10px 14px;background:var(--cr);border-top:1px solid var(--g4);}
+.ingredientes-titulo{font-size:11px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;}
+.ing-list{display:flex;flex-wrap:wrap;gap:6px;}
+.ing-tag{background:#fff;border:1px solid var(--g4);border-radius:99px;padding:4px 10px;font-size:12px;color:var(--txt2);display:flex;align-items:center;gap:5px;}
+.ing-tag button{background:none;border:none;color:#bbb;cursor:pointer;font-size:12px;padding:0;line-height:1;}
+.ing-tag button:hover{color:var(--b2);}
+.btn-add-ing{background:var(--g3);border:1.5px dashed var(--g4);border-radius:99px;padding:4px 12px;font-size:12px;color:var(--g);cursor:pointer;font-family:'DM Sans',sans-serif;}
+.btn-add-ing:hover{background:var(--g4);}
+
+/* FORM PLATO */
+.form-plato{padding:12px 14px;background:#fff;border-top:1px solid var(--g4);display:none;}
+.form-plato.visible{display:block;}
+.form-row-2{display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:8px;}
+.form-input{width:100%;background:var(--cr);border:1.5px solid var(--g4);border-radius:8px;padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--txt);outline:none;}
+.form-input:focus{border-color:var(--g);}
+.btn-guardar{background:var(--g);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;}
+.btn-guardar:hover{background:var(--g2);}
+.form-ings-input{display:flex;gap:6px;}
+.sugerencias{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}
+.sug-tag{background:var(--g3);border:none;border-radius:99px;padding:3px 10px;font-size:11px;color:var(--g);cursor:pointer;font-family:'DM Sans',sans-serif;}
+.sug-tag:hover{background:var(--g4);}
+
+/* VISTA NANA */
+.nana-tiempo{background:var(--cr);border-radius:10px;border:1px solid var(--g4);overflow:hidden;margin-bottom:8px;}
+.nana-tiempo-hdr{display:flex;align-items:center;gap:10px;padding:12px 14px;}
+.nana-plato-fam{padding:0 14px 8px;}
+.nana-plato-label{font-size:10px;color:#bbb;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px;}
+.nana-plato-val{font-size:13px;font-weight:500;color:var(--txt);}
+.nana-porcion{background:var(--b3);border-top:1px solid var(--g4);padding:8px 14px;display:flex;align-items:center;gap:8px;}
+.nana-porcion-label{font-size:11px;color:var(--b2);font-weight:600;}
+.nana-porcion-val{font-size:13px;color:var(--b2);}
+.nana-sugerencia{padding:8px 14px;border-top:1px solid var(--g4);display:flex;gap:6px;}
+.nana-sug-input{flex:1;background:#fff;border:1px solid var(--g4);border-radius:8px;padding:7px 10px;font-size:12px;font-family:'DM Sans',sans-serif;color:var(--txt);outline:none;}
+.nana-sug-btn{background:var(--g);color:#fff;border:none;border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+
+/* MERCADO */
+.mercado-panel{background:#fff;border-radius:var(--r);border:1px solid var(--g4);overflow:hidden;}
+.mercado-header{background:var(--g2);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;}
+.mercado-title{font-family:'Cormorant Garamond',serif;font-size:18px;color:#fff;}
+.mercado-badge{background:var(--b);color:#fff;font-size:11px;font-weight:600;padding:4px 10px;border-radius:99px;}
+.mercado-lista{padding:12px;max-height:300px;overflow-y:auto;}
+.mercado-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;transition:background .15s;cursor:pointer;}
+.mercado-item:hover{background:var(--cr);}
+.mercado-check{width:20px;height:20px;border-radius:50%;border:2px solid var(--g4);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.mercado-check.comprado{background:var(--g);border-color:var(--g);}
+.mercado-nombre{flex:1;font-size:13px;color:var(--txt);}
+.mercado-nombre.comprado{text-decoration:line-through;color:#bbb;}
+.mercado-cat{font-size:10px;background:var(--g3);color:var(--g);padding:2px 7px;border-radius:99px;}
+.mercado-add{display:flex;gap:6px;padding:12px;border-top:1px solid var(--g4);}
+.mercado-input{flex:1;background:var(--cr);border:1.5px solid var(--g4);border-radius:8px;padding:8px 12px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--txt);outline:none;}
+.mercado-input:focus{border-color:var(--g);}
+.btn-add-mercado{background:var(--g);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.mercado-acciones{padding:10px 12px;border-top:1px solid var(--g4);display:flex;gap:8px;flex-wrap:wrap;}
+.btn-chat-mynana{flex:1;background:var(--g);color:#fff;border:none;border-radius:99px;padding:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:6px;}
+.btn-chat-mynana:hover{background:var(--g2);}
+.btn-delivery{background:#25D366;color:#fff;border:none;border-radius:99px;padding:10px 14px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.btn-limpiar{background:var(--cr);color:var(--txt2);border:1px solid var(--g4);border-radius:99px;padding:10px 14px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+
+/* SEMANA VISTA RAPIDA */
+.semana-quick{background:#fff;border-radius:var(--r);border:1px solid var(--g4);overflow:hidden;margin-bottom:16px;}
+.semana-quick-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--g4);}
+.semana-dia{background:#fff;padding:8px 4px;text-align:center;cursor:pointer;transition:background .15s;}
+.semana-dia:hover{background:var(--g3);}
+.semana-dia.activo{background:var(--g3);}
+.semana-dia-nombre{font-size:10px;color:var(--txt2);font-weight:600;text-transform:uppercase;letter-spacing:.04em;}
+.semana-dia-num{font-size:16px;font-weight:500;color:var(--txt);margin:2px 0;}
+.semana-dia-dot{display:flex;justify-content:center;gap:2px;margin-top:3px;}
+.sdot{width:5px;height:5px;border-radius:50%;}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;display:flex;align-items:flex-end;justify-content:center;}
+.modal-overlay.oculto{display:none;}
+.modal-box{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:24px 20px 36px;}
+@media(min-width:768px){.modal-overlay{align-items:center;}.modal-box{border-radius:20px;}}
+.modal-title{font-size:16px;font-weight:600;color:var(--txt);margin-bottom:4px;}
+.modal-sub{font-size:13px;color:var(--txt2);margin-bottom:18px;}
+.modal-cancel{width:100%;background:transparent;border:1px solid var(--g4);border-radius:99px;padding:12px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--txt2);cursor:pointer;margin-top:10px;}
+
+/* TOAST */
+.toast{position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--g);color:#fff;font-size:13px;font-weight:500;padding:10px 20px;border-radius:99px;z-index:300;transition:transform .3s;white-space:nowrap;box-shadow:0 4px 16px rgba(26,107,82,.3);}
+.toast.visible{transform:translateX(-50%) translateY(0);}
+
+.empty-menu{text-align:center;padding:32px 20px;color:var(--txt2);}
+.empty-menu-icon{font-size:36px;margin-bottom:10px;}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="splash-logo">MN</div>
+  <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:#fff;">NANA</div>
+  <div style="font-size:13px;color:rgba(255,255,255,.5);">Cargando menú...</div>
+</div>
+
+<!-- NO AUTH -->
+<div id="noAuth">
+  <div style="font-family:'Cormorant Garamond',serif;font-size:24px;color:#fff;">My <span style="color:#D4A5A5;">Nana</span></div>
+  <div style="font-size:14px;color:rgba(255,255,255,.6);text-align:center;">Necesitas iniciar sesión</div>
+  <a href="/app.html" class="noauth-btn">Iniciar sesión →</a>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- MODAL AGREGAR INGREDIENTE -->
+<div class="modal-overlay oculto" id="modalIng">
+  <div class="modal-box">
+    <div class="modal-title">Agregar ingrediente</div>
+    <div class="modal-sub">Escribe el ingrediente y toca agregar</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <input class="form-input" id="modalIngInput" placeholder="Ej: Pollo, arroz, tomate..." />
+      <button class="btn-guardar" style="width:100%;padding:12px;" onclick="guardarIngrediente()">Agregar →</button>
+    </div>
+    <button class="modal-cancel" onclick="cerrarModalIng()">Cancelar</button>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div id="appHeader" style="display:none;">
+  <div class="app-header">
+    <div class="header-top">
+      <div class="header-logo">My <em>Nana</em> — Menú</div>
+      <div class="header-nav">
+        <a href="/app.html" class="header-back">← Dashboard</a>
+      </div>
+    </div>
+    <div class="semana-label" id="semanaLabel"></div>
+  </div>
+  <!-- SELECTOR DE DÍAS -->
+  <div class="dias-wrap">
+    <div class="dias-row" id="diasRow"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appContent" style="display:none;">
+  <div class="layout">
+
+    <!-- COLUMNA PRINCIPAL -->
+    <div>
+      <!-- Vista rápida semanal -->
+      <div class="semana-quick" id="semanaQuick">
+        <div class="panel-header">
+          <div class="panel-title">Semana completa</div>
+          <div class="panel-badge" id="semanaCompletada">0 días planificados</div>
+        </div>
+        <div class="semana-quick-grid" id="semanaGrid"></div>
+      </div>
+
+      <!-- Menú del día seleccionado -->
+      <div class="panel">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title" id="menuDiaTitulo">Menú del día</div>
+            <div style="font-size:12px;color:var(--txt2);" id="menuDiaSub">Selecciona un día para ver o editar</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <!-- Toggle saludable -->
+            <div style="display:flex;align-items:center;gap:6px;background:var(--cr);border-radius:99px;padding:4px 10px;border:1px solid var(--g4);">
+              <span style="font-size:14px;">🥗</span>
+              <span style="font-size:12px;color:var(--txt2);font-weight:500;">Saludable</span>
+              <label style="position:relative;width:36px;height:20px;flex-shrink:0;">
+                <input type="checkbox" id="toggleSaludable" onchange="cambiarModo(this.checked)" style="opacity:0;width:0;height:0;"/>
+                <span id="sliderSaludable" style="position:absolute;inset:0;background:#ddd;border-radius:99px;cursor:pointer;transition:.3s;"></span>
+                <span id="knobSaludable" style="position:absolute;width:14px;height:14px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.3s;"></span>
+              </label>
+            </div>
+            <div id="menuDiaAcciones"></div>
+          </div>
+        </div>
+        <div id="menuDiaContent"></div>
+      </div>
+    </div>
+
+    <!-- COLUMNA LATERAL: Mercado -->
+    <div>
+      <div class="mercado-panel">
+        <div class="mercado-header">
+          <div class="mercado-title">Lista del mercado</div>
+          <div class="mercado-badge" id="mercadoBadge">0 items</div>
+        </div>
+        <div class="mercado-lista" id="mercadoLista">
+          <div class="empty-menu">
+            <div class="empty-menu-icon">🛒</div>
+            <div style="font-size:14px;font-weight:500;color:var(--txt);margin-bottom:4px;">Sin ingredientes aún</div>
+            <div style="font-size:12px;">Agrega platos al menú para generar la lista</div>
+          </div>
+        </div>
+        <div class="mercado-add">
+          <input class="mercado-input" id="mercadoInput" placeholder="Agregar producto manualmente..." onkeydown="if(event.key==='Enter')agregarMercadoManual()" />
+          <button class="btn-add-mercado" onclick="agregarMercadoManual()">+</button>
+        </div>
+        <div class="mercado-acciones">
+          <button class="btn-chat-mynana" onclick="enviarListaAlChat()">💬 Enviar al chat</button>
+          <button class="btn-delivery" onclick="pedirDelivery()">📱 WhatsApp</button>
+          <button class="btn-limpiar" onclick="limpiarComprados()">Limpiar ✓</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, onSnapshot, serverTimestamp, updateDoc, deleteDoc, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey:"AIzaSyDDJRJ8A8P507lllGRBOoXO30ESAH1GAnw",
+  authDomain:"mynanapapp.firebaseapp.com",
+  projectId:"mynanapapp",
+  storageBucket:"mynanapapp.firebasestorage.app",
+  messagingSenderId:"124180779437",
+  appId:"1:124180779437:web:d217743000b0f1fedfd124"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const TIEMPOS = [
+  {id:'desayuno', nombre:'Desayuno', hora:'7:00 am', emoji:'🍳', bg:'#FEF7EE', color:'#854F0B'},
+  {id:'almuerzo', nombre:'Almuerzo', hora:'12:30 pm', emoji:'🍲', bg:'var(--g3)', color:'var(--g)'},
+  {id:'merienda', nombre:'Merienda', hora:'3:30 pm', emoji:'🍌', bg:'var(--b3)', color:'var(--b2)'},
+  {id:'cena', nombre:'Cena', hora:'7:00 pm', emoji:'🥗', bg:'#F5F0F9', color:'#5A3F85'},
+  {id:'snack', nombre:'Snack', hora:'10:00 am', emoji:'🍎', bg:'var(--g3)', color:'var(--g)'},
+];
+
+const DIAS = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+const DIAS_CORTO = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+
+const PLATOS_SUGERIDOS = {
+  desayuno: [
+    'Tortillas con queso y huevos',
+    'Hojaldras con salchicha',
+    'Huevos revueltos con tortillas',
+    'Avena con leche y canela',
+    'Pan tostado con mantequilla y queso',
+    'Empanadas de maíz',
+    'Changa con queso',
+    'Bollo de maíz con queso',
+    'Yuca frita con huevos',
+    'Huevos perico con cebolla y pimiento',
+    'Carimanolas de carne',
+    'Frito panameño',
+    'Chicha de maíz con desayuno',
+    'Tamales de maíz',
+    'Raspao de tamarindo',
+  ],
+  almuerzo: [
+    'Sancocho de gallina',
+    'Arroz con pollo guisado',
+    'Pescado frito con patacones',
+    'Carne guisada con arroz',
+    'Ropa vieja panameña',
+    'Tamal de olla',
+    'Arroz con camarones',
+    'Guacho de mariscos',
+    'Sopa de pata',
+    'Arroz con costillas',
+    'Pollo en salsa criolla',
+    'Mondongo panameño',
+    'Bistec encebollado',
+    'Chicharrón con yuca',
+    'Corvina al ajillo',
+    'Ceviche de corvina',
+    'Arroz con coco y camarones',
+    'Cabeza de gato',
+    'Puerco guisado con arroz',
+    'Chuleta ahumada con guandú',
+  ],
+  merienda: [
+    'Fruta de temporada',
+    'Chicheme frío',
+    'Jugo de maracuyá natural',
+    'Galletas con queso blanco',
+    'Bienmesabe de coco',
+    'Raspao de tamarindo o guanábana',
+    'Chicha de piña',
+    'Platano maduro asado',
+    'Cocada panameña',
+    'Tembleque de coco',
+    'Dulce de naranja',
+    'Arroz con leche',
+    'Jugo de guanábana',
+    'Nance en almíbar',
+    'Conserva de marañón',
+  ],
+  cena: [
+    'Sopa de lentejas con patacones',
+    'Ensalada de pollo con papas',
+    'Pasta con carne molida',
+    'Arroz con frijoles negros',
+    'Pollo asado con ensalada',
+    'Guiso de res con vegetales',
+    'Sopa de pollo con fideos',
+    'Arroz con habichuelas',
+    'Tortilla de maíz con pollo',
+    'Ensalada de atún',
+    'Sopa de frijoles colorados',
+    'Pescado en salsa de tomate',
+    'Arroz con queso y vegetales',
+    'Cazuela de mariscos',
+    'Plátano maduro relleno',
+  ],
+  snack: [
+    'Patacones con guacamole',
+    'Chifles de plátano',
+    'Carimanolas pequeñas',
+    'Empanadas de pipián',
+    'Bollo de maíz',
+    'Raspao de frutas',
+    'Galletas de avena',
+    'Fruta picada con limón',
+    'Cocadas',
+    'Maíz tostado',
+    'Chicheme en vaso',
+    'Plátano maduro frito',
+  ],
+};
+
+const INGREDIENTES_BASE = {
+  // DESAYUNOS
+  'Tortillas con queso y huevos': ['Maíz molido (2 tazas)','Queso blanco (200g)','Huevos x4','Sal al gusto','Mantequilla','Aceite vegetal'],
+  'Hojaldras con salchicha': ['Harina de trigo (2 tazas)','Salchicha (1 paquete)','Mantequilla (2 cdas)','Sal','Polvo de hornear','Aceite para freír'],
+  'Huevos revueltos con tortillas': ['Huevos x4','Cebolla','Pimiento rojo','Tomate','Sal','Aceite','Maíz molido (1 taza)'],
+  'Empanadas de maíz': ['Maíz molido (2 tazas)','Carne molida (300g)','Cebolla','Ajo','Sal','Comino','Aceite para freír'],
+  'Carimanolas de carne': ['Yuca (1kg)','Carne molida (300g)','Cebolla','Ajo','Sal','Comino','Aceite para freír'],
+  'Frito panameño': ['Tortillas de maíz x4','Huevos x2','Salchicha x4','Queso blanco','Aceite','Sal'],
+  'Yuca frita con huevos': ['Yuca (500g)','Huevos x3','Sal','Aceite para freír','Limón'],
+  'Huevos perico con cebolla y pimiento': ['Huevos x4','Cebolla x1','Pimiento rojo x1','Tomate x1','Sal','Aceite','Culantro'],
+  'Bollo de maíz con queso': ['Maíz molido (2 tazas)','Queso blanco (200g)','Sal','Mantequilla','Hojas de bijao'],
+  'Changa con queso': ['Changa (maíz tostado molido) (2 tazas)','Queso blanco (150g)','Agua','Sal'],
+
+  // ALMUERZOS
+  'Sancocho de gallina': ['Gallina (1.5kg)','Ñame (300g)','Otoe (300g)','Maíz en mazorca x2','Papas (300g)','Cebolla x2','Ajo (4 dientes)','Culantro','Sal','Orégano'],
+  'Arroz con pollo guisado': ['Pollo (1kg)','Arroz (2 tazas)','Pimiento rojo','Pimiento verde','Tomate x2','Cebolla','Ajo','Culantro','Achiote','Sal','Aceite'],
+  'Pescado frito con patacones': ['Corvina o pargo (4 filetes)','Limón x2','Ajo (3 dientes)','Sal','Aceite para freír','Plátano verde x2','Culantro'],
+  'Carne guisada con arroz': ['Carne de res (600g)','Papas (300g)','Zanahoria (200g)','Tomate x2','Cebolla','Ajo','Culantro','Sal','Aceite','Arroz (2 tazas)'],
+  'Ropa vieja panameña': ['Carne de res (600g)','Pimiento rojo','Cebolla','Tomate x2','Ajo','Comino','Sal','Aceite','Culantro'],
+  'Tamal de olla': ['Maíz molido (3 tazas)','Gallina (1kg)','Cerdo (300g)','Cebolla','Ajo','Pimiento','Aceitunas','Alcaparras','Sal'],
+  'Arroz con camarones': ['Camarones (500g)','Arroz (2 tazas)','Cebolla','Ajo','Pimiento','Tomate','Culantro','Sal','Aceite','Achiote'],
+  'Guacho de mariscos': ['Arroz (2 tazas)','Mariscos surtidos (500g)','Cebolla','Ajo','Culantro','Pimiento','Sal','Aceite'],
+  'Bistec encebollado': ['Bistec de res (600g)','Cebolla x3','Ajo','Limón','Sal','Pimienta','Aceite'],
+  'Chicharrón con yuca': ['Costillas de cerdo (1kg)','Yuca (500g)','Sal','Ajo','Aceite para freír','Limón'],
+  'Corvina al ajillo': ['Corvina (4 filetes)','Ajo (6 dientes)','Mantequilla','Limón x2','Sal','Aceite de oliva','Culantro'],
+  'Pollo en salsa criolla': ['Pollo (1kg)','Tomate x3','Cebolla x2','Pimiento','Ajo','Culantro','Sal','Aceite'],
+  'Arroz con costillas': ['Costillas de cerdo (700g)','Arroz (2 tazas)','Cebolla','Ajo','Sal','Aceite','Culantro'],
+  'Chuleta ahumada con guandú': ['Chuleta ahumada (4 unidades)','Guandú (2 tazas)','Coco rallado','Ajo','Sal','Aceite'],
+  'Mondongo panameño': ['Mondongo (1kg)','Garbanzos (200g)','Zanahoria','Cebolla','Ajo','Tomate','Culantro','Sal','Comino'],
+
+  // MERIENDAS
+  'Chicheme frío': ['Maíz tierno molido (2 tazas)','Leche (1 litro)','Azúcar','Canela','Vainilla','Hielo'],
+  'Tembleque de coco': ['Leche de coco (400ml)','Maicena (4 cdas)','Azúcar (4 cdas)','Sal','Canela en polvo'],
+  'Arroz con leche': ['Arroz (1 taza)','Leche (1 litro)','Azúcar','Canela','Vainilla','Pasas'],
+  'Cocada panameña': ['Coco rallado (2 tazas)','Azúcar (1 taza)','Leche condensada','Vainilla'],
+
+  // CENAS
+  'Sopa de lentejas con patacones': ['Lentejas (2 tazas)','Plátano verde x2','Zanahoria','Cebolla','Ajo','Culantro','Sal','Aceite'],
+  'Ensalada de pollo con papas': ['Pechuga de pollo (500g)','Papas (400g)','Mayonesa','Mostaza','Sal','Pimienta','Cebolla','Culantro'],
+  'Sopa de pollo con fideos': ['Pollo (600g)','Fideos (200g)','Zanahoria','Cebolla','Ajo','Culantro','Sal','Papas'],
+  'Arroz con frijoles negros': ['Arroz (2 tazas)','Frijoles negros (1 taza)','Ajo','Cebolla','Comino','Sal','Aceite'],
+  'Plátano maduro relleno': ['Plátano maduro x4','Carne molida (300g)','Queso blanco','Cebolla','Ajo','Sal','Aceite'],
+  'Sopa de frijoles colorados': ['Frijoles colorados (2 tazas)','Costilla de cerdo (300g)','Cebolla','Ajo','Culantro','Sal','Comino'],
+};
+
+const PLATOS_SALUDABLES = {
+  desayuno: [
+    'Avena con frutas tropicales',
+    'Smoothie de banano y espinaca',
+    'Huevos pochados con aguacate',
+    'Yogur natural con granola y frutas',
+    'Tostadas integrales con aguacate',
+    'Batido de papaya y jengibre',
+    'Omelet de vegetales sin aceite',
+    'Frutas mixtas con miel',
+    'Avena con chía y coco',
+    'Huevos duros con vegetales',
+  ],
+  almuerzo: [
+    'Pechuga a la plancha con ensalada',
+    'Sancocho de pollo sin piel',
+    'Corvina al horno con vegetales',
+    'Ensalada de quinoa con pollo',
+    'Arroz integral con pollo',
+    'Salmón con espárragos',
+    'Pargo al vapor con limón',
+    'Bowl de arroz integral con vegetales',
+    'Ensalada verde con atún',
+    'Pollo horneado con camote',
+    'Lentejas guisadas con vegetales',
+    'Sopa de vegetales con pollo',
+    'Chayote guisado con pollo',
+    'Ensalada de garbanzos',
+    'Tilapia al horno con ensalada',
+  ],
+  merienda: [
+    'Fruta natural con limón',
+    'Smoothie verde de espinaca',
+    'Yogur griego con frutas',
+    'Zanahoria y apio con hummus',
+    'Manzana con mantequilla de maní',
+    'Jugo verde natural',
+    'Nueces y almendras',
+    'Batido de maracuyá sin azúcar',
+    'Pepino con limón y sal',
+    'Gelatina de frutas natural',
+  ],
+  cena: [
+    'Sopa de verduras sin sal',
+    'Pechuga al horno con ensalada verde',
+    'Vegetales salteados con tofu',
+    'Ensalada César con pollo a la plancha',
+    'Caldo de res desgrasado',
+    'Tortilla de vegetales al horno',
+    'Puré de batata con pollo',
+    'Sopa de lentejas roja',
+    'Ensalada de espinaca con huevo',
+    'Brócoli al vapor con pollo',
+    'Arroz integral con frijoles negros',
+    'Sopa de zanahoria y jengibre',
+  ],
+  snack: [
+    'Palitos de zanahoria con hummus',
+    'Manzana verde con canela',
+    'Puñado de nueces mixtas',
+    'Batido de proteína natural',
+    'Pepino con limón',
+    'Yogur griego natural',
+    'Fresas con miel de abeja',
+    'Apio con queso bajo en grasa',
+  ],
+};
+
+const INGREDIENTES_SALUDABLES = {
+  'Avena con frutas tropicales': ['Avena (1 taza)','Banano x1','Papaya (150g)','Leche descremada (1 taza)','Miel de abeja','Canela'],
+  'Huevos pochados con aguacate': ['Huevos x2','Aguacate x1','Limón','Sal','Pimienta negra','Pan integral x2'],
+  'Omelet de vegetales sin aceite': ['Huevos x3','Espinaca (1 taza)','Tomate x1','Cebolla','Pimiento','Sal','Pimienta'],
+  'Pechuga a la plancha con ensalada': ['Pechuga de pollo (400g)','Lechuga','Tomate','Pepino','Zanahoria','Limón','Aceite de oliva (1 cda)','Sal'],
+  'Sancocho de pollo sin piel': ['Pollo sin piel (1kg)','Ñame (200g)','Papas (200g)','Cebolla','Ajo','Culantro','Sal baja en sodio','Agua'],
+  'Corvina al horno con vegetales': ['Corvina (4 filetes)','Brócoli (200g)','Zanahoria (200g)','Limón x2','Ajo','Aceite de oliva','Sal','Pimienta'],
+  'Ensalada de quinoa con pollo': ['Quinoa (1 taza)','Pechuga de pollo (300g)','Tomate cherry','Pepino','Espinaca','Limón','Aceite de oliva','Sal'],
+  'Arroz integral con pollo': ['Arroz integral (1.5 tazas)','Pollo (600g)','Cebolla','Ajo','Culantro','Sal','Aceite de oliva'],
+  'Salmón con espárragos': ['Salmón (4 filetes)','Espárragos (300g)','Limón x2','Ajo','Aceite de oliva','Sal','Pimienta'],
+  'Pargo al vapor con limón': ['Pargo (1 unidad)','Limón x3','Ajo','Culantro','Sal','Jengibre','Cebolla'],
+  'Lentejas guisadas con vegetales': ['Lentejas (2 tazas)','Zanahoria (200g)','Espinaca (1 taza)','Cebolla','Ajo','Tomate','Sal','Comino'],
+  'Sopa de vegetales con pollo': ['Pollo (400g)','Zanahoria','Chayote','Apio','Cebolla','Ajo','Culantro','Sal','Agua'],
+  'Tilapia al horno con ensalada': ['Tilapia (4 filetes)','Lechuga','Tomate','Pepino','Limón x2','Aceite de oliva','Sal','Pimienta'],
+  'Sopa de verduras sin sal': ['Zanahoria x3','Chayote x2','Apio x2','Cebolla','Ajo','Culantro','Agua','Pimienta'],
+  'Pechuga al horno con ensalada verde': ['Pechuga (400g)','Lechuga','Espinaca','Pepino','Tomate cherry','Limón','Aceite de oliva (1 cda)'],
+  'Sopa de lentejas roja': ['Lentejas rojas (2 tazas)','Zanahoria','Tomate','Cebolla','Ajo','Comino','Sal baja sodio','Agua'],
+  'Smoothie verde de espinaca': ['Espinaca (2 tazas)','Banano x1','Leche de almendras (1 taza)','Miel (1 cda)','Hielo'],
+  'Batido de papaya y jengibre': ['Papaya (200g)','Jengibre fresco (1 trozo)','Agua fría (1 taza)','Limón','Miel'],
+  'Yogur natural con granola y frutas': ['Yogur griego natural (200g)','Granola sin azúcar (3 cdas)','Fresas (100g)','Banano','Miel de abeja'],
+};
+let usuarioActual = null;
+let perfilActual = null;
+let hogarId = null;
+let diaSeleccionado = 0;
+let menuData = {};
+let mercadoItems = [];
+let editandoTiempo = null;
+let ingModalTiempoId = null;
+let unsubMenu = null;
+let unsubMercado = null;
+let modoSaludable = false;
+
+window.cambiarModo = (saludable) => {
+  modoSaludable = saludable;
+  const slider = document.getElementById('sliderSaludable');
+  const knob = document.getElementById('knobSaludable');
+  if (slider) slider.style.background = saludable ? '#1A6B52' : '#ddd';
+  if (knob) knob.style.transform = saludable ? 'translateX(16px)' : 'translateX(0)';
+  renderMenuDia();
+  showToast(saludable ? '🥗 Modo saludable activado' : '🍽️ Menú panameño tradicional');
+};
+
+function getPlatosActuales() {
+  return modoSaludable ? PLATOS_SALUDABLES : PLATOS_SUGERIDOS;
+}
+
+function getIngredientesActuales(nombre) {
+  return INGREDIENTES_SALUDABLES[nombre] || INGREDIENTES_BASE[nombre] || null;
+}
+
+// ── AUTH ──
+onAuthStateChanged(auth, async (user) => {
+  document.getElementById('splash').classList.add('oculto');
+  if (!user) { document.getElementById('noAuth').classList.add('visible'); return; }
+  usuarioActual = user;
+  const perfil = await getDoc(doc(db, 'usuarios', user.uid));
+  if (!perfil.exists()) { document.getElementById('noAuth').classList.add('visible'); return; }
+  perfilActual = perfil.data();
+  document.getElementById('appHeader').style.display = 'block';
+  document.getElementById('appContent').style.display = 'block';
+  await encontrarHogar();
+});
+
+async function encontrarHogar() {
+  const q = query(collection(db, 'hogares'), where('participantes', 'array-contains', usuarioActual.uid));
+  const snap = await getDocs(q);
+  if (!snap.empty) {
+    hogarId = snap.docs[0].id;
+  } else if (perfilActual.tipo === 'nana') {
+    const qFam = query(collection(db, 'usuarios'), where('tipo', '==', 'familia'));
+    const snapFam = await getDocs(qFam);
+    let famUid = null;
+    snapFam.forEach(d => { if (!famUid) famUid = d.id; });
+    const participantes = famUid ? [famUid, usuarioActual.uid] : [usuarioActual.uid];
+    const ref = await addDoc(collection(db, 'hogares'), { participantes, creadoPor: famUid || usuarioActual.uid, creado: serverTimestamp() });
+    hogarId = ref.id;
+  } else {
+    const ref = await addDoc(collection(db, 'hogares'), { participantes: [usuarioActual.uid], creadoPor: usuarioActual.uid, creado: serverTimestamp() });
+    hogarId = ref.id;
+  }
+  inicializar();
+}
+
+function inicializar() {
+  renderDias();
+  renderSemanaLabel();
+  seleccionarDia(diaSemanaActual());
+  escucharMenu();
+  escucharMercado();
+}
+
+function diaSemanaActual() {
+  const hoy = new Date().getDay();
+  return hoy === 0 ? 6 : hoy - 1;
+}
+
+function renderSemanaLabel() {
+  const hoy = new Date();
+  const lunes = new Date(hoy);
+  lunes.setDate(hoy.getDate() - diaSemanaActual());
+  const domingo = new Date(lunes);
+  domingo.setDate(lunes.getDate() + 6);
+  const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  document.getElementById('semanaLabel').textContent = `Semana del ${lunes.getDate()} al ${domingo.getDate()} de ${meses[domingo.getMonth()]}`;
+}
+
+function renderDias() {
+  const hoyIdx = diaSemanaActual();
+  document.getElementById('diasRow').innerHTML = DIAS.map((d, i) => `
+    <button class="dia-pill ${i === diaSeleccionado ? 'activo' : ''} ${i === hoyIdx ? 'hoy' : ''}" onclick="seleccionarDia(${i})">
+      ${DIAS_CORTO[i]}${i === hoyIdx ? ' · Hoy' : ''}
+    </button>`).join('');
+}
+
+window.seleccionarDia = (idx) => {
+  diaSeleccionado = idx;
+  renderDias();
+  renderMenuDia();
+  renderSemanaGrid();
+};
+
+// ── ESCUCHAR MENÚ ──
+function escucharMenu() {
+  if (!hogarId) return;
+  const semanaId = getSemanaId();
+  if (unsubMenu) unsubMenu();
+  unsubMenu = onSnapshot(doc(db, 'hogares', hogarId, 'menus', semanaId), (snap) => {
+    menuData = snap.exists() ? (snap.data() || {}) : {};
+    renderMenuDia();
+    renderSemanaGrid();
+    generarListaMercado();
+  });
+}
+
+function escucharMercado() {
+  if (!hogarId) return;
+  const semanaId = getSemanaId();
+  if (unsubMercado) unsubMercado();
+  unsubMercado = onSnapshot(doc(db, 'hogares', hogarId, 'mercado', semanaId), (snap) => {
+    mercadoItems = snap.exists() ? (snap.data().items || []) : [];
+    renderMercado();
+  });
+}
+
+function getSemanaId() {
+  const hoy = new Date();
+  const lunes = new Date(hoy);
+  lunes.setDate(hoy.getDate() - diaSemanaActual());
+  return `${lunes.getFullYear()}-W${String(Math.ceil(lunes.getDate() / 7)).padStart(2,'0')}`;
+}
+
+async function guardarMenu() {
+  const semanaId = getSemanaId();
+  await setDoc(doc(db, 'hogares', hogarId, 'menus', semanaId), menuData, { merge: true });
+}
+
+// ── RENDER MENÚ DÍA ──
+function renderMenuDia() {
+  const diaKey = `dia_${diaSeleccionado}`;
+  const diaMenu = menuData[diaKey] || {};
+  const esEditable = true; // Ambos pueden editar
+  const titulo = document.getElementById('menuDiaTitulo');
+  titulo.textContent = `${DIAS[diaSeleccionado]} — Menú del día`;
+  document.getElementById('menuDiaSub').textContent = perfilActual.tipo === 'familia' ? 'Toca cualquier tiempo para editar' : 'Toca para sugerir un plato';
+
+  const contenedor = document.getElementById('menuDiaContent');
+
+  if (perfilActual.tipo === 'nana') {
+    renderMenuNana(contenedor, diaMenu, diaKey);
+  } else {
+    renderMenuFamilia(contenedor, diaMenu, diaKey);
+  }
+}
+
+function renderMenuFamilia(contenedor, diaMenu, diaKey) {
+  contenedor.innerHTML = `<div class="tiempos-grid">
+    ${TIEMPOS.map(t => {
+      const plato = diaMenu[t.id] || {};
+      const tieneContenido = !!plato.nombre;
+      return `<div class="tiempo-card">
+        <div class="tiempo-header" onclick="toggleFormPlato('${t.id}')">
+          <div class="tiempo-emoji" style="background:${t.bg};">${t.emoji}</div>
+          <div class="tiempo-info">
+            <div class="tiempo-nombre">${t.nombre}</div>
+            <div class="tiempo-plato ${tieneContenido ? '' : 'vacio'}">${plato.nombre || 'Toca para agregar plato...'}</div>
+            <div class="tiempo-hora">${t.hora}</div>
+          </div>
+          <div class="tiempo-actions">
+            ${tieneContenido ? `<button class="btn-del" onclick="event.stopPropagation();eliminarPlato('${diaKey}','${t.id}')">✕</button>` : ''}
+            <button class="btn-edit" onclick="event.stopPropagation();toggleFormPlato('${t.id}')">
+              ${tieneContenido ? 'Editar' : '+ Agregar'}
+            </button>
+          </div>
+        </div>
+
+        ${tieneContenido && plato.ingredientes?.length ? `
+          <div class="ingredientes-wrap">
+            <div class="ingredientes-titulo">Ingredientes</div>
+            <div class="ing-list">
+              ${plato.ingredientes.map((ing, idx) => `
+                <div class="ing-tag">${ing} <button onclick="eliminarIngrediente('${diaKey}','${t.id}',${idx})">×</button></div>`).join('')}
+              <button class="btn-add-ing" onclick="abrirModalIng('${diaKey}','${t.id}')">+ Agregar</button>
+            </div>
+          </div>` : tieneContenido ? `
+          <div class="ingredientes-wrap">
+            <button class="btn-add-ing" onclick="abrirModalIng('${diaKey}','${t.id}')">+ Agregar ingredientes</button>
+          </div>` : ''}
+
+        <div class="form-plato" id="form_${t.id}">
+          <div class="form-row-2">
+            <input class="form-input" id="input_${t.id}" placeholder="Nombre del plato..." value="${plato.nombre || ''}" onkeydown="if(event.key==='Enter')guardarPlato('${diaKey}','${t.id}')" />
+            <button class="btn-guardar" onclick="guardarPlato('${diaKey}','${t.id}')">Guardar</button>
+          </div>
+          <div style="font-size:11px;color:var(--txt2);margin-bottom:6px;">Sugerencias panameñas:</div>
+          <div class="sugerencias">
+            ${(getPlatosActuales()[t.id] || []).map(s => `
+              <button class="sug-tag" onclick="usarSugerencia('${t.id}','${s}','${diaKey}')">${s}</button>`).join('')}
+          </div>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function renderMenuNana(contenedor, diaMenu, diaKey) {
+  const tieneAlgo = TIEMPOS.some(t => diaMenu[t.id]?.nombre);
+  if (!tieneAlgo) {
+    contenedor.innerHTML = `<div class="empty-menu">
+      <div class="empty-menu-icon">🍽️</div>
+      <div style="font-size:14px;font-weight:500;color:var(--txt);margin-bottom:4px;">Sin menú para este día</div>
+      <div style="font-size:12px;">La familia aún no ha planificado el menú</div>
+    </div>`;
+    return;
+  }
+
+  contenedor.innerHTML = `<div style="padding:12px;display:flex;flex-direction:column;gap:8px;">
+    ${TIEMPOS.map(t => {
+      const plato = diaMenu[t.id] || {};
+      if (!plato.nombre) return '';
+      return `<div class="nana-tiempo">
+        <div class="nana-tiempo-hdr">
+          <div class="tiempo-emoji" style="background:${t.bg};">${t.emoji}</div>
+          <div class="tiempo-info">
+            <div class="tiempo-nombre">${t.nombre} · ${t.hora}</div>
+            <div class="tiempo-plato">${plato.nombre}</div>
+          </div>
+        </div>
+        ${plato.porcionNana ? `
+          <div class="nana-porcion">
+            <span class="nana-porcion-label">Tu porción:</span>
+            <span class="nana-porcion-val">${plato.porcionNana}</span>
+          </div>` : ''}
+        ${plato.ingredientes?.length ? `
+          <div class="ingredientes-wrap" style="border-top:1px solid var(--g4);">
+            <div class="ingredientes-titulo">Ingredientes necesarios</div>
+            <div class="ing-list">
+              ${plato.ingredientes.map(ing => `<div class="ing-tag">${ing}</div>`).join('')}
+            </div>
+          </div>` : ''}
+        <div class="nana-sugerencia">
+          <input class="nana-sug-input" id="sug_${t.id}" placeholder="Sugerir variación o ingrediente..." />
+          <button class="nana-sug-btn" onclick="enviarSugerencia('${diaKey}','${t.id}')">Sugerir</button>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+// ── FUNCIONES MENÚ ──
+window.toggleFormPlato = (tiempoId) => {
+  const form = document.getElementById(`form_${tiempoId}`);
+  if (!form) return;
+  const visible = form.classList.contains('visible');
+  document.querySelectorAll('.form-plato').forEach(f => f.classList.remove('visible'));
+  if (!visible) {
+    form.classList.add('visible');
+    document.getElementById(`input_${tiempoId}`)?.focus();
+  }
+};
+
+window.guardarPlato = async (diaKey, tiempoId) => {
+  const input = document.getElementById(`input_${tiempoId}`);
+  const nombre = input?.value.trim();
+  if (!nombre) return;
+
+  if (!menuData[diaKey]) menuData[diaKey] = {};
+  if (!menuData[diaKey][tiempoId]) menuData[diaKey][tiempoId] = {};
+  menuData[diaKey][tiempoId].nombre = nombre;
+
+  // Auto-agregar ingredientes si existen
+  if (getIngredientesActuales(nombre) && !menuData[diaKey][tiempoId].ingredientes?.length) {
+    menuData[diaKey][tiempoId].ingredientes = [...getIngredientesActuales(nombre)];
+  }
+
+  await guardarMenu();
+  showToast(`🍽️ "${nombre}" guardado`);
+  document.querySelectorAll('.form-plato').forEach(f => f.classList.remove('visible'));
+};
+
+window.usarSugerencia = async (tiempoId, plato, diaKey) => {
+  if (!menuData[diaKey]) menuData[diaKey] = {};
+  if (!menuData[diaKey][tiempoId]) menuData[diaKey][tiempoId] = {};
+  menuData[diaKey][tiempoId].nombre = plato;
+  if (getIngredientesActuales(plato)) menuData[diaKey][tiempoId].ingredientes = [...getIngredientesActuales(plato)];
+  await guardarMenu();
+  showToast(`✅ ${plato} seleccionado`);
+};
+
+window.eliminarPlato = async (diaKey, tiempoId) => {
+  if (!menuData[diaKey]) return;
+  delete menuData[diaKey][tiempoId];
+  await guardarMenu();
+  showToast('🗑 Plato eliminado');
+};
+
+window.abrirModalIng = (diaKey, tiempoId) => {
+  ingModalTiempoId = { diaKey, tiempoId };
+  document.getElementById('modalIng').classList.remove('oculto');
+  document.getElementById('modalIngInput').value = '';
+  document.getElementById('modalIngInput').focus();
+};
+
+window.cerrarModalIng = () => {
+  document.getElementById('modalIng').classList.add('oculto');
+  ingModalTiempoId = null;
+};
+
+window.guardarIngrediente = async () => {
+  const val = document.getElementById('modalIngInput').value.trim();
+  if (!val || !ingModalTiempoId) return;
+  const { diaKey, tiempoId } = ingModalTiempoId;
+  if (!menuData[diaKey]) menuData[diaKey] = {};
+  if (!menuData[diaKey][tiempoId]) menuData[diaKey][tiempoId] = {};
+  if (!menuData[diaKey][tiempoId].ingredientes) menuData[diaKey][tiempoId].ingredientes = [];
+  menuData[diaKey][tiempoId].ingredientes.push(val);
+  await guardarMenu();
+  cerrarModalIng();
+  showToast(`✅ "${val}" agregado`);
+};
+
+window.eliminarIngrediente = async (diaKey, tiempoId, idx) => {
+  menuData[diaKey][tiempoId].ingredientes.splice(idx, 1);
+  await guardarMenu();
+};
+
+window.enviarSugerencia = async (diaKey, tiempoId) => {
+  const input = document.getElementById(`sug_${tiempoId}`);
+  const sug = input?.value.trim();
+  if (!sug) return;
+  if (!menuData[diaKey]) menuData[diaKey] = {};
+  if (!menuData[diaKey][tiempoId]) menuData[diaKey][tiempoId] = {};
+  if (!menuData[diaKey][tiempoId].sugerencias) menuData[diaKey][tiempoId].sugerencias = [];
+  menuData[diaKey][tiempoId].sugerencias.push({ texto: sug, por: perfilActual.nombre, ts: new Date().toISOString() });
+  await guardarMenu();
+  if (input) input.value = '';
+  showToast('💡 Sugerencia enviada a la familia');
+};
+
+// ── SEMANA GRID ──
+function renderSemanaGrid() {
+  const grid = document.getElementById('semanaGrid');
+  let diasConMenu = 0;
+  grid.innerHTML = DIAS.map((d, i) => {
+    const diaMenu = menuData[`dia_${i}`] || {};
+    const tiemposConPlato = TIEMPOS.filter(t => diaMenu[t.id]?.nombre);
+    if (tiemposConPlato.length > 0) diasConMenu++;
+    return `<div class="semana-dia ${i === diaSeleccionado ? 'activo' : ''}" onclick="seleccionarDia(${i})">
+      <div class="semana-dia-nombre">${DIAS_CORTO[i]}</div>
+      <div class="semana-dia-num">${tiemposConPlato.length}</div>
+      <div class="semana-dia-dot">
+        ${TIEMPOS.slice(0,5).map((t, ti) => `
+          <div class="sdot" style="background:${diaMenu[t.id]?.nombre ? 'var(--g)' : 'var(--g4)'};"></div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('semanaCompletada').textContent = `${diasConMenu} días planificados`;
+}
+
+// ── LISTA MERCADO ──
+function generarListaMercado() {
+  const nuevosItems = [];
+  DIAS.forEach((d, i) => {
+    const diaMenu = menuData[`dia_${i}`] || {};
+    TIEMPOS.forEach(t => {
+      const plato = diaMenu[t.id];
+      if (!plato) return;
+
+      // Buscar ingredientes: primero en el plato, luego en INGREDIENTES_SALUDABLES
+      let ingredientes = plato.ingredientes || [];
+      if (!ingredientes.length && plato.nombre && INGREDIENTES_SALUDABLES[plato.nombre]) {
+        ingredientes = INGREDIENTES_SALUDABLES[plato.nombre];
+      }
+
+      ingredientes.forEach(ing => {
+        const existe = nuevosItems.find(item => item.nombre.toLowerCase() === ing.toLowerCase());
+        if (!existe) {
+          nuevosItems.push({ nombre: ing, cat: t.nombre, origen: 'menu', comprado: false });
+        }
+      });
+    });
+  });
+
+  // Mantener los manuales y el estado de comprados
+  const manuales = mercadoItems.filter(i => i.origen === 'manual');
+  const autoItems = nuevosItems.map(ni => {
+    const existente = mercadoItems.find(m => m.nombre.toLowerCase() === ni.nombre.toLowerCase());
+    return existente ? { ...ni, comprado: existente.comprado } : ni;
+  });
+
+  const todosItems = [...autoItems, ...manuales];
+  guardarMercado(todosItems);
+}
+
+async function guardarMercado(items) {
+  const semanaId = getSemanaId();
+  await setDoc(doc(db, 'hogares', hogarId, 'mercado', semanaId), { items, actualizado: serverTimestamp() }, { merge: true });
+}
+
+function renderMercado() {
+  const lista = document.getElementById('mercadoLista');
+  document.getElementById('mercadoBadge').textContent = `${mercadoItems.length} items`;
+
+  if (!mercadoItems.length) {
+    lista.innerHTML = `<div class="empty-menu">
+      <div class="empty-menu-icon">🛒</div>
+      <div style="font-size:13px;font-weight:500;color:var(--txt);">Sin ingredientes aún</div>
+      <div style="font-size:12px;color:var(--txt2);margin-top:4px;">Agrega platos al menú para generar la lista</div>
+    </div>`;
+    return;
+  }
+
+  const pendientes = mercadoItems.filter(i => !i.comprado);
+  const comprados = mercadoItems.filter(i => i.comprado);
+
+  lista.innerHTML = `
+    ${pendientes.length ? `<div style="font-size:10px;color:var(--txt2);font-weight:600;text-transform:uppercase;letter-spacing:.04em;padding:4px 10px 6px;">Por comprar (${pendientes.length})</div>` : ''}
+    ${pendientes.map((item, idx) => renderMercadoItem(item, mercadoItems.indexOf(item))).join('')}
+    ${comprados.length ? `<div style="font-size:10px;color:var(--txt2);font-weight:600;text-transform:uppercase;letter-spacing:.04em;padding:10px 10px 6px;border-top:1px solid var(--g4);">Comprados (${comprados.length})</div>` : ''}
+    ${comprados.map((item, idx) => renderMercadoItem(item, mercadoItems.indexOf(item))).join('')}
+  `;
+}
+
+function renderMercadoItem(item, idx) {
+  return `<div class="mercado-item" onclick="toggleMercadoItem(${idx})">
+    <div class="mercado-check ${item.comprado ? 'comprado' : ''}">
+      ${item.comprado ? '<svg width="10" height="8" viewBox="0 0 10 8" fill="none"><polyline points="1,4 3,7 9,1" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>' : ''}
+    </div>
+    <span class="mercado-nombre ${item.comprado ? 'comprado' : ''}">${item.nombre}</span>
+    <span class="mercado-cat">${item.cat}</span>
+  </div>`;
+}
+
+window.toggleMercadoItem = async (idx) => {
+  mercadoItems[idx].comprado = !mercadoItems[idx].comprado;
+  await guardarMercado(mercadoItems);
+};
+
+window.agregarMercadoManual = async () => {
+  const input = document.getElementById('mercadoInput');
+  const nombre = input.value.trim();
+  if (!nombre) return;
+  mercadoItems.push({ nombre, cat: 'Manual', origen: 'manual', comprado: false });
+  await guardarMercado(mercadoItems);
+  input.value = '';
+  showToast(`✅ "${nombre}" agregado`);
+};
+
+window.limpiarComprados = async () => {
+  mercadoItems = mercadoItems.filter(i => !i.comprado);
+  await guardarMercado(mercadoItems);
+  showToast('🗑 Comprados eliminados');
+};
+
+window.enviarListaAlChat = async () => {
+  const pendientes = mercadoItems.filter(i => !i.comprado);
+  if (!pendientes.length) { showToast('✅ No hay productos pendientes'); return; }
+
+  // Construir mensaje formateado
+  const fecha = new Date().toLocaleDateString('es-PA', { weekday:'long', day:'numeric', month:'long' });
+  const porCategoria = {};
+  pendientes.forEach(item => {
+    const cat = item.cat || 'Otros';
+    if (!porCategoria[cat]) porCategoria[cat] = [];
+    porCategoria[cat].push(item.nombre);
+  });
+
+  let texto = `🛒 Lista del mercado — ${fecha}\n\n`;
+  Object.entries(porCategoria).forEach(([cat, items]) => {
+    texto += `${cat}:\n`;
+    items.forEach(i => texto += `• ${i}\n`);
+    texto += '\n';
+  });
+  texto += `Total: ${pendientes.length} productos\nGenerado desde My Nana 💚`;
+
+  showToast('📤 Enviando al chat...');
+
+  try {
+    // Buscar conversación existente del hogar
+    const q = query(collection(db, 'conversaciones'), where('participantes', 'array-contains', usuarioActual.uid));
+    const snap = await getDocs(q);
+
+    let convId = null;
+    snap.forEach(d => { if (!convId) convId = d.id; });
+
+    if (!convId) {
+      // Crear conversación si no existe
+      const ref = await addDoc(collection(db, 'conversaciones'), {
+        participantes: [usuarioActual.uid],
+        ultimoMensaje: '🛒 Lista del mercado',
+        ultimaHora: serverTimestamp(),
+        noLeidos: 1,
+        creado: serverTimestamp()
+      });
+      convId = ref.id;
+    }
+
+    // Enviar mensaje al chat
+    await addDoc(collection(db, 'conversaciones', convId, 'mensajes'), {
+      tipo: 'mercado',
+      texto,
+      mercadoItems: pendientes,
+      totalItems: pendientes.length,
+      remitenteUid: usuarioActual.uid,
+      remitenteNombre: perfilActual.nombre,
+      timestamp: serverTimestamp(),
+      leido: false
+    });
+
+    // Actualizar último mensaje de la conversación
+    await updateDoc(doc(db, 'conversaciones', convId), {
+      ultimoMensaje: `🛒 Lista del mercado (${pendientes.length} productos)`,
+      ultimaHora: serverTimestamp(),
+      noLeidos: 1
+    });
+
+    showToast('✅ Lista enviada al chat familiar');
+
+    // Preguntar si ir al chat
+    setTimeout(() => {
+      if (confirm('✅ Lista enviada al chat.\n¿Quieres ir al chat ahora?')) {
+        location.href = '/chat.html';
+      }
+    }, 500);
+
+  } catch(e) {
+    console.error(e);
+    showToast('❌ Error al enviar. Intenta de nuevo.');
+  }
+};
+
+window.pedirDelivery = () => {
+  const pendientes = mercadoItems.filter(i => !i.comprado);
+  if (!pendientes.length) { showToast('✅ ¡Todo comprado!'); return; }
+  const lista = pendientes.map(i => `• ${i.nombre}`).join('\n');
+  const msg = encodeURIComponent(`Hola! Esta es la lista del mercado de My Nana:\n\n${lista}\n\nFavor traer estos productos. Gracias!`);
+  window.open(`https://wa.me/50760243324?text=${msg}`, '_blank');
+};
+
+// ── MODAL ──
+document.getElementById('modalIng').addEventListener('click', e => {
+  if (e.target === document.getElementById('modalIng')) cerrarModalIng();
+});
+document.getElementById('modalIngInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') guardarIngrediente();
+});
+
+// ── TOAST ──
+window.showToast = (msg) => {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('visible');
+  setTimeout(() => t.classList.remove('visible'), 3000);
+};
+</script>
+</body>
+</html>

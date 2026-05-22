@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>My Nana — Videos</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Cormorant+Garamond:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{--g:#1A6B52;--g2:#0F4A38;--g3:#F0F7F4;--g4:#E1F0EB;--b:#D4A5A5;--b2:#BF9090;--b3:#F7EFEF;--cr:#F9F5F0;--txt:#1A2E25;--txt2:#4A6358;--r:14px;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);overflow-x:hidden;min-height:100vh;min-height:100dvh;}
+
+/* SPLASH */
+#splash{position:fixed;inset:0;background:var(--g2);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;transition:opacity .4s;}
+#splash.oculto{opacity:0;pointer-events:none;}
+
+/* HEADER */
+.header{background:var(--g2);padding:48px 20px 16px;position:sticky;top:0;z-index:50;}
+@media(min-width:768px){.header{padding-top:16px;}}
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.header-logo{font-family:'Cormorant Garamond',serif;font-size:20px;color:#fff;}
+.header-logo em{color:var(--b);font-style:normal;}
+.header-back{background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.7);font-size:13px;padding:7px 14px;border-radius:99px;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;}
+
+/* BÚSQUEDA */
+.buscar-wrap{padding:0 20px 14px;}
+.buscar-input{width:100%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:99px;padding:10px 18px;font-family:'DM Sans',sans-serif;font-size:14px;color:#fff;outline:none;}
+.buscar-input::placeholder{color:rgba(255,255,255,.4);}
+.buscar-input:focus{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.3);}
+
+/* CATEGORÍAS */
+.cats{display:flex;gap:8px;overflow-x:auto;padding:0 20px 14px;-ms-overflow-style:none;scrollbar-width:none;}
+.cats::-webkit-scrollbar{display:none;}
+.cat-pill{flex-shrink:0;padding:7px 16px;border-radius:99px;border:1.5px solid rgba(255,255,255,.2);background:transparent;font-size:13px;font-weight:500;color:rgba(255,255,255,.7);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.cat-pill.activa{background:var(--b);border-color:var(--b);color:#fff;}
+.cat-pill:hover{background:rgba(255,255,255,.1);}
+
+/* CONTENIDO */
+.contenido{padding:20px;}
+.seccion-titulo{font-size:12px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+
+/* VIDEO DESTACADO */
+.video-featured{background:var(--g2);border-radius:20px;overflow:hidden;margin-bottom:20px;cursor:pointer;transition:transform .2s;}
+.video-featured:active{transform:scale(.98);}
+.video-featured-thumb{height:200px;display:flex;align-items:center;justify-content:center;position:relative;}
+.video-featured-overlay{position:absolute;inset:0;background:rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;}
+.play-btn-big{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;font-size:24px;}
+.video-featured-info{padding:16px 18px;}
+.video-featured-cat{font-size:11px;font-weight:600;color:var(--b);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
+.video-featured-titulo{font-family:'Cormorant Garamond',serif;font-size:22px;color:#fff;margin-bottom:6px;line-height:1.3;}
+.video-featured-meta{font-size:12px;color:rgba(255,255,255,.55);display:flex;align-items:center;gap:8px;}
+
+/* VIDEO CARDS GRID */
+.videos-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}
+@media(min-width:768px){.videos-grid{grid-template-columns:repeat(3,1fr);}}
+.video-card{background:#fff;border-radius:14px;overflow:hidden;cursor:pointer;border:1px solid var(--g4);transition:all .2s;}
+.video-card:active{transform:scale(.97);}
+.video-card:hover{box-shadow:0 4px 16px rgba(26,107,82,.12);transform:translateY(-2px);}
+.video-thumb{aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.video-thumb-emoji{font-size:36px;z-index:1;}
+.video-play-overlay{position:absolute;inset:0;background:rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;}
+.play-btn-sm{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;font-size:14px;}
+.video-info{padding:10px 12px;}
+.video-titulo{font-size:13px;font-weight:500;color:var(--txt);line-height:1.4;margin-bottom:5px;}
+.video-meta{font-size:11px;color:#bbb;display:flex;align-items:center;gap:6px;}
+.video-cat-tag{font-size:10px;background:var(--g3);color:var(--g);padding:2px 8px;border-radius:99px;font-weight:500;}
+.video-visto{font-size:10px;color:var(--b2);display:flex;align-items:center;gap:3px;}
+
+/* LISTA HORIZONTAL */
+.videos-row{display:flex;gap:12px;overflow-x:auto;padding-bottom:4px;-ms-overflow-style:none;scrollbar-width:none;margin-bottom:20px;}
+.videos-row::-webkit-scrollbar{display:none;}
+.video-row-card{flex-shrink:0;width:160px;background:#fff;border-radius:14px;overflow:hidden;cursor:pointer;border:1px solid var(--g4);}
+.video-row-thumb{height:100px;display:flex;align-items:center;justify-content:center;font-size:32px;position:relative;}
+.video-row-info{padding:8px 10px;}
+.video-row-titulo{font-size:12px;font-weight:500;color:var(--txt);line-height:1.4;margin-bottom:3px;}
+.video-row-meta{font-size:10px;color:#bbb;}
+
+/* MODAL VIDEO */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;opacity:0;pointer-events:none;transition:opacity .3s;}
+.modal-overlay.visible{opacity:1;pointer-events:all;}
+.modal-box{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;transform:translateY(40px);transition:transform .3s;}
+.modal-overlay.visible .modal-box{transform:translateY(0);}
+@media(min-width:768px){.modal-overlay{align-items:center;justify-content:center;}.modal-box{border-radius:20px;max-height:80vh;}}
+.modal-video-area{position:relative;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.modal-video-emoji{font-size:80px;z-index:1;}
+.modal-video-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.3);}
+.modal-play-btn{width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,.95);display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;transition:transform .2s;}
+.modal-play-btn:hover{transform:scale(1.08);}
+.modal-info{padding:20px;}
+.modal-cat{font-size:11px;font-weight:600;color:var(--b2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
+.modal-titulo{font-family:'Cormorant Garamond',serif;font-size:24px;color:var(--txt);margin-bottom:8px;line-height:1.3;}
+.modal-meta{display:flex;align-items:center;gap:12px;font-size:12px;color:#bbb;margin-bottom:14px;}
+.modal-desc{font-size:14px;color:var(--txt2);line-height:1.75;margin-bottom:20px;}
+.modal-pasos{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
+.modal-paso{display:flex;gap:12px;align-items:flex-start;}
+.paso-num{width:28px;height:28px;border-radius:50%;background:var(--g);color:#fff;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.paso-texto{font-size:13px;color:var(--txt2);line-height:1.6;padding-top:4px;}
+.modal-close{width:100%;background:var(--cr);border:1px solid var(--g4);border-radius:99px;padding:13px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;color:var(--txt2);cursor:pointer;}
+.modal-visto-btn{width:100%;background:var(--g);color:#fff;border:none;border-radius:99px;padding:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;margin-bottom:10px;transition:all .2s;}
+.modal-visto-btn:hover{background:var(--g2);}
+.modal-visto-btn.visto{background:var(--g3);color:var(--g);}
+
+/* PROGRESO */
+.progreso-card{background:var(--g2);border-radius:16px;padding:16px 18px;margin-bottom:20px;display:flex;align-items:center;gap:16px;}
+.prog-circle{width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;border:2px solid var(--b);}
+.prog-n{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:#fff;line-height:1;}
+.prog-l{font-size:9px;color:rgba(255,255,255,.5);margin-top:1px;}
+.prog-info{flex:1;}
+.prog-titulo{font-size:14px;font-weight:500;color:#fff;margin-bottom:4px;}
+.prog-sub{font-size:12px;color:rgba(255,255,255,.55);}
+.prog-barra{height:5px;background:rgba(255,255,255,.15);border-radius:99px;overflow:hidden;margin-top:8px;}
+.prog-fill{height:100%;background:var(--b);border-radius:99px;transition:width .5s;}
+
+/* TOAST */
+.toast{position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--g);color:#fff;font-size:13px;font-weight:500;padding:10px 20px;border-radius:99px;z-index:300;transition:transform .3s;white-space:nowrap;box-shadow:0 4px 16px rgba(26,107,82,.3);}
+.toast.visible{transform:translateX(-50%) translateY(0);}
+
+/* NAV INFERIOR */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--g4);padding:8px 0 20px;display:flex;z-index:50;}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 0;}
+.nav-icon{font-size:22px;}
+.nav-label{font-size:10px;color:#bbb;font-weight:500;}
+.nav-item.activo .nav-label{color:var(--g);}
+.contenido{padding-bottom:100px;}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div style="width:72px;height:72px;border-radius:50%;background:var(--g);border:3px solid var(--b);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:24px;color:#fff;">MN</div>
+  <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:#fff;">NANA</div>
+  <div style="font-size:13px;color:rgba(255,255,255,.5);">Cargando videos...</div>
+</div>
+
+<!-- MODAL VIDEO -->
+<div class="modal-overlay" id="modalVideo">
+  <div class="modal-box">
+    <div class="modal-video-area" id="modalThumb">
+      <div class="modal-video-emoji" id="modalEmoji">🍲</div>
+      <div class="modal-video-play">
+        <div class="modal-play-btn" onclick="reproducirVideo()">▶</div>
+      </div>
+    </div>
+    <div class="modal-info">
+      <div class="modal-cat" id="modalCat">Cocina</div>
+      <div class="modal-titulo" id="modalTitulo">Sancocho de gallina</div>
+      <div class="modal-meta">
+        <span id="modalDur">⏱ 22 min</span>
+        <span id="modalNivel">📊 Básico</span>
+        <span id="modalVistas">👁 Sin ver</span>
+      </div>
+      <div class="modal-desc" id="modalDesc"></div>
+      <div style="font-size:13px;font-weight:600;color:var(--txt);margin-bottom:12px;">Pasos principales:</div>
+      <div class="modal-pasos" id="modalPasos"></div>
+      <button class="modal-visto-btn" id="btnVisto" onclick="marcarVisto()">✅ Marcar como visto</button>
+      <button class="modal-close" onclick="cerrarModal()">← Volver a los videos</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-top">
+    <div class="header-logo">My <em>Nana</em> — Videos</div>
+    <a href="/app.html" class="header-back">← Inicio</a>
+  </div>
+  <div class="buscar-wrap">
+    <input class="buscar-input" id="buscarInput" placeholder="🔍  Buscar video..." oninput="buscarVideos(this.value)" />
+  </div>
+  <div class="cats">
+    <button class="cat-pill activa" onclick="filtrarCat('todos',this)">Todos</button>
+    <button class="cat-pill" onclick="filtrarCat('Cocina',this)">🍳 Cocina</button>
+    <button class="cat-pill" onclick="filtrarCat('Limpieza',this)">🧹 Limpieza</button>
+    <button class="cat-pill" onclick="filtrarCat('Lavandería',this)">👕 Lavandería</button>
+    <button class="cat-pill" onclick="filtrarCat('Niños',this)">🎒 Niños</button>
+    <button class="cat-pill" onclick="filtrarCat('Organización',this)">📦 Organización</button>
+  </div>
+</div>
+
+<!-- CONTENIDO -->
+<div class="contenido" id="contenido"></div>
+
+<!-- NAV INFERIOR -->
+<div class="bottom-nav">
+  <div class="nav-item" onclick="location.href='/tareas.html'"><div class="nav-icon">✅</div><div class="nav-label">Mis tareas</div></div>
+  <div class="nav-item" onclick="location.href='/menu.html'"><div class="nav-icon">🍽️</div><div class="nav-label">Qué cocinar</div></div>
+  <div class="nav-item" onclick="location.href='/chat.html'"><div class="nav-icon">💬</div><div class="nav-label">Hablar</div></div>
+  <div class="nav-item activo"><div class="nav-icon">📹</div><div class="nav-label">Aprender</div></div>
+</div>
+
+<script>
+// ── BASE DE DATOS DE VIDEOS ──
+const VIDEOS = [
+  {
+    id: 'sancocho',
+    titulo: 'Sancocho de gallina panameño',
+    cat: 'Cocina',
+    dur: '22 min',
+    nivel: 'Básico',
+    emoji: '🍲',
+    bg: '#0F4A38',
+    desc: 'Aprende a preparar el sancocho perfecto paso a paso. El plato más tradicional de Panamá, con el punto exacto de sazón y los ingredientes correctos.',
+    tags: ['sancocho', 'gallina', 'sopa', 'panameño', 'cocina'],
+    destacado: true,
+    pasos: [
+      'Lava bien la gallina y córtala en piezas. Sazónala con ajo, culantro y sal.',
+      'Sofríe la gallina en aceite caliente hasta dorar por todos lados.',
+      'Agrega agua y lleva a hervir. Quita la espuma que sube.',
+      'Añade el ñame, otoe, maíz y papas peladas y cortadas.',
+      'Cocina a fuego medio por 45 minutos hasta que todo esté blando.',
+      'Rectifica la sal y sirve caliente con arroz blanco.',
+    ],
+    youtubeId: null
+  },
+  {
+    id: 'arroz_pollo',
+    titulo: 'Arroz con pollo guisado',
+    cat: 'Cocina',
+    dur: '35 min',
+    nivel: 'Básico',
+    emoji: '🍛',
+    bg: '#3A6B8A',
+    desc: 'El arroz con pollo panameño perfecto — suave, sabroso y con el color y sazón correctos. Receta tradicional que toda la familia amará.',
+    tags: ['arroz', 'pollo', 'guisado', 'panameño', 'cocina'],
+    destacado: false,
+    pasos: [
+      'Corta el pollo en piezas y sazónalo con ajo, sal, comino y achiote.',
+      'Sofríe el pollo hasta dorar. Retira y reserva.',
+      'En la misma olla sofríe cebolla, pimiento y tomate picados.',
+      'Agrega el arroz y sofríe 2 minutos. Vuelve a poner el pollo.',
+      'Cubre con agua o caldo en proporción 2:1. Tapa y cocina a fuego bajo.',
+      'Cuando el arroz esté listo, esponja con un tenedor y sirve.',
+    ],
+    youtubeId: null
+  },
+  {
+    id: 'hojaldras',
+    titulo: 'Hojaldras panameñas tradicionales',
+    cat: 'Cocina',
+    dur: '20 min',
+    nivel: 'Básico',
+    emoji: '🥞',
+    bg: '#7A5A20',
+    desc: 'Las hojaldras son el desayuno más querido de Panamá. Aprende la masa perfecta para que queden esponjosas por dentro y doradas por fuera.',
+    tags: ['hojaldras', 'desayuno', 'masa', 'panameño', 'frito'],
+    destacado: false,
+    pasos: [
+      'Mezcla harina, sal, azúcar y polvo de hornear en un bol.',
+      'Agrega mantequilla y mezcla con los dedos hasta obtener migas.',
+      'Añade agua tibia poco a poco hasta formar una masa suave.',
+      'Amasa por 5 minutos. Deja reposar 10 minutos cubierta.',
+      'Estira la masa y corta círculos o cuadrados.',
+      'Fríe en aceite caliente hasta que doren. Escurre en papel.',
+    ],
+    youtubeId: null
+  },
+  {
+    id: 'limpieza_banos',
+    titulo: 'Cómo limpiar baños correctamente',
+    cat: 'Limpieza',
+    dur: '15 min',
+    nivel: 'Básico',
+    emoji: '🧹',
+    bg: '#D4A5A5',
+    desc: 'Técnica correcta para limpiar baños de forma higiénica y eficiente. Productos recomendados y el orden correcto para mejores resultados.',
+    tags: ['baño', 'limpieza', 'higiene', 'desinfectar'],
+    destacado: true,
+    pasos: [
+      'Aplica el limpiador en el interior del inodoro y deja actuar 5 min.',
+      'Limpia el espejo con limpiavidrios y papel periódico o microfibra.',
+      'Limpia el lavamanos con esponja y detergente. No olvides la llave.',
+      'Frota el inodoro con el cepillo. Limpia la tapa, los lados y el exterior.',
+      'Limpia las paredes de la ducha/tina con limpiador multiusos.',
+      'Trapea el piso con agua y desinfectante. Deja secar con ventilación.',
+    ],
+    youtubeId: null
+  },
+  {
+    id: 'limpieza_cocina',
+    titulo: 'Limpiar la cocina paso a paso',
+    cat: 'Limpieza',
+    dur: '18 min',
+    nivel: 'Básico',
+    emoji: '✨',
+    bg: '#1A6B52',
+    desc: 'Cómo mantener la cocina limpia e higiénica todos los días. Desde la estufa hasta el refrigerador, con los productos correctos.',
+    tags: ['cocina', 'limpieza', 'estufa', 'refrigerador', 'grasa'],
+    destacado: false,
+    pasos: [
+      'Remoja los platos y ollas primero para facilitar el lavado.',
+      'Limpia la estufa con desengrasante. Deja actuar 5 minutos.',
+      'Lava las ollas y platos. Sécalos bien antes de guardar.',
+      'Limpia las superficies con multiusos. No olvides detrás de los objetos.',
+      'Limpia el interior del microondas con agua y vinagre caliente.',
+      'Barre y trapea el piso de la cocina. Termina siempre por el piso.',
+    ],
+    youtubeId: null
+  },
+  {
+    id: 'lavanderia',
+    titulo: 'Lavandería sin dañar la ropa',
+    cat: 'Lavandería',
+    dur: '12 min',
+    nivel: 'Básico',
+    emoji: '👕',
+    bg: '#5A3F85',
+    desc: 'Cómo separar la ropa, usar la temperatura correcta y tratar manchas difíciles sin arruinar las prendas.',
+    tags: ['ropa', 'lavandería', 'lavar', 'manchas', 'planchado'],
+    destacado: false,
+    pasos: [
+      'Separa la ropa: blanca, de color clara y de color oscura.',
+      'Revisa las etiquetas para ver la temperatura de lavado recomendada.',
+      'Trata las manchas antes de lavar con jabón o quitamanchas.',
+      'No sobrecargues la lavadora — deja espacio para que la ropa se mueva.',
+      'Usa la cantidad correcta de detergente — más no es mejor.',
+      'Tiende o seca inmediatamente para evitar mal olor.',
+    ],
+    youtubeId: null
+  },
+  {
+    id: 'planchado',
+    titulo: 'Planchar ropa sin arruinarla',
+    cat: 'Lavandería',
+    dur: '10 min',
+    nivel: 'Básico',
+    emoji: '🧺',
+    bg: '#854F0B',
+    desc: 'Técnica correcta de planchado para cada tipo de tela. Cómo evitar quemas y dejar la ropa perfecta.',
+    tags: ['planchar', 'ropa', 'planchado', 'telas'],
+    destacado: false,
+    pasos: [
+      'Revisa la etiqueta de cada prenda para saber la temperatura.',
+      'Empieza con las prendas que requieren temperatura baja.',
+      'Plancha en movimientos continuos — nunca dejes el hierro quieto.',
+      'Las camisas: primero el cuello, luego mangas y por último el cuerpo.',
+      'Los pantalones: alinea las costuras para crear el pliegue correcto.',
+      'Cuelga inmediatamente para que no se arruguen de nuevo.',
+    ],
+    youtubeId: null
+  },
+  {
+    id: 'ninos_cuidado',
+    titulo: 'Cuidado de niños — lo básico',
+    cat: 'Niños',
+    dur: '20 min',
+    nivel: 'Básico',
+    emoji: '🎒',
+    bg: '#E8593C',
+    desc: 'Guía práctica para cuidar niños de forma segura. Rutinas, seguridad, alimentación y cómo manejar situaciones del día a día.',
+    tags: ['niños', 'cuidado', 'bebés', 'seguridad', 'rutinas'],
+    destacado: false,
+    pasos: [
+      'Mantén siempre visualmente al niño — nunca lo dejes solo.',
+      'Conoce las alergias y restricciones alimentarias del niño.',
+      'Sigue el horario de comidas y siestas que la familia estableció.',
+      'Ten el número de la familia y médico a mano siempre.',
+      'Para conflictos entre niños: calma, escucha y media sin tomar partido.',
+      'Reporta cualquier caída o incidente a la familia inmediatamente.',
+    ],
+    youtubeId: null
+  },
+  {
+    id: 'patacones',
+    titulo: 'Patacones perfectamente crujientes',
+    cat: 'Cocina',
+    dur: '15 min',
+    nivel: 'Básico',
+    emoji: '🍌',
+    bg: '#BA7517',
+    desc: 'El secreto para que los patacones queden perfectamente crujientes por fuera y suaves por dentro. La guarnición favorita de Panamá.',
+    tags: ['patacones', 'plátano', 'frito', 'guarnición', 'panameño'],
+    destacado: false,
+    pasos: [
+      'Pela el plátano verde y córtalo en rodajas de 2-3 cm.',
+      'Fríe en aceite caliente hasta que estén blandos pero no dorados.',
+      'Retira y aplasta con un pataconero o plato plano.',
+      'Sumerge brevemente en agua con sal para que queden crujientes.',
+      'Vuelve a freír hasta que estén dorados y crujientes.',
+      'Escurre en papel absorbente y sirve con ají o guacamole.',
+    ],
+    youtubeId: null
+  },
+  {
+    id: 'organizacion',
+    titulo: 'Organización del hogar',
+    cat: 'Organización',
+    dur: '16 min',
+    nivel: 'Básico',
+    emoji: '📦',
+    bg: '#4A6358',
+    desc: 'Cómo mantener el hogar ordenado y organizado todos los días. Técnicas simples para que todo tenga su lugar.',
+    tags: ['organización', 'orden', 'hogar', 'limpieza', 'armario'],
+    destacado: false,
+    pasos: [
+      'Cada cosa tiene su lugar — devuélvela ahí después de usarla.',
+      'Haz la cama al levantarte — marca el tono del día.',
+      'Limpia de arriba hacia abajo y de adentro hacia afuera.',
+      'Organiza los armarios por categorías — ropa, juguetes, utensilios.',
+      'Revisa fechas de vencimiento en la nevera semanalmente.',
+      'Al final del día, deja todo en su lugar para el día siguiente.',
+    ],
+    youtubeId: null
+  },
+  {
+    id: 'ropa_vieja',
+    titulo: 'Ropa vieja panameña',
+    cat: 'Cocina',
+    dur: '45 min',
+    nivel: 'Intermedio',
+    emoji: '🥩',
+    bg: '#633806',
+    desc: 'La ropa vieja es un plato tradicional hecho con carne deshebrada y un sofrito de vegetales. Rico, económico y lleno de sabor panameño.',
+    tags: ['ropa vieja', 'carne', 'deshebrada', 'panameño', 'cocina'],
+    destacado: false,
+    pasos: [
+      'Cocina la carne en agua con sal, ajo y culantro hasta que esté blanda.',
+      'Retira la carne, deja enfriar y deshébrala con las manos.',
+      'En aceite caliente sofríe cebolla, pimiento rojo y tomate.',
+      'Agrega la carne deshebrada y mezcla bien con el sofrito.',
+      'Añade un poco del caldo de cocción. Sazona con sal y comino.',
+      'Cocina 10 minutos más. Sirve con arroz y patacones.',
+    ],
+    youtubeId: null
+  },
+  {
+    id: 'limpieza_sala',
+    titulo: 'Limpiar sala y comedor',
+    cat: 'Limpieza',
+    dur: '20 min',
+    nivel: 'Básico',
+    emoji: '🛋️',
+    bg: '#2A5A7A',
+    desc: 'Cómo limpiar la sala y el comedor de forma eficiente. Desde los muebles hasta los pisos y las áreas menos visibles.',
+    tags: ['sala', 'comedor', 'muebles', 'piso', 'limpieza'],
+    destacado: false,
+    pasos: [
+      'Quita y sacude los cojines del sofá. Aspira o barre debajo.',
+      'Limpia las superficies — mesas, estantes — con paño húmedo.',
+      'Limpia el televisor y electrónicos con paño de microfibra seco.',
+      'Barre bien los rincones y detrás de los muebles.',
+      'Trapea el piso con agua y limpiador. En dirección a la puerta.',
+      'Ordena los cojines y decora todo como le gusta a la familia.',
+    ],
+    youtubeId: null
+  },
+];
+
+let videoActual = null;
+let vistos = JSON.parse(localStorage.getItem('mynana_videos_vistos') || '[]');
+let catActual = 'todos';
+let busqueda = '';
+
+// ── RENDER PRINCIPAL ──
+function renderContenido() {
+  const c = document.getElementById('contenido');
+  let lista = VIDEOS;
+
+  if (catActual !== 'todos') lista = lista.filter(v => v.cat === catActual);
+  if (busqueda) lista = lista.filter(v =>
+    v.titulo.toLowerCase().includes(busqueda) ||
+    v.tags.some(t => t.includes(busqueda))
+  );
+
+  if (!lista.length) {
+    c.innerHTML = `<div style="text-align:center;padding:48px 20px;">
+      <div style="font-size:40px;margin-bottom:12px;">🔍</div>
+      <div style="font-size:16px;font-weight:500;color:var(--txt);margin-bottom:6px;">Sin resultados</div>
+      <div style="font-size:13px;color:var(--txt2);">Intenta con otra búsqueda</div>
+    </div>`;
+    return;
+  }
+
+  const totalVistos = vistos.length;
+  const pct = Math.round((totalVistos / VIDEOS.length) * 100);
+
+  let html = '';
+
+  // Progreso personal
+  html += `<div class="progreso-card">
+    <div class="prog-circle">
+      <div class="prog-n">${totalVistos}</div>
+      <div class="prog-l">vistos</div>
+    </div>
+    <div class="prog-info">
+      <div class="prog-titulo">Tu progreso de aprendizaje</div>
+      <div class="prog-sub">${totalVistos} de ${VIDEOS.length} videos completados · ${pct}%</div>
+      <div class="prog-barra"><div class="prog-fill" style="width:${pct}%"></div></div>
+    </div>
+  </div>`;
+
+  if (catActual === 'todos' && !busqueda) {
+    // Video destacado
+    const destacados = lista.filter(v => v.destacado);
+    if (destacados.length) {
+      const v = destacados[0];
+      const visto = vistos.includes(v.id);
+      html += `<div class="seccion-titulo">⭐ Video del día</div>
+      <div class="video-featured" onclick="abrirVideo('${v.id}')">
+        <div class="video-featured-thumb" style="background:${v.bg};">
+          <div style="font-size:64px;z-index:1;">${v.emoji}</div>
+          <div class="video-featured-overlay">
+            <div class="play-btn-big">▶</div>
+          </div>
+        </div>
+        <div class="video-featured-info">
+          <div class="video-featured-cat">${v.cat} ${visto ? '· ✅ Visto' : ''}</div>
+          <div class="video-featured-titulo">${v.titulo}</div>
+          <div class="video-featured-meta">
+            <span>⏱ ${v.dur}</span>
+            <span>📊 ${v.nivel}</span>
+            <span>${v.pasos.length} pasos</span>
+          </div>
+        </div>
+      </div>`;
+    }
+
+    // Por categoría
+    const cats = ['Cocina','Limpieza','Lavandería','Niños','Organización'];
+    cats.forEach(cat => {
+      const catVideos = lista.filter(v => v.cat === cat);
+      if (!catVideos.length) return;
+      const emojis = { 'Cocina':'🍳','Limpieza':'🧹','Lavandería':'👕','Niños':'🎒','Organización':'📦' };
+      html += `<div class="seccion-titulo">${emojis[cat] || '📹'} ${cat}</div>
+      <div class="videos-row">
+        ${catVideos.map(v => {
+          const visto = vistos.includes(v.id);
+          return `<div class="video-row-card" onclick="abrirVideo('${v.id}')">
+            <div class="video-row-thumb" style="background:${v.bg};">
+              <span style="font-size:32px;z-index:1;">${v.emoji}</span>
+              <div style="position:absolute;inset:0;background:rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;">
+                <div style="width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;font-size:12px;">▶</div>
+              </div>
+              ${visto ? '<div style="position:absolute;top:6px;right:6px;background:var(--g);color:#fff;font-size:10px;padding:2px 6px;border-radius:99px;">✅</div>' : ''}
+            </div>
+            <div class="video-row-info">
+              <div class="video-row-titulo">${v.titulo}</div>
+              <div class="video-row-meta">⏱ ${v.dur}</div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`;
+    });
+
+  } else {
+    // Vista de grilla filtrada
+    html += `<div class="seccion-titulo">📹 ${catActual === 'todos' ? 'Resultados' : catActual} (${lista.length})</div>
+    <div class="videos-grid">
+      ${lista.map(v => {
+        const visto = vistos.includes(v.id);
+        return `<div class="video-card" onclick="abrirVideo('${v.id}')">
+          <div class="video-thumb" style="background:${v.bg};">
+            <div class="video-thumb-emoji" style="position:relative;z-index:1;">${v.emoji}</div>
+            <div class="video-play-overlay">
+              <div class="play-btn-sm">▶</div>
+            </div>
+            ${visto ? '<div style="position:absolute;top:8px;right:8px;background:var(--g);color:#fff;font-size:10px;padding:2px 8px;border-radius:99px;">✅ Visto</div>' : ''}
+          </div>
+          <div class="video-info">
+            <div class="video-titulo">${v.titulo}</div>
+            <div class="video-meta">
+              <span class="video-cat-tag">${v.cat}</span>
+              <span>⏱ ${v.dur}</span>
+            </div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }
+
+  c.innerHTML = html;
+}
+
+// ── ABRIR VIDEO ──
+window.abrirVideo = (id) => {
+  const v = VIDEOS.find(v => v.id === id);
+  if (!v) return;
+  videoActual = v;
+
+  document.getElementById('modalEmoji').textContent = v.emoji;
+  document.getElementById('modalThumb').style.background = v.bg;
+  document.getElementById('modalCat').textContent = v.cat;
+  document.getElementById('modalTitulo').textContent = v.titulo;
+  document.getElementById('modalDur').textContent = `⏱ ${v.dur}`;
+  document.getElementById('modalNivel').textContent = `📊 ${v.nivel}`;
+
+  const visto = vistos.includes(v.id);
+  document.getElementById('modalVistas').textContent = visto ? '✅ Ya lo viste' : '👁 Sin ver';
+
+  document.getElementById('modalDesc').textContent = v.desc;
+  document.getElementById('modalPasos').innerHTML = v.pasos.map((p, i) => `
+    <div class="modal-paso">
+      <div class="paso-num">${i+1}</div>
+      <div class="paso-texto">${p}</div>
+    </div>`).join('');
+
+  const btnVisto = document.getElementById('btnVisto');
+  if (visto) {
+    btnVisto.textContent = '✅ Ya viste este video';
+    btnVisto.classList.add('visto');
+  } else {
+    btnVisto.textContent = '✅ Marcar como visto';
+    btnVisto.classList.remove('visto');
+  }
+
+  document.getElementById('modalVideo').classList.add('visible');
+  document.body.style.overflow = 'hidden';
+};
+
+window.cerrarModal = () => {
+  document.getElementById('modalVideo').classList.remove('visible');
+  document.body.style.overflow = '';
+  videoActual = null;
+};
+
+window.marcarVisto = () => {
+  if (!videoActual) return;
+  if (!vistos.includes(videoActual.id)) {
+    vistos.push(videoActual.id);
+    localStorage.setItem('mynana_videos_vistos', JSON.stringify(vistos));
+    showToast('✅ Video marcado como visto');
+  }
+  const btn = document.getElementById('btnVisto');
+  btn.textContent = '✅ Ya viste este video';
+  btn.classList.add('visto');
+  document.getElementById('modalVistas').textContent = '✅ Ya lo viste';
+  renderContenido();
+};
+
+window.reproducirVideo = () => {
+  if (!videoActual) return;
+  if (videoActual.youtubeId) {
+    window.open(`https://www.youtube.com/watch?v=${videoActual.youtubeId}`, '_blank');
+  } else {
+    showToast('📹 Video de demostración — próximamente real');
+    marcarVisto();
+  }
+};
+
+// ── FILTROS ──
+window.filtrarCat = (cat, btn) => {
+  catActual = cat;
+  busqueda = '';
+  document.getElementById('buscarInput').value = '';
+  document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('activa'));
+  btn.classList.add('activa');
+  renderContenido();
+};
+
+window.buscarVideos = (texto) => {
+  busqueda = texto.toLowerCase().trim();
+  catActual = 'todos';
+  document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('activa'));
+  document.querySelector('.cat-pill').classList.add('activa');
+  renderContenido();
+};
+
+// ── TOAST ──
+window.showToast = (msg) => {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('visible');
+  setTimeout(() => t.classList.remove('visible'), 3000);
+};
+
+// Cerrar modal al tocar afuera
+document.getElementById('modalVideo').addEventListener('click', e => {
+  if (e.target === document.getElementById('modalVideo')) cerrarModal();
+});
+
+// ── INIT ──
+document.getElementById('splash').classList.add('oculto');
+
+// Leer parámetro de URL para filtrar por categoría
+const urlParams = new URLSearchParams(window.location.search);
+const catParam = urlParams.get('cat');
+if (catParam) {
+  catActual = catParam;
+  const pills = document.querySelectorAll('.cat-pill');
+  pills.forEach(p => {
+    p.classList.remove('activa');
+    if (p.textContent.includes(catParam)) p.classList.add('activa');
+  });
+}
+
+renderContenido();
+</script>
+</body>
+</html>

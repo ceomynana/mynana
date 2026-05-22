@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>My Nana — Tareas</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Cormorant+Garamond:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{--g:#1A6B52;--g2:#0F4A38;--g3:#F0F7F4;--g4:#E1F0EB;--b:#D4A5A5;--b2:#BF9090;--b3:#F7EFEF;--cr:#F9F5F0;--txt:#1A2E25;--txt2:#4A6358;--r:14px;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{min-height:100vh;}
+body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);overflow-x:hidden;}
+
+/* ── SPLASH ── */
+#splash{position:fixed;inset:0;background:var(--g2);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;transition:opacity .4s;}
+#splash.oculto{opacity:0;pointer-events:none;}
+.splash-logo{width:72px;height:72px;border-radius:50%;background:var(--g);border:3px solid var(--b);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:24px;color:#fff;}
+.splash-title{font-family:'Cormorant Garamond',serif;font-size:28px;color:#fff;}
+.splash-sub{font-size:13px;color:rgba(255,255,255,.5);}
+
+/* ── NO AUTH ── */
+#noAuth{position:fixed;inset:0;background:var(--g2);z-index:998;display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px;gap:16px;}
+#noAuth.visible{display:flex;}
+.noauth-btn{background:var(--b);color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;padding:14px 32px;border-radius:99px;border:none;cursor:pointer;text-decoration:none;display:inline-block;}
+
+/* ── HEADER ── */
+.app-header{background:var(--g2);padding:48px 24px 16px;position:sticky;top:0;z-index:50;}
+@media(min-width:768px){.app-header{padding-top:16px;}}
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.header-logo{font-family:'Cormorant Garamond',serif;font-size:20px;color:#fff;}
+.header-logo em{color:var(--b);font-style:normal;}
+.header-nav{display:flex;align-items:center;gap:10px;}
+.header-back{background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.7);font-size:13px;padding:7px 14px;border-radius:99px;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;display:inline-block;}
+.header-user{font-size:12px;color:rgba(255,255,255,.6);}
+.progreso-wrap{background:rgba(255,255,255,.1);border-radius:99px;height:6px;overflow:hidden;}
+.progreso-fill{height:100%;background:var(--b);border-radius:99px;transition:width .5s ease;}
+.progreso-label{font-size:11px;color:rgba(255,255,255,.5);margin-top:5px;text-align:right;}
+
+/* ── LAYOUT ── */
+.layout{max-width:1100px;margin:0 auto;padding:24px;}
+@media(min-width:768px){.layout{display:grid;grid-template-columns:1fr 1fr;gap:24px;}}
+
+/* ── PANEL ── */
+.panel{background:#fff;border-radius:var(--r);border:1px solid var(--g4);overflow:hidden;}
+.panel-header{background:var(--g2);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;}
+.panel-title{font-family:'Cormorant Garamond',serif;font-size:18px;color:#fff;}
+.panel-sub{font-size:11px;color:rgba(255,255,255,.55);margin-top:2px;}
+.panel-badge{background:var(--b);color:#fff;font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;}
+
+/* ── FORM CREAR TAREA (solo familia) ── */
+.form-tarea{padding:16px 20px;border-bottom:1px solid var(--g4);background:var(--g3);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-label{font-size:11px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.04em;}
+.form-input{background:#fff;border:1.5px solid var(--g4);border-radius:8px;padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--txt);outline:none;transition:all .2s;width:100%;}
+.form-input:focus{border-color:var(--g);box-shadow:0 0 0 3px rgba(26,107,82,.08);}
+.form-select{width:100%;background:#fff;border:1.5px solid var(--g4);border-radius:8px;padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--txt);outline:none;appearance:none;-webkit-appearance:none;cursor:pointer;}
+.form-select:focus{border-color:var(--g);}
+.btn-crear{width:100%;background:var(--g);color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;padding:11px;border-radius:99px;border:none;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-crear:hover{background:var(--g2);}
+.btn-crear:disabled{opacity:.6;cursor:not-allowed;}
+
+/* ── LISTA TAREAS ── */
+.tareas-lista{padding:12px;display:flex;flex-direction:column;gap:8px;max-height:520px;overflow-y:auto;}
+.empty-state{text-align:center;padding:40px 20px;color:var(--txt2);}
+.empty-icon{font-size:40px;margin-bottom:10px;}
+.empty-title{font-size:15px;font-weight:500;color:var(--txt);margin-bottom:4px;}
+.empty-sub{font-size:13px;}
+
+/* ── TAREA CARD ── */
+.tarea-card{background:#fff;border-radius:16px;overflow:hidden;border:1px solid var(--g4);transition:all .2s;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,.05);}
+.tarea-card.hecha{opacity:.75;}
+.tarea-top{display:flex;align-items:center;gap:10px;padding:12px 14px;}
+.tarea-emoji-wrap{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.tarea-info{flex:1;min-width:0;}
+.tarea-nombre{font-size:13px;font-weight:500;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tarea-nombre.hecha{text-decoration:line-through;color:#bbb;}
+.tarea-meta{font-size:11px;color:var(--txt2);margin-top:2px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.tarea-cat{font-size:10px;padding:2px 7px;border-radius:99px;font-weight:500;}
+/* ── BOTONES NANA MEJORADOS ── */
+.btn-completar-grande{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  width:calc(100% - 28px);margin:0 14px 10px;
+  background:var(--g);color:#fff;
+  border:none;border-radius:14px;
+  padding:16px;font-size:17px;font-weight:600;
+  font-family:'DM Sans',sans-serif;cursor:pointer;
+  transition:all .2s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 4px 16px rgba(26,107,82,.25);
+  min-height:56px;
+}
+.btn-completar-grande:hover{background:var(--g2);transform:scale(1.02);}
+.btn-completar-grande:active{transform:scale(.97);}
+
+.tarea-actions-nana{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:8px;padding:0 14px 14px;
+}
+.btn-accion-nana{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  border:none;border-radius:12px;
+  padding:14px 10px;font-size:14px;font-weight:500;
+  font-family:'DM Sans',sans-serif;cursor:pointer;
+  transition:all .2s;min-height:50px;
+}
+.btn-accion-nana:active{transform:scale(.96);}
+.btn-foto{background:var(--b3);color:var(--b2);}
+.btn-foto:hover{background:var(--b);color:#fff;}
+.btn-video{background:var(--g3);color:var(--g);}
+.btn-video:hover{background:var(--g);color:#fff;}
+
+/* TAREA COMPLETADA — banner mejorado */
+.tarea-done-banner{
+  margin:0 14px 14px;
+  background:var(--g3);border-radius:10px;
+  padding:12px 14px;
+  display:flex;align-items:center;gap:8px;
+  font-size:13px;font-weight:500;color:var(--g);
+}
+
+/* CHECK más grande para nana */
+.tarea-check{width:36px;height:36px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;transition:all .2s;}
+.tarea-check.pend{background:transparent;border:2.5px solid var(--g4);}
+.tarea-check.done{background:var(--g);}
+
+/* ACCIONES (vista nana) */
+.tarea-actions{display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid var(--g4);}
+.tarea-btn{padding:9px 6px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:500;cursor:pointer;border:none;background:transparent;font-family:'DM Sans',sans-serif;transition:background .15s;}
+.tarea-btn:not(:last-child){border-right:1px solid var(--g4);}
+.tarea-btn:active{background:var(--g3);}
+.tarea-btn-icon{font-size:18px;}
+
+/* ACCIONES (vista familia) */
+.tarea-fam-actions{display:flex;gap:6px;border-top:1px solid var(--g4);padding:8px 14px;}
+.btn-sm{font-size:11px;font-weight:500;padding:5px 12px;border-radius:99px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.btn-sm-del{background:var(--b3);color:var(--b2);}
+.btn-sm-del:hover{background:var(--b);color:#fff;}
+
+/* COMPLETADA BANNER */
+.tarea-done-banner{background:var(--g3);padding:8px 14px;display:flex;align-items:center;gap:8px;border-top:1px solid var(--g4);font-size:12px;color:var(--g);}
+
+/* FOTO BADGE */
+.foto-badge{background:#fff;border:1px solid var(--g4);border-radius:8px;overflow:hidden;max-width:100%;}
+.foto-badge img{width:100%;max-height:120px;object-fit:cover;display:block;}
+.foto-badge-placeholder{height:80px;background:var(--g3);display:flex;align-items:center;justify-content:center;font-size:28px;}
+
+/* ── MODAL FOTO ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:flex;align-items:flex-end;justify-content:center;}
+.modal-overlay.oculto{display:none;}
+.modal-box{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:430px;padding:24px 20px 36px;}
+@media(min-width:768px){.modal-overlay{align-items:center;}.modal-box{border-radius:20px;max-width:480px;}}
+.modal-title{font-size:16px;font-weight:600;color:var(--txt);margin-bottom:6px;}
+.modal-sub{font-size:13px;color:var(--txt2);margin-bottom:20px;}
+.foto-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.foto-opt{background:var(--cr);border-radius:14px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:8px;border:1px solid var(--g4);cursor:pointer;font-size:13px;font-weight:500;color:var(--txt);font-family:'DM Sans',sans-serif;}
+.foto-opt:active{background:var(--g3);border-color:var(--g);}
+.foto-opt-icon{font-size:28px;}
+.modal-cancel{width:100%;background:transparent;border:1px solid var(--g4);border-radius:99px;padding:12px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--txt2);cursor:pointer;}
+
+/* ── TOAST ── */
+.toast{position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--g);color:#fff;font-size:13px;font-weight:500;padding:10px 20px;border-radius:99px;z-index:300;transition:transform .3s;white-space:nowrap;box-shadow:0 4px 16px rgba(26,107,82,.3);}
+.toast.visible{transform:translateX(-50%) translateY(0);}
+
+/* ── FILTROS ── */
+.filtros{display:flex;gap:6px;overflow-x:auto;padding:12px 12px 0;-ms-overflow-style:none;scrollbar-width:none;}
+.filtros::-webkit-scrollbar{display:none;}
+.filtro{flex-shrink:0;padding:5px 12px;border-radius:99px;border:1.5px solid var(--g4);background:#fff;font-size:12px;font-weight:500;color:var(--txt2);cursor:pointer;font-family:'DM Sans',sans-serif;}
+.filtro.activo{background:var(--g);border-color:var(--g);color:#fff;}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="splash-logo">MN</div>
+  <div class="splash-title">NANA</div>
+  <div class="splash-sub">Cargando tareas...</div>
+</div>
+
+<!-- NO AUTH -->
+<div id="noAuth">
+  <div style="font-family:'Cormorant Garamond',serif;font-size:24px;color:#fff;">My <span style="color:#D4A5A5;">Nana</span></div>
+  <div style="font-size:14px;color:rgba(255,255,255,.6);text-align:center;">Necesitas iniciar sesión para ver las tareas</div>
+  <a href="/app.html" class="noauth-btn">Iniciar sesión →</a>
+</div>
+
+<!-- MODAL FOTO -->
+<div class="modal-overlay oculto" id="modalFoto">
+  <div class="modal-box">
+    <div class="modal-title" id="modalFotoTitle">Subir foto de evidencia</div>
+    <div class="modal-sub">Toma o selecciona una foto para confirmar que la tarea está lista.</div>
+    <div class="foto-opts">
+      <button class="foto-opt" onclick="dispararCamara()"><div class="foto-opt-icon">📷</div>Tomar foto</button>
+      <button class="foto-opt" onclick="dispararGaleria()"><div class="foto-opt-icon">🖼️</div>Galería</button>
+    </div>
+    <button class="modal-cancel" onclick="cerrarModalFoto()">Cancelar</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- INPUTS OCULTOS -->
+<input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;" onchange="procesarFoto(this)"/>
+<input type="file" id="galeriaInput" accept="image/*" style="display:none;" onchange="procesarFoto(this)"/>
+
+<!-- HEADER -->
+<div class="app-header" id="appHeader" style="display:none;">
+  <div class="header-top">
+    <div class="header-logo">My <em>Nana</em></div>
+    <div class="header-nav">
+      <a href="/app.html" class="header-back">← Dashboard</a>
+      <span class="header-user" id="headerUser"></span>
+    </div>
+  </div>
+  <div class="progreso-wrap">
+    <div class="progreso-fill" id="progresoFill" style="width:0%"></div>
+  </div>
+  <div class="progreso-label" id="progresoLabel">0 de 0 tareas completadas</div>
+</div>
+
+<!-- APP CONTENT -->
+<div id="appContent" style="display:none;">
+  <div class="layout">
+
+    <!-- PANEL FAMILIA: Crear + Lista -->
+    <div id="panelFamilia" style="display:none;">
+      <div class="panel">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title">Gestionar tareas</div>
+            <div class="panel-sub">Crea y asigna tareas a tu nana</div>
+          </div>
+          <div class="panel-badge" id="badgeFam">0 tareas</div>
+        </div>
+
+        <!-- Formulario crear tarea -->
+        <div class="form-tarea">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Nombre de la tarea</label>
+              <input type="text" class="form-input" id="inNombre" placeholder="Ej: Preparar almuerzo" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Hora</label>
+              <input type="time" class="form-input" id="inHora" value="08:00" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Categoría</label>
+              <select class="form-select" id="inCat">
+                <option value="🍳 Cocina">🍳 Cocina</option>
+                <option value="🧹 Limpieza">🧹 Limpieza</option>
+                <option value="👕 Lavandería">👕 Lavandería</option>
+                <option value="🎒 Niños">🎒 Niños</option>
+                <option value="🛒 Mercado">🛒 Mercado</option>
+                <option value="🐾 Mascotas">🐾 Mascotas</option>
+                <option value="📦 Otro">📦 Otro</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Prioridad</label>
+              <select class="form-select" id="inPrioridad">
+                <option value="normal">Normal</option>
+                <option value="urgente">🔴 Urgente</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn-crear" id="btnCrear" onclick="crearTarea()">
+            + Agregar tarea
+          </button>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filtros" id="filtrosFam">
+          <button class="filtro activo" onclick="filtrar('todas', this)">Todas</button>
+          <button class="filtro" onclick="filtrar('pendiente', this)">Pendientes</button>
+          <button class="filtro" onclick="filtrar('completa', this)">Completadas</button>
+          <button class="filtro" onclick="filtrar('🍳 Cocina', this)">🍳 Cocina</button>
+          <button class="filtro" onclick="filtrar('🧹 Limpieza', this)">🧹 Limpieza</button>
+          <button class="filtro" onclick="filtrar('🎒 Niños', this)">🎒 Niños</button>
+        </div>
+
+        <div class="tareas-lista" id="listaFamilia">
+          <div class="empty-state">
+            <div class="empty-icon">✅</div>
+            <div class="empty-title">Sin tareas aún</div>
+            <div class="empty-sub">Crea la primera tarea del día</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL NANA: Ver + Completar -->
+    <div id="panelNana" style="display:none;">
+      <div class="panel">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title">Mis tareas de hoy</div>
+            <div class="panel-sub" id="panelNanaSub">Cargando...</div>
+          </div>
+          <div class="panel-badge" id="badgeNana">0 tareas</div>
+        </div>
+
+        <!-- Filtros nana -->
+        <div class="filtros">
+          <button class="filtro activo" onclick="filtrar('todas', this)">Todas</button>
+          <button class="filtro" onclick="filtrar('pendiente', this)">Pendientes</button>
+          <button class="filtro" onclick="filtrar('completa', this)">Completadas</button>
+        </div>
+
+        <div class="tareas-lista" id="listaNana">
+          <div class="empty-state">
+            <div class="empty-icon">🎉</div>
+            <div class="empty-title">Sin tareas asignadas</div>
+            <div class="empty-sub">La familia aún no ha creado tareas para hoy</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL LATERAL: Resumen (familia) o Tips (nana) -->
+    <div>
+      <!-- Resumen del día -->
+      <div class="panel" style="margin-bottom:16px;" id="panelResumen">
+        <div class="panel-header">
+          <div class="panel-title">Resumen del día</div>
+        </div>
+        <div style="padding:16px 20px;display:flex;flex-direction:column;gap:12px;">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center;">
+            <div style="background:var(--g3);border-radius:10px;padding:12px 8px;">
+              <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--g);" id="statTotal">0</div>
+              <div style="font-size:11px;color:var(--txt2);">Total</div>
+            </div>
+            <div style="background:var(--b3);border-radius:10px;padding:12px 8px;">
+              <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--b2);" id="statPend">0</div>
+              <div style="font-size:11px;color:var(--txt2);">Pendientes</div>
+            </div>
+            <div style="background:var(--g3);border-radius:10px;padding:12px 8px;">
+              <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--g);" id="statHechas">0</div>
+              <div style="font-size:11px;color:var(--txt2);">Hechas</div>
+            </div>
+          </div>
+          <div style="background:var(--cr);border-radius:10px;padding:12px 14px;border:1px solid var(--g4);">
+            <div style="font-size:12px;font-weight:600;color:var(--txt);margin-bottom:8px;">Por categoría</div>
+            <div id="statsCats" style="display:flex;flex-direction:column;gap:6px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tips o instrucciones -->
+      <div class="panel" id="panelTips">
+        <div class="panel-header">
+          <div class="panel-title" id="tipsTitle">Instrucciones</div>
+        </div>
+        <div style="padding:14px 20px;display:flex;flex-direction:column;gap:10px;" id="tipsContent"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import { getFirestore, doc, getDoc, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, updateDoc, deleteDoc, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey:"AIzaSyDDJRJ8A8P507lllGRBOoXO30ESAH1GAnw",
+  authDomain:"mynanapapp.firebaseapp.com",
+  projectId:"mynanapapp",
+  storageBucket:"mynanapapp.firebasestorage.app",
+  messagingSenderId:"124180779437",
+  appId:"1:124180779437:web:d217743000b0f1fedfd124"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// Cloudinary
+const CLOUD = 'dy2awt3tc';
+const PRESET = 'mynana_fotos';
+
+let usuarioActual = null;
+let perfilActual = null;
+let hogarId = null;
+let todasTareas = [];
+let filtroActual = 'todas';
+let tareaFotoId = null;
+
+// ── AUTH ──
+onAuthStateChanged(auth, async (user) => {
+  document.getElementById('splash').classList.add('oculto');
+  if (!user) { document.getElementById('noAuth').classList.add('visible'); return; }
+  usuarioActual = user;
+  const perfil = await getDoc(doc(db, 'usuarios', user.uid));
+  if (!perfil.exists()) { document.getElementById('noAuth').classList.add('visible'); return; }
+  perfilActual = perfil.data();
+
+  document.getElementById('appHeader').style.display = 'block';
+  document.getElementById('appContent').style.display = 'block';
+  document.getElementById('headerUser').textContent = perfilActual.nombre?.split(' ')[0] || '';
+
+  // Encontrar hogar compartido
+  await encontrarHogar();
+});
+
+async function encontrarHogar() {
+  const q = query(collection(db, 'hogares'), where('participantes', 'array-contains', usuarioActual.uid));
+  const snap = await getDocs(q);
+
+  if (!snap.empty) {
+    hogarId = snap.docs[0].id;
+    iniciarPaneles();
+    escucharTareas();
+    return;
+  }
+
+  // Solo crear hogar si es nana uniéndose a una familia
+  // Los miembros familiares NUNCA crean hogar propio — esperan que el titular lo vincule
+  if (perfilActual.tipo === 'nana') {
+    const qFam = query(collection(db, 'usuarios'), where('tipo', '==', 'familia'));
+    const snapFam = await getDocs(qFam);
+    let famUid = null;
+    snapFam.forEach(d => { if (!famUid) famUid = d.id; });
+    const participantes = famUid ? [famUid, usuarioActual.uid] : [usuarioActual.uid];
+    const hogarRef = await addDoc(collection(db, 'hogares'), {
+      participantes, creadoPor: famUid || usuarioActual.uid, creado: serverTimestamp()
+    });
+    hogarId = hogarRef.id;
+  } else {
+    // Familia sin hogar aún — crear hogar propio vacío
+    const hogarRef = await addDoc(collection(db, 'hogares'), {
+      participantes: [usuarioActual.uid], creadoPor: usuarioActual.uid, creado: serverTimestamp()
+    });
+    hogarId = hogarRef.id;
+  }
+
+  iniciarPaneles();
+  escucharTareas();
+}
+
+function iniciarPaneles() {
+  if (perfilActual.tipo === 'familia') {
+    document.getElementById('panelFamilia').style.display = 'block';
+    // Tips para familia
+    document.getElementById('tipsTitle').textContent = 'Cómo funciona';
+    document.getElementById('tipsContent').innerHTML = `
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <div style="width:28px;height:28px;border-radius:50%;background:var(--g3);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--g);flex-shrink:0;">1</div>
+        <div><div style="font-size:13px;font-weight:500;color:var(--txt);margin-bottom:2px;">Crea una tarea arriba</div><div style="font-size:12px;color:var(--txt2);">Ponle nombre, hora y categoría.</div></div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <div style="width:28px;height:28px;border-radius:50%;background:var(--g3);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--g);flex-shrink:0;">2</div>
+        <div><div style="font-size:13px;font-weight:500;color:var(--txt);margin-bottom:2px;">Tu nana la ve al instante</div><div style="font-size:12px;color:var(--txt2);">Firebase sincroniza en tiempo real — sin recargar.</div></div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <div style="width:28px;height:28px;border-radius:50%;background:var(--g3);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--g);flex-shrink:0;">3</div>
+        <div><div style="font-size:13px;font-weight:500;color:var(--txt);margin-bottom:2px;">Ves el progreso aquí</div><div style="font-size:12px;color:var(--txt2);">La barra de arriba sube cuando tu nana completa tareas.</div></div>
+      </div>
+      <div style="background:var(--b3);border-radius:8px;padding:10px 12px;">
+        <div style="font-size:12px;color:var(--b2);">💡 Comparte el link de tareas con tu nana: <strong>mynana.app/tareas.html</strong></div>
+      </div>`;
+  } else {
+    document.getElementById('panelNana').style.display = 'block';
+    // Tips para nana
+    document.getElementById('tipsTitle').textContent = 'Tus opciones';
+    document.getElementById('tipsContent').innerHTML = `
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <div style="font-size:20px;">✅</div>
+        <div><div style="font-size:13px;font-weight:500;color:var(--txt);">Marcar lista</div><div style="font-size:12px;color:var(--txt2);">Toca el círculo verde para marcar una tarea como completada.</div></div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <div style="font-size:20px;">📷</div>
+        <div><div style="font-size:13px;font-weight:500;color:var(--txt);">Subir foto</div><div style="font-size:12px;color:var(--txt2);">Toma una foto de evidencia y la familia la ve al instante.</div></div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <div style="font-size:20px;">🔊</div>
+        <div><div style="font-size:13px;font-weight:500;color:var(--txt);">Escuchar tareas</div><div style="font-size:12px;color:var(--txt2);">El sistema puede leer tus tareas en voz alta.</div></div>
+      </div>
+      <button onclick="leerTareas()" style="width:100%;background:var(--g3);color:var(--g);border:none;border-radius:99px;padding:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;">🔊 Escuchar mis tareas</button>`;
+  }
+}
+
+// ── ESCUCHAR TAREAS EN TIEMPO REAL ──
+function escucharTareas() {
+  if (!hogarId) return;
+  const hoy = new Date();
+  hoy.setHours(0,0,0,0);
+
+  const q = query(
+    collection(db, 'hogares', hogarId, 'tareas'),
+    orderBy('hora', 'asc')
+  );
+
+  onSnapshot(q, (snap) => {
+    todasTareas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderTareas();
+    actualizarProgreso();
+    actualizarStats();
+  });
+}
+
+// ── RENDER TAREAS ──
+function renderTareas() {
+  const lista = filtrarTareas();
+  const esNana = perfilActual.tipo === 'nana';
+  const contenedor = document.getElementById(esNana ? 'listaNana' : 'listaFamilia');
+  const badge = document.getElementById(esNana ? 'badgeNana' : 'badgeFam');
+  badge.textContent = `${todasTareas.length} tarea${todasTareas.length !== 1 ? 's' : ''}`;
+
+  if (esNana) {
+    const sub = document.getElementById('panelNanaSub');
+    const hechas = todasTareas.filter(t => t.estado === 'completa').length;
+    sub.textContent = `${hechas} de ${todasTareas.length} completadas hoy`;
+  }
+
+  if (!lista.length) {
+    contenedor.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">${filtroActual === 'completa' ? '🎉' : '✅'}</div>
+      <div class="empty-title">${filtroActual === 'completa' ? '¡Todo pendiente!' : filtroActual === 'pendiente' ? '¡Todo listo!' : 'Sin tareas aún'}</div>
+      <div class="empty-sub">${esNana ? 'La familia aún no ha creado tareas' : 'Crea la primera tarea del día'}</div>
+    </div>`;
+    return;
+  }
+
+  const colores = {
+    '🍳 Cocina':'#FEF7EE',
+    '🧹 Limpieza':'#F0F0F7',
+    '👕 Lavandería':'var(--b3)',
+    '🎒 Niños':'#FEF7EE',
+    '🛒 Mercado':'var(--g3)',
+    '🐾 Mascotas':'#FEF7EE',
+    '📦 Otro':'var(--cr)'
+  };
+
+  contenedor.innerHTML = lista.map(t => {
+    const hecha = t.estado === 'completa';
+    const bg = colores[t.cat] || 'var(--g3)';
+    const emoji = t.cat?.split(' ')[0] || '📋';
+    const hora12 = formatHora(t.hora);
+    const urgente = t.prioridad === 'urgente';
+
+    return `<div class="tarea-card ${hecha ? 'hecha' : ''}">
+      <div class="tarea-top">
+        <div class="tarea-emoji-wrap" style="background:${bg};">${emoji}</div>
+        <div class="tarea-info">
+          <div class="tarea-nombre ${hecha ? 'hecha' : ''}">${t.nombre}</div>
+          <div class="tarea-meta">
+            🕐 ${hora12}
+            <span class="tarea-cat" style="background:${bg};color:var(--txt2);">${t.cat}</span>
+            ${urgente ? '<span style="background:#FCEBEB;color:#A32D2D;font-size:10px;padding:2px 7px;border-radius:99px;font-weight:500;">🔴 Urgente</span>' : ''}
+          </div>
+        </div>
+        <button class="tarea-check ${hecha ? 'done' : 'pend'}" onclick="${esNana ? `marcarHecha('${t.id}', ${hecha})` : ''}">
+          ${hecha ? '<svg width="14" height="12" viewBox="0 0 14 12" fill="none"><polyline points="1,6 5,10 13,1" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' : ''}
+        </button>
+      </div>
+
+      ${hecha && t.fotoUrl ? `
+        <div style="padding:0 14px 10px;">
+          <div class="foto-badge">
+            <img src="${t.fotoUrl}" alt="evidencia" onclick="verFotoGrande('${t.fotoUrl}')"/>
+          </div>
+          <div style="font-size:11px;color:var(--g);margin-top:5px;padding:4px 8px;background:var(--g3);border-radius:6px;">📸 Foto de evidencia enviada</div>
+        </div>` : ''}
+
+      ${hecha && !t.fotoUrl ? `<div class="tarea-done-banner">✅ Completada ${t.completadaA || ''}</div>` : ''}
+
+      ${!hecha && esNana ? `
+        <!-- BOTÓN GRANDE COMPLETAR -->
+        <button class="btn-completar-grande" onclick="marcarHecha('${t.id}', false)">
+          <span style="font-size:22px;">✅</span>
+          <span>¡Marcar como lista!</span>
+        </button>
+
+        <!-- BOTONES SECUNDARIOS -->
+        <div class="tarea-actions-nana">
+          <button class="btn-accion-nana btn-foto" onclick="abrirModalFoto('${t.id}')">
+            <span style="font-size:20px;">📷</span>
+            <span>Subir foto</span>
+          </button>
+          <button class="btn-accion-nana btn-video" onclick="irAlVideo('${t.cat}')">
+            <span style="font-size:20px;">▶️</span>
+            <span>Ver video</span>
+          </button>
+        </div>` : ''}
+
+      ${!esNana ? `
+        <div class="tarea-fam-actions">
+          <button class="btn-sm btn-sm-del" onclick="eliminarTarea('${t.id}')">🗑 Eliminar</button>
+          ${urgente ? '' : `<button class="btn-sm" style="background:var(--b3);color:var(--b2);" onclick="marcarUrgente('${t.id}')">🔴 Urgente</button>`}
+        </div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ── CREAR TAREA ──
+window.crearTarea = async () => {
+  const nombre = document.getElementById('inNombre').value.trim();
+  const hora = document.getElementById('inHora').value;
+  const cat = document.getElementById('inCat').value;
+  const prioridad = document.getElementById('inPrioridad').value;
+  const btn = document.getElementById('btnCrear');
+
+  if (!nombre) {
+    document.getElementById('inNombre').style.borderColor = '#e05c5c';
+    document.getElementById('inNombre').focus();
+    setTimeout(() => document.getElementById('inNombre').style.borderColor = '', 2000);
+    return;
+  }
+
+  btn.textContent = 'Agregando...';
+  btn.disabled = true;
+
+  try {
+    await addDoc(collection(db, 'hogares', hogarId, 'tareas'), {
+      nombre,
+      hora,
+      cat,
+      prioridad,
+      estado: 'pendiente',
+      fotoUrl: null,
+      creadoPor: usuarioActual.uid,
+      creadoA: serverTimestamp(),
+      completadaA: null
+    });
+
+    document.getElementById('inNombre').value = '';
+    document.getElementById('inHora').value = '08:00';
+    showToast(`✅ "${nombre}" agregada`);
+  } catch(e) {
+    showToast('❌ Error al crear la tarea');
+    console.error(e);
+  }
+
+  btn.textContent = '+ Agregar tarea';
+  btn.disabled = false;
+};
+
+// ── MARCAR HECHA ──
+window.marcarHecha = async (id, estaHecha) => {
+  if (estaHecha) {
+    await updateDoc(doc(db, 'hogares', hogarId, 'tareas', id), {
+      estado: 'pendiente', completadaA: null
+    });
+    return;
+  }
+
+  // Animación de celebración
+  showToast('✅ ¡Tarea completada! Buen trabajo 🎉');
+  if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
+
+  const hora = new Date().toLocaleTimeString('es-PA', { hour: '2-digit', minute: '2-digit' });
+  await updateDoc(doc(db, 'hogares', hogarId, 'tareas', id), {
+    estado: 'completa', completadaA: hora
+  });
+};
+
+// ── ELIMINAR TAREA ──
+window.eliminarTarea = async (id) => {
+  if (!confirm('¿Eliminar esta tarea?')) return;
+  await deleteDoc(doc(db, 'hogares', hogarId, 'tareas', id));
+  showToast('🗑 Tarea eliminada');
+};
+
+// ── URGENTE ──
+window.marcarUrgente = async (id) => {
+  await updateDoc(doc(db, 'hogares', hogarId, 'tareas', id), { prioridad: 'urgente' });
+  showToast('🔴 Marcada como urgente');
+};
+
+// ── FOTO ──
+window.abrirModalFoto = (id) => {
+  tareaFotoId = id;
+  const t = todasTareas.find(t => t.id === id);
+  document.getElementById('modalFotoTitle').textContent = `📷 ${t?.nombre || 'Tarea'}`;
+  document.getElementById('modalFoto').classList.remove('oculto');
+};
+
+window.cerrarModalFoto = () => {
+  document.getElementById('modalFoto').classList.add('oculto');
+  tareaFotoId = null;
+};
+
+window.dispararCamara = () => {
+  cerrarModalFoto();
+  document.getElementById('cameraInput').click();
+};
+
+window.dispararGaleria = () => {
+  cerrarModalFoto();
+  document.getElementById('galeriaInput').click();
+};
+
+window.procesarFoto = async (input) => {
+  const archivo = input.files[0];
+  if (!archivo || !tareaFotoId) { tareaFotoId = null; return; }
+  showToast('📷 Subiendo foto...');
+
+  try {
+    const formData = new FormData();
+    formData.append('file', archivo);
+    formData.append('upload_preset', PRESET);
+    formData.append('folder', 'mynana_tareas');
+
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/image/upload`, { method:'POST', body:formData });
+    if (!res.ok) throw new Error('Error Cloudinary');
+    const data = await res.json();
+    const url = data.secure_url;
+
+    const hora = new Date().toLocaleTimeString('es-PA', { hour:'2-digit', minute:'2-digit' });
+    await updateDoc(doc(db, 'hogares', hogarId, 'tareas', tareaFotoId), {
+      fotoUrl: url,
+      estado: 'completa',
+      completadaA: hora
+    });
+    showToast('📸 ¡Foto enviada a la familia!');
+  } catch(e) {
+    showToast('❌ Error al subir foto');
+    console.error(e);
+  }
+
+  input.value = '';
+  tareaFotoId = null;
+};
+
+window.verFotoGrande = (url) => window.open(url, '_blank');
+
+// ── FILTROS ──
+window.filtrar = (tipo, btn) => {
+  filtroActual = tipo;
+  document.querySelectorAll('.filtro').forEach(b => b.classList.remove('activo'));
+  btn.classList.add('activo');
+  renderTareas();
+};
+
+function filtrarTareas() {
+  if (filtroActual === 'todas') return todasTareas;
+  if (filtroActual === 'pendiente') return todasTareas.filter(t => t.estado !== 'completa');
+  if (filtroActual === 'completa') return todasTareas.filter(t => t.estado === 'completa');
+  return todasTareas.filter(t => t.cat === filtroActual);
+}
+
+// ── PROGRESO ──
+function actualizarProgreso() {
+  const total = todasTareas.length;
+  const hechas = todasTareas.filter(t => t.estado === 'completa').length;
+  const pct = total ? Math.round((hechas / total) * 100) : 0;
+  document.getElementById('progresoFill').style.width = pct + '%';
+  document.getElementById('progresoLabel').textContent = `${hechas} de ${total} tareas completadas · ${pct}%`;
+}
+
+// ── STATS ──
+function actualizarStats() {
+  const total = todasTareas.length;
+  const hechas = todasTareas.filter(t => t.estado === 'completa').length;
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statPend').textContent = total - hechas;
+  document.getElementById('statHechas').textContent = hechas;
+
+  const cats = {};
+  todasTareas.forEach(t => {
+    cats[t.cat] = (cats[t.cat] || 0) + 1;
+  });
+
+  document.getElementById('statsCats').innerHTML = Object.entries(cats).map(([cat, n]) => {
+    const hechasCat = todasTareas.filter(t => t.cat === cat && t.estado === 'completa').length;
+    const pct = Math.round((hechasCat / n) * 100);
+    return `<div style="display:flex;align-items:center;gap:8px;">
+      <span style="font-size:12px;color:var(--txt2);width:100px;flex-shrink:0;">${cat}</span>
+      <div style="flex:1;background:var(--g4);border-radius:99px;height:5px;overflow:hidden;">
+        <div style="width:${pct}%;height:100%;background:var(--g);border-radius:99px;"></div>
+      </div>
+      <span style="font-size:11px;color:var(--g);font-weight:500;width:28px;text-align:right;">${hechasCat}/${n}</span>
+    </div>`;
+  }).join('') || '<div style="font-size:12px;color:var(--txt2);">Sin tareas aún</div>';
+}
+
+// ── AUDIO ──
+window.leerTareas = () => {
+  if (!window.speechSynthesis) { showToast('Tu dispositivo no soporta audio'); return; }
+  const pendientes = todasTareas.filter(t => t.estado !== 'completa');
+  if (!pendientes.length) { showToast('✅ ¡Todas las tareas están listas!'); return; }
+  const texto = `Tienes ${pendientes.length} tareas pendientes: ${pendientes.map((t,i) => `${i+1}. ${t.nombre}, a las ${formatHora(t.hora)}`).join('. ')}.`;
+  const u = new SpeechSynthesisUtterance(texto);
+  u.lang = 'es-PA'; u.rate = 0.9;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(u);
+  showToast('🔊 Leyendo tareas...');
+};
+
+// ── HELPERS ──
+function formatHora(hora24) {
+  if (!hora24) return '';
+  const [h, m] = hora24.split(':').map(Number);
+  const ampm = h >= 12 ? 'pm' : 'am';
+  const h12 = h % 12 || 12;
+  return `${h12}:${m.toString().padStart(2,'0')} ${ampm}`;
+}
+
+// ── IR AL VIDEO SEGÚN CATEGORÍA ──
+window.irAlVideo = (cat) => {
+  const mapCat = {
+    '🍳 Cocina': 'Cocina',
+    '🧹 Limpieza': 'Limpieza',
+    '👕 Lavandería': 'Lavandería',
+    '🎒 Niños': 'Niños',
+    '🛒 Mercado': 'Cocina',
+    '🐾 Mascotas': 'Organización',
+    '📦 Otro': 'Organización',
+  };
+  const catVideo = mapCat[cat] || 'todos';
+  location.href = `/videos.html?cat=${encodeURIComponent(catVideo)}`;
+};
+
+window.showToast = (msg) => {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('visible');
+  setTimeout(() => t.classList.remove('visible'), 3000);
+};
+
+// Enter en el input de nombre
+document.getElementById('inNombre')?.addEventListener('keydown', e => {
+  if (e.key === 'Enter') window.crearTarea();
+});
+
+// Cerrar modal al hacer clic afuera
+document.getElementById('modalFoto')?.addEventListener('click', e => {
+  if (e.target === document.getElementById('modalFoto')) window.cerrarModalFoto();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>My Nana — Score</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Cormorant+Garamond:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{--g:#1A6B52;--g2:#0F4A38;--g3:#F0F7F4;--g4:#E1F0EB;--b:#D4A5A5;--b2:#BF9090;--b3:#F7EFEF;--cr:#F9F5F0;--txt:#1A2E25;--txt2:#4A6358;--r:14px;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);overflow-x:hidden;min-height:100vh;min-height:100dvh;}
+
+/* SPLASH */
+#splash{position:fixed;inset:0;background:var(--g2);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;transition:opacity .4s;}
+#splash.oculto{opacity:0;pointer-events:none;}
+
+/* NO AUTH */
+#noAuth{position:fixed;inset:0;background:var(--g2);z-index:998;display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px;gap:16px;}
+#noAuth.visible{display:flex;}
+.noauth-btn{background:var(--b);color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;padding:14px 32px;border-radius:99px;border:none;cursor:pointer;text-decoration:none;display:inline-block;}
+
+/* HEADER */
+.app-header{background:var(--g2);padding:48px 24px 20px;position:sticky;top:0;z-index:50;}
+@media(min-width:768px){.app-header{padding-top:20px;}}
+.header-top{display:flex;align-items:center;justify-content:space-between;}
+.header-logo{font-family:'Cormorant Garamond',serif;font-size:20px;color:#fff;}
+.header-logo em{color:var(--b);font-style:normal;}
+.header-back{background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.7);font-size:13px;padding:7px 14px;border-radius:99px;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;}
+
+/* LAYOUT */
+.layout{max-width:1100px;margin:0 auto;padding:24px 16px;}
+@media(min-width:900px){.layout{display:grid;grid-template-columns:1fr 1fr;gap:24px;}}
+
+/* PANEL */
+.panel{background:#fff;border-radius:var(--r);border:1px solid var(--g4);overflow:hidden;margin-bottom:16px;}
+.panel-hdr{padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--g4);}
+.panel-title{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--txt);}
+.panel-sub{font-size:12px;color:var(--txt2);margin-top:2px;}
+
+/* PERFIL NANA */
+.perfil-top{padding:24px 20px;display:flex;align-items:center;gap:16px;background:var(--g2);}
+.perfil-avatar{width:72px;height:72px;border-radius:50%;background:var(--g);border:3px solid var(--b);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:#fff;flex-shrink:0;}
+.perfil-info{flex:1;}
+.perfil-nombre{font-family:'Cormorant Garamond',serif;font-size:22px;color:#fff;margin-bottom:2px;}
+.perfil-cedula{font-size:12px;color:rgba(255,255,255,.55);}
+.perfil-badge{font-size:11px;font-weight:600;padding:4px 12px;border-radius:99px;margin-top:6px;display:inline-block;}
+.perfil-score-big{text-align:center;}
+.score-numero{font-family:'Cormorant Garamond',serif;font-size:52px;font-weight:600;color:#fff;line-height:1;}
+.score-stars{font-size:16px;color:#FAC775;margin-top:4px;}
+.score-label{font-size:11px;color:rgba(255,255,255,.5);margin-top:2px;}
+
+/* CATEGORIAS */
+.cats-wrap{padding:20px;}
+.cat-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.cat-nombre{font-size:13px;color:var(--txt2);width:110px;flex-shrink:0;}
+.cat-bar-wrap{flex:1;background:var(--g4);border-radius:99px;height:8px;overflow:hidden;}
+.cat-bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--g),var(--b));transition:width .6s ease;}
+.cat-valor{font-size:13px;font-weight:500;color:var(--g);width:28px;text-align:right;}
+.cat-stars{font-size:11px;color:#FAC775;width:60px;text-align:right;}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--g4);}
+.stat-box{background:#fff;padding:16px;text-align:center;}
+.stat-n{font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--g);}
+.stat-l{font-size:11px;color:var(--txt2);margin-top:3px;}
+
+/* HISTORIAL */
+.historial-item{padding:16px 20px;border-bottom:1px solid var(--g4);display:flex;align-items:flex-start;gap:12px;}
+.historial-item:last-child{border-bottom:none;}
+.hist-avatar{width:36px;height:36px;border-radius:50%;background:var(--g);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#fff;flex-shrink:0;}
+.hist-info{flex:1;}
+.hist-familia{font-size:13px;font-weight:500;color:var(--txt);}
+.hist-fecha{font-size:11px;color:#bbb;margin-top:2px;}
+.hist-comentario{font-size:13px;color:var(--txt2);margin-top:6px;line-height:1.6;font-style:italic;}
+.hist-score{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:var(--g);flex-shrink:0;}
+.hist-stars{font-size:12px;color:#FAC775;display:block;text-align:right;}
+.nivel-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:5px 14px;border-radius:99px;}
+
+/* FORMULARIO CALIFICACIÓN */
+.form-cal{padding:20px;}
+.semana-selector{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:16px;-ms-overflow-style:none;scrollbar-width:none;}
+.semana-selector::-webkit-scrollbar{display:none;}
+.semana-pill{flex-shrink:0;padding:7px 14px;border-radius:99px;border:1.5px solid var(--g4);background:var(--cr);font-size:12px;font-weight:500;color:var(--txt2);cursor:pointer;font-family:'DM Sans',sans-serif;}
+.semana-pill.activa{background:var(--g);border-color:var(--g);color:#fff;}
+.cat-calificar{margin-bottom:16px;}
+.cat-cal-nombre{font-size:13px;font-weight:500;color:var(--txt);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.estrellas{display:flex;gap:6px;}
+.estrella{font-size:28px;cursor:pointer;transition:transform .15s;filter:grayscale(1);opacity:.4;}
+.estrella.activa{filter:none;opacity:1;transform:scale(1.1);}
+.estrella:hover{transform:scale(1.15);}
+.cal-comentario{width:100%;background:var(--cr);border:1.5px solid var(--g4);border-radius:10px;padding:12px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--txt);outline:none;resize:none;margin-bottom:14px;}
+.cal-comentario:focus{border-color:var(--g);}
+.btn-calificar{width:100%;background:var(--g);color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;padding:14px;border-radius:99px;border:none;cursor:pointer;transition:all .2s;}
+.btn-calificar:hover{background:var(--g2);}
+.btn-calificar:disabled{opacity:.6;cursor:not-allowed;}
+.ya-calificado{background:var(--g3);border-radius:10px;padding:16px;text-align:center;border:1px solid var(--g4);}
+
+/* BUSCADOR PÚBLICO */
+.buscador-wrap{padding:16px 20px;}
+.buscar-row{display:flex;gap:8px;margin-bottom:16px;}
+.buscar-input{flex:1;background:var(--cr);border:1.5px solid var(--g4);border-radius:10px;padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--txt);outline:none;}
+.buscar-input:focus{border-color:var(--g);}
+.btn-buscar{background:var(--g);color:#fff;border:none;border-radius:10px;padding:10px 18px;font-size:14px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.resultado-card{background:var(--cr);border-radius:var(--r);border:1px solid var(--g4);padding:16px;display:flex;align-items:center;gap:14px;}
+.res-avatar{width:52px;height:52px;border-radius:50%;background:var(--g);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:#fff;border:2px solid var(--b);flex-shrink:0;}
+.res-info{flex:1;}
+.res-nombre{font-size:16px;font-weight:500;color:var(--txt);}
+.res-tipo{font-size:12px;color:var(--txt2);margin-top:2px;}
+.res-privado{font-size:11px;color:#bbb;margin-top:6px;display:flex;align-items:center;gap:4px;}
+.res-score{text-align:center;}
+.res-score-n{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:600;color:var(--g);line-height:1;}
+.res-score-s{font-size:13px;color:#FAC775;}
+.res-score-l{font-size:10px;color:var(--txt2);margin-top:2px;}
+.no-result{text-align:center;padding:24px;color:var(--txt2);}
+.no-result-icon{font-size:36px;margin-bottom:8px;}
+
+/* VISTA NANA: Mi score */
+.mi-score-wrap{padding:24px 20px;}
+.mi-score-intro{font-size:14px;color:var(--txt2);line-height:1.7;margin-bottom:20px;}
+.mi-nivel{display:flex;align-items:center;gap:12px;background:var(--g3);border-radius:10px;padding:14px 16px;margin-bottom:16px;border:1px solid var(--g4);}
+.mi-nivel-icon{font-size:32px;}
+.mi-nivel-info{}
+.mi-nivel-nombre{font-size:15px;font-weight:600;color:var(--g);}
+.mi-nivel-desc{font-size:12px;color:var(--txt2);margin-top:3px;}
+
+/* TOAST */
+.toast{position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--g);color:#fff;font-size:13px;font-weight:500;padding:10px 20px;border-radius:99px;z-index:300;transition:transform .3s;white-space:nowrap;box-shadow:0 4px 16px rgba(26,107,82,.3);}
+.toast.visible{transform:translateX(-50%) translateY(0);}
+
+.empty-state{text-align:center;padding:32px 20px;color:var(--txt2);}
+.empty-icon{font-size:40px;margin-bottom:10px;}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div style="width:72px;height:72px;border-radius:50%;background:#1A6B52;border:3px solid #D4A5A5;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:24px;color:#fff;">MN</div>
+  <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:#fff;">NANA</div>
+  <div style="font-size:13px;color:rgba(255,255,255,.5);">Cargando Score...</div>
+</div>
+
+<!-- NO AUTH -->
+<div id="noAuth">
+  <div style="font-family:'Cormorant Garamond',serif;font-size:24px;color:#fff;">My <span style="color:#D4A5A5;">Nana</span></div>
+  <div style="font-size:14px;color:rgba(255,255,255,.6);text-align:center;">Necesitas iniciar sesión</div>
+  <a href="/app.html" class="noauth-btn">Iniciar sesión →</a>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- HEADER -->
+<div class="app-header" id="appHeader" style="display:none;">
+  <div class="header-top">
+    <div class="header-logo">My <em>Nana</em> — Score</div>
+    <a href="/app.html" class="header-back">← Dashboard</a>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appContent" style="display:none;">
+  <div class="layout">
+
+    <!-- COLUMNA 1: Perfil + Calificación -->
+    <div>
+      <!-- Perfil de la nana -->
+      <div class="panel" id="panelPerfil">
+        <div id="perfilContent">
+          <div class="empty-state">
+            <div class="empty-icon">⭐</div>
+            <div style="font-size:15px;font-weight:500;color:var(--txt);margin-bottom:4px;">Cargando perfil...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Calificar (solo familia) / Mi Score (nana) -->
+      <div class="panel" id="panelAccion">
+        <div class="panel-hdr">
+          <div>
+            <div class="panel-title" id="accionTitulo">Calificar esta semana</div>
+            <div class="panel-sub" id="accionSub">Calificación semanal · Cada domingo</div>
+          </div>
+        </div>
+        <div id="accionContent"></div>
+      </div>
+    </div>
+
+    <!-- COLUMNA 2: Historial + Buscador -->
+    <div>
+      <!-- Historial de calificaciones -->
+      <div class="panel">
+        <div class="panel-hdr">
+          <div>
+            <div class="panel-title">Historial</div>
+            <div class="panel-sub">Calificaciones semanales</div>
+          </div>
+          <div id="histBadge" style="background:var(--g3);color:var(--g);font-size:11px;font-weight:600;padding:4px 10px;border-radius:99px;">0 semanas</div>
+        </div>
+        <div id="historialContent">
+          <div class="empty-state">
+            <div class="empty-icon">📋</div>
+            <div style="font-size:14px;font-weight:500;color:var(--txt);">Sin calificaciones aún</div>
+            <div style="font-size:12px;margin-top:4px;">La primera calificación se puede dejar el domingo</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Buscador público -->
+      <div class="panel" id="panelBuscador">
+        <div class="panel-hdr">
+          <div>
+            <div class="panel-title">Buscar nana por cédula</div>
+            <div class="panel-sub">Solo muestra nombre y score público</div>
+          </div>
+        </div>
+        <div class="buscador-wrap">
+          <div class="buscar-row">
+            <input class="buscar-input" id="buscarInput" placeholder="Ingresa la cédula de identidad..." onkeydown="if(event.key==='Enter')buscarNana()" />
+            <button class="btn-buscar" onclick="buscarNana()">Buscar</button>
+          </div>
+          <div id="buscarResultado"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, updateDoc, where, getDocs, limit } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey:"AIzaSyDDJRJ8A8P507lllGRBOoXO30ESAH1GAnw",
+  authDomain:"mynanapapp.firebaseapp.com",
+  projectId:"mynanapapp",
+  storageBucket:"mynanapapp.firebasestorage.app",
+  messagingSenderId:"124180779437",
+  appId:"1:124180779437:web:d217743000b0f1fedfd124"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const CATEGORIAS = [
+  { id:'puntualidad', nombre:'Puntualidad', emoji:'⏰' },
+  { id:'limpieza', nombre:'Limpieza', emoji:'🧹' },
+  { id:'cocina', nombre:'Cocina', emoji:'🍳' },
+  { id:'ninos', nombre:'Cuidado de niños', emoji:'🎒' },
+  { id:'confiabilidad', nombre:'Confiabilidad', emoji:'🔒' },
+  { id:'comunicacion', nombre:'Comunicación', emoji:'💬' },
+];
+
+const NIVELES = [
+  { min:0, max:2.9, nombre:'Nuevo', color:'#888', bg:'#F1EFE8', emoji:'🌱' },
+  { min:3, max:3.9, nombre:'En progreso', color:'#BA7517', bg:'#FAEEDA', emoji:'📈' },
+  { min:4, max:4.4, nombre:'Buena nana', color:'var(--g)', bg:'var(--g3)', emoji:'⭐' },
+  { min:4.5, max:4.7, nombre:'Excelente nana', color:'var(--g)', bg:'var(--g3)', emoji:'🌟' },
+  { min:4.8, max:5, nombre:'Top Nana', color:'var(--b2)', bg:'var(--b3)', emoji:'🏆' },
+];
+
+let usuarioActual = null;
+let perfilActual = null;
+let nanaVinculada = null;
+let scoreActual = {};
+let calificacionesEstrellas = {};
+let semanaSeleccionada = getSemanaId(0);
+
+// ── AUTH ──
+onAuthStateChanged(auth, async (user) => {
+  document.getElementById('splash').classList.add('oculto');
+  if (!user) { document.getElementById('noAuth').classList.add('visible'); return; }
+  usuarioActual = user;
+  const perfil = await getDoc(doc(db, 'usuarios', user.uid));
+  if (!perfil.exists()) { document.getElementById('noAuth').classList.add('visible'); return; }
+  perfilActual = perfil.data();
+  document.getElementById('appHeader').style.display = 'block';
+  document.getElementById('appContent').style.display = 'block';
+
+  await cargarNanaVinculada();
+  inicializar();
+});
+
+async function cargarNanaVinculada() {
+  if (perfilActual.tipo === 'nana') {
+    nanaVinculada = perfilActual;
+    return;
+  }
+  // Buscar nana por hogar — no por toda la colección
+  const qHogar = query(collection(db, 'hogares'), where('participantes', 'array-contains', usuarioActual.uid));
+  const snapHogar = await getDocs(qHogar);
+  if (snapHogar.empty) return;
+
+  const participantes = snapHogar.docs[0].data().participantes || [];
+  for (const pUid of participantes) {
+    if (pUid === usuarioActual.uid) continue;
+    const pSnap = await getDoc(doc(db, 'usuarios', pUid));
+    if (pSnap.exists() && pSnap.data().tipo === 'nana') {
+      nanaVinculada = { uid: pUid, ...pSnap.data() };
+      break;
+    }
+  }
+}
+
+function inicializar() {
+  renderPerfil();
+  renderAccion();
+  escucharHistorial();
+  renderSemanas();
+}
+
+// ── SCORE ──
+function calcularScore(calificaciones) {
+  if (!calificaciones || !Object.keys(calificaciones).length) return { total: 0, cats: {} };
+  const cats = {};
+  let suma = 0;
+  let count = 0;
+  CATEGORIAS.forEach(cat => {
+    const vals = calificaciones[cat.id] || [];
+    if (vals.length) {
+      const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+      cats[cat.id] = Math.round(avg * 10) / 10;
+      suma += avg;
+      count++;
+    }
+  });
+  return { total: count ? Math.round((suma / count) * 10) / 10 : 0, cats };
+}
+
+function getNivel(score) {
+  return NIVELES.find(n => score >= n.min && score <= n.max) || NIVELES[0];
+}
+
+function renderEstrellas(valor) {
+  const llenas = Math.floor(valor);
+  const media = valor % 1 >= 0.5;
+  let s = '';
+  for (let i = 0; i < 5; i++) {
+    if (i < llenas) s += '★';
+    else if (i === llenas && media) s += '½';
+    else s += '☆';
+  }
+  return s;
+}
+
+// ── PERFIL ──
+async function renderPerfil() {
+  const perfil = nanaVinculada;
+  if (!perfil) {
+    document.getElementById('perfilContent').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">👩</div>
+        <div style="font-size:14px;font-weight:500;color:var(--txt);">Sin nana vinculada</div>
+        <div style="font-size:12px;margin-top:4px;">Registra tu nana para ver su score</div>
+      </div>`;
+    return;
+  }
+
+  // Cargar calificaciones de Firestore
+  const scoreDoc = await getDoc(doc(db, 'scores', perfil.uid || usuarioActual.uid));
+  const scoreData = scoreDoc.exists() ? scoreDoc.data() : {};
+  const { total, cats } = calcularScore(scoreData.calificaciones || {});
+  const nivel = getNivel(total);
+  const inicial = perfil.nombre?.[0]?.toUpperCase() || '?';
+  const totalReviews = scoreData.totalReviews || 0;
+  const semanasTrabajadas = scoreData.semanasTrabajadas || 0;
+
+  document.getElementById('perfilContent').innerHTML = `
+    <div class="perfil-top">
+      <div>
+        <div class="perfil-avatar">${inicial}</div>
+      </div>
+      <div class="perfil-info">
+        <div class="perfil-nombre">${perfil.nombre || 'Nana'}</div>
+        <div class="perfil-cedula">${perfil.cedula ? `Cédula: ${perfil.cedula} · Verificada ✓` : 'Perfil verificado ✓'}</div>
+        <div class="nivel-badge" style="background:${nivel.bg};color:${nivel.color};margin-top:8px;">
+          ${nivel.emoji} ${nivel.nombre}
+        </div>
+      </div>
+      <div class="perfil-score-big">
+        <div class="score-numero">${total > 0 ? total : '—'}</div>
+        <div class="score-stars">${total > 0 ? renderEstrellas(total) : '☆☆☆☆☆'}</div>
+        <div class="score-label">MyNana Score</div>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-box">
+        <div class="stat-n">${totalReviews}</div>
+        <div class="stat-l">Calificaciones</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-n">${semanasTrabajadas}</div>
+        <div class="stat-l">Semanas</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-n">${total > 0 ? Math.round((total / 5) * 100) + '%' : '—'}</div>
+        <div class="stat-l">Satisfacción</div>
+      </div>
+    </div>
+
+    <div class="cats-wrap">
+      <div style="font-size:12px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:14px;">Categorías</div>
+      ${CATEGORIAS.map(cat => {
+        const val = cats[cat.id] || 0;
+        const pct = (val / 5) * 100;
+        return `<div class="cat-row">
+          <span class="cat-nombre">${cat.emoji} ${cat.nombre}</span>
+          <div class="cat-bar-wrap"><div class="cat-bar-fill" style="width:${pct}%"></div></div>
+          <span class="cat-valor">${val > 0 ? val : '—'}</span>
+          <span class="cat-stars">${val > 0 ? renderEstrellas(val) : ''}</span>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+// ── SEMANAS ──
+function getSemanaId(offsetSemanas = 0) {
+  const hoy = new Date();
+  hoy.setDate(hoy.getDate() - (offsetSemanas * 7));
+  const diaSemana = hoy.getDay() === 0 ? 6 : hoy.getDay() - 1;
+  const lunes = new Date(hoy);
+  lunes.setDate(hoy.getDate() - diaSemana);
+  const año = lunes.getFullYear();
+  const mes = String(lunes.getMonth() + 1).padStart(2, '0');
+  const dia = String(lunes.getDate()).padStart(2, '0');
+  return `${año}-${mes}-${dia}`;
+}
+
+function getSemanaLabel(semanaId) {
+  const [año, mes, dia] = semanaId.split('-').map(Number);
+  const lunes = new Date(año, mes - 1, dia);
+  const domingo = new Date(lunes);
+  domingo.setDate(lunes.getDate() + 6);
+  const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  return `${lunes.getDate()} ${meses[lunes.getMonth()]} — ${domingo.getDate()} ${meses[domingo.getMonth()]}`;
+}
+
+function renderSemanas() {
+  if (perfilActual.tipo !== 'familia') return;
+  const semanas = [0, 1, 2, 3].map(i => getSemanaId(i));
+  const selector = document.createElement('div');
+  selector.className = 'semana-selector';
+  selector.id = 'semanaSelector';
+  selector.innerHTML = semanas.map((s, i) => `
+    <button class="semana-pill ${i === 0 ? 'activa' : ''}" onclick="cambiarSemana('${s}', this)">
+      ${i === 0 ? 'Esta semana' : getSemanaLabel(s)}
+    </button>`).join('');
+
+  const accionContent = document.getElementById('accionContent');
+  accionContent.insertBefore(selector, accionContent.firstChild);
+}
+
+window.cambiarSemana = async (semanaId, btn) => {
+  semanaSeleccionada = semanaId;
+  document.querySelectorAll('.semana-pill').forEach(b => b.classList.remove('activa'));
+  btn.classList.add('activa');
+  await renderFormCalificacion();
+};
+
+// ── ACCIÓN ──
+async function renderAccion() {
+  if (perfilActual.tipo === 'nana') {
+    renderMiScore();
+    return;
+  }
+  await renderFormCalificacion();
+}
+
+function renderMiScore() {
+  document.getElementById('accionTitulo').textContent = 'Mi Score';
+  document.getElementById('accionSub').textContent = 'Tu reputación en My Nana';
+  const scoreDoc = doc(db, 'scores', usuarioActual.uid);
+  getDoc(scoreDoc).then(snap => {
+    const data = snap.exists() ? snap.data() : {};
+    const { total } = calcularScore(data.calificaciones || {});
+    const nivel = getNivel(total);
+    document.getElementById('accionContent').innerHTML = `
+      <div class="mi-score-wrap">
+        <div class="mi-score-intro">Tu score es calculado por las familias con las que trabajas cada semana. Cuanto más alto, más fácil es que nuevas familias te contraten.</div>
+        <div class="mi-nivel">
+          <div class="mi-nivel-icon">${nivel.emoji}</div>
+          <div class="mi-nivel-info">
+            <div class="mi-nivel-nombre">${nivel.nombre}</div>
+            <div class="mi-nivel-desc">Score actual: ${total > 0 ? total : 'Sin calificaciones aún'}</div>
+          </div>
+        </div>
+        <div style="font-size:13px;font-weight:600;color:var(--txt);margin-bottom:10px;">Cómo subir tu score:</div>
+        ${[
+          ['⏰','Llega siempre a tiempo'],
+          ['✅','Completa todas las tareas del día'],
+          ['📸','Sube fotos de evidencia'],
+          ['💬','Mantén buena comunicación con la familia'],
+          ['🍳','Prepara los platos del menú correctamente'],
+        ].map(([e,t]) => `<div style="display:flex;gap:10px;align-items:center;margin-bottom:8px;">
+          <span style="font-size:18px;">${e}</span>
+          <span style="font-size:13px;color:var(--txt2);">${t}</span>
+        </div>`).join('')}
+      </div>`;
+  });
+}
+
+async function renderFormCalificacion() {
+  if (!nanaVinculada) {
+    document.getElementById('accionContent').innerHTML = `
+      <div class="empty-state"><div class="empty-icon">👩</div>
+      <div style="font-size:13px;color:var(--txt2);">Sin nana vinculada para calificar</div></div>`;
+    return;
+  }
+
+  // Verificar si ya calificó esta semana
+  const calRef = doc(db, 'scores', nanaVinculada.uid || nanaVinculada.uid, 'calificaciones_semana', `${semanaSeleccionada}_${usuarioActual.uid}`);
+
+  try {
+    const calSnap = await getDoc(calRef);
+    if (calSnap.exists()) {
+      const data = calSnap.data();
+      const form = document.getElementById('accionContent');
+      const selectorEl = document.getElementById('semanaSelector');
+      form.innerHTML = '';
+      if (selectorEl) form.appendChild(selectorEl);
+      const div = document.createElement('div');
+      div.innerHTML = `
+        <div style="padding:16px 20px;">
+          <div class="ya-calificado">
+            <div style="font-size:32px;margin-bottom:8px;">✅</div>
+            <div style="font-size:15px;font-weight:500;color:var(--g);margin-bottom:4px;">Ya calificaste esta semana</div>
+            <div style="font-size:12px;color:var(--txt2);">Score dado: <strong>${data.scoreTotal}</strong> · ${getSemanaLabel(semanaSeleccionada)}</div>
+            ${data.comentario ? `<div style="font-size:13px;color:var(--txt2);margin-top:8px;font-style:italic;">"${data.comentario}"</div>` : ''}
+          </div>
+        </div>`;
+      form.appendChild(div);
+      return;
+    }
+  } catch(e) {}
+
+  calificacionesEstrellas = {};
+  const form = document.getElementById('accionContent');
+  const selectorEl = document.getElementById('semanaSelector');
+  form.innerHTML = '';
+  if (selectorEl) form.appendChild(selectorEl);
+
+  const div = document.createElement('div');
+  div.className = 'form-cal';
+  div.innerHTML = `
+    <div style="font-size:13px;color:var(--txt2);margin-bottom:16px;">Califica a <strong>${nanaVinculada.nombre}</strong> por la semana del ${getSemanaLabel(semanaSeleccionada)}</div>
+    ${CATEGORIAS.map(cat => `
+      <div class="cat-calificar">
+        <div class="cat-cal-nombre">${cat.emoji} ${cat.nombre}</div>
+        <div class="estrellas" id="stars_${cat.id}">
+          ${[1,2,3,4,5].map(n => `<span class="estrella" onclick="setEstrella('${cat.id}',${n})" data-val="${n}">★</span>`).join('')}
+        </div>
+      </div>`).join('')}
+    <textarea class="cal-comentario" id="calComentario" rows="3" placeholder="Comentario opcional — ¿Qué destacas de esta semana?"></textarea>
+    <button class="btn-calificar" id="btnCalificar" onclick="enviarCalificacion()">Enviar calificación →</button>`;
+  form.appendChild(div);
+}
+
+window.setEstrella = (catId, valor) => {
+  calificacionesEstrellas[catId] = valor;
+  const stars = document.querySelectorAll(`#stars_${catId} .estrella`);
+  stars.forEach((s, i) => {
+    s.classList.toggle('activa', i < valor);
+  });
+};
+
+window.enviarCalificacion = async () => {
+  const btn = document.getElementById('btnCalificar');
+  const totalCats = Object.keys(calificacionesEstrellas).length;
+
+  if (totalCats < CATEGORIAS.length) {
+    showToast(`⚠️ Califica todas las ${CATEGORIAS.length} categorías`);
+    return;
+  }
+
+  btn.textContent = 'Enviando...';
+  btn.disabled = true;
+
+  const comentario = document.getElementById('calComentario')?.value.trim() || '';
+  const scoreTotal = Math.round((Object.values(calificacionesEstrellas).reduce((a,b) => a+b, 0) / CATEGORIAS.length) * 10) / 10;
+  const nanaUid = nanaVinculada.uid || nanaVinculada.uid;
+
+  try {
+    // Guardar calificación de esta semana
+    const calRef = doc(db, 'scores', nanaUid, 'calificaciones_semana', `${semanaSeleccionada}_${usuarioActual.uid}`);
+    await setDoc(calRef, {
+      categorias: calificacionesEstrellas,
+      scoreTotal,
+      comentario,
+      semana: semanaSeleccionada,
+      familiaUid: usuarioActual.uid,
+      familiaNombre: perfilActual.nombre,
+      timestamp: serverTimestamp()
+    });
+
+    // Actualizar score global de la nana
+    const scoreRef = doc(db, 'scores', nanaUid);
+    const scoreSnap = await getDoc(scoreRef);
+    const scoreData = scoreSnap.exists() ? scoreSnap.data() : { calificaciones: {}, totalReviews: 0, semanasTrabajadas: 0 };
+
+    CATEGORIAS.forEach(cat => {
+      if (!scoreData.calificaciones[cat.id]) scoreData.calificaciones[cat.id] = [];
+      scoreData.calificaciones[cat.id].push(calificacionesEstrellas[cat.id]);
+    });
+
+    scoreData.totalReviews = (scoreData.totalReviews || 0) + 1;
+    scoreData.semanasTrabajadas = (scoreData.semanasTrabajadas || 0) + 1;
+    scoreData.scoreActual = scoreTotal;
+    scoreData.ultimaCalificacion = serverTimestamp();
+
+    await setDoc(scoreRef, scoreData, { merge: true });
+
+    // Guardar en historial
+    await addDoc(collection(db, 'scores', nanaUid, 'historial'), {
+      scoreTotal,
+      categorias: calificacionesEstrellas,
+      comentario,
+      semana: semanaSeleccionada,
+      familiaUid: usuarioActual.uid,
+      familiaNombre: perfilActual.nombre,
+      timestamp: serverTimestamp()
+    });
+
+    showToast(`✅ Calificación enviada · Score: ${scoreTotal}`);
+    await renderPerfil();
+    await renderFormCalificacion();
+
+  } catch(e) {
+    showToast('❌ Error al enviar calificación');
+    console.error(e);
+    btn.textContent = 'Enviar calificación →';
+    btn.disabled = false;
+  }
+};
+
+// ── HISTORIAL ──
+function escucharHistorial() {
+  const nanaUid = perfilActual.tipo === 'nana' ? usuarioActual.uid : nanaVinculada?.uid;
+  if (!nanaUid) return;
+
+  const q = query(collection(db, 'scores', nanaUid, 'historial'), orderBy('timestamp', 'desc'));
+  onSnapshot(q, (snap) => {
+    const items = snap.docs.map(d => d.data());
+    document.getElementById('histBadge').textContent = `${items.length} semana${items.length !== 1 ? 's' : ''}`;
+
+    if (!items.length) {
+      document.getElementById('historialContent').innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">📋</div>
+          <div style="font-size:14px;font-weight:500;color:var(--txt);">Sin calificaciones aún</div>
+          <div style="font-size:12px;margin-top:4px;">La primera calificación se puede dejar cualquier semana</div>
+        </div>`;
+      return;
+    }
+
+    document.getElementById('historialContent').innerHTML = items.map(item => {
+      const nivel = getNivel(item.scoreTotal);
+      const inicial = item.familiaNombre?.[0]?.toUpperCase() || 'F';
+      const fecha = item.semana ? getSemanaLabel(item.semana) : '';
+      return `<div class="historial-item">
+        <div class="hist-avatar">${inicial}</div>
+        <div class="hist-info">
+          <div class="hist-familia">${item.familiaNombre || 'Familia'}</div>
+          <div class="hist-fecha">Semana del ${fecha}</div>
+          ${item.comentario ? `<div class="hist-comentario">"${item.comentario}"</div>` : ''}
+          <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px;">
+            ${CATEGORIAS.map(cat => {
+              const v = item.categorias?.[cat.id];
+              return v ? `<span style="background:var(--g3);color:var(--g);font-size:10px;padding:2px 7px;border-radius:99px;">${cat.emoji} ${v}/5</span>` : '';
+            }).join('')}
+          </div>
+        </div>
+        <div>
+          <div class="hist-score">${item.scoreTotal}</div>
+          <span class="hist-stars">${renderEstrellas(item.scoreTotal)}</span>
+          <div style="font-size:10px;color:var(--txt2);text-align:right;margin-top:4px;">${nivel.emoji} ${nivel.nombre}</div>
+        </div>
+      </div>`;
+    }).join('');
+  });
+}
+
+// ── BUSCADOR PÚBLICO ──
+window.buscarNana = async () => {
+  const cedula = document.getElementById('buscarInput').value.trim();
+  const resultado = document.getElementById('buscarResultado');
+  if (!cedula) { showToast('Ingresa una cédula'); return; }
+
+  resultado.innerHTML = `<div class="empty-state"><div style="font-size:28px;">🔍</div><div style="font-size:13px;color:var(--txt2);margin-top:8px;">Buscando...</div></div>`;
+
+  try {
+    const q = query(collection(db, 'usuarios'), where('cedula', '==', cedula), where('tipo', '==', 'nana'), limit(1));
+    const snap = await getDocs(q);
+
+    if (snap.empty) {
+      resultado.innerHTML = `<div class="no-result">
+        <div class="no-result-icon">🔍</div>
+        <div style="font-size:14px;font-weight:500;color:var(--txt);">No encontrado</div>
+        <div style="font-size:12px;margin-top:4px;">No hay ninguna nana registrada con esa cédula</div>
+      </div>`;
+      return;
+    }
+
+    const nanaDoc = snap.docs[0];
+    const nana = nanaDoc.data();
+    const scoreSnap = await getDoc(doc(db, 'scores', nanaDoc.id));
+    const scoreData = scoreSnap.exists() ? scoreSnap.data() : {};
+    const { total } = calcularScore(scoreData.calificaciones || {});
+    const nivel = getNivel(total);
+    const inicial = nana.nombre?.[0]?.toUpperCase() || '?';
+
+    resultado.innerHTML = `<div class="resultado-card">
+      <div class="res-avatar">${inicial}</div>
+      <div class="res-info">
+        <div class="res-nombre">${nana.nombre}</div>
+        <div class="res-tipo">${nana.tipo === 'nana' ? 'Personal doméstico verificado' : ''}</div>
+        <div class="nivel-badge" style="background:${nivel.bg};color:${nivel.color};margin-top:6px;font-size:11px;padding:3px 10px;">
+          ${nivel.emoji} ${nivel.nombre}
+        </div>
+        <div class="res-privado">🔒 Cédula, correo y teléfono son privados</div>
+      </div>
+      <div class="res-score">
+        <div class="res-score-n">${total > 0 ? total : '—'}</div>
+        <div class="res-score-s">${total > 0 ? renderEstrellas(total) : '☆☆☆☆☆'}</div>
+        <div class="res-score-l">MyNana Score</div>
+        <div style="font-size:11px;color:var(--txt2);margin-top:4px;">${scoreData.totalReviews || 0} calificaciones</div>
+      </div>
+    </div>`;
+  } catch(e) {
+    resultado.innerHTML = `<div class="no-result"><div class="no-result-icon">❌</div><div style="font-size:13px;color:var(--txt2);">Error al buscar. Intenta de nuevo.</div></div>`;
+    console.error(e);
+  }
+};
+
+// ── TOAST ──
+window.showToast = (msg) => {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('visible');
+  setTimeout(() => t.classList.remove('visible'), 3000);
+};
+</script>
+</body>
+</html>

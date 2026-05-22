@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Nana — Admin</title>
+<meta name="robots" content="noindex, nofollow">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --g:#1A6B52;--g2:#0F4A38;--g3:#F0F7F4;--g4:#E1F0EB;
+  --b:#D4A5A5;--b2:#BF9090;--b3:#F7EFEF;
+  --cr:#F9F5F0;--txt:#1A2E25;--txt2:#4A6358;--r:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);}
+
+/* LOGIN ADMIN */
+#loginAdmin{position:fixed;inset:0;background:var(--g2);display:flex;align-items:center;justify-content:center;z-index:999;}
+.login-box{background:#fff;border-radius:20px;padding:40px 36px;max-width:380px;width:100%;text-align:center;}
+.login-logo{font-family:'Cormorant Garamond',serif;font-size:32px;color:var(--g2);margin-bottom:4px;}
+.login-logo em{color:var(--b2);font-style:normal;}
+.login-sub{font-size:13px;color:var(--txt2);margin-bottom:28px;}
+.login-input{width:100%;border:1.5px solid var(--g4);border-radius:10px;padding:12px 14px;font-size:15px;font-family:'DM Sans',sans-serif;color:var(--txt);outline:none;margin-bottom:12px;text-align:center;letter-spacing:4px;}
+.login-input:focus{border-color:var(--g);}
+.login-btn{width:100%;background:var(--g2);color:#fff;border:none;border-radius:99px;padding:13px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.login-btn:hover{background:var(--g);}
+.login-error{font-size:12px;color:var(--b2);margin-top:8px;display:none;}
+
+/* NAVBAR */
+.nav{background:var(--g2);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;}
+.nav-logo{font-family:'Cormorant Garamond',serif;font-size:20px;color:#fff;}
+.nav-logo em{color:var(--b);}
+.nav-badge{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);font-size:11px;font-weight:600;padding:4px 12px;border-radius:99px;}
+.nav-right{display:flex;align-items:center;gap:10px;}
+.nav-logout{background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.6);font-size:13px;padding:6px 14px;border-radius:99px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+
+/* CONTENIDO */
+#dashboard{display:none;}
+.contenido{max-width:1100px;margin:0 auto;padding:28px 24px;}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:28px;}
+.stat-card{background:#fff;border-radius:var(--r);padding:20px;border:1px solid var(--g4);}
+.stat-num{font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:600;line-height:1;}
+.stat-label{font-size:13px;color:var(--txt2);margin-top:6px;}
+.stat-sub{font-size:11px;color:#bbb;margin-top:2px;}
+
+/* FILTROS */
+.filtros{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.filtro-btn{background:#fff;border:1.5px solid var(--g4);border-radius:99px;padding:7px 16px;font-size:13px;font-weight:500;color:var(--txt2);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.filtro-btn.activo{background:var(--g);border-color:var(--g);color:#fff;}
+.search-box{flex:1;min-width:200px;background:#fff;border:1.5px solid var(--g4);border-radius:99px;padding:8px 16px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--txt);outline:none;}
+.search-box:focus{border-color:var(--g);}
+
+/* TABLA */
+.tabla-wrap{background:#fff;border-radius:var(--r);border:1px solid var(--g4);overflow:hidden;}
+.tabla-header{display:grid;grid-template-columns:2fr 2fr 1fr 1fr 1.5fr 1fr;gap:0;background:var(--g2);padding:12px 16px;}
+.th{font-size:11px;font-weight:600;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.06em;}
+.tabla-row{display:grid;grid-template-columns:2fr 2fr 1fr 1fr 1.5fr 1fr;gap:0;padding:12px 16px;border-bottom:1px solid var(--g4);align-items:center;transition:background .1s;}
+.tabla-row:last-child{border-bottom:none;}
+.tabla-row:hover{background:var(--g3);}
+.td{font-size:13px;color:var(--txt2);}
+.td-nombre{font-weight:600;color:var(--txt);display:flex;align-items:center;gap:8px;}
+.avatar-mini{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
+.badge-tipo{font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;}
+.badge-familia{background:var(--g3);color:var(--g);}
+.badge-nana{background:var(--b3);color:var(--b2);}
+.badge-activo{background:#DCFCE7;color:#15803D;}
+.badge-inactivo{background:#FEF9C3;color:#854D0E;}
+.td-email{font-size:12px;color:var(--txt2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+/* HOGAR INFO */
+.hogar-badge{font-size:11px;background:var(--g3);color:var(--g);padding:2px 8px;border-radius:99px;font-weight:500;}
+
+/* CARGANDO */
+.cargando{text-align:center;padding:48px;color:var(--txt2);font-size:14px;}
+.spinner{width:36px;height:36px;border:3px solid var(--g4);border-top-color:var(--g);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* TABLA VACÍA */
+.tabla-vacia{text-align:center;padding:48px;color:#bbb;font-size:14px;}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .tabla-header,.tabla-row{grid-template-columns:2fr 1fr 1fr;}
+  .th:nth-child(n+4),.td:nth-child(n+4){display:none;}
+  .stats-grid{grid-template-columns:1fr 1fr;}
+}
+
+/* REFRESH */
+.refresh-btn{background:var(--g3);border:1px solid var(--g4);color:var(--g);border-radius:99px;padding:7px 16px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.refresh-btn:hover{background:var(--g4);}
+.ultima-act{font-size:12px;color:#bbb;margin-left:8px;}
+
+/* EXPORT */
+.export-btn{background:var(--g2);color:#fff;border:none;border-radius:99px;padding:8px 18px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.export-btn:hover{background:var(--g);}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginAdmin">
+  <div class="login-box">
+    <div class="login-logo">My <em>Nana</em></div>
+    <div class="login-sub">Panel de administración</div>
+    <input type="password" class="login-input" id="adminPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')verificarAdmin()">
+    <button class="login-btn" onclick="verificarAdmin()">Entrar →</button>
+    <div class="login-error" id="loginError">Contraseña incorrecta</div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <nav class="nav">
+    <div class="nav-logo">My <em>Nana</em></div>
+    <div class="nav-right">
+      <span class="nav-badge">Admin</span>
+      <span class="ultima-act" id="ultimaAct"></span>
+      <button class="nav-logout" onclick="salirAdmin()">Salir</button>
+    </div>
+  </nav>
+
+  <div class="contenido">
+
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-num" id="statTotal" style="color:var(--g2);">—</div>
+        <div class="stat-label">Usuarios totales</div>
+        <div class="stat-sub">Registrados en la plataforma</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="statFamilias" style="color:var(--g);">—</div>
+        <div class="stat-label">Familias</div>
+        <div class="stat-sub">Cuentas de tipo familia</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="statNanas" style="color:var(--b2);">—</div>
+        <div class="stat-label">Nanas</div>
+        <div class="stat-sub">Trabajadoras domésticas</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="statHogares" style="color:#854F0B;">—</div>
+        <div class="stat-label">Hogares activos</div>
+        <div class="stat-sub">Con nana vinculada</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="statHoy" style="color:#4F46E5;">—</div>
+        <div class="stat-label">Registros hoy</div>
+        <div class="stat-sub" id="statFecha">—</div>
+      </div>
+    </div>
+
+    <!-- FILTROS Y BÚSQUEDA -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px;">
+      <div class="filtros">
+        <button class="filtro-btn activo" onclick="filtrar('todos',this)">Todos</button>
+        <button class="filtro-btn" onclick="filtrar('familia',this)">👨‍👩‍👧 Familias</button>
+        <button class="filtro-btn" onclick="filtrar('nana',this)">👩 Nanas</button>
+        <input type="text" class="search-box" id="searchBox" placeholder="Buscar por nombre o correo..." oninput="buscar(this.value)">
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="refresh-btn" onclick="cargarUsuarios()">↻ Actualizar</button>
+        <button class="export-btn" onclick="exportarCSV()">⬇ Exportar CSV</button>
+      </div>
+    </div>
+
+    <!-- TABLA -->
+    <div class="tabla-wrap">
+      <div class="tabla-header">
+        <div class="th">Nombre</div>
+        <div class="th">Correo</div>
+        <div class="th">Tipo</div>
+        <div class="th">Hogar</div>
+        <div class="th">Registro</div>
+        <div class="th">Estado</div>
+      </div>
+      <div id="tablaBody">
+        <div class="cargando">
+          <div class="spinner"></div>
+          Cargando usuarios...
+        </div>
+      </div>
+    </div>
+
+    <div style="font-size:12px;color:#bbb;margin-top:10px;text-align:right;" id="totalRows"></div>
+
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { getFirestore, collection, getDocs, query, orderBy, where, getDoc, doc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDDJRJ8A8P507lllGRBOoXO30ESAH1GAnw",
+  authDomain: "mynanapapp.firebaseapp.com",
+  projectId: "mynanapapp",
+  storageBucket: "mynanapapp.appspot.com",
+  messagingSenderId: "123456789",
+  appId: "1:123456789:web:abc123"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ── CONTRASEÑA ADMIN ──
+const ADMIN_PASS = 'mynana2025admin';
+let todosUsuarios = [];
+let filtroActual = 'todos';
+
+window.verificarAdmin = () => {
+  const pass = document.getElementById('adminPass').value;
+  if (pass === ADMIN_PASS) {
+    document.getElementById('loginAdmin').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    cargarUsuarios();
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+    document.getElementById('adminPass').value = '';
+    setTimeout(() => document.getElementById('loginError').style.display = 'none', 3000);
+  }
+};
+
+window.salirAdmin = () => {
+  document.getElementById('loginAdmin').style.display = 'flex';
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('adminPass').value = '';
+};
+
+// ── CARGAR USUARIOS ──
+window.cargarUsuarios = async () => {
+  document.getElementById('tablaBody').innerHTML = `
+    <div class="cargando"><div class="spinner"></div>Cargando usuarios...</div>`;
+
+  try {
+    const [snapUsuarios, snapHogares] = await Promise.all([
+      getDocs(query(collection(db, 'usuarios'), orderBy('creadoA', 'desc'))),
+      getDocs(collection(db, 'hogares'))
+    ]);
+
+    todosUsuarios = [];
+    const hoy = new Date();
+    hoy.setHours(0,0,0,0);
+
+    // Mapear hogares por participante
+    const hogarPorUid = {};
+    snapHogares.forEach(h => {
+      const data = h.data();
+      const partics = data.participantes || [];
+      // Verificar si tiene nana
+      partics.forEach(uid => {
+        if (!hogarPorUid[uid]) hogarPorUid[uid] = { id: h.id, partics };
+      });
+    });
+
+    let totalFamilias = 0, totalNanas = 0, registrosHoy = 0;
+
+    snapUsuarios.forEach(d => {
+      const data = d.data();
+      const uid = d.id;
+      const creado = data.creadoA?.toDate?.() || null;
+      const hogar = hogarPorUid[uid];
+
+      if (data.tipo === 'familia') totalFamilias++;
+      else if (data.tipo === 'nana') totalNanas++;
+
+      if (creado && creado >= hoy) registrosHoy++;
+
+      todosUsuarios.push({
+        uid,
+        nombre: data.nombre || '—',
+        email: data.email || '—',
+        tipo: data.tipo || '—',
+        hogarId: hogar?.id || null,
+        tieneNana: hogar ? hogar.partics.length > 1 : false,
+        creado,
+        cedula: data.cedula || null,
+        telefono: data.telefono || null,
+      });
+    });
+
+    // Contar hogares con nana vinculada
+    let hogaresConNana = 0;
+    snapHogares.forEach(h => {
+      if ((h.data().participantes || []).length >= 2) hogaresConNana++;
+    });
+
+    // Actualizar stats
+    document.getElementById('statTotal').textContent = snapUsuarios.size;
+    document.getElementById('statFamilias').textContent = totalFamilias;
+    document.getElementById('statNanas').textContent = totalNanas;
+    document.getElementById('statHogares').textContent = hogaresConNana;
+    document.getElementById('statHoy').textContent = registrosHoy;
+    document.getElementById('statFecha').textContent = hoy.toLocaleDateString('es-PA', {day:'numeric',month:'short'});
+
+    const ahora = new Date();
+    document.getElementById('ultimaAct').textContent =
+      `Actualizado: ${ahora.toLocaleTimeString('es-PA', {hour:'2-digit',minute:'2-digit'})}`;
+
+    renderTabla(todosUsuarios);
+  } catch(e) {
+    console.error(e);
+    document.getElementById('tablaBody').innerHTML =
+      `<div class="tabla-vacia">❌ Error cargando datos. Verifica la conexión.</div>`;
+  }
+};
+
+// ── RENDER TABLA ──
+function renderTabla(usuarios) {
+  if (!usuarios.length) {
+    document.getElementById('tablaBody').innerHTML =
+      `<div class="tabla-vacia">Sin usuarios que coincidan</div>`;
+    document.getElementById('totalRows').textContent = '';
+    return;
+  }
+
+  document.getElementById('totalRows').textContent = `${usuarios.length} usuario${usuarios.length !== 1 ? 's' : ''}`;
+
+  document.getElementById('tablaBody').innerHTML = usuarios.map(u => {
+    const inicial = u.nombre?.[0]?.toUpperCase() || '?';
+    const colorAv = u.tipo === 'familia' ? 'var(--g2)' : 'var(--b2)';
+    const badgeTipo = u.tipo === 'familia'
+      ? `<span class="badge-tipo badge-familia">Familia</span>`
+      : `<span class="badge-tipo badge-nana">Nana</span>`;
+    const hogarInfo = u.hogarId
+      ? `<span class="hogar-badge">${u.tieneNana ? '✓ Activo' : 'Sin nana'}</span>`
+      : `<span style="font-size:11px;color:#bbb;">Sin hogar</span>`;
+    const fechaCreado = u.creado
+      ? u.creado.toLocaleDateString('es-PA', {day:'numeric',month:'short',year:'numeric'})
+      : '—';
+    const esHoy = u.creado && (() => { const h=new Date(); h.setHours(0,0,0,0); return u.creado >= h; })();
+    const estadoBadge = esHoy
+      ? `<span class="badge-tipo badge-activo">🆕 Hoy</span>`
+      : `<span class="badge-tipo badge-inactivo">Activo</span>`;
+
+    return `
+      <div class="tabla-row">
+        <div class="td td-nombre">
+          <div class="avatar-mini" style="background:${colorAv};">${inicial}</div>
+          ${u.nombre}
+        </div>
+        <div class="td td-email">${u.email}</div>
+        <div class="td">${badgeTipo}</div>
+        <div class="td">${hogarInfo}</div>
+        <div class="td" style="font-size:12px;">${fechaCreado}</div>
+        <div class="td">${estadoBadge}</div>
+      </div>`;
+  }).join('');
+}
+
+// ── FILTRAR ──
+window.filtrar = (tipo, btn) => {
+  filtroActual = tipo;
+  document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('activo'));
+  btn.classList.add('activo');
+  const busqueda = document.getElementById('searchBox').value.toLowerCase();
+  aplicarFiltros(busqueda);
+};
+
+window.buscar = (texto) => {
+  aplicarFiltros(texto.toLowerCase());
+};
+
+function aplicarFiltros(busqueda) {
+  let resultado = todosUsuarios;
+  if (filtroActual !== 'todos') resultado = resultado.filter(u => u.tipo === filtroActual);
+  if (busqueda) resultado = resultado.filter(u =>
+    u.nombre.toLowerCase().includes(busqueda) ||
+    u.email.toLowerCase().includes(busqueda)
+  );
+  renderTabla(resultado);
+}
+
+// ── EXPORTAR CSV ──
+window.exportarCSV = () => {
+  const headers = ['Nombre','Correo','Tipo','Hogar activo','Fecha registro'];
+  const rows = todosUsuarios.map(u => [
+    u.nombre,
+    u.email,
+    u.tipo,
+    u.tieneNana ? 'Sí' : 'No',
+    u.creado ? u.creado.toLocaleDateString('es-PA') : '—'
+  ]);
+  const csv = [headers, ...rows].map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `mynana-usuarios-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+</script>
+</body>
+</html>

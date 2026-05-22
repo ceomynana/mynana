@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>My Nana — Buscar Nana</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{--g:#1A6B52;--g2:#0F4A38;--g3:#F0F7F4;--g4:#E1F0EB;--b:#D4A5A5;--b2:#BF9090;--b3:#F7EFEF;--cr:#F9F5F0;--txt:#1A2E25;--txt2:#4A6358;--r:14px;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);overflow-x:hidden;min-height:100vh;min-height:100dvh;}
+
+/* SPLASH */
+#splash{position:fixed;inset:0;background:var(--g2);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;transition:opacity .4s;}
+#splash.oculto{opacity:0;pointer-events:none;}
+
+/* HEADER */
+.header{background:var(--g2);padding:48px 20px 0;position:sticky;top:0;z-index:50;}
+@media(min-width:768px){.header{padding-top:16px;}}
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.header-logo{font-family:'Cormorant Garamond',serif;font-size:20px;color:#fff;}
+.header-logo em{color:var(--b);font-style:normal;}
+.header-back{background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.7);font-size:13px;padding:7px 14px;border-radius:99px;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;}
+
+/* BÚSQUEDA */
+.buscar-wrap{padding:0 20px 14px;}
+.buscar-box{display:flex;gap:8px;}
+.buscar-input{flex:1;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:99px;padding:11px 18px;font-family:'DM Sans',sans-serif;font-size:14px;color:#fff;outline:none;}
+.buscar-input::placeholder{color:rgba(255,255,255,.45);}
+.buscar-input:focus{background:rgba(255,255,255,.18);}
+.btn-buscar{background:var(--b);color:#fff;border:none;border-radius:99px;padding:11px 20px;font-size:14px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;}
+
+/* FILTROS */
+.filtros-wrap{background:var(--g2);padding:0 16px 14px;}
+.filtros-scroll{display:flex;gap:8px;overflow-x:auto;-ms-overflow-style:none;scrollbar-width:none;}
+.filtros-scroll::-webkit-scrollbar{display:none;}
+.filtro-chip{flex-shrink:0;display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:99px;border:1.5px solid rgba(255,255,255,.2);background:transparent;font-size:12px;font-weight:500;color:rgba(255,255,255,.65);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.filtro-chip.activo{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.4);color:#fff;}
+.filtro-chip select{background:transparent;border:none;color:inherit;font-family:'DM Sans',sans-serif;font-size:12px;outline:none;cursor:pointer;appearance:none;-webkit-appearance:none;}
+.filtro-chip select option{background:var(--g2);color:#fff;}
+
+/* STATS BAR */
+.stats-bar{background:#fff;border-bottom:1px solid var(--g4);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;}
+.stats-txt{font-size:13px;color:var(--txt2);}
+.stats-txt strong{color:var(--g);}
+.sort-sel{background:transparent;border:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--txt2);outline:none;cursor:pointer;}
+
+/* LAYOUT */
+.layout{max-width:1200px;margin:0 auto;padding:20px 16px 80px;}
+@media(min-width:900px){.layout{display:grid;grid-template-columns:280px 1fr;gap:20px;}}
+
+/* PANEL FILTROS LATERAL */
+.filtros-panel{background:#fff;border-radius:var(--r);border:1px solid var(--g4);padding:16px;height:fit-content;position:sticky;top:200px;}
+@media(max-width:899px){.filtros-panel{display:none;}}
+.filtro-sec{margin-bottom:18px;}
+.filtro-titulo{font-size:11px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;}
+.filtro-opt{display:flex;align-items:center;gap:8px;margin-bottom:7px;cursor:pointer;}
+.filtro-opt input[type=checkbox]{accent-color:var(--g);width:15px;height:15px;}
+.filtro-opt label{font-size:13px;color:var(--txt2);cursor:pointer;}
+.filtro-range{width:100%;accent-color:var(--g);}
+.filtro-range-vals{display:flex;justify-content:space-between;font-size:11px;color:#bbb;margin-top:4px;}
+.btn-limpiar-filtros{width:100%;background:var(--cr);border:1px solid var(--g4);border-radius:99px;padding:9px;font-size:13px;color:var(--txt2);cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:4px;}
+
+/* GRID NANAS */
+.nanas-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;}
+@media(max-width:500px){.nanas-grid{grid-template-columns:1fr;}}
+
+/* CARD NANA */
+.nana-card{background:#fff;border-radius:16px;border:1px solid var(--g4);overflow:hidden;transition:all .2s;cursor:pointer;}
+.nana-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(26,107,82,.12);}
+.nana-card-top{background:var(--g2);padding:20px;display:flex;align-items:center;gap:14px;position:relative;}
+.nana-avatar{width:56px;height:56px;border-radius:50%;background:var(--g);border:3px solid var(--b);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:#fff;flex-shrink:0;}
+.nana-card-info{flex:1;}
+.nana-card-nombre{font-family:'Cormorant Garamond',serif;font-size:18px;color:#fff;margin-bottom:3px;}
+.nana-card-tipo{font-size:11px;color:rgba(255,255,255,.55);}
+.nana-score-wrap{text-align:center;}
+.nana-score-n{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;color:#fff;line-height:1;}
+.nana-score-s{font-size:12px;color:#FAC775;margin-top:2px;}
+.nana-score-l{font-size:10px;color:rgba(255,255,255,.45);margin-top:1px;}
+.nivel-tag{position:absolute;top:10px;right:10px;font-size:10px;font-weight:600;padding:3px 8px;border-radius:99px;}
+.nana-card-body{padding:14px 16px;}
+.nana-cats{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;}
+.nana-cat-tag{font-size:11px;background:var(--g3);color:var(--g);padding:3px 9px;border-radius:99px;font-weight:500;}
+.nana-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+.nana-stat{text-align:center;background:var(--cr);border-radius:8px;padding:8px 4px;border:1px solid var(--g4);}
+.nana-stat-n{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:var(--g);}
+.nana-stat-l{font-size:10px;color:var(--txt2);margin-top:2px;}
+.nana-disp{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--txt2);margin-bottom:10px;}
+.disp-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.btn-contactar{width:100%;background:var(--g);color:#fff;border:none;border-radius:99px;padding:11px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.btn-contactar:hover{background:var(--g2);}
+
+/* MODAL PERFIL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;}
+.modal-overlay.visible{opacity:1;pointer-events:all;}
+.modal-box{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;transform:translateY(40px);transition:transform .3s;}
+.modal-overlay.visible .modal-box{transform:translateY(0);}
+@media(min-width:768px){.modal-overlay{align-items:center;}.modal-box{border-radius:20px;max-height:85vh;}}
+.modal-hero{background:var(--g2);padding:24px 20px;display:flex;align-items:center;gap:16px;}
+.modal-avatar{width:72px;height:72px;border-radius:50%;background:var(--g);border:3px solid var(--b);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600;color:#fff;flex-shrink:0;}
+.modal-nombre{font-family:'Cormorant Garamond',serif;font-size:24px;color:#fff;margin-bottom:4px;}
+.modal-tipo{font-size:12px;color:rgba(255,255,255,.55);}
+.modal-score-big{font-family:'Cormorant Garamond',serif;font-size:48px;font-weight:600;color:#fff;line-height:1;}
+.modal-stars{font-size:14px;color:#FAC775;margin-top:4px;text-align:center;}
+.modal-body{padding:20px;}
+.modal-sec-titulo{font-size:11px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em;margin:16px 0 10px;}
+.modal-cat-bar{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.modal-cat-nombre{font-size:12px;color:var(--txt2);width:110px;flex-shrink:0;}
+.modal-cat-track{flex:1;height:6px;background:var(--g4);border-radius:99px;overflow:hidden;}
+.modal-cat-fill{height:100%;background:linear-gradient(90deg,var(--g),var(--b));border-radius:99px;}
+.modal-cat-val{font-size:12px;font-weight:500;color:var(--g);width:24px;text-align:right;}
+.modal-close{width:100%;background:var(--cr);border:1px solid var(--g4);border-radius:99px;padding:13px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--txt2);cursor:pointer;margin-top:16px;}
+.btn-contratar{width:100%;background:var(--g);color:#fff;border:none;border-radius:99px;padding:14px;font-size:15px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:10px;transition:all .2s;}
+.btn-contratar:hover{background:var(--g2);}
+
+/* VISTA NANA — Mi perfil público */
+.perfil-nana-wrap{max-width:480px;margin:0 auto;padding:20px 16px 80px;}
+.toggle-wrap{background:#fff;border-radius:var(--r);border:1px solid var(--g4);padding:16px 18px;display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.toggle-info{}
+.toggle-titulo{font-size:14px;font-weight:500;color:var(--txt);}
+.toggle-sub{font-size:12px;color:var(--txt2);margin-top:2px;}
+.toggle-switch{position:relative;width:48px;height:26px;flex-shrink:0;}
+.toggle-switch input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;inset:0;background:#ddd;border-radius:99px;cursor:pointer;transition:.3s;}
+.toggle-slider:before{content:'';position:absolute;width:20px;height:20px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s;}
+.toggle-switch input:checked + .toggle-slider{background:var(--g);}
+.toggle-switch input:checked + .toggle-slider:before{transform:translateX(22px);}
+.perfil-form{background:#fff;border-radius:var(--r);border:1px solid var(--g4);padding:16px 18px;margin-bottom:14px;}
+.perfil-form-titulo{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--txt);margin-bottom:14px;}
+.form-label{font-size:11px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:5px;}
+.form-input{width:100%;background:var(--cr);border:1.5px solid var(--g4);border-radius:8px;padding:10px 12px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--txt);outline:none;margin-bottom:12px;}
+.form-input:focus{border-color:var(--g);background:#fff;}
+.form-select{width:100%;background:var(--cr);border:1.5px solid var(--g4);border-radius:8px;padding:10px 12px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--txt);outline:none;appearance:none;cursor:pointer;margin-bottom:12px;}
+.form-select:focus{border-color:var(--g);}
+.skills-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.skill-opt{display:flex;align-items:center;gap:8px;background:var(--cr);border-radius:8px;padding:10px 12px;border:1.5px solid var(--g4);cursor:pointer;}
+.skill-opt.sel{background:var(--g3);border-color:var(--g);}
+.skill-opt input{accent-color:var(--g);}
+.skill-label{font-size:13px;color:var(--txt2);}
+.skill-opt.sel .skill-label{color:var(--g);font-weight:500;}
+.btn-guardar-perfil{width:100%;background:var(--g);color:#fff;border:none;border-radius:99px;padding:13px;font-size:14px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.btn-guardar-perfil:hover{background:var(--g2);}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:48px 20px;background:#fff;border-radius:var(--r);border:1px solid var(--g4);}
+.empty-icon{font-size:48px;margin-bottom:12px;}
+.empty-title{font-size:16px;font-weight:500;color:var(--txt);margin-bottom:6px;}
+.empty-sub{font-size:13px;color:var(--txt2);}
+
+/* TOAST */
+.toast{position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--g);color:#fff;font-size:13px;font-weight:500;padding:10px 20px;border-radius:99px;z-index:300;transition:transform .3s;white-space:nowrap;box-shadow:0 4px 16px rgba(26,107,82,.3);}
+.toast.visible{transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div style="width:72px;height:72px;border-radius:50%;background:var(--g);border:3px solid var(--b);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:24px;color:#fff;">MN</div>
+  <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:#fff;">NANA</div>
+  <div style="font-size:13px;color:rgba(255,255,255,.5);">Cargando buscador...</div>
+</div>
+
+<!-- MODAL PERFIL COMPLETO -->
+<div class="modal-overlay" id="modalPerfil">
+  <div class="modal-box">
+    <div class="modal-hero">
+      <div class="modal-avatar" id="modalAvatar">M</div>
+      <div style="flex:1;">
+        <div class="modal-nombre" id="modalNombre">Maria Rodriguez</div>
+        <div class="modal-tipo" id="modalTipo">Nana fija · 3 años de experiencia</div>
+        <div style="margin-top:8px;" id="modalNivel"></div>
+      </div>
+      <div style="text-align:center;">
+        <div class="modal-score-big" id="modalScore">4.8</div>
+        <div class="modal-stars" id="modalStars">★★★★★</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:2px;">MyNana Score</div>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;" id="modalStats"></div>
+      <div class="modal-sec-titulo">Especialidades</div>
+      <div id="modalCats" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px;"></div>
+      <div class="modal-sec-titulo">Score por categoría</div>
+      <div id="modalCatBars"></div>
+      <div class="modal-sec-titulo">Disponibilidad</div>
+      <div id="modalDisp" style="font-size:13px;color:var(--txt2);line-height:1.7;"></div>
+      <div class="modal-sec-titulo" id="modalZonaTitulo" style="display:none;">Zona de trabajo</div>
+      <div id="modalZona" style="font-size:13px;color:var(--txt2);"></div>
+      <div class="modal-sec-titulo" id="modalBioTitulo" style="display:none;">Sobre mí</div>
+      <div id="modalBio" style="font-size:13px;color:var(--txt2);line-height:1.7;"></div>
+      <div style="margin-top:20px;">
+        <button class="btn-contratar" id="btnContratar">💬 Contactar por WhatsApp</button>
+        <button class="modal-close" onclick="cerrarModal()">← Volver al buscador</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- HEADER — Vista familia -->
+<div id="headerFamilia" style="display:none;">
+  <div class="header">
+    <div class="header-top">
+      <div class="header-logo">My <em>Nana</em> — Buscador</div>
+      <a href="/app.html" class="header-back">← Dashboard</a>
+    </div>
+    <div class="buscar-wrap">
+      <div class="buscar-box">
+        <input class="buscar-input" id="buscarInput" placeholder="🔍  Buscar por nombre..." oninput="aplicarFiltros()" />
+        <button class="btn-buscar" onclick="aplicarFiltros()">Buscar</button>
+      </div>
+    </div>
+    <div class="filtros-wrap">
+      <div class="filtros-scroll">
+        <div class="filtro-chip activo" id="chipDisp">
+          <span>📋</span>
+          <select onchange="aplicarFiltros()" id="filtroDisp">
+            <option value="todas">Todas</option>
+            <option value="fija">Nana fija</option>
+            <option value="eventual">Nana eventual</option>
+          </select>
+        </div>
+        <div class="filtro-chip activo" id="chipZona">
+          <span>📍</span>
+          <select onchange="aplicarFiltros()" id="filtroZona">
+            <option value="todas">Todas las zonas</option>
+            <option value="Ciudad de Panamá">Ciudad de Panamá</option>
+            <option value="San Miguelito">San Miguelito</option>
+            <option value="Panamá Este">Panamá Este</option>
+            <option value="Panamá Oeste">Panamá Oeste</option>
+            <option value="Chorrera">La Chorrera</option>
+            <option value="Arraiján">Arraiján</option>
+            <option value="Colón">Colón</option>
+            <option value="Interior">Interior del país</option>
+          </select>
+        </div>
+        <div class="filtro-chip activo" id="chipScore">
+          <span>⭐</span>
+          <select onchange="aplicarFiltros()" id="filtroScore">
+            <option value="0">Cualquier score</option>
+            <option value="4">Score 4.0+</option>
+            <option value="4.5">Score 4.5+</option>
+            <option value="4.8">Top Nana 4.8+</option>
+          </select>
+        </div>
+        <div class="filtro-chip activo" id="chipEsp">
+          <span>🍳</span>
+          <select onchange="aplicarFiltros()" id="filtroEsp">
+            <option value="todas">Todas las áreas</option>
+            <option value="cocina">Cocina</option>
+            <option value="limpieza">Limpieza</option>
+            <option value="ninos">Niños</option>
+            <option value="lavanderia">Lavandería</option>
+            <option value="organizacion">Organización</option>
+          </select>
+        </div>
+        <div class="filtro-chip activo" id="chipExp">
+          <span>📅</span>
+          <select onchange="aplicarFiltros()" id="filtroExp">
+            <option value="0">Cualquier experiencia</option>
+            <option value="1">1+ año</option>
+            <option value="2">2+ años</option>
+            <option value="5">5+ años</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="stats-bar">
+    <div class="stats-txt"><strong id="totalResultados">0</strong> nanas encontradas</div>
+    <select class="sort-sel" onchange="aplicarFiltros()" id="sortSel">
+      <option value="score">Mayor score primero</option>
+      <option value="exp">Más experiencia</option>
+      <option value="reviews">Más calificaciones</option>
+    </select>
+  </div>
+</div>
+
+<!-- HEADER — Vista nana -->
+<div id="headerNana" style="display:none;">
+  <div class="header">
+    <div class="header-top">
+      <div class="header-logo">My <em>Nana</em> — Mi perfil</div>
+      <a href="/app.html" class="header-back">← Inicio</a>
+    </div>
+  </div>
+</div>
+
+<!-- CONTENIDO -->
+<div id="contenidoFamilia" style="display:none;">
+  <div class="layout">
+    <!-- Filtros laterales desktop -->
+    <div class="filtros-panel">
+      <div class="filtro-sec">
+        <div class="filtro-titulo">Score mínimo</div>
+        <input type="range" class="filtro-range" id="rangeScore" min="0" max="5" step="0.5" value="0" oninput="aplicarFiltros();document.getElementById('rangeVal').textContent=this.value" />
+        <div class="filtro-range-vals"><span>0</span><span id="rangeVal">0</span><span>5.0</span></div>
+      </div>
+      <div class="filtro-sec">
+        <div class="filtro-titulo">Especialidades</div>
+        <div class="filtro-opt"><input type="checkbox" id="fCocina" onchange="aplicarFiltros()"><label for="fCocina">🍳 Cocina panameña</label></div>
+        <div class="filtro-opt"><input type="checkbox" id="fLimpieza" onchange="aplicarFiltros()"><label for="fLimpieza">🧹 Limpieza del hogar</label></div>
+        <div class="filtro-opt"><input type="checkbox" id="fNinos" onchange="aplicarFiltros()"><label for="fNinos">🎒 Cuidado de niños</label></div>
+        <div class="filtro-opt"><input type="checkbox" id="fLavanderia" onchange="aplicarFiltros()"><label for="fLavanderia">👕 Lavandería</label></div>
+        <div class="filtro-opt"><input type="checkbox" id="fOrganizacion" onchange="aplicarFiltros()"><label for="fOrganizacion">📦 Organización</label></div>
+      </div>
+      <div class="filtro-sec">
+        <div class="filtro-titulo">Tipo de nana</div>
+        <div class="filtro-opt"><input type="checkbox" id="fFija" onchange="aplicarFiltros()"><label for="fFija">👩 Nana fija</label></div>
+        <div class="filtro-opt"><input type="checkbox" id="fEventual" onchange="aplicarFiltros()"><label for="fEventual">📅 Nana eventual</label></div>
+      </div>
+      <div class="filtro-sec">
+        <div class="filtro-titulo">Experiencia mínima</div>
+        <input type="range" class="filtro-range" id="rangeExp" min="0" max="10" step="1" value="0" oninput="aplicarFiltros();document.getElementById('expVal').textContent=this.value" />
+        <div class="filtro-range-vals"><span>0</span><span id="expVal">0</span> años<span>10</span></div>
+      </div>
+      <button class="btn-limpiar-filtros" onclick="limpiarFiltros()">Limpiar filtros</button>
+    </div>
+
+    <!-- Grid de nanas -->
+    <div>
+      <div class="nanas-grid" id="nanasGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTENIDO NANA -->
+<div id="contenidoNana" style="display:none;">
+  <div class="perfil-nana-wrap">
+
+    <!-- Toggle visible en buscador -->
+    <div class="toggle-wrap">
+      <div class="toggle-info">
+        <div class="toggle-titulo">Aparecer en el buscador</div>
+        <div class="toggle-sub" id="toggleSub">Activado — otras familias pueden encontrarte</div>
+      </div>
+      <label class="toggle-switch">
+        <input type="checkbox" id="toggleVisible" onchange="cambiarVisibilidad(this.checked)" />
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+
+    <!-- Formulario perfil público -->
+    <div class="perfil-form">
+      <div class="perfil-form-titulo">Tu perfil público</div>
+
+      <label class="form-label">Tipo de disponibilidad</label>
+      <select class="form-select" id="pTipo">
+        <option value="fija">Nana fija — tiempo completo</option>
+        <option value="eventual">Nana eventual — por días</option>
+        <option value="ambas">Ambas modalidades</option>
+      </select>
+
+      <label class="form-label">Años de experiencia</label>
+      <select class="form-select" id="pExperiencia">
+        <option value="0">Menos de 1 año</option>
+        <option value="1">1 año</option>
+        <option value="2">2 años</option>
+        <option value="3">3 años</option>
+        <option value="5">5 años</option>
+        <option value="7">7 años</option>
+        <option value="10">10 o más años</option>
+      </select>
+
+      <label class="form-label">Zona donde trabajas</label>
+      <select class="form-select" id="pZona">
+        <option value="Ciudad de Panamá">Ciudad de Panamá</option>
+        <option value="San Miguelito">San Miguelito</option>
+        <option value="Panamá Este">Panamá Este</option>
+        <option value="Panamá Oeste">Panamá Oeste</option>
+        <option value="Chorrera">La Chorrera</option>
+        <option value="Arraiján">Arraiján</option>
+        <option value="Colón">Colón</option>
+        <option value="Interior">Interior del país</option>
+      </select>
+
+      <label class="form-label">Mis especialidades</label>
+      <div class="skills-grid" id="skillsGrid">
+        <div class="skill-opt" onclick="toggleSkill(this,'cocina')">
+          <input type="checkbox" id="sCocina"><label class="skill-label">🍳 Cocina</label>
+        </div>
+        <div class="skill-opt" onclick="toggleSkill(this,'limpieza')">
+          <input type="checkbox" id="sLimpieza"><label class="skill-label">🧹 Limpieza</label>
+        </div>
+        <div class="skill-opt" onclick="toggleSkill(this,'ninos')">
+          <input type="checkbox" id="sNinos"><label class="skill-label">🎒 Niños</label>
+        </div>
+        <div class="skill-opt" onclick="toggleSkill(this,'lavanderia')">
+          <input type="checkbox" id="sLavanderia"><label class="skill-label">👕 Lavandería</label>
+        </div>
+        <div class="skill-opt" onclick="toggleSkill(this,'organizacion')">
+          <input type="checkbox" id="sOrganizacion"><label class="skill-label">📦 Organización</label>
+        </div>
+        <div class="skill-opt" onclick="toggleSkill(this,'mascotas')">
+          <input type="checkbox" id="sMascotas"><label class="skill-label">🐾 Mascotas</label>
+        </div>
+      </div>
+
+      <label class="form-label">Sobre mí (opcional)</label>
+      <textarea class="form-input" id="pBio" rows="3" placeholder="Ej: Tengo 5 años de experiencia con niños pequeños. Me especializo en cocina panameña tradicional..." style="resize:none;"></textarea>
+
+      <button class="btn-guardar-perfil" onclick="guardarPerfil()">Guardar mi perfil público →</button>
+    </div>
+
+    <!-- Preview del perfil -->
+    <div id="previewPerfil" style="display:none;">
+      <div style="font-size:12px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Así te ven las familias:</div>
+      <div class="nana-card" id="cardPreview" style="cursor:default;"></div>
+    </div>
+
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import { getFirestore, doc, getDoc, setDoc, collection, getDocs, query, where, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey:"AIzaSyDDJRJ8A8P507lllGRBOoXO30ESAH1GAnw",
+  authDomain:"mynanapapp.firebaseapp.com",
+  projectId:"mynanapapp",
+  storageBucket:"mynanapapp.firebasestorage.app",
+  messagingSenderId:"124180779437",
+  appId:"1:124180779437:web:d217743000b0f1fedfd124"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const NIVELES = [
+  {min:0,max:2.9,nombre:'Nuevo',color:'#888',bg:'rgba(136,136,136,.15)',emoji:'🌱'},
+  {min:3,max:3.9,nombre:'En progreso',color:'#BA7517',bg:'rgba(186,117,23,.15)',emoji:'📈'},
+  {min:4,max:4.4,nombre:'Buena nana',color:'#1A6B52',bg:'rgba(26,107,82,.15)',emoji:'⭐'},
+  {min:4.5,max:4.7,nombre:'Excelente',color:'#1A6B52',bg:'rgba(26,107,82,.15)',emoji:'🌟'},
+  {min:4.8,max:5,nombre:'Top Nana',color:'#BF9090',bg:'rgba(191,144,144,.15)',emoji:'🏆'},
+];
+
+const CATS_SCORE = [
+  {id:'puntualidad',nombre:'Puntualidad',emoji:'⏰'},
+  {id:'limpieza',nombre:'Limpieza',emoji:'🧹'},
+  {id:'cocina',nombre:'Cocina',emoji:'🍳'},
+  {id:'ninos',nombre:'Cuidado niños',emoji:'🎒'},
+  {id:'confiabilidad',nombre:'Confiabilidad',emoji:'🔒'},
+  {id:'comunicacion',nombre:'Comunicación',emoji:'💬'},
+];
+
+let usuarioActual = null;
+let perfilActual = null;
+let todasNanas = [];
+let nanaSeleccionada = null;
+let skillsSeleccionadas = new Set();
+
+// ── AUTH ──
+onAuthStateChanged(auth, async (user) => {
+  document.getElementById('splash').classList.add('oculto');
+  if (!user) { location.href = '/app.html'; return; }
+  usuarioActual = user;
+  const perfil = await getDoc(doc(db, 'usuarios', user.uid));
+  if (!perfil.exists()) { location.href = '/app.html'; return; }
+  perfilActual = perfil.data();
+
+  if (perfilActual.tipo === 'familia') {
+    document.getElementById('headerFamilia').style.display = 'block';
+    document.getElementById('contenidoFamilia').style.display = 'block';
+    await cargarNanas();
+  } else {
+    document.getElementById('headerNana').style.display = 'block';
+    document.getElementById('contenidoNana').style.display = 'block';
+    await cargarPerfilNana();
+  }
+});
+
+// ── CARGAR NANAS ──
+async function cargarNanas() {
+  const q = query(collection(db, 'perfiles_publicos'), where('visible', '==', true));
+  const snap = await getDocs(q);
+
+  todasNanas = [];
+  for (const d of snap.docs) {
+    const data = d.data();
+    // Cargar score
+    const scoreSnap = await getDoc(doc(db, 'scores', d.id));
+    const scoreData = scoreSnap.exists() ? scoreSnap.data() : {};
+    const score = scoreData.scoreActual || 0;
+    const cats = scoreData.calificaciones || {};
+    todasNanas.push({ uid: d.id, ...data, score, cats, totalReviews: scoreData.totalReviews || 0 });
+  }
+
+  // Si no hay nanas registradas aún, mostrar demos
+  if (!todasNanas.length) todasNanas = nanasDemo();
+
+  aplicarFiltros();
+}
+
+function nanasDemo() {
+  return [
+    { uid:'demo1', nombre:'Maria Rodriguez', tipo:'fija', experiencia:3, zona:'Ciudad de Panamá', skills:['cocina','limpieza','ninos'], score:4.8, totalReviews:12, bio:'Especializada en cocina panameña y cuidado de niños pequeños.', visible:true, cats:{puntualidad:[5,5,4],limpieza:[5,4,5],cocina:[5,5,5],ninos:[4,5,4],confiabilidad:[5,5,5],comunicacion:[4,5,4]}, demo:true },
+    { uid:'demo2', nombre:'Ana González', tipo:'eventual', experiencia:5, zona:'San Miguelito', skills:['limpieza','lavanderia','organizacion'], score:4.6, totalReviews:8, bio:'Experta en organización del hogar y lavandería.', visible:true, cats:{puntualidad:[5,4],limpieza:[5,5],cocina:[3,4],ninos:[4,4],confiabilidad:[5,5],comunicacion:[4,5]}, demo:true },
+    { uid:'demo3', nombre:'Carmen López', tipo:'fija', experiencia:7, zona:'Panamá Oeste', skills:['cocina','limpieza','ninos','lavanderia'], score:4.9, totalReviews:20, bio:'15 años de experiencia en trabajo doméstico. Especialista en cocina gourmet y niños.', visible:true, cats:{puntualidad:[5,5,5],limpieza:[5,5,5],cocina:[5,5,5],ninos:[5,5,5],confiabilidad:[5,5,5],comunicacion:[4,5,5]}, demo:true },
+    { uid:'demo4', nombre:'Rosa Martínez', tipo:'ambas', experiencia:2, zona:'Ciudad de Panamá', skills:['limpieza','cocina'], score:4.2, totalReviews:5, bio:'Responsable y puntual. Disponible para trabajo fijo o eventual.', visible:true, cats:{puntualidad:[4,4],limpieza:[4,5],cocina:[4,4],ninos:[3,4],confiabilidad:[4,4],comunicacion:[4,4]}, demo:true },
+    { uid:'demo5', nombre:'Luisa Pérez', tipo:'eventual', experiencia:1, zona:'Arraiján', skills:['limpieza','organizacion'], score:3.8, totalReviews:3, bio:'Nueva en el mercado pero muy comprometida y aprendiendo rápido.', visible:true, cats:{puntualidad:[4,4],limpieza:[4,3],cocina:[3,3],ninos:[4,4],confiabilidad:[4,4],comunicacion:[3,4]}, demo:true },
+    { uid:'demo6', nombre:'Patricia Ríos', tipo:'fija', experiencia:10, zona:'Colón', skills:['cocina','limpieza','ninos','mascotas'], score:5.0, totalReviews:31, bio:'Veterana del trabajo doméstico. Referente en toda la región.', visible:true, cats:{puntualidad:[5,5,5],limpieza:[5,5,5],cocina:[5,5,5],ninos:[5,5,5],confiabilidad:[5,5,5],comunicacion:[5,5,5]}, demo:true },
+  ];
+}
+
+// ── FILTROS ──
+window.aplicarFiltros = () => {
+  const busq = document.getElementById('buscarInput')?.value.toLowerCase().trim() || '';
+  const disp = document.getElementById('filtroDisp')?.value || 'todas';
+  const zona = document.getElementById('filtroZona')?.value || 'todas';
+  const scoreMin = parseFloat(document.getElementById('filtroScore')?.value || '0');
+  const esp = document.getElementById('filtroEsp')?.value || 'todas';
+  const expMin = parseInt(document.getElementById('filtroExp')?.value || '0');
+  const sort = document.getElementById('sortSel')?.value || 'score';
+  const rangeScore = parseFloat(document.getElementById('rangeScore')?.value || '0');
+  const rangeExp = parseInt(document.getElementById('rangeExp')?.value || '0');
+
+  // Checkboxes desktop
+  const cCocina = document.getElementById('fCocina')?.checked;
+  const cLimpieza = document.getElementById('fLimpieza')?.checked;
+  const cNinos = document.getElementById('fNinos')?.checked;
+  const cLavanderia = document.getElementById('fLavanderia')?.checked;
+  const cOrganizacion = document.getElementById('fOrganizacion')?.checked;
+  const cFija = document.getElementById('fFija')?.checked;
+  const cEventual = document.getElementById('fEventual')?.checked;
+  const hayCheckSkills = cCocina || cLimpieza || cNinos || cLavanderia || cOrganizacion;
+  const hayCheckTipo = cFija || cEventual;
+
+  let filtradas = todasNanas.filter(n => {
+    if (busq && !n.nombre.toLowerCase().includes(busq)) return false;
+    if (disp !== 'todas' && n.tipo !== disp && n.tipo !== 'ambas') return false;
+    if (zona !== 'todas' && n.zona !== zona) return false;
+    if (n.score < scoreMin) return false;
+    if (n.score < rangeScore) return false;
+    if ((n.experiencia || 0) < expMin) return false;
+    if ((n.experiencia || 0) < rangeExp) return false;
+    if (esp !== 'todas' && !n.skills?.includes(esp)) return false;
+    if (hayCheckSkills) {
+      if (cCocina && !n.skills?.includes('cocina')) return false;
+      if (cLimpieza && !n.skills?.includes('limpieza')) return false;
+      if (cNinos && !n.skills?.includes('ninos')) return false;
+      if (cLavanderia && !n.skills?.includes('lavanderia')) return false;
+      if (cOrganizacion && !n.skills?.includes('organizacion')) return false;
+    }
+    if (hayCheckTipo) {
+      if (cFija && !cEventual && n.tipo === 'eventual') return false;
+      if (cEventual && !cFija && n.tipo === 'fija') return false;
+    }
+    return true;
+  });
+
+  // Ordenar
+  if (sort === 'score') filtradas.sort((a,b) => b.score - a.score);
+  else if (sort === 'exp') filtradas.sort((a,b) => (b.experiencia||0) - (a.experiencia||0));
+  else if (sort === 'reviews') filtradas.sort((a,b) => (b.totalReviews||0) - (a.totalReviews||0));
+
+  document.getElementById('totalResultados').textContent = filtradas.length;
+  renderNanas(filtradas);
+};
+
+window.limpiarFiltros = () => {
+  ['filtroDisp','filtroZona','filtroScore','filtroEsp','filtroExp'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.selectedIndex = 0;
+  });
+  ['fCocina','fLimpieza','fNinos','fLavanderia','fOrganizacion','fFija','fEventual'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.checked = false;
+  });
+  ['rangeScore','rangeExp'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = 0;
+  });
+  document.getElementById('rangeVal').textContent = '0';
+  document.getElementById('expVal').textContent = '0';
+  document.getElementById('buscarInput').value = '';
+  aplicarFiltros();
+};
+
+// ── RENDER NANAS ──
+function renderNanas(lista) {
+  const grid = document.getElementById('nanasGrid');
+  if (!lista.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">
+      <div class="empty-icon">🔍</div>
+      <div class="empty-title">Sin resultados</div>
+      <div class="empty-sub">Intenta ajustar los filtros para ver más nanas</div>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = lista.map(n => {
+    const nivel = getNivel(n.score);
+    const inicial = n.nombre?.[0]?.toUpperCase() || '?';
+    const stars = renderStars(n.score);
+    const tipoLabel = n.tipo === 'fija' ? 'Nana fija' : n.tipo === 'eventual' ? 'Nana eventual' : 'Fija y eventual';
+    const expLabel = n.experiencia > 0 ? `${n.experiencia} año${n.experiencia > 1 ? 's' : ''}` : 'Menos de 1 año';
+    const disponible = n.score > 0 || n.totalReviews > 0;
+
+    return `<div class="nana-card" onclick="abrirPerfil('${n.uid}')">
+      <div class="nana-card-top">
+        <div class="nana-avatar">${inicial}</div>
+        <div class="nana-card-info">
+          <div class="nana-card-nombre">${n.nombre}</div>
+          <div class="nana-card-tipo">${tipoLabel} · ${expLabel} exp.</div>
+          <div style="margin-top:6px;font-size:11px;color:rgba(255,255,255,.5);">📍 ${n.zona || 'Panamá'}</div>
+        </div>
+        <div class="nana-score-wrap">
+          <div class="nana-score-n">${n.score > 0 ? n.score : '—'}</div>
+          <div class="nana-score-s">${n.score > 0 ? stars : '☆☆☆☆☆'}</div>
+          <div class="nana-score-l">Score</div>
+        </div>
+        <div class="nivel-tag" style="background:${nivel.bg};color:${nivel.color};">${nivel.emoji} ${nivel.nombre}</div>
+      </div>
+      <div class="nana-card-body">
+        <div class="nana-cats">
+          ${(n.skills||[]).slice(0,4).map(s => `<span class="nana-cat-tag">${skillEmoji(s)} ${skillLabel(s)}</span>`).join('')}
+        </div>
+        <div class="nana-stats">
+          <div class="nana-stat"><div class="nana-stat-n">${n.score > 0 ? n.score : '—'}</div><div class="nana-stat-l">Score</div></div>
+          <div class="nana-stat"><div class="nana-stat-n">${n.totalReviews || 0}</div><div class="nana-stat-l">Reseñas</div></div>
+          <div class="nana-stat"><div class="nana-stat-n">${n.experiencia || 0}</div><div class="nana-stat-l">Años exp.</div></div>
+        </div>
+        <div class="nana-disp">
+          <div class="disp-dot" style="background:${disponible ? '#4CAF50' : '#bbb'};"></div>
+          ${disponible ? 'Perfil verificado en My Nana' : 'Sin calificaciones aún'}
+        </div>
+        <button class="btn-contactar" onclick="event.stopPropagation();abrirPerfil('${n.uid}')">Ver perfil completo →</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── MODAL PERFIL ──
+window.abrirPerfil = (uid) => {
+  const n = todasNanas.find(n => n.uid === uid);
+  if (!n) return;
+  nanaSeleccionada = n;
+
+  const nivel = getNivel(n.score);
+  const inicial = n.nombre?.[0]?.toUpperCase() || '?';
+  const tipoLabel = n.tipo === 'fija' ? 'Nana fija' : n.tipo === 'eventual' ? 'Nana eventual' : 'Fija y eventual';
+  const expLabel = n.experiencia > 0 ? `${n.experiencia} año${n.experiencia > 1 ? 's' : ''}` : 'Menos de 1 año';
+
+  document.getElementById('modalAvatar').textContent = inicial;
+  document.getElementById('modalNombre').textContent = n.nombre;
+  document.getElementById('modalTipo').textContent = `${tipoLabel} · ${expLabel} de experiencia · 📍 ${n.zona || 'Panamá'}`;
+  document.getElementById('modalScore').textContent = n.score > 0 ? n.score : '—';
+  document.getElementById('modalStars').textContent = n.score > 0 ? renderStars(n.score) : '☆☆☆☆☆';
+  document.getElementById('modalNivel').innerHTML = `<span style="background:${nivel.bg};color:${nivel.color};font-size:11px;font-weight:600;padding:4px 10px;border-radius:99px;">${nivel.emoji} ${nivel.nombre}</span>`;
+
+  document.getElementById('modalStats').innerHTML = `
+    <div class="nana-stat"><div class="nana-stat-n">${n.score > 0 ? n.score : '—'}</div><div class="nana-stat-l">MyNana Score</div></div>
+    <div class="nana-stat"><div class="nana-stat-n">${n.totalReviews || 0}</div><div class="nana-stat-l">Calificaciones</div></div>
+    <div class="nana-stat"><div class="nana-stat-n">${n.experiencia || 0}</div><div class="nana-stat-l">Años exp.</div></div>`;
+
+  document.getElementById('modalCats').innerHTML = (n.skills||[]).map(s =>
+    `<span class="nana-cat-tag">${skillEmoji(s)} ${skillLabel(s)}</span>`).join('');
+
+  // Barras por categoría
+  document.getElementById('modalCatBars').innerHTML = CATS_SCORE.map(cat => {
+    const vals = n.cats?.[cat.id] || [];
+    const avg = vals.length ? Math.round((vals.reduce((a,b)=>a+b,0)/vals.length)*10)/10 : 0;
+    return `<div class="modal-cat-bar">
+      <span class="modal-cat-nombre">${cat.emoji} ${cat.nombre}</span>
+      <div class="modal-cat-track"><div class="modal-cat-fill" style="width:${(avg/5)*100}%"></div></div>
+      <span class="modal-cat-val">${avg > 0 ? avg : '—'}</span>
+    </div>`;
+  }).join('');
+
+  document.getElementById('modalDisp').textContent =
+    `${tipoLabel} · Disponible en ${n.zona || 'Ciudad de Panamá'} · ${expLabel} de experiencia en trabajo doméstico.`;
+
+  const bioEl = document.getElementById('modalBio');
+  const bioTitulo = document.getElementById('modalBioTitulo');
+  if (n.bio) { bioTitulo.style.display='block'; bioEl.textContent = n.bio; }
+  else { bioTitulo.style.display='none'; }
+
+  document.getElementById('btnContratar').onclick = () => {
+    if (n.demo) { showToast('💬 Demo — en la app real abre WhatsApp'); return; }
+    window.open(`https://wa.me/?text=Hola%20${encodeURIComponent(n.nombre)}%2C%20te%20encontré%20en%20My%20Nana%20y%20me%20interesa%20tu%20perfil.%20%C2%BFEstás%20disponible%3F`, '_blank');
+  };
+
+  document.getElementById('modalPerfil').classList.add('visible');
+  document.body.style.overflow = 'hidden';
+};
+
+window.cerrarModal = () => {
+  document.getElementById('modalPerfil').classList.remove('visible');
+  document.body.style.overflow = '';
+};
+
+document.getElementById('modalPerfil').addEventListener('click', e => {
+  if (e.target === document.getElementById('modalPerfil')) cerrarModal();
+});
+
+// ── PERFIL NANA ──
+async function cargarPerfilNana() {
+  const snap = await getDoc(doc(db, 'perfiles_publicos', usuarioActual.uid));
+  if (snap.exists()) {
+    const data = snap.data();
+    const toggle = document.getElementById('toggleVisible');
+    if (toggle) toggle.checked = data.visible || false;
+    actualizarToggleSub(data.visible);
+
+    if (data.tipo) document.getElementById('pTipo').value = data.tipo;
+    if (data.experiencia !== undefined) document.getElementById('pExperiencia').value = data.experiencia;
+    if (data.zona) document.getElementById('pZona').value = data.zona;
+    if (data.bio) document.getElementById('pBio').value = data.bio;
+
+    if (data.skills) {
+      skillsSeleccionadas = new Set(data.skills);
+      skillsSeleccionadas.forEach(s => {
+        const map = {cocina:'sCocina',limpieza:'sLimpieza',ninos:'sNinos',lavanderia:'sLavanderia',organizacion:'sOrganizacion',mascotas:'sMascotas'};
+        const el = document.getElementById(map[s])?.closest('.skill-opt');
+        if (el) el.classList.add('sel');
+        const chk = document.getElementById(map[s]);
+        if (chk) chk.checked = true;
+      });
+    }
+    renderPreview();
+  }
+}
+
+window.cambiarVisibilidad = async (visible) => {
+  await setDoc(doc(db, 'perfiles_publicos', usuarioActual.uid), { visible, nombre: perfilActual.nombre }, { merge: true });
+  actualizarToggleSub(visible);
+  showToast(visible ? '✅ Tu perfil es visible en el buscador' : '🔒 Tu perfil está oculto');
+};
+
+function actualizarToggleSub(visible) {
+  const sub = document.getElementById('toggleSub');
+  if (sub) sub.textContent = visible
+    ? '✅ Activado — otras familias pueden encontrarte'
+    : '🔒 Desactivado — no apareces en el buscador';
+}
+
+window.toggleSkill = (el, skill) => {
+  el.classList.toggle('sel');
+  const chk = el.querySelector('input[type=checkbox]');
+  if (chk) chk.checked = !chk.checked;
+  if (skillsSeleccionadas.has(skill)) skillsSeleccionadas.delete(skill);
+  else skillsSeleccionadas.add(skill);
+};
+
+window.guardarPerfil = async () => {
+  const tipo = document.getElementById('pTipo').value;
+  const experiencia = parseInt(document.getElementById('pExperiencia').value);
+  const zona = document.getElementById('pZona').value;
+  const bio = document.getElementById('pBio').value.trim();
+  const visible = document.getElementById('toggleVisible').checked;
+
+  const datos = {
+    nombre: perfilActual.nombre,
+    tipo, experiencia, zona, bio,
+    skills: [...skillsSeleccionadas],
+    visible,
+    uid: usuarioActual.uid,
+    actualizado: serverTimestamp()
+  };
+
+  await setDoc(doc(db, 'perfiles_publicos', usuarioActual.uid), datos, { merge: true });
+  showToast('✅ Perfil guardado correctamente');
+  renderPreview(datos);
+};
+
+function renderPreview(data) {
+  const tipo = data?.tipo || document.getElementById('pTipo')?.value || 'fija';
+  const exp = data?.experiencia || parseInt(document.getElementById('pExperiencia')?.value || '0');
+  const zona = data?.zona || document.getElementById('pZona')?.value || 'Panamá';
+  const nombre = perfilActual?.nombre || 'Tu nombre';
+  const inicial = nombre[0]?.toUpperCase() || '?';
+  const skills = data?.skills || [...skillsSeleccionadas];
+  const tipoLabel = tipo === 'fija' ? 'Nana fija' : tipo === 'eventual' ? 'Nana eventual' : 'Fija y eventual';
+
+  const preview = document.getElementById('previewPerfil');
+  const card = document.getElementById('cardPreview');
+  if (!preview || !card) return;
+  preview.style.display = 'block';
+
+  card.innerHTML = `
+    <div class="nana-card-top">
+      <div class="nana-avatar">${inicial}</div>
+      <div class="nana-card-info">
+        <div class="nana-card-nombre">${nombre}</div>
+        <div class="nana-card-tipo">${tipoLabel} · ${exp} año${exp !== 1 ? 's' : ''} exp.</div>
+        <div style="margin-top:6px;font-size:11px;color:rgba(255,255,255,.5);">📍 ${zona}</div>
+      </div>
+      <div class="nana-score-wrap">
+        <div class="nana-score-n">—</div>
+        <div class="nana-score-s" style="font-size:10px;color:rgba(255,255,255,.4);">Sin score aún</div>
+      </div>
+    </div>
+    <div class="nana-card-body">
+      <div class="nana-cats">
+        ${skills.slice(0,4).map(s => `<span class="nana-cat-tag">${skillEmoji(s)} ${skillLabel(s)}</span>`).join('')}
+      </div>
+      <div style="font-size:12px;color:var(--txt2);text-align:center;padding:8px;background:var(--g3);border-radius:8px;">
+        Así te ven las familias en el buscador
+      </div>
+    </div>`;
+}
+
+// ── HELPERS ──
+function getNivel(score) {
+  return NIVELES.find(n => score >= n.min && score <= n.max) || NIVELES[0];
+}
+
+function renderStars(score) {
+  const llenas = Math.floor(score);
+  const media = score % 1 >= 0.5;
+  return '★'.repeat(llenas) + (media ? '½' : '') + '☆'.repeat(5 - llenas - (media ? 1 : 0));
+}
+
+function skillLabel(s) {
+  const map = {cocina:'Cocina',limpieza:'Limpieza',ninos:'Niños',lavanderia:'Lavandería',organizacion:'Organización',mascotas:'Mascotas'};
+  return map[s] || s;
+}
+
+function skillEmoji(s) {
+  const map = {cocina:'🍳',limpieza:'🧹',ninos:'🎒',lavanderia:'👕',organizacion:'📦',mascotas:'🐾'};
+  return map[s] || '📌';
+}
+
+window.showToast = (msg) => {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('visible');
+  setTimeout(() => t.classList.remove('visible'), 3000);
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Términos y Condiciones — My Nana Panama</title>
+<!-- SEO básico -->
+<meta name="description" content="Términos y condiciones de uso de la plataforma My Nana Panama. Ley 81 de 2019, República de Panamá.">
+<meta name="robots" content="index, follow">
+<meta property="og:title" content="Términos y Condiciones — My Nana Panama">
+<meta property="og:description" content="Términos y condiciones de uso de la plataforma My Nana Panama. Ley 81 de 2019, República de Panamá.">
+<meta property="og:url" content="https://mynana.app/">
+<meta property="og:image" content="https://mynana.app/og-image.png">
+<meta property="og:site_name" content="My Nana Panama">
+<meta name="theme-color" content="#0F4A38">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230F4A38'/><text y='.9em' font-size='75' x='12'>🏠</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Cormorant+Garamond:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --g:#1A6B52;--g2:#0F4A38;--g3:#F0F7F4;--g4:#E1F0EB;
+  --b:#D4A5A5;--b2:#BF9090;
+  --cr:#F9F5F0;--txt:#1A2E25;--txt2:#4A6358;
+  --r:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);overflow-x:hidden;}
+
+/* NAV */
+.nav{background:var(--g2);padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.nav-logo{font-family:'Cormorant Garamond',serif;font-size:22px;color:#fff;text-decoration:none;}
+.nav-logo em{color:var(--b);font-style:normal;}
+.nav-back{background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.7);font-size:13px;padding:7px 14px;border-radius:99px;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,var(--g2) 0%,var(--g) 100%);padding:48px 24px 36px;}
+.hero-tag{font-size:11px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;}
+.hero-titulo{font-family:'Cormorant Garamond',serif;font-size:36px;color:#fff;margin-bottom:8px;line-height:1.2;}
+.hero-sub{font-size:13px;color:rgba(255,255,255,.6);line-height:1.6;max-width:560px;margin-bottom:20px;}
+.hero-meta{display:flex;gap:16px;flex-wrap:wrap;}
+.hero-meta-item{font-size:12px;color:rgba(255,255,255,.5);}
+.hero-meta-item strong{color:rgba(255,255,255,.8);font-weight:500;}
+
+/* LANG TOGGLE */
+.lang-wrap{background:#fff;border-bottom:1px solid var(--g4);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;position:sticky;top:64px;z-index:40;}
+.lang-btns{display:flex;gap:6px;}
+.lang-btn{background:var(--cr);border:1.5px solid var(--g4);border-radius:99px;padding:6px 16px;font-size:13px;font-weight:500;color:var(--txt2);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.lang-btn.activo{background:var(--g);border-color:var(--g);color:#fff;}
+.version-txt{font-size:12px;color:var(--txt2);}
+
+/* ÍNDICE */
+.indice{background:#fff;border-radius:var(--r);border:1px solid var(--g4);padding:20px 24px;margin:24px auto;max-width:800px;width:calc(100% - 48px);}
+.indice-titulo{font-size:13px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;}
+.indice-lista{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
+@media(max-width:600px){.indice-lista{grid-template-columns:1fr;}}
+.indice-link{font-size:13px;color:var(--g);text-decoration:none;padding:4px 0;display:flex;align-items:center;gap:6px;}
+.indice-link:hover{color:var(--g2);}
+.indice-num{font-size:11px;color:var(--b2);font-weight:600;width:20px;}
+
+/* CONTENIDO */
+.contenido{max-width:800px;margin:0 auto 60px;padding:0 24px;}
+.seccion{background:#fff;border-radius:var(--r);border:1px solid var(--g4);margin-bottom:12px;overflow:hidden;}
+.seccion-header{background:var(--g3);padding:16px 20px;display:flex;align-items:center;gap:12px;cursor:pointer;user-select:none;}
+.seccion-header:hover{background:var(--g4);}
+.seccion-num{font-family:'Cormorant Garamond',serif;font-size:24px;color:var(--b2);font-weight:500;width:32px;flex-shrink:0;}
+.seccion-titulo-wrap{flex:1;}
+.seccion-titulo{font-size:15px;font-weight:600;color:var(--txt);}
+.seccion-sub{font-size:12px;color:var(--txt2);margin-top:2px;}
+.seccion-chevron{font-size:18px;color:var(--txt2);transition:transform .2s;flex-shrink:0;}
+.seccion-chevron.abierto{transform:rotate(180deg);}
+.seccion-body{padding:20px;display:none;}
+.seccion-body.visible{display:block;}
+p{font-size:14px;color:var(--txt2);line-height:1.7;margin-bottom:12px;}
+p:last-child{margin-bottom:0;}
+h4{font-size:14px;font-weight:600;color:var(--txt);margin:16px 0 8px;}
+h4:first-child{margin-top:0;}
+ul,ol{padding-left:20px;margin-bottom:12px;}
+li{font-size:14px;color:var(--txt2);line-height:1.7;margin-bottom:4px;}
+.highlight{background:var(--g3);border-left:3px solid var(--g);border-radius:0 8px 8px 0;padding:12px 16px;margin-bottom:14px;}
+.highlight p{color:var(--txt);font-weight:500;margin:0;}
+.advertencia{background:#FEF7EE;border-left:3px solid #D97706;border-radius:0 8px 8px 0;padding:12px 16px;margin-bottom:14px;}
+.advertencia p{color:#854F0B;margin:0;}
+.tabla-wrap{overflow-x:auto;margin-bottom:14px;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{background:var(--g2);color:#fff;padding:10px 12px;text-align:left;font-weight:500;}
+td{padding:9px 12px;border-bottom:1px solid var(--g4);color:var(--txt2);vertical-align:top;}
+tr:last-child td{border-bottom:none;}
+tr:nth-child(even) td{background:var(--g3);}
+.badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;margin-left:6px;}
+.badge-verde{background:var(--g3);color:var(--g);}
+.badge-rosa{background:#F7EFEF;color:var(--b2);}
+.badge-azul{background:#EEF2FF;color:#4F46E5;}
+
+/* CONTACTO CARD */
+.contacto-card{background:var(--g2);border-radius:var(--r);padding:24px;margin-top:24px;text-align:center;}
+.contacto-card h3{font-family:'Cormorant Garamond',serif;font-size:24px;color:#fff;margin-bottom:8px;}
+.contacto-card p{color:rgba(255,255,255,.7);font-size:14px;margin-bottom:16px;}
+.contacto-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.contacto-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;padding:10px 20px;border-radius:99px;text-decoration:none;font-size:13px;font-weight:500;transition:all .2s;}
+.contacto-btn:hover{background:rgba(255,255,255,.2);}
+.contacto-btn.primary{background:var(--b);border-color:var(--b);}
+
+/* FOOTER */
+.footer{background:var(--g2);padding:24px;text-align:center;}
+.footer p{font-size:12px;color:rgba(255,255,255,.4);}
+
+/* IDIOMA */
+.es,.en{transition:opacity .2s;}
+body.lang-en .es{display:none;}
+body.lang-es .en{display:none;}
+
+@media(max-width:600px){
+  .hero{padding:40px 20px 28px;}
+  .hero-titulo{font-size:28px;}
+  .indice{margin:16px auto;width:calc(100% - 40px);}
+  .contenido{padding:0 20px;}
+}
+</style>
+</head>
+<body class="lang-es">
+
+<!-- NAV -->
+<nav class="nav">
+  <a href="/index.html" class="nav-logo">My <em>Nana</em></a>
+  <a href="/index.html" class="nav-back">← Inicio</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag es">Documentos legales</div>
+  <div class="hero-tag en">Legal documents</div>
+  <h1 class="hero-titulo es">Términos y Condiciones</h1>
+  <h1 class="hero-titulo en">Terms & Conditions</h1>
+  <p class="hero-sub es">Este documento regula el uso de la plataforma My Nana en todas sus versiones — web, aplicación móvil y marketplace de personal doméstico. Al usar My Nana aceptas estos términos en su totalidad.</p>
+  <p class="hero-sub en">This document governs the use of the My Nana platform in all its versions — web, mobile application, and domestic staff marketplace. By using My Nana you accept these terms in full.</p>
+  <div class="hero-meta">
+    <div class="hero-meta-item es"><strong>Última actualización:</strong> Mayo 2025</div>
+    <div class="hero-meta-item en"><strong>Last updated:</strong> May 2025</div>
+    <div class="hero-meta-item es"><strong>Ley aplicable:</strong> República de Panamá</div>
+    <div class="hero-meta-item en"><strong>Governing law:</strong> Republic of Panama</div>
+    <div class="hero-meta-item es"><strong>Versión:</strong> 1.0</div>
+    <div class="hero-meta-item en"><strong>Version:</strong> 1.0</div>
+  </div>
+</div>
+
+<!-- LANG TOGGLE -->
+<div class="lang-wrap">
+  <div class="lang-btns">
+    <button class="lang-btn activo" onclick="setLang('es',this)">🇵🇦 Español</button>
+    <button class="lang-btn" onclick="setLang('en',this)">🇺🇸 English</button>
+  </div>
+  <div class="version-txt es">Versión 1.0 · Mayo 2025</div>
+  <div class="version-txt en">Version 1.0 · May 2025</div>
+</div>
+
+<!-- ÍNDICE -->
+<div class="indice">
+  <div class="indice-titulo es">Tabla de contenido</div>
+  <div class="indice-titulo en">Table of contents</div>
+  <div class="indice-lista">
+    <a href="#s1" class="indice-link"><span class="indice-num">01</span><span class="es">Definiciones</span><span class="en">Definitions</span></a>
+    <a href="#s2" class="indice-link"><span class="indice-num">02</span><span class="es">Aceptación de los términos</span><span class="en">Acceptance of terms</span></a>
+    <a href="#s3" class="indice-link"><span class="indice-num">03</span><span class="es">Descripción del servicio</span><span class="en">Service description</span></a>
+    <a href="#s4" class="indice-link"><span class="indice-num">04</span><span class="es">Registro y cuentas</span><span class="en">Registration and accounts</span></a>
+    <a href="#s5" class="indice-link"><span class="indice-num">05</span><span class="es">Uso por familias</span><span class="en">Use by families</span></a>
+    <a href="#s6" class="indice-link"><span class="indice-num">06</span><span class="es">Uso por trabajadoras domésticas</span><span class="en">Use by domestic workers</span></a>
+    <a href="#s7" class="indice-link"><span class="indice-num">07</span><span class="es">Marketplace de nanas</span><span class="en">Nana marketplace</span></a>
+    <a href="#s8" class="indice-link"><span class="indice-num">08</span><span class="es">Pagos y suscripciones</span><span class="en">Payments and subscriptions</span></a>
+    <a href="#s9" class="indice-link"><span class="indice-num">09</span><span class="es">Privacidad y datos personales</span><span class="en">Privacy and personal data</span></a>
+    <a href="#s10" class="indice-link"><span class="indice-num">10</span><span class="es">Propiedad intelectual</span><span class="en">Intellectual property</span></a>
+    <a href="#s11" class="indice-link"><span class="indice-num">11</span><span class="es">Limitación de responsabilidad</span><span class="en">Limitation of liability</span></a>
+    <a href="#s12" class="indice-link"><span class="indice-num">12</span><span class="es">Conducta prohibida</span><span class="en">Prohibited conduct</span></a>
+    <a href="#s13" class="indice-link"><span class="indice-num">13</span><span class="es">Suspensión y terminación</span><span class="en">Suspension and termination</span></a>
+    <a href="#s14" class="indice-link"><span class="indice-num">14</span><span class="es">Ley aplicable y disputas</span><span class="en">Governing law and disputes</span></a>
+    <a href="#s15" class="indice-link"><span class="indice-num">15</span><span class="es">Cambios a los términos</span><span class="en">Changes to terms</span></a>
+    <a href="#s16" class="indice-link"><span class="indice-num">16</span><span class="es">Contacto</span><span class="en">Contact</span></a>
+  </div>
+</div>
+
+<!-- SECCIONES -->
+<div class="contenido">
+
+  <!-- S1 DEFINICIONES -->
+  <div class="seccion" id="s1">
+    <div class="seccion-header" onclick="toggle('s1')">
+      <div class="seccion-num">01</div>
+      <div class="seccion-titulo-wrap">
+        <div class="seccion-titulo es">Definiciones</div>
+        <div class="seccion-titulo en">Definitions</div>
+        <div class="seccion-sub es">Términos utilizados en este documento</div>
+        <div class="seccion-sub en">Terms used in this document</div>
+      </div>
+      <div class="seccion-chevron" id="chevron-s1">▼</div>
+    </div>
+    <div class="seccion-body" id="body-s1">
+      <div class="es">
+        <p>Para los efectos del presente documento, se entiende por:</p>
+        <div class="tabla-wrap">
+          <table>
+            <tr><th>Término</th><th>Definición</th></tr>
+            <tr><td><strong>My Nana / La Plataforma</strong></td><td>El servicio digital ofrecido a través de la dirección web mynana.app y cualquier aplicación móvil, extensión o servicio conexo operado bajo la marca My Nana.</td></tr>
+            <tr><td><strong>Operador</strong></td><td>La persona natural o jurídica propietaria y administradora de la Plataforma My Nana, domiciliada en la República de Panamá.</td></tr>
+            <tr><td><strong>Usuario</strong></td><td>Toda persona natural o jurídica que accede, navega, se registra o utiliza la Plataforma en cualquiera de sus versiones.</td></tr>
+            <tr><td><strong>Familia / Empleador</strong></td><td>Usuario que contrata el servicio para gestionar a su personal doméstico.</td></tr>
+            <tr><td><strong>Nana / Trabajadora doméstica</strong></td><td>Usuario que utiliza la Plataforma para recibir instrucciones, registrar actividades y construir su perfil profesional.</td></tr>
+            <tr><td><strong>Marketplace</strong></td><td>Módulo de la Plataforma que permite a las Familias buscar y contactar Trabajadoras domésticas verificadas.</td></tr>
+            <tr><td><strong>MyNana Score</strong></td><td>Sistema de calificación y reputación de Trabajadoras domésticas dentro de la Plataforma.</td></tr>
+            <tr><td><strong>Suscripción</strong></td><td>Plan de pago periódico que otorga acceso a las funciones premium de la Plataforma.</td></tr>
+            <tr><td><strong>Contenido</strong></td><td>Toda información, texto, imagen, audio, video, datos o material que los Usuarios publiquen o transmitan a través de la Plataforma.</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="en">
+        <p>For the purposes of this document, the following terms are defined as:</p>
+        <div class="tabla-wrap">
+          <table>
+            <tr><th>Term</th><th>Definition</th></tr>
+            <tr><td><strong>My Nana / The Platform</strong></td><td>The digital service offered through mynana.app and any mobile application, extension, or related service operated under the My Nana brand.</td></tr>
+            <tr><td><strong>Operator</strong></td><td>The natural or legal person who owns and manages the My Nana Platform, domiciled in the Republic of Panama.</td></tr>
+            <tr><td><strong>User</strong></td><td>Any natural or legal person who accesses, browses, registers, or uses the Platform in any of its versions.</td></tr>
+            <tr><td><strong>Family / Employer</strong></td><td>User who subscribes to the service to manage their domestic staff.</td></tr>
+            <tr><td><strong>Nana / Domestic Worker</strong></td><td>User who uses the Platform to receive instructions, log activities, and build their professional profile.</td></tr>
+            <tr><td><strong>Marketplace</strong></td><td>Platform module that allows Families to search for and contact verified domestic workers.</td></tr>
+            <tr><td><strong>MyNana Score</strong></td><td>Rating and reputation system for domestic workers within the Platform.</td></tr>
+            <tr><td><strong>Subscription</strong></td><td>Recurring payment plan granting access to the Platform's premium features.</td></tr>
+            <tr><td><strong>Content</strong></td><td>All information, text, images, audio, video, data, or material that Users post or transmit through the Platform.</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S2 ACEPTACIÓN -->
+  <div class="seccion" id="s2">
+    <div class="seccion-header" onclick="toggle('s2')">
+      <div class="seccion-num">02</div>
+      <div class="seccion-titulo-wrap">
+        <div class="seccion-titulo es">Aceptación de los términos</div>
+        <div class="seccion-titulo en">Acceptance of terms</div>
+      </div>
+      <div class="seccion-chevron" id="chevron-s2">▼</div>
+    </div>
+    <div class="seccion-body" id="body-s2">
+      <div class="es">
+        <div class="highlight"><p>Al acceder o usar My Nana, confirmas que has leído, entendido y aceptas estos Términos y Condiciones en su totalidad.</p></div>
+        <p>El acceso a la Plataforma implica la aceptación plena y sin reservas de todas las disposiciones incluidas en este documento. Si no estás de acuerdo con alguna de ellas, debes abstenerte de usar el servicio.</p>
+        <p>Para registrarse en My Nana, el Usuario debe:</p>
+        <ul>
+          <li>Ser mayor de 18 años o actuar bajo supervisión de un adulto responsable.</li>
+          <li>Proporcionar información veraz, completa y actualizada durante el registro.</li>
+          <li>Tener capacidad legal para suscribir contratos según la legislación panameña.</li>
+          <li>No estar prohibido de usar el servicio por resolución judicial o regulatoria.</li>
+        </ul>
+        <p>El Operador se reserva el derecho de verificar la identidad de los Usuarios en cualquier momento y cancelar cuentas que no cumplan con estos requisitos.</p>
+      </div>
+      <div class="en">
+        <div class="highlight"><p>By accessing or using My Nana, you confirm that you have read, understood, and accepted these Terms and Conditions in their entirety.</p></div>
+        <p>Access to the Platform implies full and unreserved acceptance of all provisions in this document. If you disagree with any of them, you must refrain from using the service.</p>
+        <p>To register on My Nana, the User must:</p>
+        <ul>
+          <li>Be at least 18 years old or act under the supervision of a responsible adult.</li>
+          <li>Provide truthful, complete, and current information during registration.</li>
+          <li>Have legal capacity to enter into contracts under Panamanian law.</li>
+          <li>Not be prohibited from using the service by court or regulatory order.</li>
+        </ul>
+        <p>The Operator reserves the right to verify User identity at any time and cancel accounts that do not meet these requirements.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- S3 DESCRIPCIÓN -->
+  <div class="seccion" id="s3">
+    <div class="seccion-header" onclick="toggle('s3')">
+      <div class="seccion-num">03</div>
+      <div class="seccion-titulo-wrap">
+        <div class="seccion-titulo es">Descripción del servicio</div>
+        <div class="seccion-titulo en">Service description</div>
+      </div>
+      <div class="seccion-chevron" id="chevron-s3">▼</div>
+    </div>
+    <div class="seccion-body" id="body-s3">
+      <div class="es">
+        <p>My Nana es una plataforma digital de gestión del hogar que ofrece las siguientes funciones a través de sus módulos:</p>
+        <div class="tabla-wrap">
+          <table>
+            <tr><th>Módulo</th><th>Descripción</th><th>Disponibilidad</th></tr>
+            <tr><td>Tareas</td><td>Asignación y seguimiento de tareas con fotos de evidencia en tiempo real</td><td><span class="badge badge-verde">Activo</span></td></tr>
+            <tr><td>Chat</td><td>Mensajería directa con envío de fotos, audios y lista de tareas compartidas</td><td><span class="badge badge-verde">Activo</span></td></tr>
+            <tr><td>Menú semanal</td><td>Planificación de comidas panameñas con lista de ingredientes automática</td><td><span class="badge badge-verde">Activo</span></td></tr>
+            <tr><td>Lista del mercado</td><td>Lista de compras generada automáticamente según el menú semanal</td><td><span class="badge badge-verde">Activo</span></td></tr>
+            <tr><td>MyNana Score</td><td>Sistema de calificación y reputación verificada del personal</td><td><span class="badge badge-verde">Activo</span></td></tr>
+            <tr><td>Contratos digitales</td><td>Generación de contratos según el Código de Trabajo de la República de Panamá</td><td><span class="badge badge-verde">Activo</span></td></tr>
+            <tr><td>Nómina</td><td>Cálculo automático de salario, décimo tercer mes, vacaciones y prima</td><td><span class="badge badge-verde">Activo</span></td></tr>
+            <tr><td>Videos</td><td>Contenido educativo para el personal doméstico</td><td><span class="badge badge-verde">Activo</span></td></tr>
+            <tr><td>Buscador</td><td>Búsqueda de personal doméstico verificado por zona, experiencia y score</td><td><span class="badge badge-verde">Activo</span></td></tr>
+            <tr><td>Marketplace</td><td>Conexión directa entre familias y trabajadoras domésticas verificadas</td><td><span class="badge badge-azul">Próximamente</span></td></tr>
+          </table>
+        </div>
+        <div class="advertencia"><p>Los contratos generados por My Nana son documentos de referencia. El Operador recomienda consultar con un abogado laboral para validar cualquier acuerdo antes de su firma.</p></div>
+      </div>
+      <div class="en">
+        <p>My Nana is a digital household management platform offering the following features through its modules:</p>
+        <div class="tabla-wrap">
+          <table>
+            <tr><th>Module</th><th>Description</th><th>Availability</th></tr>
+            <tr><td>Tasks</td><td>Task assignment and tracking with real-time photo evidence</td><td><span class="badge badge-verde">Active</span></td></tr>
+            <tr><td>Chat</td><td>Direct messaging with photo, audio, and shared task list support</td><td><span class="badge badge-verde">Active</span></td></tr>
+            <tr><td>Weekly menu</td><td>Panamanian meal planning with automatic ingredient list</td><td><span class="badge badge-verde">Active</span></td></tr>
+            <tr><td>Shopping list</td><td>Shopping list automatically generated from the weekly menu</td><td><span class="badge badge-verde">Active</span></td></tr>
+            <tr><td>MyNana Score</td><td>Verified staff rating and reputation system</td><td><span class="badge badge-verde">Active</span></td></tr>
+            <tr><td>Digital contracts</td><td>Contract generation under Panama's Labor Code</td><td><span class="badge badge-verde">Active</span></td></tr>
+            <tr><td>Payroll</td><td>Automatic calculation of salary, thirteenth month, vacation, and seniority bonus</td><td><span class="badge badge-verde">Active</span></td></tr>
+            <tr><td>Videos</td><td>Educational content for domestic staff</td><td><span class="badge badge-verde">Active</span></td></tr>
+            <tr><td>Search</td><td>Search for verified domestic staff by area, experience, and score</td><td><span class="badge badge-verde">Active</span></td></tr>
+            <tr><td>Marketplace</td><td>Direct connection between families and verified domestic workers</td><td><span class="badge badge-azul">Coming soon</span></td></tr>
+          </table>
+        </div>
+        <div class="advertencia"><p>Contracts generated by My Nana are reference documents. The Operator recommends consulting a labor attorney to validate any agreement before signing.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S4 REGISTRO -->
+  <div class="seccion" id="s4">
+    <div class="seccion-header" onclick="toggle('s4')">
+      <div class="seccion-num">04</div>
+      <div class="seccion-titulo-wrap">
+        <div class="seccion-titulo es">Registro y cuentas de usuario</div>
+        <div class="seccion-titulo en">Registration and user accounts</div>
+      </div>
+      <div class="seccion-chevron" id="chevron-s4">▼</div>
+    </div>
+    <div class="seccion-body" id="body-s4">
+      <div class="es">
+        <h4>Creación de cuenta</h4>
+        <p>El acceso a las funciones de My Nana requiere la creación de una cuenta mediante correo electrónico y contraseña, autenticada a través de Firebase Authentication. Cada Usuario es responsable de:</p>
+        <ul>
+          <li>Mantener la confidencialidad de sus credenciales de acceso.</li>
+          <li>Notificar inmediatamente al Operador ante cualquier uso no autorizado de su cuenta.</li>
+          <li>Toda actividad que ocurra bajo su cuenta, independientemente de si fue realizada por el titular o por terceros.</li>
+        </ul>
+        <h4>Vinculación de cuentas</h4>
+        <p>My Nana opera bajo un sistema de vinculación mediante código único: la Familia genera un código que comparte con su Nana para conectar ambas cuentas en un mismo hogar. Este código es de uso exclusivo entre las partes vinculadas.</p>
+        <h4>Perfil en el buscador</h4>
+        <p>Las Trabajadoras domésticas pueden activar voluntariamente su perfil público en el Buscador de My Nana. Al hacerlo, aceptan que su nombre, tipo de servicio, años de experiencia, zona de trabajo y MyNana Score sean visibles para otras Familias registradas en la Plataforma.</p>
+        <p>La Trabajadora puede desactivar su visibilidad en cualquier momento desde la configuración de su perfil.</p>
+      </div>
+      <div class="en">
+        <h4>Account creation</h4>
+        <p>Access to My Nana's features requires creating an account with an email and password, authenticated through Firebase Authentication. Each User is responsible for:</p>
+        <ul>
+          <li>Maintaining the confidentiality of their access credentials.</li>
+          <li>Immediately notifying the Operator of any unauthorized use of their account.</li>
+          <li>All activity occurring under their account, regardless of whether performed by the account holder or third parties.</li>
+        </ul>
+        <h4>Account linking</h4>
+        <p>My Nana operates on a unique code linking system: the Family generates a code they share with their Nana to connect both accounts within the same household. This code is for exclusive use between the linked parties.</p>
+        <h4>Search profile</h4>
+        <p>Domestic workers may voluntarily activate their public profile in the My Nana Search. By doing so, they accept that their name, service type, years of experience, work area, and MyNana Score will be visible to other registered Families on the Platform.</p>
+        <p>Workers may deactivate their visibility at any time from their profile settings.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- S5 FAMILIAS -->
+  <div class="seccion" id="s5">
+    <div class="seccion-header" onclick="toggle('s5')">
+      <div class="seccion-num">05</div>
+      <div class="seccion-titulo-wrap">
+        <div class="seccion-titulo es">Uso por familias</div>
+        <div class="seccion-titulo en">Use by families</div>
+      </div>
+      <div class="seccion-chevron" id="chevron-s5">▼</div>
+    </div>
+    <div class="seccion-body" id="body-s5">
+      <div class="es">
+        <p>Al usar My Nana como Familia, el Usuario acepta:</p>
+        <ul>
+          <li>Utilizar la Plataforma únicamente para gestionar personal doméstico en el contexto de un hogar familiar.</li>
+          <li>Asignar tareas razonables y legales que no contravengan la legislación laboral panameña.</li>
+          <li>Respetar la dignidad y derechos de las Trabajadoras domésticas en todas las interacciones realizadas a través de la Plataforma.</li>
+          <li>Emitir calificaciones en el MyNana Score de forma honesta, objetiva y basada en hechos reales.</li>
+          <li>No utilizar el chat o la asignación de tareas para comunicar instrucciones ilegales, discriminatorias o acosadoras.</li>
+          <li>Asumir plena responsabilidad por la relación laboral existente con su personal doméstico, siendo My Nana únicamente una herramienta de gestión.</li>
+        </ul>
+        <div class="advertencia"><p>My Nana no es empleador ni intermediario laboral. La Plataforma no participa en la contratación, el pago de salarios ni en ninguna relación laboral entre Familias y Trabajadoras domésticas.</p></div>
+      </div>
+      <div class="en">
+        <p>By using My Nana as a Family, the User agrees to:</p>
+        <ul>
+          <li>Use the Platform solely for managing domestic staff in a family household context.</li>
+          <li>Assign reasonable and lawful tasks that do not violate Panamanian labor law.</li>
+          <li>Respect the dignity and rights of domestic workers in all interactions through the Platform.</li>
+          <li>Submit MyNana Score ratings honestly, objectively, and based on real events.</li>
+          <li>Not use the chat or task assignment to communicate illegal, discriminatory, or harassing instructions.</li>
+          <li>Assume full responsibility for the employment relationship with their domestic staff, as My Nana is solely a management tool.</li>
+        </ul>
+        <div class="advertencia"><p>My Nana is not an employer or labor intermediary. The Platform does not participate in the hiring, payment of wages, or any employment relationship between Families and domestic workers.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S6 TRABAJADORAS -->
+  <div class="seccion" id="s6">
+    <div class="seccion-header" onclick="toggle('s6')">
+      <div class="seccion-num">06</div>
+      <div class="seccion-titulo-wrap">
+        <div class="seccion-titulo es">Uso por trabajadoras domésticas</div>
+        <div class="seccion-titulo en">Use by domestic workers</div>
+      </div>
+      <div class="seccion-chevron" id="chevron-s6">▼</div>
+    </div>
+    <div class="seccion-body" id="body-s6">
+      <div class="es">
+        <p>Al usar My Nana como Trabajadora doméstica, la Usuario acepta:</p>
+        <ul>
+          <li>Registrar información veraz sobre su experiencia, especialidades y zona de trabajo en su perfil público.</li>
+          <li>Completar las tareas asignadas de manera responsable y documentar su realización mediante los medios disponibles en la Plataforma.</li>
+          <li>No compartir el código de vinculación de su hogar con terceros no autorizados.</li>
+          <li>Mantener la confidencialidad de la información del hogar de la Familia empleadora.</li>
+          <li>No utilizar la Plataforma para comunicar contenido ofensivo, amenazante o inapropiado.</li>
+        </ul>
+        <h4>MyNana Score y reputación</h4>
+        <p>La Trabajadora acepta que las calificaciones emitidas por las Familias sean almacenadas y visualizadas en su perfil de forma acumulativa. El Operador no interviene en la modificación de calificaciones salvo en casos de uso fraudulento debidamente comprobado.</p>
+        <p>La Trabajadora puede reportar calificaciones que considere falsas o difamatorias a través del correo de contacto, y el Operador revisará el caso en un plazo de 15 días hábiles.</p>
+      </div>
+      <div class="en">
+        <p>By using My Nana as a domestic worker, the User agrees to:</p>
+        <ul>
+          <li>Register truthful information about their experience, specialties, and work area on their public profile.</li>
+          <li>Complete assigned tasks responsibly and document completion using the tools available on the Platform.</li>
+          <li>Not share the household linking code with unauthorized third parties.</li>
+          <li>Maintain the confidentiality of the employer Family's household information.</li>
+          <li>Not use the Platform to communicate offensive, threatening, or inappropriate content.</li>
+        </ul>
+        <h4>MyNana Score and reputation</h4>
+        <p>The worker accepts that ratings submitted by Families will be stored and displayed on their profile cumulatively. The Operator will not modify ratings except in cases of duly verified fraudulent use.</p>
+        <p>Workers may report ratings they consider false or defamatory via the contact email, and the Operator will review the case within 15 business days.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- S7 MARKETPLACE -->
+  <div class="seccion" id="s7">
+    <div class="seccion-header" onclick="toggle('s7')">
+      <div class="seccion-num">07</div>
+      <div class="seccion-titulo-wrap">
+        <div class="seccion-titulo es">Marketplace de nanas <span class="badge badge-azul">Próximamente</span></div>
+        <div class="seccion-titulo en">Nana marketplace <span class="badge badge-azul">Coming soon</span></div>
+        <div class="seccion-sub es">Condiciones para la conexión entre familias y trabajadoras</div>
+        <div class="seccion-sub en">Conditions for connecting families and workers</div>
+      </div>
+      <div class="seccion-chevron" id="chevron-s7">▼</div>
+    </div>
+    <div class="seccion-body" id="body-s7">
+      <div class="es">
+        <div class="highlight"><p>El Marketplace es una función en desarrollo. Las condiciones aquí descritas aplicarán cuando el módulo sea activado y podrán ser actualizadas antes de su lanzamiento oficial.</p></div>
+        <h4>Naturaleza del Marketplace</h4>
+        <p>El Marketplace de My Nana es una plataforma de conexión que facilita el encuentro entre Familias que buscan personal doméstico y Trabajadoras domésticas que ofrecen sus servicios. My Nana actúa exclusivamente como intermediario tecnológico y <strong>no es parte</strong> en ningún contrato de trabajo que surja de dicha conexión.</p>
+        <h4>Responsabilidades</h4>
+        <ul>
+          <li>Las Familias son responsables de verificar la idoneidad del personal antes de contratarlo.</li>
+          <li>Las Trabajadoras son responsables de la veracidad de la información en su perfil.</li>
+          <li>Cualquier acuerdo económico o laboral es exclusivamente entre las partes.</li>
+          <li>My Nana no garantiza la disponibilidad, calidad ni idoneidad del personal listado.</li>
+        </ul>
+        <h4>Verificación de identidad</h4>
+        <p>My Nana podrá, en el futuro, implementar procesos de verificación de identidad mediante cédula panameña u otro documento oficial. La verificación otorgará un distintivo visible en el perfil pero no constituye una garantía del Operador sobre la conducta del personal.</p>
+      </div>
+      <div class="en">
+        <div class="highlight"><p>The Marketplace is a feature under development. The conditions described here will apply when the module is activated and may be updated before its official launch.</p></div>
+        <h4>Nature of the Marketplace</h4>
+        <p>My Nana's Marketplace is a connection platform that facilitates contact between Families seeking domestic staff and domestic workers offering their services. My Nana acts exclusively as a technology intermediary and is <strong>not a party</strong> to any employment contract arising from such connection.</p>
+        <h4>Responsibilities</h4>
+        <ul>
+          <li>Families are responsible for verifying the suitability of staff before hiring.</li>
+          <li>Workers are responsible for the accuracy of the information on their profiles.</li>
+          <li>Any financial or employment agreement is exclusively between the parties.</li>
+          <li>My Nana does not guarantee the availability, quality, or suitability of listed staff.</li>
+        </ul>
+        <h4>Identity verification</h4>
+        <p>My Nana may, in the future, implement identity verification processes using a Panamanian national ID or other official document. Verification will grant a visible badge on the profile but does not constitute an Operator guarantee of staff conduct.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- S8 PAGOS -->
+  <div class="seccion" id="s8">
+    <div class="seccion-header" onclick="toggle('s8')">
+      <div class="seccion-num">08</div>
+      <div class="seccion-titulo-wrap">
+        <div class="seccion-titulo es">Pagos y suscripciones</div>
+        <div class="seccion-titulo en">Payments and subscriptions</div>
+      </div>
+      <div class="seccion-chevron" id="chevron-s8">▼</div>
+    </div>
+    <div class="seccion-body" id="body-s8">
+      <div class="es">
+        <h4>Planes disponibles</h4>
+        <div class="tabla-wrap">
+          <table>
+            <tr><th>Plan</th><th>Precio</th><th>Para quién</th></tr>
+            <tr><td>Prueba gratuita</td><td>$0 por 15 días</td><td>Todas las familias · acceso completo</td></tr>
+            <tr><td>Hogar Flexible</td><td>$6.99/mes</td><td>Nana eventual · por días</td></tr>
+            <tr><td>Hogar Completo</td><td>$9.99/mes</td><td>Nana fija · todo incluido</td></tr>
+          </table>
+        </div>
+        <h4>Período de prueba</h4>
+        <p>Nuevos usuarios tienen acceso completo a todas las funciones durante 15 días calendario sin cargo. Al finalizar este período, el servicio se convertirá automáticamente al plan seleccionado y se realizará el cobro correspondiente, salvo que el Usuario cancele antes.</p>
+        <h4>Procesamiento de pagos</h4>
+        <p>Los pagos son procesados de forma segura a través de PagueloFacil, pasarela de pagos certificada en la República de Panamá. My Nana no almacena información de tarjetas de crédito o débito. Las disputas de cobro deben gestionarse directamente con PagueloFacil.</p>
+        <h4>Cancelación y reembolsos</h4>
+        <p>El Usuario puede cancelar su suscripción en cualquier momento. La cancelación será efectiva al final del período de facturación en curso. <strong>No se realizan reembolsos proporcionales</strong> por períodos no utilizados. El acceso al servicio se mantendrá activo hasta el final del período pagado.</p>
+        <h4>Cambios de precio</h4>
+        <p>El Operador podrá modificar los precios de los planes con un mínimo de 30 días de aviso previo por correo electrónico. El Usuario que no acepte el nuevo precio podrá cancelar su suscripción antes de que entre en vigencia.</p>
+      </div>
+      <div class="en">
+        <h4>Available plans</h4>
+        <div class="tabla-wrap">
+          <table>
+            <tr><th>Plan</th><th>Price</th><th>For whom</th></tr>
+            <tr><td>Free trial</td><td>$0 for 15 days</td><td>All families · full access</td></tr>
+            <tr><td>Flexible Home</td><td>$6.99/month</td><td>Occasional nana · by day</td></tr>
+            <tr><td>Complete Home</td><td>$9.99/month</td><td>Full-time nana · all included</td></tr>
+          </table>
+        </div>
+        <h4>Trial period</h4>
+        <p>New users have full access to all features for 15 calendar days at no charge. After this period, the service will automatically convert to the selected plan and the corresponding charge will be made, unless the User cancels beforehand.</p>
+        <h4>Payment processing</h4>
+        <p>Payments are processed securely through PagueloFacil, a certified payment gateway in the Republic of Panama. My Nana does not store credit or debit card information. Billing disputes must be handled directly with PagueloFacil.</p>
+        <h4>Cancellation and refunds</h4>
+        <p>Users may cancel their subscription at any time. Cancellation takes effect at the end of the current billing period. <strong>No proportional refunds</strong> are provided for unused periods. Access to the service will remain active until the end of the paid period.</p>
+        <h4>Price changes</h4>
+        <p>The Operator may modify plan prices with a minimum of 30 days' prior notice by email. Users who do not accept the new price may cancel their subscription before it takes effect.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- S9 PRIVACIDAD -->
+  <div class="seccion" id="s9">
+    <div class="seccion-header" onclick="toggle('s9')">
+      <div class="seccion-num">09</div>
+      <div class="seccion-titulo-wrap">
+        <div class="seccion-titulo es">Privacidad y datos personales</div>
+        <div class="seccion-titulo en">Privacy and personal data</div>
+      </div>
+      <div class="seccion-chevron" id="chevron-s9">▼</div>
+    </div>
+    <div class="seccion-body" id="body-s9">
+      <div class="es">
+        <h4>Datos que recopilamos</h4>
+        <ul>
+          <li><strong>Datos de registro:</strong> nombre, correo electrónico y contraseña (cifrada).</li>
+          <li><strong>Datos del hogar:</strong> tareas, menú, mensajes de chat, fotos compartidas, calificaciones y notas de nómina.</li>
+          <li><strong>Datos del perfil público</strong> (solo si la Trabajadora activa su perfil): nombre, tipo de servicio, experiencia y zona.</li>
+          <li><strong>Datos de uso:</strong> páginas visitadas, módulos utilizados y frecuencia de uso, de forma anonimizada.</li>
+        </ul>
+        <h4>Almacenamiento y seguridad</h4>
+        <p>Los datos son almacenados en Firebase Firestore (Google Cloud), con cifrado en tránsito y en reposo. Las fotos y audios se almacenan en Cloudinary. El Operador aplica medidas de seguridad razonables, pero no puede garantizar la seguridad absoluta de la información.</p>
+        <h4>Uso de los datos</h4>
+        <p>Los datos recopilados se utilizan exclusivamente para:</p>
+        <ul>
+          <li>Proveer, operar y mejorar los servicios de la Plataforma.</li>
+          <li>Enviar notificaciones relacionadas con el uso del servicio.</li>
+          <li>Generar estadísticas anónimas de uso.</li>
+          <li>Cumplir con obligaciones legales aplicables.</li>
+        </ul>
+        <p>My Nana <strong>no vende, alquila ni comparte datos personales</strong> con terceros con fines comerciales.</p>
+        <h4>Derechos del usuario</h4>
+        <p>Todo Usuario tiene derecho a acceder, rectificar, eliminar o solicitar la portabilidad de sus datos personales enviando una solicitud a nuestro correo de contacto. Las solicitudes serán atendidas en un plazo máximo de 30 días hábiles.</p>
+      </div>
+      <div class="en">
+        <h4>Data we collect</h4>
+        <ul>
+          <li><strong>Registration data:</strong> name, email, and password (encrypted).</li>
+          <li><strong>Household data:</strong> tasks, menu, chat messages, shared photos, ratings, and payroll notes.</li>
+          <li><strong>Public profile data</strong> (only if the worker activates their profile): name, service type, experience, and area.</li>
+          <li><strong>Usage data:</strong> pages visited, modules used, and frequency, in anonymized form.</li>
+        </ul>
+        <h4>Storage and security</h4>
+        <p>Data is stored on Firebase Firestore (Google Cloud), with encryption in transit and at rest. Photos and audio files are stored on Cloudinary. The Operator applies reasonable security measures but cannot guarantee absolute information security.</p>
+        <h4>Use of data</h4>
+        <p>Collected data is used exclusively to:</p>
+        <ul>
+          <li>Provide, operate, and improve Platform services.</li>
+          <li>Send notifications related to service use.</li>
+          <li>Generate anonymous usage statistics.</li>
+          <li>Comply with applicable legal obligations.</li>
+        </ul>
+        <p>My Nana <strong>does not sell, rent, or share personal data</strong> with third parties for commercial purposes.</p>
+        <h4>User rights</h4>
+        <p>All Users have the right to access, rectify, delete, or request the portability of their personal data by sending a request to our contact email. Requests will be addressed within a maximum of 30 business days.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- S10 PROPIEDAD -->
+  <div class="seccion" id="s10">
+    <div class="seccion-header" onclick="toggle('s10')">
+      <div class="seccion-num">10</div>
+      <div class="seccion-titulo-wrap">
+        <div class="seccion-titulo es">Propiedad intelectual</div>
+        <div class="seccion-titulo en">Intellectual property</div>
+      </div>
+      <div class="seccion-chevron" id="chevron-s10">▼</div>
+    </div>
+    <div class="seccion-body" id="body-s10">
+      <div class="es">
+        <p>Todo el contenido de My Nana — incluyendo el diseño, código fuente, logotipo, nombre comercial, módulos, funciones, textos, gráficos e interfaces — es propiedad exclusiva del Operador y está protegido por las leyes de propiedad intelectual de la República de Panamá y los tratados internacionales aplicables.</p>
+        <p>Se prohíbe expresamente:</p>
+        <ul>
+          <li>Copiar, reproducir, distribuir o crear obras derivadas de la Plataforma sin autorización escrita del Operador.</li>
+          <li>Descompilar, realizar ingeniería inversa o extraer el código fuente de la Plataforma.</li>
+          <li>Usar el nombre, logotipo o marca My Nana sin autorización previa y por escrito.</li>
+          <li>Comercializar acceso a la Plataforma o sus funciones sin autorización del Operador.</li>
+        </ul>
+        <p>El Usuario conserva todos los derechos sobre el contenido que carga en la Plataforma (fotos, mensajes, etc.) y otorga al Operador una licencia limitada, no exclusiva y gratuita para almacenar y mostrar dicho contenido únicamente con el propósito de operar el servicio.</p>
+      </div>
+      <div class="en">
+        <p>All My Nana content — including design, source code, logo, trade name, modules, features, texts, graphics, and interfaces — is the exclusive property of the Operator and is protected by the intellectual property laws of the Republic of Panama and applicable international treaties.</p>
+        <p>The following are expressly prohibited:</p>
+        <ul>
+          <li>Copying, reproducing, distributing, or creating derivative works from the Platform without the Operator's written authorization.</li>
+          <li>Decompiling, reverse-engineering, or extracting the Platform's source code.</li>
+          <li>Using the My Nana name, logo, or brand without prior written authorization.</li>
+          <li>Commercializing access to the Platform or its features without the Operator's authorization.</li>
+        </ul>
+        <p>Users retain all rights to the content they upload to the Platform (photos, messages, etc.) and grant the Operator a limited, non-exclusive, royalty-free license to store and display such content solely for the purpose of operating the service.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- S11 RESPONSABILIDAD -->
+  <div class="seccion" id="s11">
+    <div class="seccion-header" onclick="toggle('s11')">
+      <div class="seccion-num">11</div>
+      <div class="seccion-titulo-wrap">
+        <div class="seccion-titulo es">Limitación de responsabilidad</div>
+        <div class="seccion-titulo en">Limitation of liability</div>
+      </div>
+      <div class="seccion-chevron" id="chevron-s11">▼</div>
+    </div>
+    <div class="seccion-body" id="body-s11">
+      <div class="es">
+        <p>My Nana se provee "tal como está" y el Operador no garantiza que el servicio sea ininterrumpido, libre de errores o completamente seguro. En la máxima medida permitida por la ley panameña, el Operador no será responsable por:</p>
+        <ul>
+          <li>Pérdida de datos, interrupción del servicio o fallos técnicos fuera de su control.</li>
+          <li>Decisiones de contratación laboral tomadas por las Familias basadas en información de la Plataforma.</li>
+          <li>Conductas de las Trabajadoras domésticas contratadas a través del Marketplace.</li>
+          <li>Daños indirectos, incidentales, especiales o consecuentes derivados del uso o imposibilidad de uso de la Plataforma.</li>
+          <li>Inexactitudes en los cálculos de nómina o contratos generados, que son de carácter referencial.</li>
+          <li>Acceso no autorizado a cuentas de Usuario causado por negligencia del propio Usuario.</li>
+        </ul>
+        <p>En ningún caso la responsabilidad total del Operador frente a un Usuario por cualquier causa superará el monto total pagado por dicho Usuario en los últimos 3 meses de suscripción.</p>
+      </div>
+      <div class="en">
+        <p>My Nana is provided "as is" and the Operator does not guarantee that the service will be uninterrupted, error-free, or completely secure. To the maximum extent permitted by Panamanian law, the Operator shall not be liable for:</p>
+        <ul>
+          <li>Data loss, service interruption, or technical failures beyond its control.</li>
+          <li>Employment decisions made by Families based on Platform information.</li>
+          <li>Conduct of domestic workers hired through the Marketplace.</li>
+          <li>Indirect, incidental, special, or consequential damages arising from use or inability to use the Platform.</li>
+          <li>Inaccuracies in payroll calculations or generated contracts, which are for reference only.</li>
+          <li>Unauthorized access to User accounts caused by the User's own negligence.</li>
+        </ul>
+        <p>In no event shall the Operator's total liability to a User for any cause exceed the total amount paid by that User in the last 3 months of subscription.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- S12 CONDUCTA -->
+  <div class="seccion" id="s12">
+    <div class="seccion-header" onclick="toggle('s12')">
+      <div class="seccion-num">12</div>
+      <div class="seccion-titulo-wrap">
+        <div class="seccion-titulo es">Conducta prohibida</div>
+        <div class="seccion-titulo en">Prohibited conduct</div>
+      </div>
+      <div class="seccion-chevron" id="chevron-s12">▼</div>
+    </div>
+    <div class="seccion-body" id="body-s12">
+      <div class="es">
+        <p>Los Usuarios se comprometen a no utilizar My Nana para:</p>
+        <ul>
+          <li>Publicar contenido falso, difamatorio, obsceno, amenazante, discriminatorio o que viole derechos de terceros.</li>
+          <li>Acosar, intimidar o ejercer violencia verbal contra otros Usuarios.</li>
+          <li>Crear cuentas falsas o suplantar la identidad de otras personas.</li>
+          <li>Emitir calificaciones falsas en el MyNana Score con el fin de dañar o beneficiar indebidamente a una Trabajadora.</li>
+          <li>Intentar acceder sin autorización a cuentas de otros Usuarios o a los sistemas de la Plataforma.</li>
+          <li>Usar la Plataforma para actividades ilegales, incluyendo el reclutamiento de personal para actividades ilícitas.</li>
+          <li>Introducir virus, malware o código dañino en la Plataforma.</li>
+          <li>Realizar scraping, extracción masiva de datos o acceso automatizado no autorizado.</li>
+        </ul>
+        <p>El incumplimiento de estas disposiciones podrá resultar en la suspensión inmediata de la cuenta y, en casos graves, en acciones legales.</p>
+      </div>
+      <div class="en">
+        <p>Users agree not to use My Nana to:</p>
+        <ul>
+          <li>Post false, defamatory, obscene, threatening, discriminatory content or content that violates third-party rights.</li>
+          <li>Harass, intimidate, or engage in verbal violence against other Users.</li>
+          <li>Create fake accounts or impersonate other people.</li>
+          <li>Submit false MyNana Score ratings to unduly harm or benefit a worker.</li>
+          <li>Attempt unauthorized access to other Users' accounts or Platform systems.</li>
+          <li>Use the Platform for illegal activities, including recruiting staff for illicit activities.</li>
+          <li>Introduce viruses, malware, or harmful code into the Platform.</li>
+          <li>Conduct scraping, bulk data extraction, or unauthorized automated access.</li>
+        </ul>
+        <p>Violation of these provisions may result in immediate account suspension and, in serious cases, legal action.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- S13 SUSPENSIÓN -->
+  <div class="seccion" id="s13">
+    <div class="seccion-header" onclick="toggle('s13')">
+      <div class="seccion-num">13</div>
+      <div class="seccion-titulo-wrap">
+        <div class="seccion-titulo es">Suspensión y terminación de cuentas</div>
+        <div class="seccion-titulo en">Account suspension and termination</div>
+      </div>
+      <div class="seccion-chevron" id="chevron-s13">▼</div>
+    </div>
+    <div class="seccion-body" id="body-s13">
+      <div class="es">
+        <h4>Por parte del Operador</h4>
+        <p>El Operador puede suspender o cancelar una cuenta en cualquier momento, con o sin previo aviso, en los siguientes casos:</p>
+        <ul>
+          <li>Violación de estos Términos y Condiciones.</li>
+          <li>Falta de pago de la suscripción activa.</li>
+          <li>Uso fraudulento o actividad sospechosa detectada.</li>
+          <li>Orden judicial o requerimiento de autoridad competente.</li>
+          <li>Inactividad prolongada superior a 12 meses consecutivos.</li>
+        </ul>
+        <h4>Por parte del Usuario</h4>
+        <p>El Usuario puede cancelar su cuenta en cualquier momento desde la configuración de su perfil o enviando una solicitud al correo de contacto. Al cancelar:</p>
+        <ul>
+          <li>El acceso al servicio se mantendrá activo hasta el final del período de facturación pagado.</li>
+          <li>Los datos del Usuario serán eliminados en un plazo de 90 días, excepto aquellos que el Operador esté obligado a conservar por ley.</li>
+          <li>El MyNana Score acumulado por la Trabajadora permanecerá visible durante 30 días adicionales.</li>
+        </ul>
+      </div>
+      <div class="en">
+        <h4>By the Operator</h4>
+        <p>The Operator may suspend or cancel an account at any time, with or without prior notice, in the following cases:</p>
+        <ul>
+          <li>Violation of these Terms and Conditions.</li>
+          <li>Non-payment of the active subscription.</li>
+          <li>Detected fraudulent use or suspicious activity.</li>
+          <li>Court order or requirement from a competent authority.</li>
+          <li>Prolonged inactivity exceeding 12 consecutive months.</li>
+        </ul>
+        <h4>By the User</h4>
+        <p>Users may cancel their account at any time from their profile settings or by sending a request to the contact email. Upon cancellation:</p>
+        <ul>
+          <li>Access to the service will remain active until the end of the paid billing period.</li>
+          <li>User data will be deleted within 90 days, except data the Operator is legally required to retain.</li>
+          <li>The worker's accumulated MyNana Score will remain visible for an additional 30 days.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- S14 LEY APLICABLE -->
+  <div class="seccion" id="s14">
+    <div class="seccion-header" onclick="toggle('s14')">
+      <div class="seccion-num">14</div>
+      <div class="seccion-titulo-wrap">
+        <div class="seccion-titulo es">Ley aplicable y resolución de disputas</div>
+        <div class="seccion-titulo en">Governing law and dispute resolution</div>
+      </div>
+      <div class="seccion-chevron" id="chevron-s14">▼</div>
+    </div>
+    <div class="seccion-body" id="body-s14">
+      <div class="es">
+        <p>Estos Términos y Condiciones se rigen e interpretan de conformidad con las leyes de la <strong>República de Panamá</strong>, incluyendo el Código de Comercio, el Código Civil y las disposiciones aplicables sobre comercio electrónico.</p>
+        <h4>Resolución amistosa</h4>
+        <p>Ante cualquier disputa, reclamación o controversia derivada del uso de la Plataforma, las partes se comprometen a intentar resolverla de manera amistosa en un plazo de 30 días calendario mediante comunicación directa con el Operador.</p>
+        <h4>Arbitraje</h4>
+        <p>Si la disputa no se resuelve amistosamente, las partes acuerdan someterla a arbitraje ante el Centro de Conciliación y Arbitraje de Panamá, de conformidad con su reglamento vigente. El laudo arbitral será definitivo y vinculante.</p>
+        <h4>Jurisdicción de los tribunales</h4>
+        <p>Para asuntos que no puedan resolverse por arbitraje, las partes se someten a la jurisdicción exclusiva de los tribunales competentes de la Ciudad de Panamá, República de Panamá.</p>
+      </div>
+      <div class="en">
+        <p>These Terms and Conditions are governed by and interpreted in accordance with the laws of the <strong>Republic of Panama</strong>, including the Commercial Code, the Civil Code, and applicable e-commerce provisions.</p>
+        <h4>Amicable resolution</h4>
+        <p>For any dispute, claim, or controversy arising from the use of the Platform, the parties agree to attempt amicable resolution within 30 calendar days through direct communication with the Operator.</p>
+        <h4>Arbitration</h4>
+        <p>If the dispute is not resolved amicably, the parties agree to submit it to arbitration before the Panama Conciliation and Arbitration Center, in accordance with its current rules. The arbitral award shall be final and binding.</p>
+        <h4>Court jurisdiction</h4>
+        <p>For matters that cannot be resolved by arbitration, the parties submit to the exclusive jurisdiction of the competent courts of Panama City, Republic of Panama.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- S15 CAMBIOS -->
+  <div class="seccion" id="s15">
+    <div class="seccion-header" onclick="toggle('s15')">
+      <div class="seccion-num">15</div>
+      <div class="seccion-titulo-wrap">
+        <div class="seccion-titulo es">Cambios a los términos</div>
+        <div class="seccion-titulo en">Changes to terms</div>
+      </div>
+      <div class="seccion-chevron" id="chevron-s15">▼</div>
+    </div>
+    <div class="seccion-body" id="body-s15">
+      <div class="es">
+        <p>El Operador se reserva el derecho de modificar estos Términos y Condiciones en cualquier momento. Los cambios serán notificados a los Usuarios a través de:</p>
+        <ul>
+          <li>Correo electrónico a la dirección registrada en la cuenta.</li>
+          <li>Aviso visible en la Plataforma al iniciar sesión.</li>
+          <li>Actualización de la fecha de "Última actualización" en este documento.</li>
+        </ul>
+        <p>El uso continuado de la Plataforma tras la notificación de cambios constituye la aceptación de los nuevos términos. Si el Usuario no está de acuerdo con los cambios, debe cancelar su cuenta antes de que entren en vigencia.</p>
+        <p>Los cambios que afecten derechos fundamentales de los Usuarios requerirán un aviso mínimo de 30 días antes de su aplicación.</p>
+      </div>
+      <div class="en">
+        <p>The Operator reserves the right to modify these Terms and Conditions at any time. Changes will be notified to Users through:</p>
+        <ul>
+          <li>Email to the address registered on the account.</li>
+          <li>Visible notice on the Platform upon login.</li>
+          <li>Update of the "Last updated" date on this document.</li>
+        </ul>
+        <p>Continued use of the Platform following notification of changes constitutes acceptance of the new terms. If the User disagrees with the changes, they must cancel their account before the changes take effect.</p>
+        <p>Changes affecting Users' fundamental rights will require a minimum 30-day notice before implementation.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- S16 CONTACTO -->
+  <div class="seccion" id="s16">
+    <div class="seccion-header" onclick="toggle('s16')">
+      <div class="seccion-num">16</div>
+      <div class="seccion-titulo-wrap">
+        <div class="seccion-titulo es">Contacto</div>
+        <div class="seccion-titulo en">Contact</div>
+      </div>
+      <div class="seccion-chevron" id="chevron-s16">▼</div>
+    </div>
+    <div class="seccion-body" id="body-s16">
+      <div class="es">
+        <p>Para consultas, reportes o solicitudes relacionadas con estos Términos y Condiciones, puedes contactarnos a través de los siguientes canales:</p>
+        <div class="tabla-wrap">
+          <table>
+            <tr><th>Canal</th><th>Datos</th></tr>
+            <tr><td>WhatsApp</td><td>+507 6024-3324</td></tr>
+            <tr><td>Correo electrónico</td><td>ceo@mynanaapp.com</td></tr>
+            <tr><td>Sitio web</td><td>mynana.app</td></tr>
+            <tr><td>País de operación</td><td>República de Panamá</td></tr>
+          </table>
+        </div>
+        <p>Las consultas serán respondidas en un plazo máximo de 5 días hábiles. Para solicitudes de eliminación de datos el plazo es de 30 días hábiles.</p>
+      </div>
+      <div class="en">
+        <p>For inquiries, reports, or requests related to these Terms and Conditions, you may contact us through the following channels:</p>
+        <div class="tabla-wrap">
+          <table>
+            <tr><th>Channel</th><th>Details</th></tr>
+            <tr><td>WhatsApp</td><td>+507 6024-3324</td></tr>
+            <tr><td>Email</td><td>ceo@mynanaapp.com</td></tr>
+            <tr><td>Website</td><td>mynana.app</td></tr>
+            <tr><td>Country of operation</td><td>Republic of Panama</td></tr>
+          </table>
+        </div>
+        <p>Inquiries will be answered within a maximum of 5 business days. Data deletion requests have a 30 business-day processing period.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTACTO CARD -->
+  <div class="contacto-card">
+    <h3 class="es">¿Tienes preguntas?</h3>
+    <h3 class="en">Have questions?</h3>
+    <p class="es">Estamos para ayudarte. Escríbenos y te respondemos en menos de 24 horas.</p>
+    <p class="en">We're here to help. Write to us and we'll respond in less than 24 hours.</p>
+    <div class="contacto-btns">
+      <a href="https://wa.me/50760243324" target="_blank" class="contacto-btn primary">💬 WhatsApp</a>
+      <a href="mailto:ceo@mynanaapp.com" class="contacto-btn">✉️ Email</a>
+      <a href="/index.html" class="contacto-btn">← <span class="es">Volver al inicio</span><span class="en">Back to home</span></a>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <p class="es">© 2025 My Nana · República de Panamá · Todos los derechos reservados · Versión 1.0</p>
+  <p class="en">© 2025 My Nana · Republic of Panama · All rights reserved · Version 1.0</p>
+</div>
+
+<script>
+function setLang(lang, btn) {
+  document.body.className = 'lang-' + lang;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('activo'));
+  btn.classList.add('activo');
+}
+
+function toggle(id) {
+  const body = document.getElementById('body-' + id);
+  const chevron = document.getElementById('chevron-' + id);
+  const isOpen = body.classList.contains('visible');
+  body.classList.toggle('visible', !isOpen);
+  chevron.classList.toggle('abierto', !isOpen);
+}
+
+// Abrir primera sección por defecto
+document.addEventListener('DOMContentLoaded', () => {
+  toggle('s1');
+});
+</script>
+</body>
+</html>

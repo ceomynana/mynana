@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>My Nana — Chat</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Cormorant+Garamond:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{--g:#1A6B52;--g2:#0F4A38;--g3:#F0F7F4;--g4:#E1F0EB;--b:#D4A5A5;--b2:#BF9090;--b3:#F7EFEF;--cr:#F9F5F0;--txt:#1A2E25;--txt2:#4A6358;--chat-bg:#ECE5DD;--msg-out:#DCF8C6;--msg-in:#fff;--check-leido:#53BDEB;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html{height:-webkit-fill-available;}body{height:100%;height:-webkit-fill-available;overflow:hidden;}
+body{font-family:'DM Sans',sans-serif;background:var(--g2);}
+#splash{position:fixed;inset:0;background:var(--g2);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;transition:opacity .4s;}
+#splash.oculto{opacity:0;pointer-events:none;}
+#noAuth{position:fixed;inset:0;background:var(--g2);z-index:998;display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px;gap:16px;}
+#noAuth.visible{display:flex;}
+#app{display:none;height:100vh;height:100dvh;flex-direction:column;}
+#app.visible{display:flex;}
+@media(min-width:768px){#app{flex-direction:row;}#sidebar{width:340px;min-width:280px;flex-shrink:0;display:flex;flex-direction:column;background:#fff;border-right:1px solid var(--g4);}#chatPanel{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden;}#chatEmpty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--cr);}}
+@media(max-width:767px){#sidebar{display:flex;flex-direction:column;height:100vh;height:100dvh;background:#fff;}#sidebar.oculto{display:none;}#chatPanel{display:flex;flex-direction:column;height:100vh;height:100dvh;min-height:0;overflow:hidden;}#chatPanel.oculto{display:none;}#chatEmpty{display:none;}}
+.sb-header{background:var(--g2);padding:48px 16px 12px;padding-top:max(48px,env(safe-area-inset-top));display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+@media(min-width:768px){.sb-header{padding-top:16px;}}
+.sb-logo{font-family:'Cormorant Garamond',serif;font-size:20px;color:#fff;}
+.sb-logo em{color:var(--b);font-style:normal;}
+.sb-av{width:34px;height:34px;border-radius:50%;background:var(--g);border:2px solid var(--b);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#fff;}
+.sb-back{background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.7);font-size:12px;padding:5px 12px;border-radius:99px;cursor:pointer;text-decoration:none;display:inline-block;font-family:'DM Sans',sans-serif;}
+.sb-buscar{padding:10px 12px;border-bottom:1px solid var(--g4);flex-shrink:0;}
+.buscar-inp{width:100%;background:var(--g3);border:none;border-radius:20px;padding:8px 14px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--txt);outline:none;}
+.buscar-inp::placeholder{color:#bbb;}
+.convs{flex:1;overflow-y:auto;}
+.conv{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;border-bottom:.5px solid var(--g4);transition:background .15s;position:relative;}
+.conv:hover,.conv.activa{background:var(--g3);}
+.conv-av{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;color:#fff;flex-shrink:0;position:relative;}
+.conv-online{position:absolute;bottom:0;right:0;width:11px;height:11px;border-radius:50%;background:#4CAF50;border:2px solid #fff;}
+.conv-info{flex:1;min-width:0;}
+.conv-nombre{font-size:14px;font-weight:500;color:var(--txt);}
+.conv-ultimo{font-size:12px;color:var(--txt2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
+.conv-meta{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;}
+.conv-hora{font-size:11px;color:#bbb;}
+.conv-badge{background:var(--g);color:#fff;font-size:10px;font-weight:700;min-width:18px;height:18px;border-radius:99px;display:flex;align-items:center;justify-content:center;padding:0 4px;}
+.chat-header{background:var(--g2);padding:env(safe-area-inset-top, 48px) 14px 12px;padding-top:max(48px,env(safe-area-inset-top));display:flex;align-items:center;gap:10px;flex-shrink:0;}
+@media(min-width:768px){.chat-header{padding-top:14px;}}
+.ch-back{color:rgba(255,255,255,.8);font-size:22px;cursor:pointer;padding:4px;display:block;}
+@media(min-width:768px){.ch-back{display:none;}}
+.ch-av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#fff;flex-shrink:0;position:relative;}
+.ch-av-online{position:absolute;bottom:0;right:0;width:10px;height:10px;border-radius:50%;background:#4CAF50;border:2px solid var(--g2);}
+.ch-info{flex:1;}
+.ch-nombre{font-size:15px;font-weight:500;color:#fff;}
+.ch-estado{font-size:11px;color:rgba(255,255,255,.55);margin-top:1px;}
+.ch-btns{display:flex;gap:8px;}
+.ch-btn{background:none;border:none;color:rgba(255,255,255,.75);font-size:20px;cursor:pointer;padding:6px;border-radius:50%;transition:background .15s;}
+.ch-btn:hover{background:rgba(255,255,255,.1);}
+.msgs-wrap{flex:1;overflow-y:auto;overflow-x:hidden;padding:10px 12px;background:var(--chat-bg);display:flex;flex-direction:column;gap:3px;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;min-height:0;}
+.msgs-wrap::-webkit-scrollbar{width:3px;}
+.msgs-wrap::-webkit-scrollbar-thumb{background:rgba(26,107,82,.2);border-radius:99px;}
+.fecha-sep{text-align:center;margin:8px 0;}
+.fecha-pill{background:rgba(255,255,255,.75);font-size:11px;color:#666;padding:4px 12px;border-radius:99px;display:inline-block;}
+.msg-g{display:flex;flex-direction:column;margin-bottom:1px;}
+.msg-g.out{align-items:flex-end;}
+.msg-g.in{align-items:flex-start;}
+.msg-g.out+.msg-g.in,.msg-g.in+.msg-g.out{margin-top:8px;}
+.burbuja{max-width:72%;padding:7px 11px;border-radius:10px;font-size:14px;line-height:1.5;color:var(--txt);word-break:break-word;}
+.burbuja.out{background:var(--msg-out);border-radius:10px 10px 0 10px;}
+.burbuja.in{background:var(--msg-in);border-radius:10px 10px 10px 0;box-shadow:0 1px 2px rgba(0,0,0,.08);}
+.msg-meta{display:flex;align-items:center;gap:3px;margin-top:1px;}
+.msg-meta.out{justify-content:flex-end;}
+.msg-hora{font-size:10px;color:#999;}
+.msg-check{font-size:12px;line-height:1;color:#aaa;}
+.msg-check.leido{color:var(--check-leido);}
+.msg-sistema{align-self:center;background:rgba(255,255,255,.8);font-size:11px;color:#666;padding:4px 12px;border-radius:99px;margin:4px 0;text-align:center;max-width:85%;}
+.msg-foto-wrap{max-width:240px;border-radius:10px;overflow:hidden;cursor:pointer;position:relative;}
+.msg-foto-wrap img{width:100%;max-height:200px;object-fit:cover;display:block;}
+.foto-meta{position:absolute;bottom:6px;right:8px;display:flex;align-items:center;gap:3px;background:rgba(0,0,0,.35);border-radius:99px;padding:2px 6px;}
+.foto-meta .msg-hora{color:rgba(255,255,255,.9);}
+.foto-meta .msg-check{color:rgba(255,255,255,.85);}
+.msg-audio{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;min-width:200px;max-width:280px;}
+.msg-audio.out{background:#C8E6B3;border-radius:10px 10px 0 10px;}
+.msg-audio.in{background:#fff;border-radius:10px 10px 10px 0;box-shadow:0 1px 2px rgba(0,0,0,.08);}
+.audio-play{width:36px;height:36px;border-radius:50%;background:var(--g);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;border:none;cursor:pointer;flex-shrink:0;transition:all .2s;}
+.audio-play:hover{background:var(--g2);}
+.audio-play.playing{background:#e05c5c;}
+.audio-wave{flex:1;display:flex;align-items:center;gap:2px;height:26px;cursor:pointer;}
+.audio-bar{width:3px;border-radius:99px;background:rgba(26,107,82,.2);}
+.audio-dur{font-size:11px;color:#888;flex-shrink:0;}
+.msg-tarea{border-radius:10px;overflow:hidden;min-width:200px;max-width:280px;}
+.msg-tarea.out{background:#E8F5E9;border-radius:10px 10px 0 10px;}
+.msg-tarea.in{background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.08);border-radius:10px 10px 10px 0;}
+.tarea-hdr{background:var(--g3);padding:8px 12px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--g4);}
+.tarea-lbl{font-size:10px;font-weight:600;color:var(--g);text-transform:uppercase;letter-spacing:.04em;}
+.tarea-body{padding:8px 12px;}
+.tarea-nm{font-size:13px;font-weight:500;color:var(--txt);}
+.tarea-hr{font-size:11px;color:var(--txt2);margin-top:2px;}
+.msg-mercado{border-radius:10px;overflow:hidden;min-width:210px;max-width:280px;}
+.msg-mercado.out{background:#E8F5E9;border-radius:10px 10px 0 10px;}
+.msg-mercado.in{background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.08);border-radius:10px 10px 10px 0;}
+.mercado-hdr{background:var(--g3);padding:8px 12px;display:flex;align-items:center;gap:8px;}
+.mercado-body{padding:8px 12px;font-size:12px;color:var(--txt2);line-height:1.7;white-space:pre-line;}
+.mercado-link{display:inline-block;margin-top:6px;background:var(--g3);color:var(--g);font-size:11px;font-weight:500;padding:4px 10px;border-radius:99px;text-decoration:none;}
+.reacciones{display:flex;gap:4px;margin-top:3px;flex-wrap:wrap;}
+.reac-chip{background:rgba(255,255,255,.9);border:1px solid var(--g4);border-radius:99px;padding:2px 8px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:3px;}
+.reac-chip:hover{background:var(--g3);}
+.reac-chip.mia{background:var(--g3);border-color:var(--g);}
+.reac-count{font-size:11px;color:var(--txt2);}
+.emoji-float{position:fixed;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.15);padding:8px;display:flex;gap:5px;z-index:200;border:1px solid var(--g4);}
+.emoji-float button{font-size:22px;cursor:pointer;padding:4px;border-radius:8px;background:none;border:none;}
+.emoji-float button:hover{background:var(--g3);}
+.input-area{background:#F0F2F5;padding:6px 10px;padding-bottom:max(6px,env(safe-area-inset-bottom));display:flex;align-items:flex-end;gap:6px;flex-shrink:0;border-top:.5px solid #ddd;position:relative;z-index:10;}
+.input-wrap{flex:1;background:#fff;border-radius:22px;display:flex;align-items:flex-end;padding:4px 4px 4px 14px;gap:4px;}
+.input-box{flex:1;background:transparent;border:none;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--txt);outline:none;resize:none;max-height:120px;line-height:1.5;padding:6px 0;}
+.input-box::placeholder{color:#bbb;}
+.input-emoji{width:32px;height:32px;border-radius:50%;background:none;border:none;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:.6;flex-shrink:0;}
+.input-emoji:hover{opacity:1;background:var(--g3);}
+.ibtn{width:44px;height:44px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;transition:all .2s;}
+.ibtn-adj{background:#fff;color:#555;box-shadow:0 1px 3px rgba(0,0,0,.1);}
+.ibtn-mic{background:var(--g);color:#fff;}
+.ibtn-mic.grabando{background:#e05c5c;animation:pr 1s infinite;}
+@keyframes pr{0%,100%{box-shadow:0 0 0 0 rgba(224,92,92,.4);}70%{box-shadow:0 0 0 10px rgba(224,92,92,0);}}
+.ibtn-send{background:var(--g);color:#fff;}
+.adj-panel{background:#fff;padding:12px;display:none;flex-wrap:wrap;gap:8px;border-top:.5px solid #eee;flex-shrink:0;}
+.adj-panel.visible{display:flex;}
+.adj-opt{display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;flex:1;min-width:54px;}
+.adj-ic{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;}
+.adj-lb{font-size:11px;color:var(--txt2);font-weight:500;text-align:center;}
+.emoji-picker-wrap{position:fixed;bottom:70px;left:8px;right:8px;background:#fff;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,.2);padding:10px;z-index:500;display:none;border:1px solid var(--g4);max-height:280px;overflow-y:auto;}
+.emoji-picker-wrap.visible{display:block;}
+.emoji-cats-row{display:flex;gap:4px;overflow-x:auto;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--g4);}
+.ecat-btn{background:none;border:none;font-size:20px;cursor:pointer;padding:4px 8px;border-radius:8px;flex-shrink:0;}
+.ecat-btn.activa{background:var(--g3);}
+.emoji-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;max-height:140px;overflow-y:auto;}
+.emoji-item{font-size:22px;cursor:pointer;text-align:center;padding:4px;border-radius:8px;border:none;background:none;}
+.emoji-item:hover{background:var(--g3);}
+.modal-foto{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.modal-foto.oculto{display:none;}
+.modal-foto img{max-width:100%;max-height:80vh;object-fit:contain;border-radius:8px;}
+.mf-close{position:absolute;top:20px;right:20px;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:22px;width:44px;height:44px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.mf-bottom{position:absolute;bottom:24px;display:flex;gap:10px;}
+.mf-btn{background:rgba(255,255,255,.15);border:none;color:#fff;font-size:13px;padding:9px 18px;border-radius:99px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.toast{position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--g);color:#fff;font-size:13px;font-weight:500;padding:10px 20px;border-radius:99px;z-index:600;transition:transform .3s;white-space:nowrap;box-shadow:0 4px 16px rgba(26,107,82,.3);}
+.toast.visible{transform:translateX(-50%) translateY(0);}
+
+/* ── EMOJI PICKER MOBILE ── */
+@media(max-width:767px){
+  .emoji-picker-wrap{
+    left:4px !important;
+    right:4px !important;
+    max-height:240px !important;
+    overflow-y:auto !important;
+    border-radius:16px !important;
+    z-index:500 !important;
+  }
+  .emoji-grid{
+    grid-template-columns:repeat(7,1fr) !important;
+    gap:2px !important;
+  }
+  .emoji-item{
+    font-size:24px !important;
+    padding:6px 2px !important;
+  }
+  .ecat-btn{
+    font-size:18px !important;
+    padding:4px 6px !important;
+  }
+}
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <div style="width:72px;height:72px;border-radius:50%;background:var(--g);border:3px solid var(--b);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:24px;color:#fff;">MN</div>
+  <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:#fff;">NANA</div>
+  <div style="font-size:13px;color:rgba(255,255,255,.5);">Cargando chat...</div>
+</div>
+
+<div id="noAuth">
+  <div style="font-family:'Cormorant Garamond',serif;font-size:24px;color:#fff;">My <span style="color:#D4A5A5;">Nana</span></div>
+  <div style="font-size:14px;color:rgba(255,255,255,.6);text-align:center;">Necesitas iniciar sesión</div>
+  <a href="/app.html" style="background:var(--b);color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;padding:14px 32px;border-radius:99px;text-decoration:none;display:inline-block;">Iniciar sesión →</a>
+</div>
+
+<div class="modal-foto oculto" id="modalFoto">
+  <button class="mf-close" onclick="cerrarFoto()">✕</button>
+  <img id="mfImg" src="" alt="Foto"/>
+  <div class="mf-bottom">
+    <button class="mf-btn" onclick="descargarFoto()">⬇ Guardar</button>
+    <button class="mf-btn" onclick="cerrarFoto()">← Cerrar</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="emoji-picker-wrap" id="emojiPicker">
+  <div class="emoji-cats-row" id="emojiCats"></div>
+  <div class="emoji-grid" id="emojiGrid"></div>
+</div>
+
+<input type="file" id="fileInput" accept="image/*,video/*" style="display:none;" onchange="subirArchivo(this)"/>
+<input type="file" id="camInput" accept="image/*" capture="environment" style="display:none;" onchange="subirArchivo(this)"/>
+
+<div id="app">
+  <div id="sidebar">
+    <div class="sb-header">
+      <div class="sb-logo">My <em>Nana</em></div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="sb-av" id="sbAv">U</div>
+        <a href="/app.html" class="sb-back">← Inicio</a>
+      </div>
+    </div>
+    <div class="sb-buscar"><input class="buscar-inp" placeholder="🔍  Buscar..." oninput="filtrarConvs(this.value)"/></div>
+    <div class="convs" id="convLista"></div>
+  </div>
+
+  <div id="chatPanel" class="oculto">
+    <div class="chat-header">
+      <button class="ch-back" onclick="volverSidebar()">←</button>
+      <div class="ch-av" id="chAv" style="background:var(--b);">?<div class="ch-av-online"></div></div>
+      <div class="ch-info">
+        <div class="ch-nombre" id="chNombre">Chat</div>
+        <div class="ch-estado" id="chEstado">● En línea</div>
+      </div>
+      <div class="ch-btns">
+        <button class="ch-btn" onclick="showToast('📞 Próximamente')">📞</button>
+        <button class="ch-btn" onclick="showToast('ℹ️ Info')">⋮</button>
+      </div>
+    </div>
+
+    <div class="msgs-wrap" id="msgsWrap"></div>
+
+    <div class="adj-panel" id="adjPanel">
+      <div class="adj-opt" onclick="abrirCam()"><div class="adj-ic" style="background:#F7EFEF;">📷</div><div class="adj-lb">Cámara</div></div>
+      <div class="adj-opt" onclick="abrirGal()"><div class="adj-ic" style="background:var(--g3);">🖼️</div><div class="adj-lb">Galería</div></div>
+      <div class="adj-opt" onclick="enviarTarea()"><div class="adj-ic" style="background:var(--g3);">📋</div><div class="adj-lb">Tarea</div></div>
+      <div class="adj-opt" onclick="showToast('Abre el menú para enviar la lista');location.href='/menu.html'"><div class="adj-ic" style="background:var(--g3);">🛒</div><div class="adj-lb">Mercado</div></div>
+      <div class="adj-opt" onclick="showToast('📍 Próximamente')"><div class="adj-ic" style="background:#FEF7EE;">📍</div><div class="adj-lb">Ubicación</div></div>
+    </div>
+
+    <div class="input-area" id="inputArea">
+      <button class="ibtn ibtn-adj" id="btnAdj" onclick="toggleAdj()">+</button>
+      <div class="input-wrap">
+        <textarea class="input-box" id="inputMsg" placeholder="Mensaje..." rows="1" onkeydown="handleKey(event)" oninput="ajustar(this)"></textarea>
+        <button class="input-emoji" onclick="toggleEmoji()">😊</button>
+      </div>
+      <button class="ibtn ibtn-mic" id="btnMic" onmousedown="startGrab()" onmouseup="stopGrab()" ontouchstart="startGrab(event)" ontouchend="stopGrab(event)">🎙️</button>
+      <button class="ibtn ibtn-send" id="btnSend" onclick="enviar()" style="display:none;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div id="chatEmpty" style="display:none;">
+    <div style="text-align:center;padding:32px;">
+      <div style="font-size:52px;opacity:.3;margin-bottom:12px;">💬</div>
+      <div style="font-size:16px;font-weight:500;color:var(--txt);">Selecciona una conversación</div>
+      <div style="font-size:13px;color:var(--txt2);margin-top:4px;">Elige del panel izquierdo</div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import { getFirestore, doc, getDoc, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, updateDoc, getDocs, where } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+const app = initializeApp({ apiKey:"AIzaSyDDJRJ8A8P507lllGRBOoXO30ESAH1GAnw", authDomain:"mynanapapp.firebaseapp.com", projectId:"mynanapapp", storageBucket:"mynanapapp.firebasestorage.app", messagingSenderId:"124180779437", appId:"1:124180779437:web:d217743000b0f1fedfd124" });
+const auth = getAuth(app), db = getFirestore(app);
+const CLOUD='dy2awt3tc', PRESET='mynana_fotos';
+
+const EMOJIS = {
+  '😊':['😊','😂','😍','🥰','😘','😎','🤩','😭','😅','😆','❤️','💕','💪','👏','🙏','✅','🔥','⭐','🎉','👍','👋'],
+  '🍽️':['🍲','🍳','🥗','🥩','🍌','🍎','🥐','☕','🍵','🥤','🍱','🥘','🥞','🧇','🥚','🧀'],
+  '🏠':['🏠','🛋️','🧹','🪣','🧽','🪴','🛏️','🚿','🧺','👕','🚪','🔑','💡'],
+  '👶':['👶','🧒','👦','👧','🎒','📚','✏️','🎨','🧸','⚽','🎮','🌈','🎁'],
+};
+const RAPIDOS = ['👍','✅','❤️','😊','👏','🙏','😂','🔥'];
+
+let me=null, perfil=null, chatId=null, unsub=null, convs=[], msgsDemo=[], mr=null, chunks=[], grabando=false, t=null, segs=0, fotoUrl='', emojiOpen=false, catActual='😊';
+
+onAuthStateChanged(auth, async user => {
+  document.getElementById('splash').classList.add('oculto');
+  if (!user) { document.getElementById('noAuth').classList.add('visible'); return; }
+  me = user;
+  const p = await getDoc(doc(db,'usuarios',user.uid));
+  if (!p.exists()) { document.getElementById('noAuth').classList.add('visible'); return; }
+  perfil = p.data();
+  document.getElementById('app').classList.add('visible');
+  document.getElementById('sbAv').textContent = perfil.nombre?.[0]?.toUpperCase()||'U';
+  if (window.innerWidth>=768) { document.getElementById('chatEmpty').style.display='flex'; }
+  else { document.getElementById('sidebar').classList.remove('oculto'); }
+  cargarConvs();
+  initEmojis();
+});
+
+async function cargarConvs() {
+  // 1. Buscar el hogar para obtener todos los participantes
+  const qHogar = query(collection(db,'hogares'), where('participantes','array-contains',me.uid));
+  const snapHogar = await getDocs(qHogar);
+  let uidsHogar = [me.uid];
+  if (!snapHogar.empty) {
+    uidsHogar = snapHogar.docs[0].data().participantes || [me.uid];
+  }
+
+  // 2. Buscar la conversación por cualquier participante del hogar
+  let convExistente = null;
+  for (const uid of uidsHogar) {
+    const q = query(collection(db,'conversaciones'), where('participantes','array-contains',uid));
+    const snap = await getDocs(q);
+    if (!snap.empty) { convExistente = snap.docs[0]; break; }
+  }
+
+  if (!convExistente) { await initConv(); return; }
+
+  // 3. Escuchar en tiempo real esa conversación específica
+  const convRef = query(collection(db,'conversaciones'), where('participantes','array-contains',uidsHogar[0]));
+  onSnapshot(convRef, async snap => {
+    convs = [];
+    for (const d of snap.docs) {
+      const data = d.data();
+      const otroUid = data.participantes?.find(p => p !== me.uid);
+      let otroPerfil = null;
+      if (otroUid && otroUid !== 'demo') {
+        const op = await getDoc(doc(db,'usuarios',otroUid));
+        if (op.exists()) otroPerfil = op.data();
+      }
+      convs.push({id:d.id,...data,otroPerfil,otroUid});
+    }
+    if (!convs.length) await initConv();
+    else renderConvs(convs);
+  });
+}
+
+async function initConv() {
+  const tipo = perfil.tipo==='familia'?'nana':'familia';
+  const q = query(collection(db,'usuarios'),where('tipo','==',tipo));
+  const snap = await getDocs(q);
+  let uid=null,op=null;
+  snap.forEach(d=>{ if(!uid){uid=d.id;op=d.data();} });
+  if (!uid) {
+    convs=[{id:'demo',participantes:[me.uid,'demo'],otroPerfil:{nombre:perfil.tipo==='familia'?'Maria Rodriguez':'Familia Rodríguez',tipo},otroUid:'demo',ultimoMensaje:'Chat de demostración',noLeidos:0}];
+    renderConvs(convs); return;
+  }
+  const ref=await addDoc(collection(db,'conversaciones'),{participantes:[me.uid,uid],ultimoMensaje:'',ultimaHora:serverTimestamp(),noLeidos:0,creado:serverTimestamp()});
+  convs=[{id:ref.id,participantes:[me.uid,uid],otroPerfil:op,otroUid:uid,ultimoMensaje:'',noLeidos:0}];
+  renderConvs(convs);
+}
+
+function renderConvs(lista) {
+  const el=document.getElementById('convLista');
+  if (!lista.length) { el.innerHTML='<div style="padding:24px;text-align:center;color:#bbb;font-size:13px;">Sin conversaciones</div>'; return; }
+  el.innerHTML=lista.map(c=>{
+    const nm=c.otroPerfil?.nombre||'Usuario', bg=c.otroPerfil?.tipo==='nana'?'#BF9090':'#1A6B52';
+    const h=c.ultimaHora?.toDate?fh(c.ultimaHora.toDate()):'';
+    return `<div class="conv ${chatId===c.id?'activa':''}" onclick="abrirChat('${c.id}')">
+      <div class="conv-av" style="background:${bg};">${nm[0]?.toUpperCase()}<div class="conv-online"></div></div>
+      <div class="conv-info"><div class="conv-nombre">${nm}</div><div class="conv-ultimo">${c.ultimoMensaje||'Toca para chatear'}</div></div>
+      <div class="conv-meta"><span class="conv-hora">${h}</span>${c.noLeidos>0?`<span class="conv-badge">${c.noLeidos}</span>`:''}</div>
+    </div>`;
+  }).join('');
+}
+
+window.abrirChat = async id => {
+  chatId=id; const c=convs.find(c=>c.id===id); if(!c) return;
+  const nm=c.otroPerfil?.nombre||'Usuario', bg=c.otroPerfil?.tipo==='nana'?'#BF9090':'#1A6B52';
+  document.getElementById('chAv').textContent=nm[0]?.toUpperCase();
+  document.getElementById('chAv').style.background=bg;
+  document.getElementById('chNombre').textContent=nm;
+  document.getElementById('chEstado').textContent='● En línea';
+  if (window.innerWidth<768) { document.getElementById('sidebar').classList.add('oculto'); document.getElementById('chatPanel').classList.remove('oculto'); }
+  else { document.getElementById('chatEmpty').style.display='none'; document.getElementById('chatPanel').classList.remove('oculto'); }
+  renderConvs(convs);
+  if (unsub) unsub();
+  if (id==='demo') { loadDemo(); return; }
+  const q=query(collection(db,'conversaciones',id,'mensajes'),orderBy('timestamp','asc'));
+  unsub=onSnapshot(q, snap=>{
+    const msgs=snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderMsgs(msgs);
+    marcarLeidos(id,msgs);
+  });
+  await updateDoc(doc(db,'conversaciones',id),{noLeidos:0});
+};
+
+async function marcarLeidos(convId,msgs) {
+  for (const m of msgs) {
+    if (m.remitenteUid!==me.uid&&!m.leido) {
+      try { await updateDoc(doc(db,'conversaciones',convId,'mensajes',m.id),{leido:true}); } catch(e){}
+    }
+  }
+}
+
+function loadDemo() {
+  msgsDemo=[
+    {id:'d1',tipo:'texto',texto:'Buenos días Maria 👋',remitenteUid:me.uid,timestamp:{toDate:()=>new Date(Date.now()-3600000)},leido:true},
+    {id:'d2',tipo:'texto',texto:'Buenos días señora, ya llegué. Preparando el desayuno.',remitenteUid:'otro',timestamp:{toDate:()=>new Date(Date.now()-3500000)},leido:true},
+    {id:'d3',tipo:'sistema',texto:'✅ Maria completó: Preparar desayuno — 7:08 am',timestamp:{toDate:()=>new Date(Date.now()-3400000)}},
+    {id:'d4',tipo:'foto',fotoUrl:null,texto:'Desayuno listo 📸',remitenteUid:'otro',timestamp:{toDate:()=>new Date(Date.now()-3300000)},leido:true},
+    {id:'d5',tipo:'texto',texto:'¡Perfecto! Recuerda el sancocho 🍲',remitenteUid:me.uid,timestamp:{toDate:()=>new Date(Date.now()-1800000)},leido:true},
+    {id:'d6',tipo:'audio',duracion:'0:08',remitenteUid:'otro',timestamp:{toDate:()=>new Date(Date.now()-1700000)},leido:false},
+    {id:'d7',tipo:'tarea',tarea:{nombre:'Limpiar los baños',hora:'4:00 pm',emoji:'🧹'},remitenteUid:me.uid,timestamp:{toDate:()=>new Date(Date.now()-900000)},leido:false},
+  ];
+  renderMsgs(msgsDemo);
+}
+
+function renderMsgs(msgs) {
+  const wrap=document.getElementById('msgsWrap');
+  let html='', fechaAnt='', prevDir='';
+  msgs.forEach((m,i)=>{
+    const esPropio=m.remitenteUid===me.uid, dir=esPropio?'out':'in';
+    const h=m.timestamp?.toDate?fh(m.timestamp.toDate()):'', f=m.timestamp?.toDate?ff(m.timestamp.toDate()):'';
+    if (f&&f!==fechaAnt) { html+=`<div class="fecha-sep"><span class="fecha-pill">${f}</span></div>`; fechaAnt=f; }
+    if (m.tipo==='sistema') { html+=`<div class="msg-sistema">${m.texto}</div>`; prevDir=''; return; }
+    const check=esPropio?`<span class="msg-check ${m.leido?'leido':''}">✓✓</span>`:'';
+    const reacs=m.reacciones||{};
+    const reacHtml=Object.keys(reacs).length?`<div class="reacciones">${Object.entries(reacs).map(([e,u])=>`<span class="reac-chip ${u.includes(me.uid)?'mia':''}" onclick="toggleReac('${m.id}','${e}')">${e}<span class="reac-count">${u.length}</span></span>`).join('')}</div>`:'';
+    html+=`<div class="msg-g ${dir}" oncontextmenu="showEmojiFloat(event,'${m.id}')">`;
+    if (m.tipo==='texto') {
+      html+=`<div class="burbuja ${dir}">${esc(m.texto)}</div><div class="msg-meta ${dir}"><span class="msg-hora">${h}</span>${check}</div>${reacHtml}`;
+    } else if (m.tipo==='foto') {
+      if (m.fotoUrl) html+=`<div class="msg-foto-wrap" onclick="verFoto('${m.fotoUrl}')"><img src="${m.fotoUrl}" loading="lazy" alt="foto"/><div class="foto-meta"><span class="msg-hora">${h}</span>${check}</div></div>${reacHtml}`;
+      else html+=`<div class="msg-foto-wrap"><div style="width:200px;height:140px;background:var(--g3);display:flex;align-items:center;justify-content:center;font-size:36px;border-radius:10px;">🍳</div>${m.texto?`<div style="padding:5px 10px;background:#fff;font-size:12px;color:#555;">${esc(m.texto)}</div>`:''}</div>`;
+    } else if (m.tipo==='audio') {
+      const bars=Array.from({length:18},(_,j)=>`<div class="audio-bar" style="height:${8+Math.floor(Math.random()*16)}px"></div>`).join('');
+      html+=`<div class="msg-audio ${dir}"><button class="audio-play" id="ap-${m.id}" onclick="playAudio('${m.id}','${m.audioUrl||''}')">▶</button><div class="audio-wave">${bars}</div><span class="audio-dur">${m.duracion||'0:00'}</span></div><div class="msg-meta ${dir}"><span class="msg-hora">${h}</span>${check}</div>${reacHtml}`;
+    } else if (m.tipo==='tarea') {
+      html+=`<div class="msg-tarea ${dir}"><div class="tarea-hdr"><span style="font-size:16px;">${m.tarea?.emoji||'📋'}</span><span class="tarea-lbl">Tarea asignada</span></div><div class="tarea-body"><div class="tarea-nm">${esc(m.tarea?.nombre||'')}</div><div class="tarea-hr">🕐 ${m.tarea?.hora||''}</div></div></div><div class="msg-meta ${dir}"><span class="msg-hora">${h}</span>${check}</div>${reacHtml}`;
+    } else if (m.tipo==='mercado') {
+      const items=(m.mercadoItems||[]).slice(0,5).map(i=>`• ${i.nombre}`).join('\n')+(m.mercadoItems?.length>5?`\n+${m.mercadoItems.length-5} más`:'');
+      html+=`<div class="msg-mercado ${dir}"><div class="mercado-hdr"><span style="font-size:16px;">🛒</span><span class="tarea-lbl">Lista del mercado · ${m.totalItems||0} items</span></div><div class="mercado-body">${items}<a href="/menu.html" class="mercado-link">Ver lista completa →</a></div></div><div class="msg-meta ${dir}"><span class="msg-hora">${h}</span>${check}</div>${reacHtml}`;
+    }
+    html+='</div>'; prevDir=dir;
+  });
+  wrap.innerHTML=html; wrap.scrollTop=wrap.scrollHeight;
+}
+
+window.enviar = async () => {
+  const inp=document.getElementById('inputMsg'), txt=inp.value.trim();
+  if (!txt||!chatId) return;
+  inp.value=''; ajustar(inp); toggleBtns(false); cerrarEmoji();
+  const md={tipo:'texto',texto:txt,remitenteUid:me.uid,remitenteNombre:perfil.nombre,timestamp:serverTimestamp(),leido:false};
+  if (chatId==='demo') {
+    msgsDemo.push({...md,id:`d-${Date.now()}`,timestamp:{toDate:()=>new Date()}});
+    renderMsgs(msgsDemo);
+    setTimeout(()=>{ msgsDemo.push({id:`dr-${Date.now()}`,tipo:'texto',texto:'Entendido, gracias 👍',remitenteUid:'otro',timestamp:{toDate:()=>new Date()},leido:true}); renderMsgs(msgsDemo); },1200);
+    return;
+  }
+  await addDoc(collection(db,'conversaciones',chatId,'mensajes'),md);
+  await updateDoc(doc(db,'conversaciones',chatId),{ultimoMensaje:txt,ultimaHora:serverTimestamp(),noLeidos:1});
+};
+
+window.subirArchivo = async inp => {
+  const f=inp.files[0]; if(!f||!chatId) return; cerrarAdj(); showToast('📤 Subiendo...');
+  try {
+    const esV=f.type.startsWith('video/'), fd=new FormData();
+    fd.append('file',f); fd.append('upload_preset',PRESET); fd.append('folder','mynana_chat');
+    const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/${esV?'video':'image'}/upload`,{method:'POST',body:fd});
+    const d=await r.json();
+    const md={tipo:'foto',fotoUrl:d.secure_url,texto:'',remitenteUid:me.uid,remitenteNombre:perfil.nombre,timestamp:serverTimestamp(),leido:false};
+    if (chatId==='demo') { msgsDemo.push({...md,id:`df-${Date.now()}`,timestamp:{toDate:()=>new Date()}}); renderMsgs(msgsDemo); showToast('📸 ¡Enviada!'); return; }
+    await addDoc(collection(db,'conversaciones',chatId,'mensajes'),md);
+    await updateDoc(doc(db,'conversaciones',chatId),{ultimoMensaje:'📷 Foto',ultimaHora:serverTimestamp(),noLeidos:1});
+    showToast('📸 ¡Foto enviada!');
+  } catch(e) { showToast('❌ Error al subir'); }
+  inp.value='';
+};
+
+window.startGrab = async ev => {
+  if(ev) ev.preventDefault(); if(grabando) return;
+  try {
+    const s=await navigator.mediaDevices.getUserMedia({audio:true});
+    mr=new MediaRecorder(s); chunks=[]; grabando=true; segs=0;
+    document.getElementById('btnMic').classList.add('grabando');
+    document.getElementById('btnMic').textContent='⏹';
+    document.getElementById('inputMsg').placeholder='🔴 Grabando...';
+    t=setInterval(()=>{ segs++; const mm=Math.floor(segs/60).toString().padStart(2,'0'),ss=(segs%60).toString().padStart(2,'0'); document.getElementById('inputMsg').placeholder=`🔴 ${mm}:${ss}`; },1000);
+    mr.ondataavailable=e=>chunks.push(e.data);
+    mr.onstop=async()=>{
+      clearInterval(t); document.getElementById('inputMsg').placeholder='Mensaje...';
+      document.getElementById('btnMic').classList.remove('grabando'); document.getElementById('btnMic').textContent='🎙️'; grabando=false;
+      const blob=new Blob(chunks,{type:'audio/webm'});
+      await enviarAudio(blob,`0:${segs.toString().padStart(2,'0')}`);
+      s.getTracks().forEach(tr=>tr.stop());
+    };
+    mr.start();
+  } catch(e) { showToast('❌ Sin permiso de micrófono'); grabando=false; }
+};
+
+window.stopGrab = ev => { if(ev) ev.preventDefault(); if(!grabando||!mr) return; mr.stop(); };
+
+async function enviarAudio(blob,dur) {
+  showToast('🎙️ Enviando...');
+  try {
+    let url='';
+    if (chatId!=='demo') {
+      const f=new File([blob],`a_${Date.now()}.webm`,{type:'audio/webm'}), fd=new FormData();
+      fd.append('file',f); fd.append('upload_preset',PRESET); fd.append('folder','mynana_audio');
+      const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/video/upload`,{method:'POST',body:fd});
+      url=(await r.json()).secure_url;
+    }
+    const md={tipo:'audio',audioUrl:url,duracion:dur,remitenteUid:me.uid,remitenteNombre:perfil.nombre,timestamp:serverTimestamp(),leido:false};
+    if (chatId==='demo') { msgsDemo.push({...md,id:`da-${Date.now()}`,timestamp:{toDate:()=>new Date()}}); renderMsgs(msgsDemo); }
+    else { await addDoc(collection(db,'conversaciones',chatId,'mensajes'),md); await updateDoc(doc(db,'conversaciones',chatId),{ultimoMensaje:'🎙️ Audio',ultimaHora:serverTimestamp(),noLeidos:1}); }
+    showToast('🎙️ ¡Audio enviado!');
+  } catch(e) { showToast('❌ Error'); }
+}
+
+let audioEl=null;
+window.playAudio = (id,url) => {
+  const btn=document.getElementById(`ap-${id}`);
+  if (!url) { showToast('🎙️ Audio demo'); return; }
+  if (audioEl) { audioEl.pause(); audioEl=null; }
+  audioEl=new Audio(url);
+  if (btn) { btn.textContent='⏸'; btn.classList.add('playing'); }
+  audioEl.play().catch(()=>showToast('❌ No se pudo reproducir'));
+  audioEl.onended=()=>{ if(btn){btn.textContent='▶';btn.classList.remove('playing');} audioEl=null; };
+};
+
+window.showEmojiFloat = (e,id) => {
+  e.preventDefault();
+  document.querySelectorAll('.emoji-float').forEach(el=>el.remove());
+  const div=document.createElement('div'); div.className='emoji-float';
+  div.style.cssText=`top:${Math.min(e.clientY-50,window.innerHeight-80)}px;left:${Math.min(e.clientX-80,window.innerWidth-220)}px;`;
+  div.innerHTML=RAPIDOS.map(em=>`<button onclick="toggleReac('${id}','${em}');this.closest('.emoji-float').remove()">${em}</button>`).join('');
+  document.body.appendChild(div);
+  setTimeout(()=>document.addEventListener('click',()=>div.remove(),{once:true}),100);
+};
+
+window.toggleReac = async (msgId,emoji) => {
+  if (chatId==='demo') {
+    const m=msgsDemo.find(m=>m.id===msgId); if(!m) return;
+    if(!m.reacciones) m.reacciones={};
+    if(!m.reacciones[emoji]) m.reacciones[emoji]=[];
+    const i=m.reacciones[emoji].indexOf(me.uid);
+    if(i>-1) m.reacciones[emoji].splice(i,1); else m.reacciones[emoji].push(me.uid);
+    if(!m.reacciones[emoji].length) delete m.reacciones[emoji];
+    renderMsgs(msgsDemo); return;
+  }
+  try {
+    const ref=doc(db,'conversaciones',chatId,'mensajes',msgId);
+    const snap=await getDoc(ref); if(!snap.exists()) return;
+    const r=snap.data().reacciones||{};
+    if(!r[emoji]) r[emoji]=[];
+    const i=r[emoji].indexOf(me.uid);
+    if(i>-1) r[emoji].splice(i,1); else r[emoji].push(me.uid);
+    if(!r[emoji].length) delete r[emoji];
+    await updateDoc(ref,{reacciones:r});
+  } catch(e){}
+};
+
+window.enviarTarea = () => {
+  cerrarAdj();
+  const tareas=[{n:'Preparar desayuno',h:'7:00 am',e:'🍳'},{n:'Barrer y trapear',h:'9:00 am',e:'🧹'},{n:'Lavandería',h:'10:00 am',e:'👕'},{n:'Almuerzo: Sancocho',h:'12:30 pm',e:'🍲'},{n:'Recoger niños',h:'2:00 pm',e:'🎒'},{n:'Limpiar baños',h:'4:00 pm',e:'🧹'}];
+  const sel=window.prompt(`Elige una tarea (1-${tareas.length}):\n\n${tareas.map((t,i)=>`${i+1}. ${t.e} ${t.n}`).join('\n')}`);
+  if(!sel) return; const idx=parseInt(sel)-1; if(idx<0||idx>=tareas.length) return;
+  const tarea={nombre:tareas[idx].n,hora:tareas[idx].h,emoji:tareas[idx].e};
+  const md={tipo:'tarea',tarea,remitenteUid:me.uid,remitenteNombre:perfil.nombre,timestamp:serverTimestamp(),leido:false};
+  if(chatId==='demo'){msgsDemo.push({...md,id:`dt-${Date.now()}`,timestamp:{toDate:()=>new Date()}});renderMsgs(msgsDemo);return;}
+  addDoc(collection(db,'conversaciones',chatId,'mensajes'),md);
+  updateDoc(doc(db,'conversaciones',chatId),{ultimoMensaje:`📋 ${tarea.nombre}`,ultimaHora:serverTimestamp(),noLeidos:1});
+};
+
+function initEmojis() {
+  const cats=document.getElementById('emojiCats');
+  cats.innerHTML=Object.keys(EMOJIS).map(c=>`<button class="ecat-btn ${c===catActual?'activa':''}" onclick="cambiarCat('${c}')">${c}</button>`).join('');
+  renderEmojiGrid(catActual);
+}
+
+window.cambiarCat = c => {
+  catActual=c;
+  document.querySelectorAll('.ecat-btn').forEach(b=>b.classList.remove('activa'));
+  event.target.classList.add('activa');
+  renderEmojiGrid(c);
+};
+
+function renderEmojiGrid(c) {
+  document.getElementById('emojiGrid').innerHTML=(EMOJIS[c]||[]).map(e=>`<button class="emoji-item" onclick="insertEmoji('${e}')">${e}</button>`).join('');
+}
+
+window.insertEmoji = e => {
+  const inp=document.getElementById('inputMsg'), pos=inp.selectionStart, v=inp.value;
+  inp.value=v.slice(0,pos)+e+v.slice(pos);
+  inp.selectionStart=inp.selectionEnd=pos+e.length; inp.focus();
+  toggleBtns(inp.value.trim().length>0);
+};
+
+window.toggleEmoji = () => {
+  const p = document.getElementById('emojiPicker');
+  const inputArea = document.getElementById('inputArea') || document.querySelector('.input-area');
+  emojiOpen = !emojiOpen;
+  
+  if (emojiOpen) {
+    // Calcular posición desde el bottom del input-area
+    const rect = inputArea ? inputArea.getBoundingClientRect() : null;
+    const bottomOffset = rect ? (window.innerHeight - rect.top + 4) : 72;
+    p.style.bottom = bottomOffset + 'px';
+    p.classList.add('visible');
+    cerrarAdj();
+  } else {
+    p.classList.remove('visible');
+  }
+};
+function cerrarEmoji(){emojiOpen=false;document.getElementById('emojiPicker')?.classList.remove('visible');}
+
+window.toggleAdj = () => {
+  const p=document.getElementById('adjPanel'),b=document.getElementById('btnAdj');
+  const o=p.classList.toggle('visible'); b.textContent=o?'✕':'+';
+  if(o) cerrarEmoji();
+};
+function cerrarAdj(){document.getElementById('adjPanel')?.classList.remove('visible');const b=document.getElementById('btnAdj');if(b)b.textContent='+';}
+
+window.abrirCam=()=>{cerrarAdj();document.getElementById('camInput').click();};
+window.abrirGal=()=>{cerrarAdj();document.getElementById('fileInput').click();};
+
+window.verFoto=url=>{fotoUrl=url;document.getElementById('mfImg').src=url;document.getElementById('modalFoto').classList.remove('oculto');};
+window.cerrarFoto=()=>document.getElementById('modalFoto').classList.add('oculto');
+window.descargarFoto=()=>{const a=document.createElement('a');a.href=fotoUrl;a.download='foto-mynana.jpg';a.target='_blank';a.click();};
+window.volverSidebar=()=>{document.getElementById('chatPanel').classList.add('oculto');document.getElementById('sidebar').classList.remove('oculto');chatId=null;if(unsub)unsub();};
+window.handleKey=e=>{if(e.key==='Enter'&&!e.shiftKey&&window.innerWidth>=768){e.preventDefault();enviar();}};
+window.ajustar=el=>{el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';toggleBtns(el.value.trim().length>0);};
+function toggleBtns(t){document.getElementById('btnSend').style.display=t?'flex':'none';document.getElementById('btnMic').style.display=t?'none':'flex';}
+window.filtrarConvs=txt=>renderConvs(convs.filter(c=>c.otroPerfil?.nombre?.toLowerCase().includes(txt.toLowerCase())));
+function fh(d){return d.toLocaleTimeString('es-PA',{hour:'2-digit',minute:'2-digit'});}
+function ff(d){const hoy=new Date(),ayer=new Date(hoy);ayer.setDate(ayer.getDate()-1);if(d.toDateString()===hoy.toDateString())return 'Hoy';if(d.toDateString()===ayer.toDateString())return 'Ayer';return d.toLocaleDateString('es-PA',{day:'numeric',month:'long'});}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');}
+window.showToast=msg=>{const t=document.getElementById('toast');t.textContent=msg;t.classList.add('visible');setTimeout(()=>t.classList.remove('visible'),3000);};
+
+document.addEventListener('click',e=>{
+  const ep=document.getElementById('emojiPicker'),eb=document.querySelector('.input-emoji');
+  if(ep&&eb&&!ep.contains(e.target)&&!eb.contains(e.target)) cerrarEmoji();
+  const ap=document.getElementById('adjPanel'),ab=document.getElementById('btnAdj');
+  if(ap&&ab&&!ap.contains(e.target)&&!ab.contains(e.target)) cerrarAdj();
+});
+</script>
+</body>
+</html>

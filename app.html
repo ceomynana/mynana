@@ -1,0 +1,2542 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>My Nana Panama — Inicia sesión</title>
+<meta name="description" content="Accede a tu cuenta de My Nana Panama. Gestiona tareas, chat y nómina de tu personal doméstico.">
+<meta name="robots" content="noindex">
+<meta property="og:title" content="My Nana Panama — App para tu hogar">
+<meta property="og:description" content="Gestiona tu personal doméstico desde el celular. Tareas, chat, menú y nómina en un solo lugar.">
+<meta property="og:image" content="https://mynana.app/og-image.png">
+<meta property="og:site_name" content="My Nana Panama">
+<meta name="theme-color" content="#0F4A38">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230F4A38'/><text y='.9em' font-size='75' x='12'>🏠</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Cormorant+Garamond:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --g:#1A6B52; --g2:#0F4A38; --g3:#F0F7F4; --g4:#E1F0EB;
+  --b:#D4A5A5; --b2:#BF9090; --b3:#F7EFEF;
+  --cr:#F9F5F0; --txt:#1A2E25; --txt2:#4A6358;
+  --white:#fff; --r:14px; --shadow:0 4px 24px rgba(15,74,56,.10);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);overflow-x:hidden;min-height:100vh;min-height:100dvh;}
+
+/* ── PANTALLAS ── */
+.screen{display:none;min-height:100vh;}
+.screen.activa{display:flex;flex-direction:column;}
+
+/* ── LOGIN ── */
+#screen-login{align-items:center;justify-content:center;background:var(--g2);padding:20px;}
+.login-card{background:#fff;border-radius:24px;width:100%;max-width:420px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.2);}
+.login-header{background:var(--g2);padding:32px;text-align:center;}
+.login-logo-circle{width:64px;height:64px;border-radius:50%;background:var(--g);border:3px solid var(--b);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:#fff;}
+.login-my{font-size:11px;color:var(--b);letter-spacing:5px;text-transform:uppercase;margin-bottom:4px;}
+.login-nana{font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:500;color:#fff;letter-spacing:3px;}
+.login-line{width:40px;height:2px;background:var(--b);margin:8px auto 0;border-radius:2px;}
+.login-body{padding:28px 32px 32px;}
+.login-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--txt);margin-bottom:4px;}
+.login-sub{font-size:13px;color:var(--txt2);margin-bottom:24px;}
+.form-label{display:block;font-size:11px;font-weight:600;color:var(--txt);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;}
+.form-input{width:100%;background:var(--cr);border:1.5px solid var(--g4);border-radius:10px;padding:12px 16px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--txt);outline:none;transition:all .2s;margin-bottom:16px;}
+.form-input:focus{border-color:var(--g);background:#fff;box-shadow:0 0 0 3px rgba(26,107,82,.08);}
+.form-input::placeholder{color:#bbb;}
+.login-btn{width:100%;background:var(--g);color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;padding:14px;border-radius:99px;border:none;cursor:pointer;transition:all .25s;margin-top:4px;}
+.login-btn:hover{background:var(--g2);transform:translateY(-1px);box-shadow:0 8px 24px rgba(26,107,82,.25);}
+.login-btn:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+.login-error{background:#FCEBEB;border-radius:8px;padding:10px 14px;font-size:13px;color:#A32D2D;margin-bottom:14px;display:none;}
+.login-error.visible{display:block;}
+.login-divider{text-align:center;font-size:12px;color:#bbb;margin:16px 0;}
+.login-register{width:100%;background:transparent;color:var(--g);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;padding:12px;border-radius:99px;border:1.5px solid var(--g4);cursor:pointer;transition:all .2s;}
+.login-register:hover{background:var(--g3);border-color:var(--g);}
+.login-forgot{display:block;text-align:center;font-size:12px;color:var(--txt2);margin-top:12px;cursor:pointer;text-decoration:underline;}
+.tab-selector{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-bottom:20px;border-radius:10px;overflow:hidden;border:1.5px solid var(--g4);}
+.tab-opt{padding:10px;text-align:center;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:var(--txt2);border:none;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.tab-opt.activo{background:var(--g);color:#fff;}
+
+/* ── REGISTRO ── */
+#screen-registro{align-items:center;justify-content:center;background:var(--g2);padding:20px;}
+.reg-card{background:#fff;border-radius:24px;width:100%;max-width:420px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.2);}
+.reg-header{background:var(--g2);padding:20px 32px;display:flex;align-items:center;gap:12px;}
+.reg-back{background:rgba(255,255,255,.1);border:none;border-radius:50%;width:36px;height:36px;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.reg-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:500;color:#fff;}
+.reg-body{padding:24px 32px 32px;max-height:80vh;overflow-y:auto;}
+.reg-btn{width:100%;background:var(--g);color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;padding:14px;border-radius:99px;border:none;cursor:pointer;transition:all .25s;margin-top:8px;}
+.reg-btn:hover{background:var(--g2);}
+
+/* ── BIENVENIDA POST-REGISTRO ── */
+#screen-bienvenida{background:var(--g2);align-items:center;justify-content:center;padding:24px;}
+.bienvenida-wrap{background:#fff;border-radius:24px;padding:32px 28px;max-width:420px;width:100%;text-align:center;}
+.bienvenida-emoji{font-size:56px;margin-bottom:16px;animation:bounce .6s ease infinite alternate;}
+@keyframes bounce{from{transform:translateY(0);}to{transform:translateY(-8px);}}
+.bienvenida-titulo{font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--txt);margin-bottom:8px;line-height:1.2;}
+.bienvenida-sub{font-size:14px;color:var(--txt2);line-height:1.6;margin-bottom:28px;}
+.bienvenida-pasos{display:flex;flex-direction:column;gap:12px;margin-bottom:28px;text-align:left;}
+.bienvenida-paso{display:flex;align-items:flex-start;gap:14px;background:var(--cr);border-radius:14px;padding:14px;border:1px solid var(--g4);}
+.bienvenida-paso-num{width:32px;height:32px;border-radius:50%;background:var(--g);color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.bienvenida-paso-num.rosa{background:var(--b2);}
+.bienvenida-paso-titulo{font-size:14px;font-weight:600;color:var(--txt);margin-bottom:3px;}
+.bienvenida-paso-desc{font-size:12px;color:var(--txt2);line-height:1.5;}
+.bienvenida-btn{width:100%;background:var(--g);color:#fff;border:none;border-radius:99px;padding:15px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;margin-bottom:10px;}
+.bienvenida-btn:hover{background:var(--g2);}
+.bienvenida-btn.nana{background:var(--b2);}
+.bienvenida-btn.nana:hover{background:#8B3A2A;}
+.bienvenida-skip{background:none;border:none;color:var(--txt2);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+
+/* ── NOTIFICACIONES ── */
+.notif-btn{position:relative;background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.8);width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:all .2s;}
+.notif-btn:hover{background:rgba(255,255,255,.2);}
+.notif-badge{position:absolute;top:-2px;right:-2px;background:#e05c5c;color:#fff;font-size:10px;font-weight:700;width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid var(--g2);display:none;}
+.notif-badge.visible{display:flex;}
+.notif-panel{position:fixed;top:72px;right:16px;width:340px;max-height:480px;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,.18);z-index:100;overflow:hidden;display:none;border:1px solid var(--g4);}
+.notif-panel.visible{display:block;animation:slideDown .2s ease;}
+@keyframes slideDown{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);}}
+.notif-panel-header{background:var(--g2);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;}
+.notif-panel-title{font-size:14px;font-weight:500;color:#fff;}
+.notif-panel-sub{font-size:11px;color:rgba(255,255,255,.55);}
+.notif-marcar-todo{background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.7);font-size:11px;padding:5px 10px;border-radius:99px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.notif-lista{max-height:380px;overflow-y:auto;}
+.notif-item{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-bottom:1px solid var(--g4);cursor:pointer;transition:background .15s;}
+.notif-item:hover{background:var(--cr);}
+.notif-item.leida{opacity:.55;}
+.notif-item:last-child{border-bottom:none;}
+.notif-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.notif-contenido{flex:1;min-width:0;}
+.notif-titulo{font-size:13px;font-weight:500;color:var(--txt);margin-bottom:2px;}
+.notif-desc{font-size:12px;color:var(--txt2);line-height:1.5;}
+.notif-hora{font-size:10px;color:#bbb;margin-top:3px;}
+.notif-dot{width:8px;height:8px;border-radius:50%;background:var(--g);flex-shrink:0;margin-top:5px;}
+.notif-empty{text-align:center;padding:32px 20px;}
+.notif-empty-icon{font-size:36px;margin-bottom:8px;}
+.notif-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#fff;border-radius:14px;padding:12px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.15);z-index:500;transition:transform .35s ease;max-width:340px;width:calc(100% - 32px);border:1px solid var(--g4);}
+.notif-toast.visible{transform:translateX(-50%) translateY(0);}
+.notif-toast-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.notif-toast-body{flex:1;}
+.notif-toast-titulo{font-size:13px;font-weight:500;color:var(--txt);}
+.notif-toast-desc{font-size:12px;color:var(--txt2);margin-top:2px;}
+.notif-toast-close{background:none;border:none;color:#bbb;font-size:18px;cursor:pointer;padding:0;flex-shrink:0;}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--g);color:#fff;font-size:13px;font-weight:500;padding:12px 20px;border-radius:99px;z-index:1000;transition:transform .35s ease;white-space:nowrap;box-shadow:0 8px 24px rgba(26,107,82,.3);}
+.toast.visible{transform:translateX(-50%) translateY(0);}
+
+/* ── DASHBOARD FAMILIA ── */
+#screen-familia{background:#F0F4F8;}
+.dash-nav{background:var(--g2);padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.dash-logo{font-family:'Cormorant Garamond',serif;font-size:22px;color:#fff;}
+.dash-logo em{color:var(--b);font-style:normal;}
+.dash-user{display:flex;align-items:center;gap:10px;}
+.dash-avatar{width:36px;height:36px;border-radius:50%;background:var(--g);border:2px solid var(--b);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#fff;}
+.dash-nombre{font-size:13px;color:rgba(255,255,255,.8);}
+.dash-logout{background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.7);font-size:12px;padding:6px 12px;border-radius:99px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.dash-logout:hover{background:rgba(255,255,255,.2);}
+
+/* HERO MEJORADO */
+.dash-hero{background:linear-gradient(135deg,var(--g2) 0%,var(--g) 100%);padding:28px 24px 48px;position:relative;overflow:hidden;}
+.dash-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.04);}
+.dash-hero::after{content:'';position:absolute;bottom:-60px;left:-30px;width:160px;height:160px;border-radius:50%;background:rgba(212,165,165,.08);}
+.dash-hero-greeting{font-size:12px;color:rgba(255,255,255,.6);margin-bottom:4px;letter-spacing:.04em;text-transform:uppercase;}
+.dash-hero-name{font-family:'Cormorant Garamond',serif;font-size:32px;color:#fff;margin-bottom:6px;font-weight:500;}
+.dash-hero-sub{font-size:13px;color:rgba(255,255,255,.55);}
+
+/* STATS FLOTANTES */
+.dash-stats-float{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:0 20px;margin-top:-24px;position:relative;z-index:5;margin-bottom:4px;}
+.dash-stat-card{background:#fff;border-radius:14px;padding:14px 12px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.08);border:1px solid rgba(255,255,255,.8);}
+.dash-stat-n{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600;color:var(--g);line-height:1;}
+.dash-stat-l{font-size:10px;color:var(--txt2);margin-top:4px;font-weight:500;}
+
+/* CONTENIDO */
+.dash-content{padding:16px 20px 32px;max-width:1100px;margin:0 auto;}
+.dash-section-title{font-size:11px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.08em;margin:20px 0 12px;padding-left:2px;}
+
+/* GRID DE TARJETAS */
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:4px;}
+@media(max-width:640px){.dash-grid{grid-template-columns:1fr;}}
+
+/* TARJETA MEJORADA */
+.dash-card{background:#fff;border-radius:18px;overflow:hidden;cursor:pointer;transition:all .25s cubic-bezier(.34,1.56,.64,1);box-shadow:0 2px 12px rgba(0,0,0,.06);border:1px solid rgba(0,0,0,.04);animation:cardEntrada .4s ease both;}
+@keyframes cardEntrada{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+.dash-card:nth-child(1){animation-delay:.05s;}
+.dash-card:nth-child(2){animation-delay:.1s;}
+.dash-card:nth-child(3){animation-delay:.15s;}
+.dash-card:nth-child(4){animation-delay:.2s;}
+.dash-card:nth-child(5){animation-delay:.25s;}
+.dash-card:nth-child(6){animation-delay:.3s;}
+.dash-card:nth-child(7){animation-delay:.35s;}
+.dash-card:hover{transform:translateY(-4px) scale(1.01);box-shadow:0 12px 32px rgba(26,107,82,.14);}
+.dash-card:active{transform:scale(.98);}
+
+/* HEADER TARJETA */
+.dash-card-header{padding:16px 18px 12px;display:flex;align-items:center;gap:12px;}
+.dash-card-icon{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;position:relative;}
+.dash-card-icon::after{content:'';position:absolute;inset:0;border-radius:14px;opacity:.15;}
+.dash-card-title{font-size:15px;font-weight:600;color:var(--txt);letter-spacing:-.01em;}
+.dash-card-sub{font-size:12px;color:var(--txt2);margin-top:2px;}
+
+/* CUERPO TARJETA */
+.dash-card-body{padding:0 18px 16px;}
+.dash-card-divider{height:1px;background:var(--g4);margin:0 18px 12px;opacity:.5;}
+
+/* ITEMS */
+.task-item{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:.5px solid var(--g4);}
+.task-item:last-child{border-bottom:none;}
+.task-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.task-name{flex:1;font-size:13px;color:var(--txt);}
+.task-hora{font-size:11px;color:#bbb;}
+.task-check{width:20px;height:20px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;}
+.chat-msg-out{align-self:flex-end;background:var(--g);color:#fff;border-radius:12px 12px 4px 12px;padding:7px 11px;font-size:12px;max-width:82%;}
+.chat-msg-in{align-self:flex-start;background:var(--cr);border:1px solid var(--g4);border-radius:12px 12px 12px 4px;padding:7px 11px;font-size:12px;max-width:82%;color:var(--txt);}
+.menu-item{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:.5px solid var(--g4);}
+.menu-item:last-child{border-bottom:none;}
+.menu-emoji{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.menu-plato{font-size:12px;font-weight:500;color:var(--txt);}
+.menu-hora{font-size:10px;color:#bbb;}
+.score-bar{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+.score-label{font-size:11px;color:var(--txt2);width:86px;flex-shrink:0;}
+.score-track{flex:1;height:5px;background:var(--g4);border-radius:99px;overflow:hidden;}
+.score-fill{height:100%;background:linear-gradient(90deg,var(--g),var(--b));border-radius:99px;transition:width .6s ease;}
+.score-val{font-size:11px;font-weight:600;color:var(--g);width:22px;text-align:right;}
+.nana-profile{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.nana-av{width:46px;height:46px;border-radius:50%;background:var(--g);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:#fff;border:2.5px solid var(--b);flex-shrink:0;}
+.nana-nm{font-size:14px;font-weight:600;color:var(--txt);}
+.nana-score{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:var(--g);}
+.nana-stars{font-size:12px;color:#FAC775;}
+
+/* BOTÓN TARJETA */
+.dash-card-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;background:var(--g3);color:var(--g);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:10px;border-radius:10px;border:none;cursor:pointer;text-align:center;margin-top:10px;transition:all .2s;}
+.dash-card-btn:hover{background:var(--g);color:#fff;}
+.dash-card-btn::after{content:'→';margin-left:2px;transition:transform .2s;}
+.dash-card-btn:hover::after{transform:translateX(3px);}
+
+/* TARJETA ACCIÓN RÁPIDA (nana) */
+.dash-grid-nana{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:0 16px;margin-bottom:4px;}
+.nana-action-card{border-radius:18px;padding:18px 12px;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;transition:all .25s cubic-bezier(.34,1.56,.64,1);animation:cardEntrada .4s ease both;}
+.nana-action-card:nth-child(1){animation-delay:.05s;}
+.nana-action-card:nth-child(2){animation-delay:.1s;}
+.nana-action-card:nth-child(3){animation-delay:.15s;}
+.nana-action-card:nth-child(4){animation-delay:.2s;}
+.nana-action-card:nth-child(5){animation-delay:.25s;}
+.nana-action-card:nth-child(6){animation-delay:.3s;}
+.nana-action-card:active{transform:scale(.95);}
+.nana-action-card:hover{transform:translateY(-3px);}
+.nana-action-icon{font-size:30px;margin-bottom:2px;}
+.nana-action-title{font-size:13px;font-weight:600;}
+.nana-action-sub{font-size:11px;opacity:.75;}
+
+/* PRÓXIMA TAREA CARD */
+.proxima-tarea{margin:0 16px;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06);animation:cardEntrada .4s ease .35s both;}
+.proxima-tarea-header{display:flex;align-items:center;gap:12px;padding:16px;}
+.proxima-tarea-emoji{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;}
+.proxima-tarea-btn{display:block;background:var(--g);color:#fff;text-align:center;padding:14px;font-size:15px;font-weight:600;text-decoration:none;transition:background .2s;}
+.proxima-tarea-btn:hover{background:var(--g2);}
+
+/* BOTTOM NAV MEJORADO */
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#fff;border-top:.5px solid var(--g4);padding:6px 0 20px;display:flex;z-index:50;box-shadow:0 -4px 20px rgba(0,0,0,.06);}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:6px 0;transition:all .2s;}
+.nav-icon{font-size:22px;transition:transform .2s;}
+.nav-item.activo .nav-icon{transform:scale(1.1);}
+.nav-label{font-size:10px;color:#bbb;font-weight:500;transition:color .2s;}
+.nav-item.activo .nav-label{color:var(--g);font-weight:600;}
+.nana-contenido{padding-bottom:100px;background:#F0F4F8;}
+.nana-section-title{font-size:11px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.08em;padding:16px 16px 8px;}
+.tarea-card{background:#fff;border-radius:var(--r);overflow:hidden;border:1px solid var(--g4);margin-bottom:10px;}
+.tarea-top{display:flex;align-items:center;gap:12px;padding:14px;}
+.tarea-emoji{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.tarea-info{flex:1;}
+.tarea-nombre{font-size:14px;font-weight:500;color:var(--txt);}
+.tarea-nombre.hecha{text-decoration:line-through;color:#bbb;}
+.tarea-hora{font-size:11px;color:#bbb;margin-top:2px;}
+.tarea-check-btn{width:32px;height:32px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;transition:all .2s;}
+.tarea-actions{display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid var(--g4);}
+.tarea-action{padding:10px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;font-weight:500;cursor:pointer;border:none;background:transparent;font-family:'DM Sans',sans-serif;}
+.tarea-action:not(:last-child){border-right:1px solid var(--g4);}
+.tarea-hecha-banner{background:var(--g3);padding:8px 14px;display:flex;align-items:center;gap:8px;border-top:1px solid var(--g4);font-size:12px;color:var(--g);}
+.sec-titulo{font-size:11px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em;margin:16px 0 10px;}
+.nana-menu-card{background:#fff;border-radius:var(--r);border:1px solid var(--g4);overflow:hidden;margin-bottom:8px;}
+.nana-chat-wrap{display:flex;flex-direction:column;gap:10px;}
+.nana-msg-fam{align-self:flex-start;max-width:80%;}
+.nana-msg-yo{align-self:flex-end;max-width:80%;}
+.burbuja-fam{background:#fff;border:1px solid var(--g4);border-radius:14px 14px 14px 4px;padding:10px 12px;font-size:13px;color:var(--txt);}
+.burbuja-yo{background:var(--g);border-radius:14px 14px 4px 14px;padding:10px 12px;font-size:13px;color:#fff;}
+.msg-hora{font-size:10px;color:#bbb;margin-top:3px;}
+.msg-hora-yo{font-size:10px;color:rgba(255,255,255,.6);margin-top:3px;text-align:right;}
+.msg-sistema{background:var(--g3);border-radius:10px;padding:8px 12px;font-size:11px;color:var(--g);text-align:center;}
+.chat-input-wrap{position:fixed;bottom:68px;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#fff;border-top:1px solid var(--g4);padding:10px 14px;display:flex;gap:8px;align-items:center;}
+.chat-input{flex:1;background:var(--cr);border:1px solid var(--g4);border-radius:99px;padding:10px 16px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--txt);outline:none;}
+.chat-send{width:40px;height:40px;border-radius:50%;background:var(--g);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.chat-mic{width:40px;height:40px;border-radius:50%;background:var(--b3);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;}
+.video-card{background:#fff;border-radius:var(--r);overflow:hidden;border:1px solid var(--g4);margin-bottom:10px;display:flex;cursor:pointer;}
+.video-thumb{width:80px;height:70px;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;}
+.video-play{position:absolute;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;font-size:10px;}
+.video-info{padding:10px 12px;flex:1;}
+.video-titulo{font-size:13px;font-weight:500;color:var(--txt);margin-bottom:2px;}
+.video-meta{font-size:11px;color:#bbb;}
+.modal-video{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .25s;}
+.modal-video.visible{opacity:1;pointer-events:all;}
+.modal-video-box{background:#fff;border-radius:16px;width:100%;max-width:390px;overflow:hidden;}
+.modal-video-preview{height:200px;display:flex;align-items:center;justify-content:center;font-size:64px;}
+.modal-video-info{padding:16px;}
+
+/* ── BOTÓN IDIOMA DASHBOARD ── */
+.dash-lang-btn{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:99px;padding:5px 11px;font-size:12px;font-weight:600;color:rgba(255,255,255,.85);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.dash-lang-btn:hover{background:rgba(255,255,255,.2);}
+.nana-lang-btn{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:99px;padding:5px 11px;font-size:12px;font-weight:600;color:rgba(255,255,255,.85);cursor:pointer;font-family:'DM Sans',sans-serif;}
+body.lang-en [data-es]{display:none !important;}
+body.lang-es [data-en]{display:none !important;}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- SPLASH DE CARGA - evita parpadeo del login -->
+<div id="splashCarga" style="position:fixed;inset:0;background:var(--g2);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;">
+  <div style="width:72px;height:72px;border-radius:50%;background:var(--g);border:3px solid var(--b);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:24px;color:#fff;animation:pulso 1.5s infinite;">MN</div>
+  <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:#fff;letter-spacing:2px;">NANA</div>
+  <div style="font-size:13px;color:rgba(255,255,255,.5);">Cargando tu cuenta...</div>
+</div>
+
+<!-- ══════════════════════ LOGIN ══════════════════════ -->
+<div class="screen" id="screen-login">
+  <div class="login-card">
+    <div class="login-header">
+      <div class="login-logo-circle">MN</div>
+      <div class="login-my">MY</div>
+      <div class="login-nana">NANA</div>
+      <div class="login-line"></div>
+    </div>
+    <div class="login-body">
+      <h2 class="login-title">Bienvenido/a de vuelta</h2>
+      <p class="login-sub">Inicia sesión para acceder a tu plataforma</p>
+
+      <!-- Selector tipo usuario -->
+      <div class="tab-selector">
+        <button class="tab-opt activo" onclick="setTipoLogin('familia',this)" id="tab-familia">👨‍👩‍👧 Familia</button>
+        <button class="tab-opt" onclick="setTipoLogin('nana',this)" id="tab-nana">👩 Nana</button>
+      </div>
+
+      <div class="login-error" id="loginError"></div>
+
+      <label class="form-label">Correo electrónico</label>
+      <input type="email" class="form-input" id="loginEmail" placeholder="tucorreo@email.com" />
+
+      <label class="form-label">Contraseña</label>
+      <input type="password" class="form-input" id="loginPass" placeholder="Tu contraseña" />
+
+      <button class="login-btn" id="loginBtn" onclick="iniciarSesion()">Iniciar sesión →</button>
+
+      <span class="login-forgot" onclick="recuperarPassword()">¿Olvidaste tu contraseña?</span>
+
+      <div class="login-divider">¿No tienes cuenta?</div>
+      <button class="login-register" onclick="irARegistro()">Crear cuenta gratis</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ REGISTRO ══════════════════════ -->
+<div class="screen" id="screen-registro">
+  <div class="reg-card">
+    <div class="reg-header">
+      <button class="reg-back" onclick="irALogin()">←</button>
+      <div class="reg-title">Crear cuenta en My Nana</div>
+    </div>
+    <div class="reg-body">
+      <div class="tab-selector" style="margin-bottom:20px;">
+        <button class="tab-opt activo" onclick="setTipoReg('familia',this)">👨‍👩‍👧 Familia</button>
+        <button class="tab-opt" onclick="setTipoReg('nana',this)">👩 Nana</button>
+      </div>
+
+      <div class="login-error" id="regError"></div>
+
+      <label class="form-label">Nombre completo</label>
+      <input type="text" class="form-input" id="regNombre" placeholder="Tu nombre" />
+
+      <div id="regCamposNana" style="display:none;">
+        <label class="form-label">Apellido</label>
+        <input type="text" class="form-input" id="regApellido" placeholder="Tu apellido" />
+        <label class="form-label">Cédula</label>
+        <input type="text" class="form-input" id="regCedula" placeholder="8-123-4567" />
+        <label class="form-label">Teléfono</label>
+        <input type="tel" class="form-input" id="regTelefono" placeholder="6612-3456" />
+        <label class="form-label">Código de la familia</label>
+        <input type="text" class="form-input" id="regCodigo" placeholder="Código de 6 caracteres (ej: ABC123)" style="text-transform:uppercase;letter-spacing:4px;font-size:16px;text-align:center;" maxlength="6" />
+        <div style="font-size:11px;color:var(--txt2);margin-top:-10px;margin-bottom:14px;">Pídele este código a la familia que te contrató</div>
+      </div>
+
+      <label class="form-label">Correo electrónico</label>
+      <input type="email" class="form-input" id="regEmail" placeholder="tucorreo@email.com" />
+
+      <label class="form-label">Contraseña</label>
+      <input type="password" class="form-input" id="regPass" placeholder="Mínimo 6 caracteres" />
+
+      <div id="regCamposFamilia">
+        <div style="background:var(--b3);border-radius:10px;padding:12px 14px;margin-bottom:14px;cursor:pointer;" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+          <div style="font-size:13px;font-weight:500;color:var(--b2);">👨‍👩‍👧 ¿Te invitó un familiar? Toca aquí</div>
+          <div style="font-size:11px;color:var(--txt2);margin-top:2px;">Si tu pareja ya tiene cuenta, ingresa su código familiar</div>
+        </div>
+        <div style="display:none;margin-bottom:14px;">
+          <input type="text" class="form-input" id="regCodigoFamiliar" placeholder="Código familiar (empieza con F)" style="text-transform:uppercase;letter-spacing:4px;font-size:16px;text-align:center;" maxlength="7" />
+          <div style="font-size:11px;color:var(--txt2);margin-top:4px;text-align:center;">Tu familiar te envió este código por WhatsApp</div>
+        </div>
+      </div>
+
+      <button class="reg-btn" id="regBtn" onclick="registrarse()">Crear mi cuenta →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ BIENVENIDA ══════════════════════ -->
+<div class="screen" id="screen-bienvenida">
+  <div class="bienvenida-wrap" id="bienvenidaContenido">
+    <!-- Se llena dinámicamente según tipo de usuario -->
+  </div>
+</div>
+
+<!-- ══════════════════════ DASHBOARD FAMILIA ══════════════════════ -->
+<div class="screen" id="screen-familia">
+
+  <nav class="dash-nav">
+    <div class="dash-logo">My <em>Nana</em></div>
+    <div class="dash-user">
+      <!-- Botón notificaciones -->
+      <button class="notif-btn" onclick="toggleNotifPanel()" id="notifBtn" title="Notificaciones">
+        🔔
+        <div class="notif-badge" id="notifBadge">0</div>
+      </button>
+<div class="dash-user" style="gap:8px;">
+        <button class="dash-lang-btn" onclick="toggleLangDash()" id="dashLangBtn" style="margin-right:4px;">🇺🇸 EN</button>
+        <div class="dash-avatar" id="famAvatar">F</div>
+      <div class="dash-nombre" id="famNombre">Familia</div>
+      <button class="dash-logout" onclick="cerrarSesion()">Salir</button>
+    </div>
+  </nav>
+
+  <!-- PANEL DE NOTIFICACIONES -->
+  <div class="notif-panel" id="notifPanel">
+    <div class="notif-panel-header">
+      <div>
+        <div class="notif-panel-title">Notificaciones</div>
+        <div class="notif-panel-sub" id="notifPanelSub">Sin notificaciones nuevas</div>
+      </div>
+      <button class="notif-marcar-todo" onclick="marcarTodasLeidas()">✓ Marcar todas</button>
+    </div>
+    <div class="notif-lista" id="notifLista">
+      <div class="notif-empty">
+        <div class="notif-empty-icon">🔔</div>
+        <div style="font-size:14px;font-weight:500;color:var(--txt);margin-bottom:4px;">Todo al día</div>
+        <div style="font-size:12px;color:var(--txt2);">Las notificaciones aparecerán aquí</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST DE NOTIFICACIÓN -->
+  <div class="notif-toast" id="notifToast">
+    <div class="notif-toast-icon" id="notifToastIcon">🔔</div>
+    <div class="notif-toast-body">
+      <div class="notif-toast-titulo" id="notifToastTitulo"></div>
+      <div class="notif-toast-desc" id="notifToastDesc"></div>
+    </div>
+    <button class="notif-toast-close" onclick="cerrarNotifToast()">✕</button>
+  </div>
+
+  <div class="dash-hero">
+    <div class="dash-hero-greeting">Bienvenido/a de vuelta</div>
+    <div class="dash-hero-name" id="famHeroNombre">Tu hogar</div>
+    <div class="dash-hero-sub">Aquí tienes el resumen de tu hogar hoy</div>
+  </div>
+
+  <!-- Stats flotantes sobre el hero -->
+  <div class="dash-stats-float">
+    <div class="dash-stat-card">
+      <div class="dash-stat-n" id="statTareas">—</div>
+      <div class="dash-stat-l">Tareas hoy</div>
+    </div>
+    <div class="dash-stat-card">
+      <div class="dash-stat-n" id="statMensajes">—</div>
+      <div class="dash-stat-l">Mensajes</div>
+    </div>
+    <div class="dash-stat-card">
+      <div class="dash-stat-n" id="statScore">—</div>
+      <div class="dash-stat-l">Score nana</div>
+    </div>
+  </div>
+
+  <div class="dash-content">
+    <div class="dash-grid">
+
+      <!-- Tareas -->
+      <div class="dash-card" onclick="location.href='/tareas.html'" style="cursor:pointer;">
+        <div class="dash-card-header">
+          <div class="dash-card-icon" style="background:var(--g3);">✅</div>
+          <div><div class="dash-card-title">Tareas de hoy</div><div class="dash-card-sub" id="subTareas">Cargando...</div></div>
+        </div>
+        <div class="dash-card-body" id="bodyTareas">
+          <div style="text-align:center;padding:20px;color:#bbb;font-size:13px;">Cargando...</div>
+        </div>
+      </div>
+
+      <!-- Menú -->
+      <div class="dash-card" onclick="location.href='/menu.html'" style="cursor:pointer;">
+        <div class="dash-card-header">
+          <div class="dash-card-icon" style="background:var(--g3);">🍽️</div>
+          <div><div class="dash-card-title">Menú de hoy</div><div class="dash-card-sub" id="subMenu">Cargando...</div></div>
+        </div>
+        <div class="dash-card-body" id="bodyMenu">
+          <div style="text-align:center;padding:20px;color:#bbb;font-size:13px;">Cargando...</div>
+        </div>
+      </div>
+
+      <!-- Chat -->
+      <div class="dash-card" onclick="location.href='/chat.html'" style="cursor:pointer;">
+        <div class="dash-card-header">
+          <div class="dash-card-icon" style="background:var(--b3);">💬</div>
+          <div><div class="dash-card-title">Chat con tu nana</div><div class="dash-card-sub" id="subChat">Cargando...</div></div>
+        </div>
+        <div class="dash-card-body" id="bodyChat">
+          <div style="text-align:center;padding:20px;color:#bbb;font-size:13px;">Cargando...</div>
+        </div>
+      </div>
+
+      <!-- Score -->
+      <div class="dash-card" onclick="location.href='/score.html'" style="cursor:pointer;">
+        <div class="dash-card-header">
+          <div class="dash-card-icon" style="background:var(--g3);">⭐</div>
+          <div><div class="dash-card-title">MyNana Score</div><div class="dash-card-sub" id="subScore">Cargando...</div></div>
+        </div>
+        <div class="dash-card-body" id="bodyScore">
+          <div style="text-align:center;padding:20px;color:#bbb;font-size:13px;">Cargando...</div>
+        </div>
+      </div>
+
+      <!-- Mercado -->
+      <div class="dash-card" onclick="location.href='/menu.html'" style="cursor:pointer;">
+        <div class="dash-card-header">
+          <div class="dash-card-icon" style="background:var(--g3);">🛒</div>
+          <div><div class="dash-card-title">Lista del mercado</div><div class="dash-card-sub" id="subMercado">Cargando...</div></div>
+        </div>
+        <div class="dash-card-body" id="bodyMercado">
+          <div style="text-align:center;padding:20px;color:#bbb;font-size:13px;">Cargando...</div>
+        </div>
+      </div>
+
+      <!-- Videos -->
+      <div class="dash-card" onclick="location.href='/videos.html'" style="cursor:pointer;">
+        <div class="dash-card-header">
+          <div class="dash-card-icon" style="background:var(--b3);">📹</div>
+          <div><div class="dash-card-title">Videos para tu nana</div><div class="dash-card-sub">12 videos disponibles</div></div>
+        </div>
+        <div class="dash-card-body">
+          <div class="task-item"><span style="font-size:14px;">🍲</span><span class="task-name">Sancocho de gallina</span><span class="task-hora" style="color:var(--g);">Cocina</span></div>
+          <div class="task-item"><span style="font-size:14px;">🧹</span><span class="task-name">Limpiar baños</span><span class="task-hora" style="color:var(--g);">Limpieza</span></div>
+          <div class="task-item"><span style="font-size:14px;">👕</span><span class="task-name">Lavandería sin dañar ropa</span><span class="task-hora" style="color:var(--g);">Lavandería</span></div>
+          <div style="margin-top:12px;background:var(--g3);color:var(--g);border-radius:8px;padding:9px;text-align:center;font-size:13px;font-weight:500;">Ver todos los videos →</div>
+        </div>
+      </div>
+
+      <!-- Contratos -->
+      <div class="dash-card" onclick="location.href='/nomina.html'" style="cursor:pointer;">
+        <div class="dash-card-header">
+          <div class="dash-card-icon" style="background:var(--g3);">📋</div>
+          <div><div class="dash-card-title">Contratos y nómina</div><div class="dash-card-sub" id="subNomina">Según ley panameña</div></div>
+        </div>
+        <div class="dash-card-body" id="bodyNomina">
+          <div style="text-align:center;padding:20px;color:#bbb;font-size:13px;">Cargando...</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Link para compartir con nana -->
+    <div style="background:var(--g);border-radius:var(--r);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:12px;">
+      <div>
+        <div style="font-size:13px;font-weight:500;color:#fff;margin-bottom:4px;">👩 ¿Buscas una nana?</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.6);">Encuentra personal doméstico verificado con score</div>
+      </div>
+      <a href="/buscador.html" style="background:#fff;color:var(--g);font-size:13px;font-weight:600;padding:10px 18px;border-radius:99px;text-decoration:none;white-space:nowrap;">Buscar nana →</a>
+    </div>
+
+    <!-- Link para compartir con nana -->
+    <div style="background:var(--g);border-radius:var(--r);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+      <div>
+        <div style="font-size:13px;font-weight:500;color:#fff;margin-bottom:4px;">🔗 Comparte el acceso con tu nana</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.6);">mynana.app/app.html</div>
+      </div>
+      <a href="https://wa.me/?text=Hola%2C%20te%20invito%20a%20My%20Nana%20%F0%9F%8F%A0%0Amynana.app%2Fapp.html" target="_blank" style="background:#25D366;color:#fff;font-size:13px;font-weight:500;padding:10px 18px;border-radius:99px;text-decoration:none;white-space:nowrap;">💬 Enviar por WhatsApp</a>
+    </div>
+
+    <!-- TARJETA MIEMBRO FAMILIAR -->
+    <div style="margin-top:12px;background:#fff;border-radius:var(--r);border:1px solid var(--g4);overflow:hidden;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;gap:12px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:42px;height:42px;border-radius:50%;background:var(--b3);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">👨‍👩‍👧</div>
+          <div>
+            <div style="font-size:14px;font-weight:600;color:var(--txt);" id="miembroFamTitulo">Agregar miembro familiar</div>
+            <div style="font-size:12px;color:var(--txt2);" id="miembroFamSub">Invita a tu pareja para ver el hogar juntos en tiempo real</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0;">
+          <button onclick="gestionarMiembros()" id="btnGestionarMiembros" style="display:none;background:var(--cr);color:var(--txt2);border:1px solid var(--g4);border-radius:99px;padding:9px 14px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">Gestionar</button>
+          <button onclick="toggleInvitarMiembro()" id="btnInvitarMiembro" style="background:var(--b3);color:var(--b2);border:1.5px solid var(--b);border-radius:99px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;">+ Invitar</button>
+        </div>
+      </div>
+      <div id="panelInvitarMiembro" style="display:none;border-top:1px solid var(--g4);padding:16px 18px;"></div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════ DASHBOARD NANA ══════════════════════ -->
+<div class="screen" id="screen-nana">
+
+  <!-- HEADER MEJORADO -->
+  <div class="nana-header" id="nanaHeader">
+    <div class="nana-header-top">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div id="nanaAvatarCircle" style="width:46px;height:46px;border-radius:50%;background:var(--g);border:2.5px solid var(--b);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:#fff;flex-shrink:0;">M</div>
+        <div>
+          <div class="nana-greeting" id="nanaGreeting">Buenos días</div>
+          <div class="nana-name" id="nanaNombre">Maria 👋</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <!-- Botón notificaciones nana -->
+        <button class="notif-btn" onclick="toggleNotifPanelNana()" id="nanaNotifBtn" title="Notificaciones" style="background:rgba(255,255,255,.1);">
+          🔔
+          <div class="notif-badge" id="nanaNotifBadge">0</div>
+        </button>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <button class="nana-lang-btn" onclick="toggleLangDash()" id="nanaLangBtn">🇺🇸 EN</button>
+          <button class="nana-logout" onclick="cerrarSesion()">Salir</button>
+        </div>
+      </div>
+    </div>
+    <div class="nana-fecha" id="nanaFecha"></div>
+
+    <!-- Barra progreso grande -->
+    <div style="margin-top:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+        <div style="font-size:12px;color:rgba(255,255,255,.6);" id="progLabel">Cargando tareas...</div>
+        <div style="font-size:12px;color:var(--b);font-weight:500;" id="progPct">0%</div>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+    </div>
+
+    <!-- Botón audio GRANDE y visible -->
+    <button class="audio-btn" id="audioBtn" onclick="leerTareasVoz()" style="margin-top:12px;width:100%;justify-content:center;font-size:14px;padding:10px 16px;">
+      🔊 Escuchar mis tareas en voz alta
+    </button>
+  </div>
+
+  <!-- PANEL NOTIFICACIONES NANA -->
+  <div class="notif-panel" id="nanaNotifPanel" style="top:auto;right:auto;left:0;right:0;border-radius:0 0 16px 16px;max-width:430px;margin:0 auto;">
+    <div class="notif-panel-header">
+      <div>
+        <div class="notif-panel-title">Mis alertas</div>
+        <div class="notif-panel-sub" id="nanaNotifSub">Sin alertas nuevas</div>
+      </div>
+      <button class="notif-marcar-todo" onclick="marcarTodasLeidasNana()">✓ Marcar todas</button>
+    </div>
+    <div class="notif-lista" id="nanaNotifLista">
+      <div class="notif-empty">
+        <div class="notif-empty-icon">🔔</div>
+        <div style="font-size:13px;color:var(--txt2);">Sin alertas por ahora</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NANA -->
+  <div class="notif-toast" id="nanaNotifToast" style="bottom:90px;">
+    <div class="notif-toast-icon" id="nanaNotifToastIcon">🔔</div>
+    <div class="notif-toast-body">
+      <div class="notif-toast-titulo" id="nanaNotifToastTitulo"></div>
+      <div class="notif-toast-desc" id="nanaNotifToastDesc"></div>
+    </div>
+    <button class="notif-toast-close" onclick="cerrarNanaNotifToast()">✕</button>
+  </div>
+
+  <!-- CONTENIDO -->
+  <div class="nana-contenido" id="nanaContenido"></div>
+
+  <!-- INPUT CHAT -->
+  <div class="chat-input-wrap" id="chatInputWrap" style="display:none;">
+    <button class="chat-mic" onclick="showToast('🎙️ Mensaje de voz enviado')">🎙️</button>
+    <input type="text" class="chat-input" id="chatInput" placeholder="Escribe un mensaje..." />
+    <button class="chat-send" onclick="enviarMensaje()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+
+  <!-- NAV MEJORADO - textos más claros -->
+  <div class="bottom-nav" id="bottomNav">
+    <div class="nav-item activo" onclick="location.href='/tareas.html'" id="tab-tareas">
+      <div class="nav-icon">✅</div>
+      <div class="nav-label">Mis tareas</div>
+    </div>
+    <div class="nav-item" onclick="location.href='/menu.html'" id="tab-menu">
+      <div class="nav-icon">🍽️</div>
+      <div class="nav-label">Qué cocinar</div>
+    </div>
+    <div class="nav-item" onclick="location.href='/chat.html'" id="tab-chat">
+      <div class="nav-icon">💬</div>
+      <div class="nav-label">Hablar</div>
+    </div>
+    <div class="nav-item" onclick="location.href='/videos.html'" id="tab-videos">
+      <div class="nav-icon">📹</div>
+      <div class="nav-label">Aprender</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════ FIREBASE + LÓGICA ══════════════════════ -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import { getFirestore, doc, setDoc, getDoc, collection, addDoc, query, where, getDocs, updateDoc, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDDJRJ8A8P507lllGRBOoXO30ESAH1GAnw",
+  authDomain: "mynanapapp.firebaseapp.com",
+  projectId: "mynanapapp",
+  storageBucket: "mynanapapp.firebasestorage.app",
+  messagingSenderId: "124180779437",
+  appId: "1:124180779437:web:d217743000b0f1fedfd124",
+  measurementId: "G-7GBWZ66E8J"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let tipoLogin = 'familia';
+let tipoReg = 'familia';
+
+// ── SISTEMA DE NOTIFICACIONES ──
+let notificaciones = [];
+let notifVisible = false;
+let unsubNotif = null;
+let audioCtx = null;
+
+function iniciarNotificaciones(uid, hogarId) {
+  if (!hogarId) return;
+
+  // Escuchar tareas completadas en tiempo real
+  const qTareas = query(
+    collection(db, 'hogares', hogarId, 'tareas'),
+    where('estado', '==', 'completa')
+  );
+
+  let tareasConocidasCompletas = new Set();
+
+  onSnapshot(qTareas, (snap) => {
+    snap.docChanges().forEach(change => {
+      if (change.type === 'modified' || change.type === 'added') {
+        const tarea = change.doc.data();
+        const id = change.doc.id;
+        if (!tareasConocidasCompletas.has(id) && tarea.estado === 'completa') {
+          tareasConocidasCompletas.add(id);
+          // Solo notificar si la tarea fue completada recientemente (último minuto)
+          const completadaMs = tarea.completadaA ? Date.now() : 0;
+          if (change.type === 'modified') {
+            agregarNotificacion({
+              id: `tarea-${id}`,
+              tipo: 'tarea',
+              icon: '✅',
+              color: 'var(--g3)',
+              titulo: '¡Tarea completada!',
+              desc: `${tarea.nombre} fue marcada como lista`,
+              hora: new Date(),
+              leida: false,
+              link: '/tareas.html'
+            });
+          }
+        }
+      }
+    });
+  });
+
+  // Escuchar mensajes nuevos en el chat
+  const qConvs = query(
+    collection(db, 'conversaciones'),
+    where('participantes', 'array-contains', uid)
+  );
+
+  onSnapshot(qConvs, (snap) => {
+    snap.docChanges().forEach(change => {
+      if (change.type === 'modified') {
+        const conv = change.doc.data();
+        if (conv.noLeidos > 0 && conv.ultimoMensaje) {
+          agregarNotificacion({
+            id: `chat-${change.doc.id}-${Date.now()}`,
+            tipo: 'chat',
+            icon: '💬',
+            color: 'var(--b3)',
+            titulo: 'Mensaje nuevo',
+            desc: conv.ultimoMensaje.length > 40 ? conv.ultimoMensaje.slice(0, 40) + '...' : conv.ultimoMensaje,
+            hora: new Date(),
+            leida: false,
+            link: '/chat.html'
+          });
+        }
+      }
+    });
+  });
+
+  // Escuchar preferencias de notificaciones
+  cargarPrefsNotif(uid);
+}
+
+function agregarNotificacion(notif) {
+  // Evitar duplicados recientes (mismo id en últimos 30 segundos)
+  const reciente = notificaciones.find(n => n.id === notif.id);
+  if (reciente) return;
+
+  notificaciones.unshift(notif);
+  if (notificaciones.length > 50) notificaciones.pop();
+
+  actualizarBadge();
+  renderNotifPanel();
+  mostrarNotifToast(notif);
+  reproducirSonido(notif.tipo);
+}
+
+function actualizarBadge() {
+  const noLeidas = notificaciones.filter(n => !n.leida).length;
+  const badge = document.getElementById('notifBadge');
+  const sub = document.getElementById('notifPanelSub');
+  if (!badge) return;
+
+  if (noLeidas > 0) {
+    badge.textContent = noLeidas > 9 ? '9+' : noLeidas;
+    badge.classList.add('visible');
+    if (sub) sub.textContent = `${noLeidas} sin leer`;
+    // Animación del botón
+    const btn = document.getElementById('notifBtn');
+    if (btn) {
+      btn.style.animation = 'none';
+      setTimeout(() => btn.style.animation = 'pulso .5s ease', 10);
+    }
+  } else {
+    badge.classList.remove('visible');
+    if (sub) sub.textContent = 'Todo al día';
+  }
+}
+
+function renderNotifPanel() {
+  const lista = document.getElementById('notifLista');
+  if (!lista) return;
+
+  if (!notificaciones.length) {
+    lista.innerHTML = `<div class="notif-empty">
+      <div class="notif-empty-icon">🔔</div>
+      <div style="font-size:14px;font-weight:500;color:var(--txt);margin-bottom:4px;">Todo al día</div>
+      <div style="font-size:12px;color:var(--txt2);">Las notificaciones aparecerán aquí</div>
+    </div>`;
+    return;
+  }
+
+  lista.innerHTML = notificaciones.map((n, i) => `
+    <div class="notif-item ${n.leida ? 'leida' : ''}" onclick="irANotif(${i})">
+      <div class="notif-icon" style="background:${n.color};">${n.icon}</div>
+      <div class="notif-contenido">
+        <div class="notif-titulo">${n.titulo}</div>
+        <div class="notif-desc">${n.desc}</div>
+        <div class="notif-hora">${formatNotifHora(n.hora)}</div>
+      </div>
+      ${!n.leida ? '<div class="notif-dot"></div>' : ''}
+    </div>`).join('');
+}
+
+window.irANotif = (idx) => {
+  const n = notificaciones[idx];
+  if (!n) return;
+  notificaciones[idx].leida = true;
+  actualizarBadge();
+  renderNotifPanel();
+  cerrarNotifPanel();
+  if (n.link) location.href = n.link;
+};
+
+window.marcarTodasLeidas = () => {
+  notificaciones.forEach(n => n.leida = true);
+  actualizarBadge();
+  renderNotifPanel();
+  showToast('✓ Todas las notificaciones marcadas como leídas');
+};
+
+window.toggleNotifPanel = () => {
+  const panel = document.getElementById('notifPanel');
+  if (!panel) return;
+  notifVisible = !notifVisible;
+  panel.classList.toggle('visible', notifVisible);
+  if (notifVisible) renderNotifPanel();
+};
+
+function cerrarNotifPanel() {
+  notifVisible = false;
+  document.getElementById('notifPanel')?.classList.remove('visible');
+}
+
+// Cerrar al hacer clic fuera
+document.addEventListener('click', (e) => {
+  const panel = document.getElementById('notifPanel');
+  const btn = document.getElementById('notifBtn');
+  if (panel && btn && !panel.contains(e.target) && !btn.contains(e.target)) {
+    cerrarNotifPanel();
+  }
+});
+
+// Toast flotante
+let toastTimer = null;
+function mostrarNotifToast(notif) {
+  const toast = document.getElementById('notifToast');
+  if (!toast) return;
+  document.getElementById('notifToastIcon').textContent = notif.icon;
+  document.getElementById('notifToastIcon').style.background = notif.color;
+  document.getElementById('notifToastTitulo').textContent = notif.titulo;
+  document.getElementById('notifToastDesc').textContent = notif.desc;
+  toast.classList.add('visible');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => cerrarNotifToast(), 5000);
+}
+
+window.cerrarNotifToast = () => {
+  document.getElementById('notifToast')?.classList.remove('visible');
+  clearTimeout(toastTimer);
+};
+
+// Sonido de notificación
+function reproducirSonido(tipo) {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    if (tipo === 'tarea') {
+      // Dos tonos ascendentes — tarea completada
+      osc.frequency.setValueAtTime(520, audioCtx.currentTime);
+      osc.frequency.setValueAtTime(780, audioCtx.currentTime + 0.12);
+    } else {
+      // Un tono suave — mensaje
+      osc.frequency.setValueAtTime(680, audioCtx.currentTime);
+    }
+
+    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
+    osc.start(audioCtx.currentTime);
+    osc.stop(audioCtx.currentTime + 0.4);
+  } catch(e) {}
+}
+
+function formatNotifHora(fecha) {
+  if (!fecha) return '';
+  const now = new Date();
+  const diff = Math.floor((now - fecha) / 1000);
+  if (diff < 60) return 'Ahora mismo';
+  if (diff < 3600) return `Hace ${Math.floor(diff/60)} min`;
+  if (diff < 86400) return `Hace ${Math.floor(diff/3600)} h`;
+  return fecha.toLocaleDateString('es-PA');
+}
+
+// ── PREFERENCIAS DE NOTIFICACIONES ──
+let prefsNotif = { tareas: true, chat: true, menu: true, score: true };
+
+async function cargarPrefsNotif(uid) {
+  const snap = await getDoc(doc(db, 'usuarios', uid));
+  if (snap.exists() && snap.data().prefsNotif) {
+    prefsNotif = { ...prefsNotif, ...snap.data().prefsNotif };
+  }
+}
+
+async function guardarPrefsNotif(uid) {
+  await updateDoc(doc(db, 'usuarios', uid), { prefsNotif });
+  showToast('✅ Preferencias guardadas');
+}
+
+// ── NOTIFICACIONES NANA ──
+let nanaNotifs = [];
+let nanaNotifVisible = false;
+let nanaToastTimer = null;
+
+function iniciarNotificacionesNana(uid, hogarId) {
+  if (!hogarId) return;
+
+  // Escuchar tareas nuevas asignadas por la familia
+  let tareasConocidas = new Set();
+  const qTareas = query(collection(db, 'hogares', hogarId, 'tareas'));
+
+  onSnapshot(qTareas, (snap) => {
+    snap.docChanges().forEach(change => {
+      const tarea = change.doc.data();
+      const id = change.doc.id;
+
+      if (change.type === 'added' && !tareasConocidas.has(id)) {
+        tareasConocidas.add(id);
+        // Solo notificar si la tarea fue creada recientemente
+        if (tareasConocidas.size > 1) { // Evitar notificaciones al cargar inicial
+          agregarNotifNana({
+            id: `nueva-tarea-${id}`,
+            icon: tarea.cat?.split(' ')[0] || '📋',
+            color: 'var(--g3)',
+            titulo: '¡Nueva tarea asignada!',
+            desc: `${tarea.nombre} — ${tarea.hora || ''}`,
+            hora: new Date(),
+            leida: false,
+            link: '/tareas.html'
+          });
+        } else {
+          tareasConocidas.add(id);
+        }
+      }
+    });
+  });
+
+  // Escuchar mensajes nuevos de la familia
+  const qConvs = query(
+    collection(db, 'conversaciones'),
+    where('participantes', 'array-contains', uid)
+  );
+
+  onSnapshot(qConvs, (snap) => {
+    snap.docChanges().forEach(change => {
+      if (change.type === 'modified') {
+        const conv = change.doc.data();
+        if (conv.noLeidos > 0 && conv.ultimoMensaje) {
+          agregarNotifNana({
+            id: `nana-chat-${Date.now()}`,
+            icon: '💬',
+            color: 'var(--b3)',
+            titulo: 'Mensaje de la familia',
+            desc: conv.ultimoMensaje.length > 40
+              ? conv.ultimoMensaje.slice(0, 40) + '...'
+              : conv.ultimoMensaje,
+            hora: new Date(),
+            leida: false,
+            link: '/chat.html'
+          });
+        }
+      }
+    });
+  });
+}
+
+function agregarNotifNana(notif) {
+  const reciente = nanaNotifs.find(n => n.id === notif.id);
+  if (reciente) return;
+  nanaNotifs.unshift(notif);
+  if (nanaNotifs.length > 30) nanaNotifs.pop();
+  actualizarBadgeNana();
+  renderNotifPanelNana();
+  mostrarNanaToast(notif);
+  reproducirSonido(notif.icon === '💬' ? 'chat' : 'tarea');
+}
+
+function actualizarBadgeNana() {
+  const noLeidas = nanaNotifs.filter(n => !n.leida).length;
+  const badge = document.getElementById('nanaNotifBadge');
+  const sub = document.getElementById('nanaNotifSub');
+  if (!badge) return;
+  if (noLeidas > 0) {
+    badge.textContent = noLeidas > 9 ? '9+' : noLeidas;
+    badge.classList.add('visible');
+    if (sub) sub.textContent = `${noLeidas} alerta${noLeidas > 1 ? 's' : ''} nueva${noLeidas > 1 ? 's' : ''}`;
+  } else {
+    badge.classList.remove('visible');
+    if (sub) sub.textContent = 'Sin alertas nuevas';
+  }
+}
+
+function renderNotifPanelNana() {
+  const lista = document.getElementById('nanaNotifLista');
+  if (!lista) return;
+  if (!nanaNotifs.length) {
+    lista.innerHTML = `<div class="notif-empty">
+      <div class="notif-empty-icon">🔔</div>
+      <div style="font-size:13px;color:var(--txt2);">Sin alertas por ahora</div>
+    </div>`;
+    return;
+  }
+  lista.innerHTML = nanaNotifs.map((n, i) => `
+    <div class="notif-item ${n.leida ? 'leida' : ''}" onclick="irANotifNana(${i})">
+      <div class="notif-icon" style="background:${n.color};">${n.icon}</div>
+      <div class="notif-contenido">
+        <div class="notif-titulo">${n.titulo}</div>
+        <div class="notif-desc">${n.desc}</div>
+        <div class="notif-hora">${formatNotifHora(n.hora)}</div>
+      </div>
+      ${!n.leida ? '<div class="notif-dot"></div>' : ''}
+    </div>`).join('');
+}
+
+window.irANotifNana = (idx) => {
+  const n = nanaNotifs[idx];
+  if (!n) return;
+  nanaNotifs[idx].leida = true;
+  actualizarBadgeNana();
+  renderNotifPanelNana();
+  toggleNotifPanelNana();
+  if (n.link) location.href = n.link;
+};
+
+window.marcarTodasLeidasNana = () => {
+  nanaNotifs.forEach(n => n.leida = true);
+  actualizarBadgeNana();
+  renderNotifPanelNana();
+};
+
+window.toggleNotifPanelNana = () => {
+  const panel = document.getElementById('nanaNotifPanel');
+  if (!panel) return;
+  nanaNotifVisible = !nanaNotifVisible;
+  panel.classList.toggle('visible', nanaNotifVisible);
+  if (nanaNotifVisible) renderNotifPanelNana();
+};
+
+function mostrarNanaToast(notif) {
+  const toast = document.getElementById('nanaNotifToast');
+  if (!toast) return;
+  document.getElementById('nanaNotifToastIcon').textContent = notif.icon;
+  document.getElementById('nanaNotifToastIcon').style.background = notif.color;
+  document.getElementById('nanaNotifToastTitulo').textContent = notif.titulo;
+  document.getElementById('nanaNotifToastDesc').textContent = notif.desc;
+  toast.classList.add('visible');
+  clearTimeout(nanaToastTimer);
+  nanaToastTimer = setTimeout(() => cerrarNanaNotifToast(), 5000);
+}
+
+window.cerrarNanaNotifToast = () => {
+  document.getElementById('nanaNotifToast')?.classList.remove('visible');
+  clearTimeout(nanaToastTimer);
+};
+
+// ── FIN NOTIFICACIONES NANA ──
+// ── BIENVENIDA POST-REGISTRO ──
+function mostrarBienvenida(data) {
+  const esFamilia = data.tipo === 'familia';
+  const nombre = data.nombre?.split(' ')[0] || '';
+  const contenido = document.getElementById('bienvenidaContenido');
+  const dataStr = encodeURIComponent(JSON.stringify(data));
+
+  if (esFamilia) {
+    contenido.innerHTML = `
+      <div class="bienvenida-emoji">🏠</div>
+      <div class="bienvenida-titulo">¡Bienvenida, ${nombre}!</div>
+      <div class="bienvenida-sub">Tu cuenta está lista. Sigue estos 3 pasos para empezar a usar My Nana hoy mismo.</div>
+      <div class="bienvenida-pasos">
+        <div class="bienvenida-paso">
+          <div class="bienvenida-paso-num">1</div>
+          <div class="bienvenida-paso-info">
+            <div class="bienvenida-paso-titulo">Genera tu código único</div>
+            <div class="bienvenida-paso-desc">En tu dashboard verás un código de 6 letras. Compártelo con tu nana para conectarse.</div>
+          </div>
+        </div>
+        <div class="bienvenida-paso">
+          <div class="bienvenida-paso-num">2</div>
+          <div class="bienvenida-paso-info">
+            <div class="bienvenida-paso-titulo">Crea las tareas de hoy</div>
+            <div class="bienvenida-paso-desc">Ve al módulo de Tareas y crea las actividades del día con hora y descripción.</div>
+          </div>
+        </div>
+        <div class="bienvenida-paso">
+          <div class="bienvenida-paso-num">3</div>
+          <div class="bienvenida-paso-info">
+            <div class="bienvenida-paso-titulo">Planifica el menú semanal</div>
+            <div class="bienvenida-paso-desc">Elige los platos de la semana y la lista del mercado se genera automáticamente.</div>
+          </div>
+        </div>
+      </div>
+      <button class="bienvenida-btn" onclick="irAlDashboard('${dataStr}')">¡Ir a mi dashboard →</button>
+      <br><button class="bienvenida-skip" onclick="irAlDashboard('${dataStr}')">Saltar y explorar solo</button>
+    `;
+  } else {
+    contenido.innerHTML = `
+      <div class="bienvenida-emoji">👩</div>
+      <div class="bienvenida-titulo">¡Hola, ${nombre}!</div>
+      <div class="bienvenida-sub">Tu cuenta está lista. Así puedes empezar a usar My Nana desde tu primer día.</div>
+      <div class="bienvenida-pasos">
+        <div class="bienvenida-paso">
+          <div class="bienvenida-paso-num rosa">1</div>
+          <div class="bienvenida-paso-info">
+            <div class="bienvenida-paso-titulo">Ve tus tareas del día</div>
+            <div class="bienvenida-paso-desc">En tu pantalla principal verás todas las tareas organizadas por hora.</div>
+          </div>
+        </div>
+        <div class="bienvenida-paso">
+          <div class="bienvenida-paso-num rosa">2</div>
+          <div class="bienvenida-paso-info">
+            <div class="bienvenida-paso-titulo">Toca el botón verde al terminar</div>
+            <div class="bienvenida-paso-desc">Al completar una tarea toca "¡Marcar como lista!" y sube una foto si quieres.</div>
+          </div>
+        </div>
+        <div class="bienvenida-paso">
+          <div class="bienvenida-paso-num rosa">3</div>
+          <div class="bienvenida-paso-info">
+            <div class="bienvenida-paso-titulo">Activa tu perfil en el buscador</div>
+            <div class="bienvenida-paso-desc">Ve a Mi Perfil y actívalo para que otras familias te puedan encontrar.</div>
+          </div>
+        </div>
+      </div>
+      <button class="bienvenida-btn nana" onclick="irAlDashboard('${dataStr}')">¡Ver mis tareas de hoy →</button>
+      <br><button class="bienvenida-skip" onclick="irAlDashboard('${dataStr}')">Saltar y explorar solo</button>
+    `;
+  }
+  mostrarScreen('bienvenida');
+}
+
+window.irAlDashboard = (dataStr) => {
+  try {
+    const data = JSON.parse(decodeURIComponent(dataStr));
+    if (data.tipo === 'familia') mostrarFamilia(data);
+    else mostrarNana(data);
+  } catch(e) { location.reload(); }
+};
+
+onAuthStateChanged(auth, async (user) => {
+  // Si estamos en medio del registro, no interrumpir
+  if (window._registrando) return;
+
+  // Ocultar splash de carga
+  const splash = document.getElementById('splashCarga');
+  if (splash) {
+    splash.style.opacity = '0';
+    splash.style.transition = 'opacity .3s';
+    setTimeout(() => splash.style.display = 'none', 300);
+  }
+
+  if (user) {
+    const perfil = await getDoc(doc(db, 'usuarios', user.uid));
+    if (perfil.exists()) {
+      const data = perfil.data();
+      if (data.tipo === 'familia') mostrarFamilia(data);
+      else mostrarNana(data);
+    } else {
+      mostrarScreen('login');
+    }
+  } else {
+    mostrarScreen('login');
+  }
+});
+
+// ── TIPO LOGIN ──
+window.setTipoLogin = (tipo, btn) => {
+  tipoLogin = tipo;
+  document.querySelectorAll('#screen-login .tab-opt').forEach(b => b.classList.remove('activo'));
+  btn.classList.add('activo');
+};
+
+window.setTipoReg = (tipo, btn) => {
+  tipoReg = tipo;
+  document.querySelectorAll('#screen-registro .tab-opt').forEach(b => b.classList.remove('activo'));
+  btn.classList.add('activo');
+  document.getElementById('regCamposNana').style.display = tipo === 'nana' ? 'block' : 'none';
+};
+
+// ── LOGIN ──
+window.iniciarSesion = async () => {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  const btn = document.getElementById('loginBtn');
+  const err = document.getElementById('loginError');
+
+  if (!email || !pass) { mostrarError(err, 'Por favor completa todos los campos'); return; }
+
+  btn.textContent = 'Iniciando sesión...';
+  btn.disabled = true;
+  err.classList.remove('visible');
+
+  try {
+    const cred = await signInWithEmailAndPassword(auth, email, pass);
+    const perfil = await getDoc(doc(db, 'usuarios', cred.user.uid));
+    if (perfil.exists()) {
+      const data = perfil.data();
+      if (data.tipo !== tipoLogin) {
+        await signOut(auth);
+        mostrarError(err, `Esta cuenta es de tipo "${data.tipo}". Selecciona el tipo correcto.`);
+        btn.textContent = 'Iniciar sesión →';
+        btn.disabled = false;
+        return;
+      }
+      if (data.tipo === 'familia') mostrarFamilia(data);
+      else mostrarNana(data);
+    }
+  } catch(e) {
+    let msg = 'Correo o contraseña incorrectos';
+    if (e.code === 'auth/user-not-found') msg = 'No existe una cuenta con este correo';
+    if (e.code === 'auth/wrong-password') msg = 'Contraseña incorrecta';
+    if (e.code === 'auth/too-many-requests') msg = 'Demasiados intentos. Espera unos minutos';
+    mostrarError(err, msg);
+    btn.textContent = 'Iniciar sesión →';
+    btn.disabled = false;
+  }
+};
+
+// ── REGISTRO ──
+window.registrarse = async () => {
+  const nombre = document.getElementById('regNombre').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const pass = document.getElementById('regPass').value;
+  const btn = document.getElementById('regBtn');
+  const err = document.getElementById('regError');
+
+  if (!nombre || !email || !pass) { mostrarError(err, 'Completa todos los campos'); return; }
+  if (pass.length < 6) { mostrarError(err, 'La contraseña debe tener mínimo 6 caracteres'); return; }
+
+  btn.textContent = 'Creando cuenta...';
+  btn.disabled = true;
+  err.classList.remove('visible');
+
+  try {
+    window._registrando = true;
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    const datos = {
+      nombre, email, tipo: tipoReg,
+      uid: cred.user.uid,
+      fecha: new Date().toISOString(),
+    };
+    if (tipoReg === 'nana') {
+      datos.apellido = document.getElementById('regApellido').value.trim();
+      datos.cedula = document.getElementById('regCedula').value.trim();
+      datos.telefono = document.getElementById('regTelefono').value.trim();
+
+      // Vincular con familia via código
+      const codigo = document.getElementById('regCodigo').value.trim().toUpperCase();
+      if (codigo) {
+        const codigoSnap = await getDoc(doc(db, 'codigos', codigo));
+        if (codigoSnap.exists() && !codigoSnap.data().usado) {
+          const familiaUid = codigoSnap.data().familiaUid;
+
+          // Buscar hogar de la familia o crear uno nuevo
+          const qHogar = query(collection(db, 'hogares'), where('participantes', 'array-contains', familiaUid));
+          const snapHogar = await getDocs(qHogar);
+
+          if (!snapHogar.empty) {
+            // Agregar nana al hogar existente
+            const hogarRef = snapHogar.docs[0].ref;
+            const hogarData = snapHogar.docs[0].data();
+            const participantes = [...new Set([...hogarData.participantes, cred.user.uid])];
+            await updateDoc(hogarRef, { participantes });
+          } else {
+            // Crear nuevo hogar
+            await addDoc(collection(db, 'hogares'), {
+              participantes: [familiaUid, cred.user.uid],
+              creadoPor: familiaUid,
+              creado: serverTimestamp()
+            });
+          }
+
+          // Marcar código como usado
+          await updateDoc(doc(db, 'codigos', codigo), {
+            usado: true,
+            nanaUid: cred.user.uid,
+            usadoA: serverTimestamp()
+          });
+
+          datos.hogarVinculado = true;
+          datos.vinculadaA = familiaUid;
+        } else if (codigo) {
+          mostrarError(err, 'Código inválido o ya usado. Pídele uno nuevo a la familia.');
+          await cred.user.delete();
+          btn.textContent = 'Crear mi cuenta →';
+          btn.disabled = false;
+          return;
+        }
+      }
+    }
+
+    await setDoc(doc(db, 'usuarios', cred.user.uid), datos);
+
+    // Si es familia, crear su propio hogar o vincularse con código
+    if (tipoReg === 'familia') {
+      const codigoFam = document.getElementById('regCodigoFamiliar')?.value?.trim().toUpperCase();
+      if (codigoFam && codigoFam.startsWith('F')) {
+        const vinculado = await procesarCodigoFamiliar(codigoFam, cred.user.uid);
+        showToast(vinculado ? '✅ Conectado al hogar familiar' : '⚠️ Código inválido — se creó hogar propio');
+        if (!vinculado) {
+          await addDoc(collection(db, 'hogares'), {
+            participantes: [cred.user.uid],
+            creadoPor: cred.user.uid,
+            creado: serverTimestamp()
+          });
+        }
+      } else {
+        // Sin código — crear hogar propio nuevo e independiente
+        await addDoc(collection(db, 'hogares'), {
+          participantes: [cred.user.uid],
+          creadoPor: cred.user.uid,
+          creado: serverTimestamp()
+        });
+      }
+    }
+
+    window._registrando = false;
+    showToast(`¡Bienvenido/a ${nombre}! 🎉`);
+
+    // Enviar correo de bienvenida con Resend
+    try {
+      const resEmail = await fetch('/.netlify/functions/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tipo: tipoReg, nombre, email })
+      });
+      const dataEmail = await resEmail.json();
+      console.log('Resend:', resEmail.status, dataEmail);
+    } catch(e) { console.log('Correo no enviado:', e); }
+
+    // Mostrar pantalla de bienvenida antes del dashboard
+    mostrarBienvenida(datos);
+  } catch(e) {
+    window._registrando = false;
+    let msg = 'Error al crear la cuenta';
+    if (e.code === 'auth/email-already-in-use') msg = 'Este correo ya tiene una cuenta registrada';
+    if (e.code === 'auth/invalid-email') msg = 'El correo no es válido';
+    mostrarError(err, msg);
+    btn.textContent = 'Crear mi cuenta →';
+    btn.disabled = false;
+  }
+};
+
+// ── CERRAR SESIÓN ──
+window.cerrarSesion = async () => {
+  await signOut(auth);
+  mostrarScreen('login');
+  document.getElementById('loginBtn').textContent = 'Iniciar sesión →';
+  document.getElementById('loginBtn').disabled = false;
+  document.getElementById('loginEmail').value = '';
+  document.getElementById('loginPass').value = '';
+  showToast('Sesión cerrada correctamente');
+};
+
+// ── RECUPERAR CONTRASEÑA ──
+window.recuperarPassword = async () => {
+  const email = document.getElementById('loginEmail').value.trim();
+  if (!email) { mostrarError(document.getElementById('loginError'), 'Ingresa tu correo primero'); return; }
+  try {
+    await sendPasswordResetEmail(auth, email);
+    showToast('📧 Correo de recuperación enviado');
+  } catch(e) {
+    mostrarError(document.getElementById('loginError'), 'No encontramos ese correo');
+  }
+};
+
+// ── MOSTRAR SCREENS ──
+function mostrarScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('activa'));
+  document.getElementById(`screen-${id}`).classList.add('activa');
+}
+
+function mostrarFamilia(data) {
+  mostrarScreen('familia');
+  const inicial = data.nombre ? data.nombre[0].toUpperCase() : 'F';
+  document.getElementById('famAvatar').textContent = inicial;
+  document.getElementById('famNombre').textContent = data.nombre || '';
+  document.getElementById('famHeroNombre').textContent = `Hola, ${data.nombre?.split(' ')[0] || 'familia'} 👋`;
+  verificarVinculacion();
+  cargarDashboardFamilia();
+
+  // Notificación de bienvenida con resumen del día
+  setTimeout(() => {
+    const hora = new Date().getHours();
+    const saludo = hora < 12 ? 'Buenos días' : hora < 18 ? 'Buenas tardes' : 'Buenas noches';
+    agregarNotificacion({
+      id: `bienvenida-${Date.now()}`,
+      tipo: 'sistema',
+      icon: '🏠',
+      color: 'var(--g3)',
+      titulo: `${saludo}, ${data.nombre?.split(' ')[0] || 'familia'}`,
+      desc: 'Tu dashboard está listo. Las alertas de tareas y mensajes aparecerán aquí.',
+      hora: new Date(),
+      leida: false,
+      link: null
+    });
+  }, 1500);
+}
+
+async function cargarDashboardFamilia() {
+  try {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (!user) return;
+
+    // Buscar hogar
+    const qHogar = query(collection(db, 'hogares'), where('participantes', 'array-contains', user.uid));
+    const snapHogar = await getDocs(qHogar);
+    if (snapHogar.empty) { mostrarDashVacio(); return; }
+    const hogarId = snapHogar.docs[0].id;
+
+    // Actualizar stats flotantes
+    const snapTareasStats = await getDocs(query(collection(db, 'hogares', hogarId, 'tareas')));
+    const tareasStats = snapTareasStats.docs.map(d => d.data());
+    document.getElementById('statTareas').textContent = tareasStats.length || '0';
+
+    const snapConvStats = await getDocs(query(collection(db, 'conversaciones'), where('participantes', 'array-contains', user.uid)));
+    let totalMsgs = 0;
+    snapConvStats.forEach(d => totalMsgs += (d.data().noLeidos || 0));
+    document.getElementById('statMensajes').textContent = totalMsgs || '0';
+
+    // Iniciar sistema de notificaciones
+    iniciarNotificaciones(user.uid, hogarId);
+    cargarMiembrosFamiliares(hogarId, user.uid);
+
+    // Cargar todo en paralelo
+    await Promise.all([
+      cargarTareasDash(hogarId, user.uid),
+      cargarMenuDash(hogarId),
+      cargarChatDash(user.uid),
+      cargarScoreDash(hogarId, user.uid),
+      cargarMercadoDash(hogarId),
+      cargarNominaDash(hogarId),
+    ]);
+  } catch(e) {
+    console.error('Error dashboard:', e);
+  }
+}
+
+async function cargarTareasDash(hogarId, uid) {
+  const snap = await getDocs(query(collection(db, 'hogares', hogarId, 'tareas')));
+  const tareas = snap.docs.map(d => d.data()).sort((a,b) => a.hora?.localeCompare(b.hora));
+  const hechas = tareas.filter(t => t.estado === 'completa').length;
+  const total = tareas.length;
+
+  document.getElementById('subTareas').textContent = total
+    ? `${hechas} de ${total} completadas hoy`
+    : 'Sin tareas asignadas hoy';
+
+  if (!total) {
+    document.getElementById('bodyTareas').innerHTML = `
+      <div style="text-align:center;padding:16px;">
+        <div style="font-size:28px;margin-bottom:6px;">✅</div>
+        <div style="font-size:13px;color:var(--txt2);">No hay tareas hoy</div>
+        <div style="font-size:12px;color:#bbb;margin-top:2px;">Toca aquí para agregar</div>
+      </div>`;
+    return;
+  }
+
+  const preview = tareas.slice(0, 3);
+  document.getElementById('bodyTareas').innerHTML = preview.map(t => {
+    const hecha = t.estado === 'completa';
+    const emoji = t.cat?.split(' ')[0] || '📋';
+    return `<div class="task-item">
+      <div class="task-dot" style="background:${hecha ? 'var(--g)' : 'var(--b)'};"></div>
+      <span class="task-name" style="${hecha ? 'text-decoration:line-through;color:#bbb;' : ''}">${t.nombre}</span>
+      <span class="task-hora">${t.hora || ''}</span>
+      <div class="task-check" style="${hecha ? 'background:var(--g);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;' : 'border:2px solid var(--g4);border-radius:50%;width:18px;height:18px;'}">${hecha ? '✓' : ''}</div>
+    </div>`;
+  }).join('') + (tareas.length > 3 ? `<div style="font-size:12px;color:#bbb;text-align:center;margin-top:8px;">+${tareas.length - 3} tareas más →</div>` : '');
+}
+
+async function cargarMenuDash(hogarId) {
+  const hoy = new Date();
+  const diaSemana = hoy.getDay() === 0 ? 6 : hoy.getDay() - 1;
+  const lunes = new Date(hoy);
+  lunes.setDate(hoy.getDate() - diaSemana);
+  const semanaId = `${lunes.getFullYear()}-${String(lunes.getMonth()+1).padStart(2,'0')}-${String(lunes.getDate()).padStart(2,'0')}`;
+
+  const menuSnap = await getDocs(query(collection(db, 'hogares', hogarId, 'menus')));
+  let menuDia = {};
+
+  menuSnap.forEach(d => {
+    if (d.id === semanaId) {
+      menuDia = d.data()[`dia_${diaSemana}`] || {};
+    }
+  });
+
+  const TIEMPOS = [
+    { id:'desayuno', nombre:'Desayuno', hora:'7:00 am', emoji:'🍳', bg:'#FEF7EE' },
+    { id:'almuerzo', nombre:'Almuerzo', hora:'12:30 pm', emoji:'🍲', bg:'var(--g3)' },
+    { id:'merienda', nombre:'Merienda', hora:'3:30 pm', emoji:'🍌', bg:'var(--b3)' },
+    { id:'cena', nombre:'Cena', hora:'7:00 pm', emoji:'🥗', bg:'#F5F0F9' },
+    { id:'snack', nombre:'Snack', hora:'10:00 am', emoji:'🍎', bg:'var(--g3)' },
+  ];
+
+  const conPlato = TIEMPOS.filter(t => menuDia[t.id]?.nombre);
+  document.getElementById('subMenu').textContent = conPlato.length
+    ? `${conPlato.length} tiempos planificados hoy`
+    : 'Sin menú planificado hoy';
+
+  if (!conPlato.length) {
+    document.getElementById('bodyMenu').innerHTML = `
+      <div style="text-align:center;padding:16px;">
+        <div style="font-size:28px;margin-bottom:6px;">🍽️</div>
+        <div style="font-size:13px;color:var(--txt2);">No hay menú para hoy</div>
+        <div style="font-size:12px;color:#bbb;margin-top:2px;">Toca aquí para planificar</div>
+      </div>`;
+    return;
+  }
+
+  document.getElementById('bodyMenu').innerHTML = conPlato.slice(0, 3).map(t => `
+    <div class="menu-item">
+      <div class="menu-emoji" style="background:${t.bg};">${t.emoji}</div>
+      <div>
+        <div class="menu-plato">${menuDia[t.id].nombre}</div>
+        <div class="menu-hora">${t.nombre} · ${t.hora}</div>
+      </div>
+    </div>`).join('');
+}
+
+async function cargarChatDash(uid) {
+  try {
+    const qHogar = query(collection(db, 'hogares'), where('participantes', 'array-contains', uid));
+    const snapHogar = await getDocs(qHogar);
+    let uidsHogar = [uid];
+    if (!snapHogar.empty) uidsHogar = snapHogar.docs[0].data().participantes || [uid];
+
+    let snap = null;
+    for (const pUid of uidsHogar) {
+      const q = query(collection(db, 'conversaciones'), where('participantes', 'array-contains', pUid));
+      const s = await getDocs(q);
+      if (!s.empty) { snap = s; break; }
+    }
+
+  if (!snap || snap.empty) {
+    document.getElementById('subChat').textContent = 'Sin conversaciones aún';
+    document.getElementById('bodyChat').innerHTML = `
+      <div style="text-align:center;padding:16px;">
+        <div style="font-size:28px;margin-bottom:6px;">💬</div>
+        <div style="font-size:13px;color:var(--txt2);">Sin mensajes aún</div>
+        <div style="font-size:12px;color:#bbb;margin-top:2px;">Toca aquí para chatear</div>
+      </div>`;
+    return;
+  }
+
+  const conv = snap.docs[0].data();
+  const ultimoMsg = conv.ultimoMensaje || '';
+  const noLeidos = conv.noLeidos || 0;
+
+  document.getElementById('subChat').textContent = noLeidos > 0
+    ? `${noLeidos} mensaje${noLeidos > 1 ? 's' : ''} sin leer`
+    : 'Al día';
+
+  // Cargar últimos mensajes
+  const qMsgs = query(collection(db, 'conversaciones', snap.docs[0].id, 'mensajes'));
+  const snapMsgs = await getDocs(qMsgs);
+  const msgs = snapMsgs.docs.map(d => d.data())
+    .sort((a,b) => (a.timestamp?.toMillis?.() || 0) - (b.timestamp?.toMillis?.() || 0))
+    .slice(-3);
+
+  if (!msgs.length) {
+    document.getElementById('bodyChat').innerHTML = `
+      <div style="font-size:13px;color:#bbb;text-align:center;padding:12px;">Sin mensajes aún</div>`;
+    return;
+  }
+
+  document.getElementById('bodyChat').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:6px;">
+      ${msgs.map(m => {
+        const esPropio = m.remitenteUid === uid;
+        const texto = m.tipo === 'texto' ? m.texto :
+                      m.tipo === 'foto' ? '📷 Foto' :
+                      m.tipo === 'audio' ? '🎙️ Mensaje de voz' :
+                      m.tipo === 'mercado' ? '🛒 Lista del mercado' :
+                      m.tipo === 'tarea' ? `📋 ${m.tarea?.nombre || 'Tarea'}` : m.texto;
+        return `<div class="${esPropio ? 'chat-msg-out' : 'chat-msg-in'}" style="font-size:12px;max-width:85%;">${texto}</div>`;
+      }).join('')}
+    </div>`;
+  } catch(e) { console.error('Chat dash error:', e); }
+}
+
+async function cargarScoreDash(hogarId, uid) {
+  const snapHogar = await getDocs(query(collection(db, 'hogares'), where('participantes', 'array-contains', uid)));
+  if (snapHogar.empty) {
+    document.getElementById('subScore').textContent = 'Sin nana vinculada';
+    document.getElementById('bodyScore').innerHTML = `<div style="text-align:center;padding:16px;font-size:13px;color:#bbb;">Vincula a tu nana para ver su score</div>`;
+    return;
+  }
+
+  const participantes = snapHogar.docs[0].data().participantes || [];
+  let nanaUid = null;
+  for (const pUid of participantes) {
+    if (pUid === uid) continue;
+    const pSnap = await getDoc(doc(db, 'usuarios', pUid));
+    if (pSnap.exists() && pSnap.data().tipo === 'nana') { nanaUid = pUid; break; }
+  }
+  const hogar = { participantes };
+  if (!nanaUid) {
+    document.getElementById('subScore').textContent = 'Sin nana vinculada';
+    document.getElementById('bodyScore').innerHTML = `<div style="text-align:center;padding:16px;font-size:13px;color:#bbb;">Vincula a tu nana para ver su score</div>`;
+    return;
+  }
+
+  const [nanaSnap, scoreSnap] = await Promise.all([
+    getDoc(doc(db, 'usuarios', nanaUid)),
+    getDoc(doc(db, 'scores', nanaUid))
+  ]);
+
+  const nana = nanaSnap.exists() ? nanaSnap.data() : null;
+  const scoreData = scoreSnap.exists() ? scoreSnap.data() : {};
+  const score = scoreData.scoreActual || 0;
+  const inicial = nana?.nombre?.[0]?.toUpperCase() || 'N';
+  const stars = score > 0 ? '★'.repeat(Math.round(score)) + '☆'.repeat(5 - Math.round(score)) : '☆☆☆☆☆';
+
+  document.getElementById('subScore').textContent = nana ? `${nana.nombre?.split(' ')[0]} · Score ${score > 0 ? score : 'sin calificar'}` : 'Nana vinculada';
+
+  // Actualizar stat flotante
+  const statScore = document.getElementById('statScore');
+  if (statScore) statScore.textContent = score > 0 ? score : '—';
+
+  document.getElementById('bodyScore').innerHTML = `
+    <div class="nana-profile">
+      <div class="nana-av">${inicial}</div>
+      <div>
+        <div class="nana-nm">${nana?.nombre || 'Tu nana'}</div>
+        <div class="nana-stars">${stars}</div>
+      </div>
+      <div class="nana-score">${score > 0 ? score : '—'}</div>
+    </div>
+    ${score > 0 ? `
+      <div style="font-size:12px;color:var(--txt2);text-align:center;margin-top:8px;">
+        ${scoreData.totalReviews || 0} calificaciones · ${scoreData.semanasTrabajadas || 0} semanas trabajadas
+      </div>` : `
+      <div style="font-size:12px;color:#bbb;text-align:center;margin-top:8px;">
+        Sin calificaciones aún — toca para calificar
+      </div>`}`;
+}
+
+async function cargarMercadoDash(hogarId) {
+  const hoy = new Date();
+  const diaSemana = hoy.getDay() === 0 ? 6 : hoy.getDay() - 1;
+  const lunes = new Date(hoy);
+  lunes.setDate(hoy.getDate() - diaSemana);
+  const semanaId = `${lunes.getFullYear()}-${String(lunes.getMonth()+1).padStart(2,'0')}-${String(lunes.getDate()).padStart(2,'0')}`;
+
+  const snap = await getDoc(doc(db, 'hogares', hogarId, 'mercado', semanaId));
+  const items = snap.exists() ? (snap.data().items || []) : [];
+  const pendientes = items.filter(i => !i.comprado);
+  const comprados = items.filter(i => i.comprado);
+
+  document.getElementById('subMercado').textContent = items.length
+    ? `${pendientes.length} pendientes · ${comprados.length} comprados`
+    : 'Sin productos en la lista';
+
+  if (!items.length) {
+    document.getElementById('bodyMercado').innerHTML = `
+      <div style="text-align:center;padding:16px;">
+        <div style="font-size:28px;margin-bottom:6px;">🛒</div>
+        <div style="font-size:13px;color:var(--txt2);">Lista vacía</div>
+        <div style="font-size:12px;color:#bbb;margin-top:2px;">Se genera desde el menú</div>
+      </div>`;
+    return;
+  }
+
+  const preview = [...pendientes.slice(0, 3)];
+  document.getElementById('bodyMercado').innerHTML = preview.map(item => `
+    <div class="task-item">
+      <div class="task-dot" style="background:var(--b);"></div>
+      <span class="task-name">${item.nombre}</span>
+      <span class="task-hora">${item.cat || ''}</span>
+    </div>`).join('') +
+    (pendientes.length > 3 ? `<div style="font-size:12px;color:#bbb;text-align:center;margin-top:8px;">+${pendientes.length - 3} productos más →</div>` : '');
+}
+
+async function cargarNominaDash(hogarId) {
+  try {
+    // Cargar últimos pagos registrados
+    const snap = await getDocs(collection(db, 'hogares', hogarId, 'pagos'));
+    const pagos = snap.docs.map(d => d.data())
+      .sort((a, b) => (b.timestamp?.toMillis?.() || 0) - (a.timestamp?.toMillis?.() || 0));
+
+    const totalPagado = pagos.reduce((s, p) => s + (p.monto || 0), 0);
+    const ultimoPago = pagos[0];
+
+    // Días trabajados este mes
+    const hoy = new Date();
+    const mesKey = `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,'0')}`;
+    const diasSnap = await getDoc(doc(db, 'hogares', hogarId, 'dias', mesKey));
+    const dias = diasSnap.exists() ? diasSnap.data().dias || {} : {};
+    const diasTrabajados = Object.values(dias).filter(v => v === 'trabajo').length;
+
+    document.getElementById('subNomina').textContent = pagos.length
+      ? `${pagos.length} pago${pagos.length > 1 ? 's' : ''} · $${totalPagado.toFixed(2)} total`
+      : 'Sin pagos registrados aún';
+
+    if (!pagos.length) {
+      document.getElementById('bodyNomina').innerHTML = `
+        <div class="task-item"><span style="font-size:14px;">📅</span><span class="task-name">Días trabajados este mes</span><span class="task-hora" style="color:var(--g);">${diasTrabajados} días</span></div>
+        <div class="task-item"><span style="font-size:14px;">💰</span><span class="task-name">Sin pagos registrados</span><span class="task-hora">Ir a nómina →</span></div>
+        <div class="task-item"><span style="font-size:14px;">📋</span><span class="task-name">Contrato pendiente de generar</span><span class="task-hora">Art. 231</span></div>`;
+      return;
+    }
+
+    document.getElementById('bodyNomina').innerHTML = `
+      <div class="task-item">
+        <span style="font-size:14px;">📅</span>
+        <span class="task-name">Días trabajados este mes</span>
+        <span class="task-hora" style="color:var(--g);">${diasTrabajados} días</span>
+      </div>
+      ${pagos.slice(0, 2).map(p => {
+        const fecha = p.fecha ? new Date(p.fecha + 'T12:00:00').toLocaleDateString('es-PA', {day:'numeric',month:'short'}) : '';
+        return `<div class="task-item">
+          <span style="font-size:14px;">💰</span>
+          <span class="task-name">${p.concepto}</span>
+          <span class="task-hora" style="color:var(--g);">$${parseFloat(p.monto).toFixed(2)}</span>
+        </div>`;
+      }).join('')}
+      ${pagos.length > 2 ? `<div style="font-size:12px;color:#bbb;text-align:center;margin-top:8px;">+${pagos.length - 2} pagos más →</div>` : ''}`;
+
+  } catch(e) {
+    document.getElementById('bodyNomina').innerHTML = `
+      <div style="text-align:center;padding:16px;font-size:13px;color:#bbb;">Error al cargar datos</div>`;
+  }
+}
+
+function mostrarDashVacio() {
+  ['bodyTareas','bodyMenu','bodyChat','bodyScore','bodyMercado'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = `<div style="text-align:center;padding:16px;font-size:13px;color:#bbb;">Sin datos aún</div>`;
+  });
+  ['subTareas','subMenu','subChat','subScore','subMercado'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = 'Sin datos';
+  });
+}
+
+async function verificarVinculacion() {
+  const { getFirestore, collection, query, where, getDocs, doc, setDoc, getDoc, serverTimestamp, deleteDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+  const db = getFirestore();
+  const auth = getAuth();
+  const user = auth.currentUser;
+  if (!user) return;
+
+  const q = query(collection(db, 'hogares'), where('participantes', 'array-contains', user.uid));
+  const snap = await getDocs(q);
+
+  let tieneNana = false;
+  if (!snap.empty) {
+    const hogar = snap.docs[0].data();
+    tieneNana = hogar.participantes.length > 1;
+  }
+
+  if (!tieneNana) {
+    // Limpiar códigos duplicados — dejar solo el más reciente
+    const qCodigos = query(collection(db, 'codigos'), where('familiaUid', '==', user.uid), where('usado', '==', false));
+    const snapCodigos = await getDocs(qCodigos);
+    if (snapCodigos.docs.length > 1) {
+      // Eliminar todos excepto el primero
+      for (let i = 1; i < snapCodigos.docs.length; i++) {
+        await deleteDoc(snapCodigos.docs[i].ref);
+      }
+    }
+    mostrarBannerVinculacion(user.uid, db);
+  }
+}
+
+async function mostrarBannerVinculacion(uid, db) {
+  const { doc, setDoc, getDocs, collection, query, where, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+
+  // Verificar si ya existe un código activo para esta familia
+  const qCodigo = query(collection(db, 'codigos'), where('familiaUid', '==', uid), where('usado', '==', false));
+  const snapCodigo = await getDocs(qCodigo);
+
+  let codigo;
+  if (!snapCodigo.empty) {
+    // Ya existe un código — reusar el mismo
+    codigo = snapCodigo.docs[0].id;
+  } else {
+    // Generar nuevo código único
+    codigo = Math.random().toString(36).substring(2, 8).toUpperCase();
+    await setDoc(doc(db, 'codigos', codigo), {
+      familiaUid: uid,
+      creado: serverTimestamp(),
+      usado: false
+    });
+  }
+
+  // Verificar que el banner no esté ya en el DOM
+  if (document.getElementById('bannerVinculacion')) return;
+
+  const hero = document.querySelector('.dash-hero');
+  if (!hero) return;
+
+  const banner = document.createElement('div');
+  banner.id = 'bannerVinculacion';
+  banner.style.cssText = 'background:#fff;border-radius:14px;padding:16px 20px;margin:0 24px 20px;border:1px solid var(--g4);';
+  banner.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+      <div style="font-size:22px;">👩</div>
+      <div>
+        <div style="font-size:14px;font-weight:600;color:var(--txt);">Vincula a tu nana</div>
+        <div style="font-size:12px;color:var(--txt2);">Comparte este código con tu nana para conectarlas</div>
+      </div>
+    </div>
+    <div style="background:var(--g3);border-radius:10px;padding:14px;text-align:center;margin-bottom:12px;border:1px solid var(--g4);">
+      <div style="font-size:11px;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">Código de vinculación</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:600;color:var(--g);letter-spacing:8px;">${codigo}</div>
+      <div style="font-size:11px;color:#bbb;margin-top:4px;">De un solo uso · La vinculación es permanente</div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="copiarCodigo('${codigo}')" style="flex:1;background:var(--g3);color:var(--g);border:none;border-radius:99px;padding:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">📋 Copiar código</button>
+      <a href="https://wa.me/?text=Hola%2C%20te%20invito%20a%20My%20Nana%20%F0%9F%8F%A0%0A%0APara%20vincularte%20conmigo%20sigue%20estos%20pasos%3A%0A1%EF%B8%8F%E2%83%A3%20Entra%20a%3A%20mynana.app%2Fapp.html%0A2%EF%B8%8F%E2%83%A3%20Selecciona%20%22Nana%22%0A3%EF%B8%8F%E2%83%A3%20Toca%20%22Crear%20cuenta%20gratis%22%0A4%EF%B8%8F%E2%83%A3%20Ingresa%20este%20c%C3%B3digo%3A%20*${codigo}*%0A%0A%C2%A1Nos%20vemos%20adentro!%20%F0%9F%92%9A" target="_blank" style="flex:1;background:#25D366;color:#fff;border:none;border-radius:99px;padding:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px;">💬 Enviar por WhatsApp</a>
+    </div>`;
+
+  hero.parentNode.insertBefore(banner, hero.nextSibling);
+}
+
+window.copiarCodigo = (codigo) => {
+  navigator.clipboard.writeText(codigo).then(() => {
+    showToast('✅ Código copiado');
+  }).catch(() => {
+    showToast(`Tu código: ${codigo}`);
+  });
+};
+
+function mostrarNana(data) {
+  mostrarScreen('nana');
+
+  const inicial = data.nombre?.[0]?.toUpperCase() || 'N';
+  const avatarEl = document.getElementById('nanaAvatarCircle');
+  if (avatarEl) avatarEl.textContent = inicial;
+
+  const nombre = data.nombre?.split(' ')[0] || 'Maria';
+  document.getElementById('nanaNombre').textContent = `${nombre} 👋`;
+
+  const hora = new Date().getHours();
+  const saludo = hora < 12 ? 'Buenos días' : hora < 18 ? 'Buenas tardes' : 'Buenas noches';
+  const saludoEl = document.getElementById('nanaGreeting');
+  if (saludoEl) saludoEl.textContent = saludo;
+
+  setFechaHoy();
+  cargarTareasNana();
+
+  // Iniciar notificaciones de nana
+  setTimeout(async () => {
+    try {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (!user) return;
+      const qHogar = query(collection(db, 'hogares'), where('participantes', 'array-contains', user.uid));
+      const snap = await getDocs(qHogar);
+      if (!snap.empty) {
+        const hogarId = snap.docs[0].id;
+        iniciarNotificacionesNana(user.uid, hogarId);
+      }
+    } catch(e) { console.error(e); }
+  }, 1000);
+}
+
+async function cargarTareasNana() {
+  // Cargar tareas reales desde Firebase para mostrar progreso
+  try {
+    const { getFirestore, collection, query, where, getDocs } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+    const db = getFirestore();
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (!user) return;
+
+    // Buscar hogar
+    const qHogar = query(collection(db, 'hogares'), where('participantes', 'array-contains', user.uid));
+    const snapHogar = await getDocs(qHogar);
+    if (snapHogar.empty) { renderTareasNanaDemo(); return; }
+
+    const hogarId = snapHogar.docs[0].id;
+    const qTareas = query(collection(db, 'hogares', hogarId, 'tareas'));
+    const snapTareas = await getDocs(qTareas);
+
+    const tareas = snapTareas.docs.map(d => ({ id: d.id, ...d.data() }));
+    const hechas = tareas.filter(t => t.estado === 'completa').length;
+    const total = tareas.length;
+    const pct = total ? Math.round((hechas / total) * 100) : 0;
+
+    // Actualizar barra de progreso
+    document.getElementById('progFill').style.width = pct + '%';
+    document.getElementById('progLabel').textContent = total
+      ? `${hechas} de ${total} tareas listas hoy`
+      : 'No tienes tareas asignadas hoy';
+    document.getElementById('progPct').textContent = pct + '%';
+
+    // Renderizar tarjetas en el dashboard
+    renderTarjetasNana(tareas, hogarId);
+
+  } catch(e) {
+    renderTareasNanaDemo();
+  }
+}
+
+function renderTarjetasNana(tareas, hogarId) {
+  const c = document.getElementById('nanaContenido');
+  const pendientes = tareas.filter(t => t.estado !== 'completa');
+
+  c.innerHTML = `
+    <!-- ACCESOS RÁPIDOS - nueva cuadrícula 3 columnas -->
+    <div style="padding:16px 16px 0;" class="dash-section-title" style="padding:16px 16px 8px;">Accesos rápidos</div>
+    <div class="dash-grid-nana" style="padding:0 16px 16px;">
+      <a href="/tareas.html" class="nana-action-card" style="background:var(--g);color:#fff;">
+        <div class="nana-action-icon">✅</div>
+        <div class="nana-action-title">Mis tareas</div>
+        <div class="nana-action-sub">${pendientes.length} pendientes</div>
+      </a>
+      <a href="/menu.html" class="nana-action-card" style="background:var(--b);color:#fff;">
+        <div class="nana-action-icon">🍽️</div>
+        <div class="nana-action-title">Qué cocinar</div>
+        <div class="nana-action-sub">Ver el menú</div>
+      </a>
+      <a href="/chat.html" class="nana-action-card" style="background:#fff;color:var(--g);border:1.5px solid var(--g4);">
+        <div class="nana-action-icon">💬</div>
+        <div class="nana-action-title">Hablar</div>
+        <div class="nana-action-sub">Chat familiar</div>
+      </a>
+      <a href="/videos.html" class="nana-action-card" style="background:var(--b3);color:var(--b2);border:1.5px solid var(--b);">
+        <div class="nana-action-icon">📹</div>
+        <div class="nana-action-title">Aprender</div>
+        <div class="nana-action-sub">Ver videos</div>
+      </a>
+      <a href="/nomina.html" class="nana-action-card" style="background:var(--g3);color:var(--g);border:1.5px solid var(--g4);">
+        <div class="nana-action-icon">💰</div>
+        <div class="nana-action-title">Mis pagos</div>
+        <div class="nana-action-sub">Ver historial</div>
+      </a>
+      <a href="/buscador.html" class="nana-action-card" style="background:var(--cr);color:var(--txt2);border:1.5px solid var(--g4);">
+        <div class="nana-action-icon">👤</div>
+        <div class="nana-action-title">Mi perfil</div>
+        <div class="nana-action-sub">Editar perfil</div>
+      </a>
+    </div>
+
+    <!-- PRÓXIMA TAREA -->
+    ${pendientes.length > 0 ? `
+    <div style="padding:0 16px;margin-bottom:4px;" class="dash-section-title">Próxima tarea</div>
+    <div class="proxima-tarea">
+      <div class="proxima-tarea-header">
+        <div class="proxima-tarea-emoji" style="background:var(--g3);">${pendientes[0].cat?.split(' ')[0] || '📋'}</div>
+        <div style="flex:1;">
+          <div style="font-size:16px;font-weight:600;color:var(--txt);">${pendientes[0].nombre}</div>
+          <div style="font-size:13px;color:var(--txt2);margin-top:3px;">🕐 ${formatHora12(pendientes[0].hora)} · ${pendientes[0].cat || ''}</div>
+          ${pendientes[0].prioridad === 'urgente' ? '<div style="font-size:11px;color:#e05c5c;font-weight:600;margin-top:3px;">🔴 Urgente</div>' : ''}
+        </div>
+      </div>
+      <a href="/tareas.html" class="proxima-tarea-btn">✅ Ver y completar esta tarea</a>
+    </div>` : `
+    <div style="margin:0 16px;background:#fff;border-radius:18px;padding:24px;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.06);animation:cardEntrada .4s ease .35s both;">
+      <div style="font-size:40px;margin-bottom:8px;">🎉</div>
+      <div style="font-size:16px;font-weight:600;color:var(--g);margin-bottom:4px;">¡Todo listo!</div>
+      <div style="font-size:13px;color:var(--txt2);">Completaste todas las tareas de hoy</div>
+    </div>`}
+  `;
+}
+
+function renderTareasNanaDemo() {
+  document.getElementById('progLabel').textContent = 'Sin tareas asignadas hoy';
+  document.getElementById('progPct').textContent = '0%';
+
+  document.getElementById('nanaContenido').innerHTML = `
+    <div style="padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <a href="/tareas.html" style="background:var(--g);color:#fff;border-radius:16px;padding:18px 12px;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;">
+        <div style="font-size:32px;">✅</div>
+        <div style="font-size:15px;font-weight:600;">Mis tareas</div>
+        <div style="font-size:12px;opacity:.8;">Ver tareas del día</div>
+      </a>
+      <a href="/menu.html" style="background:var(--b);color:#fff;border-radius:16px;padding:18px 12px;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;">
+        <div style="font-size:32px;">🍽️</div>
+        <div style="font-size:15px;font-weight:600;">Qué cocinar</div>
+        <div style="font-size:12px;opacity:.8;">Ver el menú</div>
+      </a>
+      <a href="/chat.html" style="background:var(--g3);color:var(--g);border-radius:16px;padding:18px 12px;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;border:1.5px solid var(--g4);">
+        <div style="font-size:32px;">💬</div>
+        <div style="font-size:15px;font-weight:600;">Hablar</div>
+        <div style="font-size:12px;color:var(--txt2);">Chat familiar</div>
+      </a>
+      <a href="/videos.html" style="background:var(--b3);color:var(--b2);border-radius:16px;padding:18px 12px;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;border:1.5px solid var(--b);">
+        <div style="font-size:32px;">📹</div>
+        <div style="font-size:15px;font-weight:600;">Aprender</div>
+        <div style="font-size:12px;">Ver videos</div>
+      </a>
+    </div>
+    <div style="padding:0 16px 16px;">
+      <div style="background:var(--g3);border-radius:16px;padding:20px;text-align:center;border:1px solid var(--g4);">
+        <div style="font-size:32px;margin-bottom:8px;">👋</div>
+        <div style="font-size:15px;font-weight:600;color:var(--g);margin-bottom:4px;">¡Bienvenida!</div>
+        <div style="font-size:13px;color:var(--txt2);">La familia aún no ha asignado tareas para hoy</div>
+      </div>
+    </div>`;
+}
+
+function formatHora12(hora24) {
+  if (!hora24) return '';
+  const [h, m] = hora24.split(':').map(Number);
+  const ampm = h >= 12 ? 'pm' : 'am';
+  return `${h % 12 || 12}:${String(m).padStart(2,'0')} ${ampm}`;
+}
+
+// Audio mejorado
+window.leerTareasVoz = async () => {
+  if (!window.speechSynthesis) { showToast('Tu teléfono no soporta el audio'); return; }
+  window.speechSynthesis.cancel();
+
+  try {
+    const { getFirestore, collection, query, where, getDocs } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+    const db = getFirestore();
+    const auth = getAuth();
+    const user = auth.currentUser;
+    const qHogar = query(collection(db, 'hogares'), where('participantes', 'array-contains', user.uid));
+    const snapHogar = await getDocs(qHogar);
+    if (snapHogar.empty) { showToast('Sin tareas para leer'); return; }
+
+    const hogarId = snapHogar.docs[0].id;
+    const qTareas = query(collection(db, 'hogares', hogarId, 'tareas'));
+    const snapTareas = await getDocs(qTareas);
+    const pendientes = snapTareas.docs.map(d => d.data()).filter(t => t.estado !== 'completa');
+
+    if (!pendientes.length) {
+      const u = new SpeechSynthesisUtterance('¡Felicidades! Completaste todas las tareas de hoy.');
+      u.lang = 'es-PA'; u.rate = 0.85;
+      window.speechSynthesis.speak(u);
+      showToast('🎉 ¡Todas las tareas están listas!');
+      return;
+    }
+
+    const nombre = document.getElementById('nanaNombre').textContent.replace('👋','').trim();
+    const texto = `Hola ${nombre}. Tienes ${pendientes.length} tareas pendientes hoy. ${pendientes.map((t,i) => `Número ${i+1}: ${t.nombre}, a las ${formatHora12(t.hora)}.`).join(' ')}`;
+    const u = new SpeechSynthesisUtterance(texto);
+    u.lang = 'es-PA'; u.rate = 0.85; u.pitch = 1;
+    window.speechSynthesis.speak(u);
+
+    const btn = document.getElementById('audioBtn');
+    if (btn) {
+      btn.textContent = '⏹ Parar audio';
+      btn.style.background = 'var(--b)';
+      u.onend = () => {
+        btn.textContent = '🔊 Escuchar mis tareas en voz alta';
+        btn.style.background = '';
+      };
+      btn.onclick = () => {
+        window.speechSynthesis.cancel();
+        btn.textContent = '🔊 Escuchar mis tareas en voz alta';
+        btn.style.background = '';
+        btn.onclick = leerTareasVoz;
+      };
+    }
+    showToast('🔊 Leyendo tus tareas...');
+  } catch(e) {
+    showToast('No se pudo leer las tareas');
+  }
+};
+
+// ── NAVEGACIÓN ──
+window.irARegistro = () => mostrarScreen('registro');
+window.irALogin = () => mostrarScreen('login');
+
+// ── HELPERS ──
+function mostrarError(el, msg) {
+  el.textContent = msg;
+  el.classList.add('visible');
+}
+
+window.showToast = (msg) => {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('visible');
+  setTimeout(() => t.classList.remove('visible'), 3000);
+};
+
+// ── NANA TAB SYSTEM ──
+const TAREAS = [
+  {id:1,emoji:'🍳',nombre:'Preparar desayuno',hora:'7:00 am',cat:'Cocina',hecha:true,foto:true,video:'sancocho'},
+  {id:2,emoji:'🧹',nombre:'Barrer y trapear sala',hora:'9:00 am',cat:'Limpieza',hecha:true,foto:true,video:'limpieza'},
+  {id:3,emoji:'👕',nombre:'Lavandería ropa blanca',hora:'10:00 am',cat:'Lavandería',hecha:false,foto:false,video:'lavanderia'},
+  {id:4,emoji:'🍲',nombre:'Almuerzo: Sancocho',hora:'12:30 pm',cat:'Cocina',hecha:false,foto:false,video:'sancocho'},
+  {id:5,emoji:'🎒',nombre:'Recoger a Sofía',hora:'2:00 pm',cat:'Niños',hecha:false,foto:false,video:null},
+  {id:6,emoji:'🧹',nombre:'Limpiar los baños',hora:'4:00 pm',cat:'Limpieza',hecha:false,foto:false,video:'limpieza'},
+];
+
+const VIDEOS = [
+  {id:'sancocho',emoji:'🍲',titulo:'Sancocho de gallina panameño',dur:'22 min',cat:'Cocina',bg:'#0F4A38',desc:'Aprende a preparar el sancocho perfecto paso a paso.'},
+  {id:'limpieza',emoji:'🧹',titulo:'Cómo limpiar correctamente',dur:'15 min',cat:'Limpieza',bg:'#D4A5A5',desc:'Técnica correcta para limpiar sala, cuartos y baños.'},
+  {id:'lavanderia',emoji:'👕',titulo:'Lavandería sin dañar la ropa',dur:'10 min',cat:'Lavandería',bg:'#1A6B52',desc:'Separación de ropa, temperaturas y manchas difíciles.'},
+  {id:'desayuno',emoji:'🍳',titulo:'Desayuno panameño completo',dur:'12 min',cat:'Cocina',bg:'#5A4080',desc:'Tortillas, hojaldras, huevos y café panameño.'},
+];
+
+const MENSAJES_CHAT = [
+  {tipo:'familia',texto:'Buenos días Maria 👋',hora:'7:02 am'},
+  {tipo:'nana',texto:'Buenos días señora, ya llegué. Preparando el desayuno.',hora:'7:05 am'},
+  {tipo:'sistema',texto:'✅ Maria completó: Preparar desayuno — 7:08 am'},
+  {tipo:'familia',texto:'Recuerda recoger a Sofía a las 2pm.',hora:'8:30 am'},
+  {tipo:'nana',texto:'Sí señora, anotado.',hora:'8:32 am'},
+];
+
+let tareasState = TAREAS.map(t=>({...t}));
+let mensajesState = [...MENSAJES_CHAT];
+let tabActual = 'tareas';
+
+window.cambiarTab = (tab) => {
+  tabActual = tab;
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('activo'));
+  document.getElementById(`tab-${tab}`).classList.add('activo');
+  document.getElementById('chatInputWrap').style.display = tab==='chat' ? 'flex' : 'none';
+  const c = document.getElementById('nanaContenido');
+  c.style.opacity='0';
+  setTimeout(()=>{renderTab(tab);c.style.opacity='1';c.style.transition='opacity .2s';},150);
+};
+
+function renderTab(tab) {
+  const c = document.getElementById('nanaContenido');
+  if(tab==='tareas') renderTareas(c);
+  else if(tab==='menu') renderMenu(c);
+  else if(tab==='chat') renderChat(c);
+  else if(tab==='videos') renderVideos(c);
+}
+
+function renderTareas(c) {
+  actualizarProgreso();
+  const col={'Cocina':'var(--g3)','Limpieza':'#F0F0F7','Lavandería':'var(--b3)','Niños':'#FEF7EE'};
+  c.innerHTML=`<div class="sec-titulo">Tareas de hoy</div>`+tareasState.map(t=>`
+    <div class="tarea-card">
+      <div class="tarea-top">
+        <div class="tarea-emoji" style="background:${col[t.cat]||'var(--g3)'};">${t.emoji}</div>
+        <div class="tarea-info">
+          <div class="tarea-nombre ${t.hecha?'hecha':''}">${t.nombre}</div>
+          <div class="tarea-hora">🕐 ${t.hora} · ${t.cat}</div>
+        </div>
+        <button class="tarea-check-btn" style="background:${t.hecha?'var(--g)':'transparent'};border:${t.hecha?'none':'2px solid var(--g4)'};" onclick="toggleTarea(${t.id})">
+          ${t.hecha?'<svg width="14" height="12" viewBox="0 0 14 12" fill="none"><polyline points="1,6 5,10 13,1" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>':''}
+        </button>
+      </div>
+      ${t.hecha?`<div class="tarea-hecha-banner">📸 Foto enviada · <span style="font-weight:600;">Completada</span></div>`:`
+      <div class="tarea-actions">
+        ${t.video?`<button class="tarea-action" onclick="abrirVideo('${t.video}')"><span style="font-size:18px;">▶️</span><span style="color:var(--g);">Ver video</span></button>`:`<button class="tarea-action" style="opacity:.3;"><span style="font-size:18px;">▶️</span><span style="color:#bbb;">Sin video</span></button>`}
+        <button class="tarea-action" onclick="simularFoto(${t.id})"><span style="font-size:18px;">📷</span><span style="color:var(--b2);">Subir foto</span></button>
+        <button class="tarea-action" onclick="marcarHecha(${t.id})"><span style="font-size:18px;">✅</span><span style="color:var(--g);">Listo</span></button>
+      </div>`}
+    </div>`).join('');
+}
+
+window.toggleTarea = (id)=>{ const t=tareasState.find(t=>t.id===id); if(t&&t.hecha){t.hecha=false;t.foto=false;renderTareas(document.getElementById('nanaContenido'));actualizarProgreso();} else simularFoto(id); };
+window.simularFoto = (id)=>{ const t=tareasState.find(t=>t.id===id); if(t){t.hecha=true;t.foto=true;} renderTareas(document.getElementById('nanaContenido')); actualizarProgreso(); showToast('📸 ¡Foto enviada a la familia!'); mensajesState.push({tipo:'sistema',texto:`✅ Completó: ${t?.nombre}`}); };
+window.marcarHecha = (id)=>{ const t=tareasState.find(t=>t.id===id); if(t){t.hecha=true;} renderTareas(document.getElementById('nanaContenido')); actualizarProgreso(); showToast(`✅ ${t?.nombre} marcada como lista`); };
+
+function actualizarProgreso(){
+  const hechas=tareasState.filter(t=>t.hecha).length;
+  const pct=Math.round((hechas/tareasState.length)*100);
+  document.getElementById('progFill').style.width=pct+'%';
+  document.getElementById('progLabel').textContent=`${hechas} de ${tareasState.length} tareas listas`;
+}
+
+function renderMenu(c){
+  c.innerHTML=`<div class="sec-titulo">Tu menú de hoy</div>
+  <div style="background:var(--b3);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:var(--b2);font-weight:500;border:1px solid var(--g4);">🍽️ Esto es lo que puedes comer hoy</div>`+
+  [{t:'Desayuno',h:'7:00 am',e:'🍳',bg:'#FEF7EE',plato:'Tortillas con queso y huevos',fam:'Con café',yo:'Mismo desayuno'},
+   {t:'Almuerzo',h:'12:30 pm',e:'🍲',bg:'var(--g3)',plato:'Sancocho de gallina',fam:'Con patacones',yo:'Sancocho solo'},
+   {t:'Merienda',h:'3:30 pm',e:'🍌',bg:'var(--b3)',plato:'Fruta de temporada',fam:'Piña y melón',yo:'Fruta disponible'},
+   {t:'Cena',h:'7:00 pm',e:'🥗',bg:'#F5F0F9',plato:'Ensalada de pollo',fam:'Con pan integral',yo:'Ensalada completa'},
+  ].map(m=>`<div class="nana-menu-card">
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;">
+      <div style="width:36px;height:36px;border-radius:10px;background:${m.bg};display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">${m.e}</div>
+      <div><div style="font-size:10px;font-weight:600;color:var(--g);text-transform:uppercase;">${m.t} · ${m.h}</div><div style="font-size:13px;font-weight:500;color:var(--txt);">${m.plato}</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--g4);">
+      <div style="padding:7px 14px;border-right:1px solid var(--g4);"><div style="font-size:9px;color:#bbb;text-transform:uppercase;margin-bottom:2px;">Familia</div><div style="font-size:11px;color:var(--txt2);">${m.fam}</div></div>
+      <div style="padding:7px 14px;background:var(--b3);"><div style="font-size:9px;color:var(--b2);text-transform:uppercase;margin-bottom:2px;">Tu porción</div><div style="font-size:11px;color:var(--b2);font-weight:500;">${m.yo}</div></div>
+    </div>
+  </div>`).join('');
+}
+
+function renderChat(c){
+  c.innerHTML=`<div style="background:#fff;border-radius:var(--r);padding:12px 14px;display:flex;align-items:center;gap:10px;margin-bottom:12px;border:1px solid var(--g4);">
+    <div style="width:38px;height:38px;border-radius:50%;background:var(--g);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#fff;flex-shrink:0;">FR</div>
+    <div><div style="font-size:13px;font-weight:500;color:var(--txt);">Familia Rodríguez</div><div style="font-size:11px;color:var(--g);">● En línea</div></div>
+  </div>
+  <div class="nana-chat-wrap" id="mensajesLista">${mensajesState.map(m=>renderMsg(m)).join('')}</div>`;
+  setTimeout(()=>{const l=document.getElementById('mensajesLista');if(l)l.scrollTop=l.scrollHeight;},100);
+}
+
+function renderMsg(m){
+  if(m.tipo==='sistema') return `<div class="msg-sistema">${m.texto}</div>`;
+  if(m.tipo==='familia') return `<div class="nana-msg-fam"><div class="burbuja-fam">${m.texto}</div><div class="msg-hora">${m.hora||''}</div></div>`;
+  return `<div class="nana-msg-yo"><div class="burbuja-yo">${m.texto}</div><div class="msg-hora-yo">${m.hora||''} ✓✓</div></div>`;
+}
+
+window.enviarMensaje = ()=>{
+  const input=document.getElementById('chatInput');
+  const texto=input?.value.trim();
+  if(!texto) return;
+  const hora=new Date().toLocaleTimeString('es-PA',{hour:'2-digit',minute:'2-digit'});
+  mensajesState.push({tipo:'nana',texto,hora});
+  input.value='';
+  renderChat(document.getElementById('nanaContenido'));
+  setTimeout(()=>{
+    mensajesState.push({tipo:'familia',texto:'Gracias Maria! 👍',hora:new Date().toLocaleTimeString('es-PA',{hour:'2-digit',minute:'2-digit'})});
+    renderChat(document.getElementById('nanaContenido'));
+  },1500);
+};
+
+function renderVideos(c){
+  c.innerHTML=`<div class="sec-titulo">Videos de entrenamiento</div>
+  <div style="background:var(--g3);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:var(--g);border:1px solid var(--g4);">📹 Aprende con estos videos de expertos panameños</div>`+
+  VIDEOS.map(v=>`<div class="video-card" onclick="abrirVideo('${v.id}')">
+    <div class="video-thumb" style="background:${v.bg};">
+      <div style="font-size:28px;">${v.emoji}</div>
+      <div class="video-play">▶</div>
+    </div>
+    <div class="video-info">
+      <div class="video-titulo">${v.titulo}</div>
+      <div class="video-meta">${v.dur} · ${v.cat}</div>
+    </div>
+  </div>`).join('');
+}
+
+window.abrirVideo = (id)=>{
+  const v=VIDEOS.find(v=>v.id===id);
+  if(!v) return;
+  document.getElementById('modalVideoPreview').style.background=v.bg;
+  document.getElementById('modalVideoPreview').innerHTML=`<div style="font-size:72px;">${v.emoji}</div>`;
+  document.getElementById('modalVideoTitulo').textContent=v.titulo;
+  document.getElementById('modalVideoDesc').innerHTML=`${v.desc}<br><br><span style="color:var(--g);font-weight:500;">▶ ${v.dur} · ${v.cat}</span>`;
+  document.getElementById('modalVideo').classList.add('visible');
+};
+
+function setFechaHoy(){
+  const dias=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const hoy=new Date();
+  const el=document.getElementById('nanaFecha');
+  if(el) el.textContent=`${dias[hoy.getDay()]} ${hoy.getDate()} de ${meses[hoy.getMonth()]}`;
+}
+
+window.leerTareas = ()=>{
+  if(!window.speechSynthesis) return;
+  const pendientes=tareasState.filter(t=>!t.hecha);
+  if(!pendientes.length){showToast('✅ ¡Todas las tareas están listas!');return;}
+  const texto=`Tus tareas pendientes son: ${pendientes.map((t,i)=>`${i+1}. ${t.nombre} a las ${t.hora}`).join('. ')}.`;
+  const u=new SpeechSynthesisUtterance(texto);
+  u.lang='es-PA';u.rate=0.9;
+  window.speechSynthesis.speak(u);
+  showToast('🔊 Leyendo tareas...');
+};
+
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&tabActual==='chat')enviarMensaje();});
+
+// ── IDIOMA DASHBOARD ──
+const I18N = {
+  es: {
+    salir: 'Salir', tareas: 'Tareas hoy', mensajes: 'Mensajes',
+    scoreNana: 'Score nana', bienvenida: 'Bienvenido/a de vuelta',
+    resumen: 'Aquí tienes el resumen de tu hogar hoy',
+    chat: 'Ir al chat', verTareas: 'Ver todas las tareas',
+    verMenu: 'Ver menú completo', verScore: 'Ver score completo',
+    completadas: 'completadas', pendientes: 'pendientes',
+    btnBuscar: 'Buscar nana →', txtBuscar: '¿Buscas una nana?',
+    descBuscar: 'Encuentra personal doméstico verificado con score',
+    taskHoy: 'Tareas de hoy', menuHoy: 'Menú del día',
+    chatReciente: 'Chat reciente', tuScore: 'Tu score',
+    nominaHoy: 'Nómina', mercado: 'Lista del mercado',
+    greeting: 'Bienvenido/a de vuelta', misTaskas: 'Mis tareas',
+    quecocinar: 'Qué cocinar', hablar: 'Hablar', aprender: 'Aprender',
+    misPagos: 'Mis pagos', miPerfil: 'Mi perfil',
+    proximaTarea: 'Próxima tarea', todoListo: '¡Todo listo!',
+    complet: 'Completaste todas las tareas de hoy',
+  },
+  en: {
+    salir: 'Sign out', tareas: 'Tasks today', mensajes: 'Messages',
+    scoreNana: 'Nana score', bienvenida: 'Welcome back',
+    resumen: "Here's your household summary for today",
+    chat: 'Open chat', verTareas: 'View all tasks',
+    verMenu: 'View full menu', verScore: 'View full score',
+    completadas: 'completed', pendientes: 'pending',
+    btnBuscar: 'Find a nana →', txtBuscar: 'Looking for a nana?',
+    descBuscar: 'Find verified domestic staff with score',
+    taskHoy: "Today's tasks", menuHoy: "Today's menu",
+    chatReciente: 'Recent chat', tuScore: 'Your score',
+    nominaHoy: 'Payroll', mercado: 'Shopping list',
+    greeting: 'Welcome back', misTaskas: 'My tasks',
+    quecocinar: 'What to cook', hablar: 'Chat', aprender: 'Learn',
+    misPagos: 'My payments', miPerfil: 'My profile',
+    proximaTarea: 'Next task', todoListo: 'All done!',
+    complet: 'You completed all tasks for today',
+  }
+};
+
+let dashLang = localStorage.getItem('mynana_lang') || 'es';
+
+window.toggleLangDash = () => {
+  dashLang = dashLang === 'es' ? 'en' : 'es';
+  localStorage.setItem('mynana_lang', dashLang);
+  aplicarLangDash();
+};
+
+function aplicarLangDash() {
+  const esEN = dashLang === 'en';
+  const t = I18N[dashLang];
+
+  // Botones de idioma
+  const flag = esEN ? '🇵🇦' : '🇺🇸';
+  const lbl = esEN ? 'ES' : 'EN';
+  ['dashLangBtn','nanaLangBtn'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = flag + ' ' + lbl;
+  });
+
+  document.body.className = document.body.className
+    .replace(/lang-es|lang-en/g,'').trim() + ' ' + (esEN ? 'lang-en' : 'lang-es');
+
+  // Botones de salir
+  document.querySelectorAll('.dash-logout, .nana-logout').forEach(el => {
+    el.textContent = t.salir;
+  });
+
+  // Hero familia
+  const greeting = document.getElementById('famHeroNombre');
+  const heroSub = document.querySelector('.dash-hero-sub');
+  if (heroSub) heroSub.textContent = t.resumen;
+
+  // Stats labels
+  const statLabels = document.querySelectorAll('.dash-stat-l');
+  if (statLabels[0]) statLabels[0].textContent = t.tareas;
+  if (statLabels[1]) statLabels[1].textContent = t.mensajes;
+  if (statLabels[2]) statLabels[2].textContent = t.scoreNana;
+
+  // Sección buscar nana
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (t[key]) el.textContent = t[key];
+  });
+
+  document.documentElement.lang = dashLang;
+}
+
+// Aplicar al cargar
+document.addEventListener('DOMContentLoaded', () => {
+  dashLang = localStorage.getItem('mynana_lang') || 'es';
+  if (dashLang === 'en') setTimeout(aplicarLangDash, 500);
+});
+
+
+// ══ SISTEMA MIEMBROS FAMILIARES ══
+
+window.toggleInvitarMiembro = async () => {
+  const panel = document.getElementById('panelInvitarMiembro');
+  if (!panel) return;
+  if (panel.style.display !== 'none') { panel.style.display = 'none'; return; }
+  panel.style.display = 'block';
+  panel.innerHTML = `<div style="text-align:center;padding:12px;color:var(--txt2);font-size:13px;">Generando código...</div>`;
+  try {
+    const user = auth.currentUser;
+    if (!user) return;
+    const qHogar = query(collection(db, 'hogares'), where('participantes', 'array-contains', user.uid));
+    const snapHogar = await getDocs(qHogar);
+    if (snapHogar.empty) { panel.innerHTML = `<div style="font-size:13px;color:var(--b2);">⚠️ Primero vincula a tu nana para activar el hogar</div>`; return; }
+    const hogarId = snapHogar.docs[0].id;
+    const qCod = query(collection(db, 'codigos_familia'), where('familiaUid', '==', user.uid), where('tipo', '==', 'miembro_familia'), where('usado', '==', false));
+    const snapCod = await getDocs(qCod);
+    let codigo = snapCod.empty ? 'F' + Math.random().toString(36).substring(2, 7).toUpperCase() : snapCod.docs[0].id;
+    if (snapCod.empty) {
+      await setDoc(doc(db, 'codigos_familia', codigo), { familiaUid: user.uid, hogarId, tipo: 'miembro_familia', usado: false, creadoA: serverTimestamp() });
+    }
+    const msgWA = encodeURIComponent(`Hola! Te invito a ver nuestro hogar en My Nana 🏠
+
+Sigue estos pasos:
+1️⃣ Entra a: mynana.app/app.html
+2️⃣ Selecciona "Familia" y toca "Crear cuenta gratis"
+3️⃣ Toca "¿Te invitó un familiar?" e ingresa el código:
+*${codigo}*
+
+¡Verás todo el hogar en tiempo real! 🎉`);
+    panel.innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <div style="font-size:22px;">👨‍👩‍👧</div>
+        <div><div style="font-size:14px;font-weight:600;color:var(--txt);">Código para tu familiar</div><div style="font-size:12px;color:var(--txt2);">Compártelo — verán y editarán el hogar en simultáneo</div></div>
+      </div>
+      <div style="background:var(--b3);border-radius:12px;padding:16px;text-align:center;margin-bottom:12px;border:1.5px solid var(--b);">
+        <div style="font-size:11px;color:var(--b2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;font-weight:600;">Código familiar</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:600;color:var(--b2);letter-spacing:6px;">${codigo}</div>
+        <div style="font-size:11px;color:#bbb;margin-top:4px;">Solo para familiares · No compartir con la nana</div>
+      </div>
+      <div style="background:var(--g3);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:var(--txt2);line-height:1.7;">
+        <div style="font-weight:600;color:var(--g);margin-bottom:4px;">✅ Tu familiar podrá:</div>
+        • Ver y crear tareas · Acceder al chat<br>• Ver menú y lista del mercado<br>• Consultar score y nómina
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="copiarCodigoFam('${codigo}')" style="flex:1;background:var(--g3);color:var(--g);border:1px solid var(--g4);border-radius:99px;padding:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">📋 Copiar</button>
+        <a href="https://wa.me/?text=${msgWA}" target="_blank" style="flex:1;background:#25D366;color:#fff;border:none;border-radius:99px;padding:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;text-align:center;display:flex;align-items:center;justify-content:center;">💬 WhatsApp</a>
+      </div>`;
+    cargarMiembrosFamiliares(hogarId, user.uid);
+  } catch(e) { panel.innerHTML = `<div style="font-size:13px;color:var(--b2);">Error generando código. Intenta de nuevo.</div>`; }
+};
+
+window.copiarCodigoFam = (codigo) => {
+  navigator.clipboard.writeText(codigo).then(() => showToast('✅ Código copiado')).catch(() => showToast('Código: ' + codigo));
+};
+
+window.gestionarMiembros = () => {
+  const panel = document.getElementById('panelInvitarMiembro');
+  if (!panel) return;
+  if (panel.style.display !== 'none') { panel.style.display = 'none'; return; }
+  const miembros = window._miembrosHogar || [];
+  const hogarId = window._hogarIdActual || '';
+  panel.style.display = 'block';
+  panel.innerHTML = `
+    <div style="font-size:13px;font-weight:600;color:var(--txt);margin-bottom:12px;">👥 Miembros con acceso al hogar</div>
+    ${miembros.map(m => `
+      <div style="display:flex;align-items:center;justify-content:space-between;background:var(--cr);border-radius:10px;padding:10px 14px;margin-bottom:8px;border:1px solid var(--g4);">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:36px;height:36px;border-radius:50%;background:var(--b3);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--b2);">${m.nombre[0].toUpperCase()}</div>
+          <div><div style="font-size:13px;font-weight:600;color:var(--txt);">${m.nombre}</div><div style="font-size:11px;color:var(--txt2);">Miembro familiar · Acceso completo</div></div>
+        </div>
+        <button onclick="eliminarMiembroFamiliar('${m.uid}','${m.nombre.split(' ')[0]}','${hogarId}')" style="background:var(--b3);color:var(--b2);border:1px solid var(--b);border-radius:99px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Eliminar</button>
+      </div>`).join('')}
+    <div style="font-size:11px;color:#bbb;margin-top:4px;">Al eliminar, el miembro pierde acceso inmediatamente.</div>`;
+};
+
+async function cargarMiembrosFamiliares(hogarId, miUid) {
+  try {
+    const snap = await getDoc(doc(db, 'hogares', hogarId));
+    if (!snap.exists()) return;
+    const participantes = snap.data().participantes || [];
+    const miembros = [];
+    for (const uid of participantes) {
+      if (uid === miUid) continue;
+      const pSnap = await getDoc(doc(db, 'usuarios', uid));
+      if (pSnap.exists() && pSnap.data().tipo === 'familia') miembros.push({ uid, nombre: pSnap.data().nombre || 'Familiar' });
+    }
+    window._miembrosHogar = miembros;
+    window._hogarIdActual = hogarId;
+    const titulo = document.getElementById('miembroFamTitulo');
+    const sub = document.getElementById('miembroFamSub');
+    const btnG = document.getElementById('btnGestionarMiembros');
+    if (miembros.length > 0) {
+      if (titulo) titulo.textContent = `👨‍👩‍👧 ${miembros.map(m=>m.nombre.split(' ')[0]).join(' y ')} tiene acceso al hogar`;
+      if (sub) sub.textContent = 'Ven el hogar en simultáneo contigo · Pueden editar todo';
+      if (btnG) btnG.style.display = 'block';
+    } else {
+      if (titulo) titulo.textContent = 'Agregar miembro familiar';
+      if (sub) sub.textContent = 'Invita a tu pareja para ver el hogar juntos en tiempo real';
+      if (btnG) btnG.style.display = 'none';
+    }
+  } catch(e) { console.error('Error miembros:', e); }
+}
+
+window.eliminarMiembroFamiliar = async (uid, nombre, hogarId) => {
+  if (!confirm(`¿Eliminar a ${nombre} del hogar? Ya no podrá ver ni editar nada.`)) return;
+  try {
+    const hogarSnap = await getDoc(doc(db, 'hogares', hogarId));
+    if (!hogarSnap.exists()) return;
+    const participantes = hogarSnap.data().participantes.filter(p => p !== uid);
+    await updateDoc(doc(db, 'hogares', hogarId), { participantes });
+    showToast(`✅ ${nombre} eliminado del hogar`);
+    document.getElementById('panelInvitarMiembro').style.display = 'none';
+    await cargarMiembrosFamiliares(hogarId, auth.currentUser.uid);
+  } catch(e) { showToast('❌ Error al eliminar. Intenta de nuevo.'); }
+};
+
+async function procesarCodigoFamiliar(codigo, nuevoUid) {
+  try {
+    const codSnap = await getDoc(doc(db, 'codigos_familia', codigo));
+    if (!codSnap.exists()) return false;
+    const data = codSnap.data();
+    if (data.usado || data.tipo !== 'miembro_familia') return false;
+    const hogarSnap = await getDoc(doc(db, 'hogares', data.hogarId));
+    if (hogarSnap.exists()) {
+      const participantes = hogarSnap.data().participantes || [];
+      if (!participantes.includes(nuevoUid)) {
+        await updateDoc(doc(db, 'hogares', data.hogarId), { participantes: [...participantes, nuevoUid] });
+      }
+    }
+    await updateDoc(doc(db, 'codigos_familia', codigo), { usado: true, usadoPor: nuevoUid, usadoA: serverTimestamp() });
+    return true;
+  } catch(e) { console.error('Error código familiar:', e); return false; }
+}
+
+// ══ FIN MIEMBROS FAMILIARES ══
+</script>
+
+</body>
+</html>
