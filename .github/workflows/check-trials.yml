@@ -1,0 +1,10 @@
+{
+  "name": "mynana-scripts",
+  "version": "1.0.0",
+  "description": "Scripts automaticos de My Nana",
+  "main": "check-trials.js",
+  "dependencies": {
+    "firebase-admin": "^12.0.0",
+    "node-fetch": "^3.0.0"
+  }
+}
