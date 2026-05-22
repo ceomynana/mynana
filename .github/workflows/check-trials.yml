@@ -1,26 +1,21 @@
 name: Aviso de cobro dia 13
-
 on:
   schedule:
     - cron: '0 14 * * *'
   workflow_dispatch:
-
 jobs:
   check-trials:
     runs-on: ubuntu-latest
     steps:
       - name: Obtener codigo
         uses: actions/checkout@v4
-
       - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-
       - name: Instalar dependencias
         run: npm install firebase-admin node-fetch
         working-directory: scripts
-
       - name: Ejecutar revision
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
