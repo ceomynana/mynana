@@ -14,8 +14,7 @@ jobs:
         with:
           node-version: '20'
       - name: Instalar dependencias
-        run: npm install firebase-admin node-fetch
-        working-directory: scripts
+        run: npm install firebase-admin node-fetch --prefix scripts --no-package-lock
       - name: Ejecutar revision
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
