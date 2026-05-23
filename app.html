@@ -737,7 +737,7 @@ body.lang-es [data-en]{display:none !important;}
   </div>
 
   <div class="dash-content">
-    <div class="dash-grid" id="nanaContenido"></div>
+    <div class="dash-grid" id="nanaGrid"></div>
   </div>
 
 </div>
@@ -1973,7 +1973,7 @@ function mostrarNana(data) {
         }
       }
       if (!vinculada) {
-        const c = document.getElementById('nanaContenido');
+        const c = document.getElementById('nanaGrid');
         if (c && !document.getElementById('cardVincular')) {
           const div = document.createElement('div');
           div.id = 'cardVincular';
@@ -2075,7 +2075,7 @@ async function cargarTareasNana() {
 }
 
 function renderTarjetasNana(tareas, hogarId) {
-  const c = document.getElementById('nanaContenido');
+  const c = document.getElementById('nanaGrid');
   const pendientes = tareas.filter(t => t.estado !== 'completa');
   const statTareas = document.getElementById('statNanaTareas');
   if (statTareas) statTareas.textContent = tareas.length || '0';
@@ -2137,7 +2137,7 @@ function renderTareasNanaDemo() {
   const statTareas = document.getElementById('statNanaTareas');
   if (statTareas) statTareas.textContent = '0';
 
-  document.getElementById('nanaContenido').innerHTML = `
+  document.getElementById('nanaGrid').innerHTML = `
     <div class="dash-card" style="border:2px solid var(--b);background:linear-gradient(135deg,var(--b3),#fff);">
       <div class="dash-card-header">
         <div class="dash-card-icon" style="background:var(--b3);font-size:20px;">🔗</div>
@@ -2314,13 +2314,13 @@ window.cambiarTab = (tab) => {
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('activo'));
   document.getElementById(`tab-${tab}`).classList.add('activo');
   document.getElementById('chatInputWrap').style.display = tab==='chat' ? 'flex' : 'none';
-  const c = document.getElementById('nanaContenido');
+  const c = document.getElementById('nanaGrid');
   c.style.opacity='0';
   setTimeout(()=>{renderTab(tab);c.style.opacity='1';c.style.transition='opacity .2s';},150);
 };
 
 function renderTab(tab) {
-  const c = document.getElementById('nanaContenido');
+  const c = document.getElementById('nanaGrid');
   if(tab==='tareas') renderTareas(c);
   else if(tab==='menu') renderMenu(c);
   else if(tab==='chat') renderChat(c);
@@ -2351,9 +2351,9 @@ function renderTareas(c) {
     </div>`).join('');
 }
 
-window.toggleTarea = (id)=>{ const t=tareasState.find(t=>t.id===id); if(t&&t.hecha){t.hecha=false;t.foto=false;renderTareas(document.getElementById('nanaContenido'));actualizarProgreso();} else simularFoto(id); };
-window.simularFoto = (id)=>{ const t=tareasState.find(t=>t.id===id); if(t){t.hecha=true;t.foto=true;} renderTareas(document.getElementById('nanaContenido')); actualizarProgreso(); showToast('📸 ¡Foto enviada a la familia!'); mensajesState.push({tipo:'sistema',texto:`✅ Completó: ${t?.nombre}`}); };
-window.marcarHecha = (id)=>{ const t=tareasState.find(t=>t.id===id); if(t){t.hecha=true;} renderTareas(document.getElementById('nanaContenido')); actualizarProgreso(); showToast(`✅ ${t?.nombre} marcada como lista`); };
+window.toggleTarea = (id)=>{ const t=tareasState.find(t=>t.id===id); if(t&&t.hecha){t.hecha=false;t.foto=false;renderTareas(document.getElementById('nanaGrid'));actualizarProgreso();} else simularFoto(id); };
+window.simularFoto = (id)=>{ const t=tareasState.find(t=>t.id===id); if(t){t.hecha=true;t.foto=true;} renderTareas(document.getElementById('nanaGrid')); actualizarProgreso(); showToast('📸 ¡Foto enviada a la familia!'); mensajesState.push({tipo:'sistema',texto:`✅ Completó: ${t?.nombre}`}); };
+window.marcarHecha = (id)=>{ const t=tareasState.find(t=>t.id===id); if(t){t.hecha=true;} renderTareas(document.getElementById('nanaGrid')); actualizarProgreso(); showToast(`✅ ${t?.nombre} marcada como lista`); };
 
 function actualizarProgreso(){
   const hechas=tareasState.filter(t=>t.hecha).length;
@@ -2403,10 +2403,10 @@ window.enviarMensaje = ()=>{
   const hora=new Date().toLocaleTimeString('es-PA',{hour:'2-digit',minute:'2-digit'});
   mensajesState.push({tipo:'nana',texto,hora});
   input.value='';
-  renderChat(document.getElementById('nanaContenido'));
+  renderChat(document.getElementById('nanaGrid'));
   setTimeout(()=>{
     mensajesState.push({tipo:'familia',texto:'Gracias Maria! 👍',hora:new Date().toLocaleTimeString('es-PA',{hour:'2-digit',minute:'2-digit'})});
-    renderChat(document.getElementById('nanaContenido'));
+    renderChat(document.getElementById('nanaGrid'));
   },1500);
 };
 
