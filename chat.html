@@ -290,66 +290,93 @@ onAuthStateChanged(auth, async user => {
 });
 
 async function cargarConvs() {
-  // 1. Buscar el hogar para obtener todos los participantes
+  // 1. Buscar el hogar del usuario actual
   const qHogar = query(collection(db,'hogares'), where('participantes','array-contains',me.uid));
   const snapHogar = await getDocs(qHogar);
-  let uidsHogar = [me.uid];
-  if (!snapHogar.empty) {
-    uidsHogar = snapHogar.docs[0].data().participantes || [me.uid];
+
+  if (snapHogar.empty) {
+    // Nana sin hogar vinculado
+    document.getElementById('convLista').innerHTML = `
+      <div style="padding:24px;text-align:center;color:#bbb;font-size:13px;line-height:1.6;">
+        <div style="font-size:32px;margin-bottom:8px;">💬</div>
+        <div style="font-weight:500;color:#888;margin-bottom:4px;">Sin hogar vinculado</div>
+        <div>Cuando una familia te conecte, el chat aparecerá aquí</div>
+      </div>`;
+    return;
   }
 
-  // 2. Buscar la conversación por cualquier participante del hogar
-  let convExistente = null;
-  for (const uid of uidsHogar) {
-    const q = query(collection(db,'conversaciones'), where('participantes','array-contains',uid));
-    const snap = await getDocs(q);
-    if (!snap.empty) { convExistente = snap.docs[0]; break; }
+  const hogarDoc = snapHogar.docs[0];
+  const hogarId = hogarDoc.id;
+  const hogarData = hogarDoc.data();
+  const todosUids = hogarData.participantes || [me.uid];
+
+  // 2. Buscar conversación grupal del hogar (por hogarId)
+  const qConv = query(collection(db,'conversaciones'), where('hogarId','==',hogarId));
+  const snapConv = await getDocs(qConv);
+
+  let convId;
+  if (snapConv.empty) {
+    // Crear UNA conversación grupal para todo el hogar
+    const ref = await addDoc(collection(db,'conversaciones'), {
+      hogarId,
+      participantes: todosUids,
+      ultimoMensaje: '',
+      ultimaHora: serverTimestamp(),
+      noLeidos: 0,
+      creado: serverTimestamp(),
+      esGrupo: true,
+      nombre: 'Chat del hogar'
+    });
+    convId = ref.id;
+  } else {
+    convId = snapConv.docs[0].id;
+    // Asegurarse de que todos los participantes del hogar estén en la conversación
+    const convData = snapConv.docs[0].data();
+    const participantesConv = convData.participantes || [];
+    const faltantes = todosUids.filter(u => !participantesConv.includes(u));
+    if (faltantes.length > 0) {
+      await updateDoc(doc(db,'conversaciones',convId), {
+        participantes: [...participantesConv, ...faltantes]
+      });
+    }
   }
 
-  if (!convExistente) { await initConv(); return; }
-
-  // 3. Escuchar en tiempo real esa conversación específica
-  const convRef = query(collection(db,'conversaciones'), where('participantes','array-contains',uidsHogar[0]));
+  // 3. Escuchar en tiempo real la conversación grupal
+  const convRef = query(collection(db,'conversaciones'), where('hogarId','==',hogarId));
   onSnapshot(convRef, async snap => {
     convs = [];
     for (const d of snap.docs) {
       const data = d.data();
-      const otroUid = data.participantes?.find(p => p !== me.uid);
-      let otroPerfil = null;
-      if (otroUid && otroUid !== 'demo') {
-        const op = await getDoc(doc(db,'usuarios',otroUid));
-        if (op.exists()) otroPerfil = op.data();
-      }
-      convs.push({id:d.id,...data,otroPerfil,otroUid});
+      // Nombre del grupo con los participantes
+      convs.push({
+        id: d.id,
+        ...data,
+        otroPerfil: { nombre: 'Chat del hogar', tipo: 'grupo' },
+        otroUid: null,
+        esGrupo: true
+      });
     }
-    if (!convs.length) await initConv();
-    else renderConvs(convs);
+    if (!convs.length) return;
+    renderConvs(convs);
+    // Abrir automáticamente el único chat grupal
+    if (convs.length === 1) abrirConv(convs[0].id, convs[0].otroPerfil, convs[0].otroUid);
   });
 }
 
 async function initConv() {
-  const tipo = perfil.tipo==='familia'?'nana':'familia';
-  const q = query(collection(db,'usuarios'),where('tipo','==',tipo));
-  const snap = await getDocs(q);
-  let uid=null,op=null;
-  snap.forEach(d=>{ if(!uid){uid=d.id;op=d.data();} });
-  if (!uid) {
-    convs=[{id:'demo',participantes:[me.uid,'demo'],otroPerfil:{nombre:perfil.tipo==='familia'?'Maria Rodriguez':'Familia Rodríguez',tipo},otroUid:'demo',ultimoMensaje:'Chat de demostración',noLeidos:0}];
-    renderConvs(convs); return;
-  }
-  const ref=await addDoc(collection(db,'conversaciones'),{participantes:[me.uid,uid],ultimoMensaje:'',ultimaHora:serverTimestamp(),noLeidos:0,creado:serverTimestamp()});
-  convs=[{id:ref.id,participantes:[me.uid,uid],otroPerfil:op,otroUid:uid,ultimoMensaje:'',noLeidos:0}];
-  renderConvs(convs);
+  // Ya no se usa — la conversación grupal se crea en cargarConvs
 }
 
 function renderConvs(lista) {
   const el=document.getElementById('convLista');
   if (!lista.length) { el.innerHTML='<div style="padding:24px;text-align:center;color:#bbb;font-size:13px;">Sin conversaciones</div>'; return; }
   el.innerHTML=lista.map(c=>{
-    const nm=c.otroPerfil?.nombre||'Usuario', bg=c.otroPerfil?.tipo==='nana'?'#BF9090':'#1A6B52';
+    const nm = c.esGrupo ? '🏠 Chat del hogar' : (c.otroPerfil?.nombre||'Usuario');
+    const bg = c.esGrupo ? '#1A6B52' : (c.otroPerfil?.tipo==='nana'?'#BF9090':'#1A6B52');
+    const icon = c.esGrupo ? '🏠' : nm[0]?.toUpperCase();
     const h=c.ultimaHora?.toDate?fh(c.ultimaHora.toDate()):'';
     return `<div class="conv ${chatId===c.id?'activa':''}" onclick="abrirChat('${c.id}')">
-      <div class="conv-av" style="background:${bg};">${nm[0]?.toUpperCase()}<div class="conv-online"></div></div>
+      <div class="conv-av" style="background:${bg};">${icon}<div class="conv-online"></div></div>
       <div class="conv-info"><div class="conv-nombre">${nm}</div><div class="conv-ultimo">${c.ultimoMensaje||'Toca para chatear'}</div></div>
       <div class="conv-meta"><span class="conv-hora">${h}</span>${c.noLeidos>0?`<span class="conv-badge">${c.noLeidos}</span>`:''}</div>
     </div>`;
@@ -358,8 +385,9 @@ function renderConvs(lista) {
 
 window.abrirChat = async id => {
   chatId=id; const c=convs.find(c=>c.id===id); if(!c) return;
-  const nm=c.otroPerfil?.nombre||'Usuario', bg=c.otroPerfil?.tipo==='nana'?'#BF9090':'#1A6B52';
-  document.getElementById('chAv').textContent=nm[0]?.toUpperCase();
+  const nm = c.esGrupo ? 'Chat del hogar' : (c.otroPerfil?.nombre||'Usuario');
+  const bg = c.esGrupo ? '#1A6B52' : (c.otroPerfil?.tipo==='nana'?'#BF9090':'#1A6B52');
+  document.getElementById('chAv').textContent = c.esGrupo ? '🏠' : nm[0]?.toUpperCase();
   document.getElementById('chAv').style.background=bg;
   document.getElementById('chNombre').textContent=nm;
   document.getElementById('chEstado').textContent='● En línea';
@@ -410,8 +438,9 @@ function renderMsgs(msgs) {
     const reacs=m.reacciones||{};
     const reacHtml=Object.keys(reacs).length?`<div class="reacciones">${Object.entries(reacs).map(([e,u])=>`<span class="reac-chip ${u.includes(me.uid)?'mia':''}" onclick="toggleReac('${m.id}','${e}')">${e}<span class="reac-count">${u.length}</span></span>`).join('')}</div>`:'';
     html+=`<div class="msg-g ${dir}" oncontextmenu="showEmojiFloat(event,'${m.id}')">`;
+    const senderName = !esPropio && m.remitenteNombre ? `<div style="font-size:10px;font-weight:600;color:var(--g);margin-bottom:2px;">${esc(m.remitenteNombre.split(' ')[0])}</div>` : '';
     if (m.tipo==='texto') {
-      html+=`<div class="burbuja ${dir}">${esc(m.texto)}</div><div class="msg-meta ${dir}"><span class="msg-hora">${h}</span>${check}</div>${reacHtml}`;
+      html+=`<div class="burbuja ${dir}">${senderName}${esc(m.texto)}</div><div class="msg-meta ${dir}"><span class="msg-hora">${h}</span>${check}</div>${reacHtml}`;
     } else if (m.tipo==='foto') {
       if (m.fotoUrl) html+=`<div class="msg-foto-wrap" onclick="verFoto('${m.fotoUrl}')"><img src="${m.fotoUrl}" loading="lazy" alt="foto"/><div class="foto-meta"><span class="msg-hora">${h}</span>${check}</div></div>${reacHtml}`;
       else html+=`<div class="msg-foto-wrap"><div style="width:200px;height:140px;background:var(--g3);display:flex;align-items:center;justify-content:center;font-size:36px;border-radius:10px;">🍳</div>${m.texto?`<div style="padding:5px 10px;background:#fff;font-size:12px;color:#555;">${esc(m.texto)}</div>`:''}</div>`;
