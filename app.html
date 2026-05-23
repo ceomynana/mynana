@@ -1996,6 +1996,22 @@ async function cargarTareasNana() {
     const snapHogar = await getDocs(qHogar);
     if (snapHogar.empty) { renderTareasNanaDemo(); return; }
 
+    // Verificar si hay una familia en el hogar (no solo un hogar propio vacío)
+    const hogarData = snapHogar.docs[0].data();
+    const participantes = hogarData.participantes || [];
+    let tieneFamilia = false;
+    for (const uid of participantes) {
+      if (uid === user.uid) continue;
+      try {
+        const { getDoc: gd, doc: d2 } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        const perfilSnap = await getDoc(doc(db, 'usuarios', uid));
+        if (perfilSnap.exists() && perfilSnap.data().tipo === 'familia') {
+          tieneFamilia = true; break;
+        }
+      } catch(e) {}
+    }
+    if (!tieneFamilia) { renderTareasNanaDemo(); return; }
+
     const hogarId = snapHogar.docs[0].id;
     const qTareas = query(collection(db, 'hogares', hogarId, 'tareas'));
     const snapTareas = await getDocs(qTareas);
