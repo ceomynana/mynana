@@ -347,6 +347,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
     <div class="perfil-form">
       <div class="perfil-form-titulo">Tu perfil público</div>
 
+      <!-- FOTO DE PERFIL -->
+      <label class="form-label">Foto de perfil</label>
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">
+        <div id="fotoPreview" style="width:72px;height:72px;border-radius:50%;background:var(--g);border:3px solid var(--b);display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;font-weight:600;flex-shrink:0;overflow:hidden;">
+          📷
+        </div>
+        <div>
+          <input type="file" id="fotoInput" accept="image/*" style="display:none;" onchange="previsualizarFoto(this)" />
+          <button onclick="document.getElementById('fotoInput').click()" style="background:var(--g3);color:var(--g);border:1.5px solid var(--g4);border-radius:99px;padding:8px 16px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">📷 Subir foto</button>
+          <div style="font-size:11px;color:var(--txt2);margin-top:4px;">JPG o PNG · máx 2MB</div>
+        </div>
+      </div>
+
       <label class="form-label">Tipo de disponibilidad</label>
       <select class="form-select" id="pTipo">
         <option value="fija">Nana fija — tiempo completo</option>
@@ -701,30 +714,68 @@ document.getElementById('modalPerfil').addEventListener('click', e => {
 
 // ── PERFIL NANA ──
 async function cargarPerfilNana() {
+  // Cargar datos del registro desde 'usuarios'
+  const usuarioSnap = await getDoc(doc(db, 'usuarios', usuarioActual.uid));
+  const usuarioData = usuarioSnap.exists() ? usuarioSnap.data() : {};
+
+  // Cargar datos del perfil público desde 'perfiles_publicos'
   const snap = await getDoc(doc(db, 'perfiles_publicos', usuarioActual.uid));
-  if (snap.exists()) {
-    const data = snap.data();
-    const toggle = document.getElementById('toggleVisible');
-    if (toggle) toggle.checked = data.visible || false;
-    actualizarToggleSub(data.visible);
+  const data = snap.exists() ? snap.data() : {};
 
-    if (data.tipo) document.getElementById('pTipo').value = data.tipo;
-    if (data.experiencia !== undefined) document.getElementById('pExperiencia').value = data.experiencia;
-    if (data.zona) document.getElementById('pZona').value = data.zona;
-    if (data.bio) document.getElementById('pBio').value = data.bio;
+  // Toggle visible
+  const toggle = document.getElementById('toggleVisible');
+  if (toggle) toggle.checked = data.visible || false;
+  actualizarToggleSub(data.visible || false);
 
-    if (data.skills) {
-      skillsSeleccionadas = new Set(data.skills);
-      skillsSeleccionadas.forEach(s => {
-        const map = {cocina:'sCocina',limpieza:'sLimpieza',ninos:'sNinos',lavanderia:'sLavanderia',organizacion:'sOrganizacion',mascotas:'sMascotas'};
-        const el = document.getElementById(map[s])?.closest('.skill-opt');
-        if (el) el.classList.add('sel');
-        const chk = document.getElementById(map[s]);
-        if (chk) chk.checked = true;
-      });
-    }
-    renderPreview();
+  // Tipo de trabajo — del perfil público o del registro
+  const tipoTrabajo = data.tipo || (usuarioData.tipoTrabajo === 'tiempo completo' ? 'fija' : usuarioData.tipoTrabajo === 'eventual' ? 'eventual' : null);
+  if (tipoTrabajo) document.getElementById('pTipo').value = tipoTrabajo;
+
+  // Experiencia — del perfil público o convertir del texto del registro
+  const expValor = data.experiencia;
+  if (expValor !== undefined) {
+    document.getElementById('pExperiencia').value = expValor;
+  } else if (usuarioData.experiencia) {
+    // Convertir texto a número: "3 a 5 años / 3 to 5 years" → 5
+    const expTexto = usuarioData.experiencia.toLowerCase();
+    let expNum = 0;
+    if (expTexto.includes('menos') || expTexto.includes('less')) expNum = 0;
+    else if (expTexto.includes('1 a') || expTexto.includes('1 to')) expNum = 1;
+    else if (expTexto.includes('3 a') || expTexto.includes('3 to')) expNum = 3;
+    else if (expTexto.includes('5 a') || expTexto.includes('5 to')) expNum = 5;
+    else if (expTexto.includes('más') || expTexto.includes('more') || expTexto.includes('+')) expNum = 10;
+    else expNum = parseInt(expTexto) || 0;
+    document.getElementById('pExperiencia').value = expNum;
   }
+
+  // Zona
+  if (data.zona) document.getElementById('pZona').value = data.zona;
+
+  // Bio
+  if (data.bio) document.getElementById('pBio').value = data.bio;
+
+  // Skills
+  if (data.skills) {
+    skillsSeleccionadas = new Set(data.skills);
+    skillsSeleccionadas.forEach(s => {
+      const map = {cocina:'sCocina',limpieza:'sLimpieza',ninos:'sNinos',lavanderia:'sLavanderia',organizacion:'sOrganizacion',mascotas:'sMascotas'};
+      const el = document.getElementById(map[s])?.closest('.skill-opt');
+      if (el) el.classList.add('sel');
+      const chk = document.getElementById(map[s]);
+      if (chk) chk.checked = true;
+    });
+  }
+
+  // Foto de perfil
+  if (data.fotoUrl || usuarioData.fotoUrl) {
+    const fotoUrl = data.fotoUrl || usuarioData.fotoUrl;
+    const fotoPreview = document.getElementById('fotoPreview');
+    if (fotoPreview) {
+      fotoPreview.innerHTML = `<img src="${fotoUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+    }
+  }
+
+  renderPreview();
 }
 
 window.cambiarVisibilidad = async (visible) => {
@@ -748,25 +799,58 @@ window.toggleSkill = (el, skill) => {
   else skillsSeleccionadas.add(skill);
 };
 
-window.guardarPerfil = async () => {
-  const tipo = document.getElementById('pTipo').value;
-  const experiencia = parseInt(document.getElementById('pExperiencia').value);
-  const zona = document.getElementById('pZona').value;
-  const bio = document.getElementById('pBio').value.trim();
-  const visible = document.getElementById('toggleVisible').checked;
-
-  const datos = {
-    nombre: perfilActual.nombre,
-    tipo, experiencia, zona, bio,
-    skills: [...skillsSeleccionadas],
-    visible,
-    uid: usuarioActual.uid,
-    actualizado: serverTimestamp()
+window.previsualizarFoto = (input) => {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) { showToast('⚠️ La foto debe ser menor a 2MB'); return; }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const fotoPreview = document.getElementById('fotoPreview');
+    if (fotoPreview) {
+      fotoPreview.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+    }
+    window._fotoPendiente = e.target.result;
   };
+  reader.readAsDataURL(file);
+};
 
-  await setDoc(doc(db, 'perfiles_publicos', usuarioActual.uid), datos, { merge: true });
-  showToast('✅ Perfil guardado correctamente');
-  renderPreview(datos);
+window.guardarPerfil = async () => {
+  const btn = document.querySelector('.btn-guardar-perfil');
+  if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
+
+  try {
+    const tipo = document.getElementById('pTipo').value;
+    const experiencia = parseInt(document.getElementById('pExperiencia').value) || 0;
+    const zona = document.getElementById('pZona').value;
+    const bio = document.getElementById('pBio').value.trim();
+    const visible = document.getElementById('toggleVisible').checked;
+
+    const datos = {
+      nombre: perfilActual.nombre,
+      tipo, experiencia, zona, bio,
+      skills: [...skillsSeleccionadas],
+      visible,
+      uid: usuarioActual.uid,
+      actualizado: serverTimestamp()
+    };
+
+    // Guardar foto si hay una pendiente
+    if (window._fotoPendiente) {
+      datos.fotoUrl = window._fotoPendiente;
+      // También actualizar en usuarios
+      await setDoc(doc(db, 'usuarios', usuarioActual.uid), { fotoUrl: window._fotoPendiente }, { merge: true });
+      window._fotoPendiente = null;
+    }
+
+    await setDoc(doc(db, 'perfiles_publicos', usuarioActual.uid), datos, { merge: true });
+    showToast('✅ Perfil guardado correctamente');
+    renderPreview(datos);
+  } catch(e) {
+    console.error(e);
+    showToast('❌ Error al guardar. Intenta de nuevo.');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Guardar mi perfil público →'; }
+  }
 };
 
 function renderPreview(data) {
@@ -783,9 +867,15 @@ function renderPreview(data) {
   if (!preview || !card) return;
   preview.style.display = 'block';
 
+  const fotoPreviewEl = document.getElementById('fotoPreview');
+  const fotoImg = fotoPreviewEl?.querySelector('img');
+  const fotoHtml = fotoImg
+    ? `<div class="nana-avatar" style="overflow:hidden;padding:0;"><img src="${fotoImg.src}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" /></div>`
+    : `<div class="nana-avatar">${inicial}</div>`;
+
   card.innerHTML = `
     <div class="nana-card-top">
-      <div class="nana-avatar">${inicial}</div>
+      ${fotoHtml}
       <div class="nana-card-info">
         <div class="nana-card-nombre">${nombre}</div>
         <div class="nana-card-tipo">${tipoLabel} · ${exp} año${exp !== 1 ? 's' : ''} exp.</div>
