@@ -1986,12 +1986,15 @@ function mostrarNana(data) {
           if (pSnap.exists() && pSnap.data().tipo === 'familia') { vinculada = true; break; }
         }
       }
-      const cardVincular = document.getElementById('cardVincularHogar');
-      if (cardVincular) cardVincular.style.display = vinculada ? 'none' : 'block';
+      // Solo ocultar si confirmamos que HAY una familia vinculada
+      if (vinculada) {
+        const cardVincular = document.getElementById('cardVincularHogar');
+        if (cardVincular) cardVincular.style.display = 'none';
+      }
+      // Si no está vinculada, la tarjeta ya es visible por defecto en el HTML
     } catch(e) { 
       console.log('Error vincular check:', e);
-      const cardVincular = document.getElementById('cardVincularHogar');
-      if (cardVincular) cardVincular.style.display = 'block';
+      // En caso de error, mantener visible
     }
   }, 800);
 
