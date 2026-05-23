@@ -660,22 +660,47 @@ body.lang-es [data-en]{display:none !important;}
 <!-- ══════════════════════ DASHBOARD NANA ══════════════════════ -->
 <div class="screen" id="screen-nana">
 
-  <nav class="dash-nav">
-    <div class="dash-logo">My <em>Nana</em></div>
-    <div class="dash-user" style="gap:8px;">
-      <button class="notif-btn" onclick="toggleNotifPanelNana()" id="nanaNotifBtn" title="Notificaciones">
-        🔔
-        <div class="notif-badge" id="nanaNotifBadge">0</div>
-      </button>
-      <button class="dash-lang-btn" onclick="toggleLangDash()" id="nanaLangBtn" style="margin-right:4px;">🇺🇸 EN</button>
-      <div class="dash-avatar" id="nanaAvatarCircle">N</div>
-      <div class="dash-nombre" id="nanaNombre">Nana</div>
-      <button class="dash-logout" onclick="cerrarSesion()">Salir</button>
+  <!-- HEADER MEJORADO -->
+  <div class="nana-header" id="nanaHeader">
+    <div class="nana-header-top">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div id="nanaAvatarCircle" style="width:46px;height:46px;border-radius:50%;background:var(--g);border:2.5px solid var(--b);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:#fff;flex-shrink:0;">M</div>
+        <div>
+          <div class="nana-greeting" id="nanaGreeting">Buenos días</div>
+          <div class="nana-name" id="nanaNombre">Maria 👋</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <!-- Botón notificaciones nana -->
+        <button class="notif-btn" onclick="toggleNotifPanelNana()" id="nanaNotifBtn" title="Notificaciones" style="background:rgba(255,255,255,.1);">
+          🔔
+          <div class="notif-badge" id="nanaNotifBadge">0</div>
+        </button>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <button class="nana-lang-btn" onclick="toggleLangDash()" id="nanaLangBtn">🇺🇸 EN</button>
+          <button class="nana-logout" onclick="cerrarSesion()">Salir</button>
+        </div>
+      </div>
     </div>
-  </nav>
+    <div class="nana-fecha" id="nanaFecha"></div>
+
+    <!-- Barra progreso grande -->
+    <div style="margin-top:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+        <div style="font-size:12px;color:rgba(255,255,255,.6);" id="progLabel">Cargando tareas...</div>
+        <div style="font-size:12px;color:var(--b);font-weight:500;" id="progPct">0%</div>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+    </div>
+
+    <!-- Botón audio GRANDE y visible -->
+    <button class="audio-btn" id="audioBtn" onclick="leerTareasVoz()" style="margin-top:12px;width:100%;justify-content:center;font-size:14px;padding:10px 16px;">
+      🔊 Escuchar mis tareas en voz alta
+    </button>
+  </div>
 
   <!-- PANEL NOTIFICACIONES NANA -->
-  <div class="notif-panel" id="nanaNotifPanel">
+  <div class="notif-panel" id="nanaNotifPanel" style="top:auto;right:auto;left:0;right:0;border-radius:0 0 16px 16px;max-width:430px;margin:0 auto;">
     <div class="notif-panel-header">
       <div>
         <div class="notif-panel-title">Mis alertas</div>
@@ -686,14 +711,13 @@ body.lang-es [data-en]{display:none !important;}
     <div class="notif-lista" id="nanaNotifLista">
       <div class="notif-empty">
         <div class="notif-empty-icon">🔔</div>
-        <div style="font-size:14px;font-weight:500;color:var(--txt);margin-bottom:4px;">Todo al día</div>
-        <div style="font-size:12px;color:var(--txt2);">Las notificaciones aparecerán aquí</div>
+        <div style="font-size:13px;color:var(--txt2);">Sin alertas por ahora</div>
       </div>
     </div>
   </div>
 
   <!-- TOAST NANA -->
-  <div class="notif-toast" id="nanaNotifToast">
+  <div class="notif-toast" id="nanaNotifToast" style="bottom:90px;">
     <div class="notif-toast-icon" id="nanaNotifToastIcon">🔔</div>
     <div class="notif-toast-body">
       <div class="notif-toast-titulo" id="nanaNotifToastTitulo"></div>
@@ -702,46 +726,35 @@ body.lang-es [data-en]{display:none !important;}
     <button class="notif-toast-close" onclick="cerrarNanaNotifToast()">✕</button>
   </div>
 
-  <div class="dash-hero" style="background:linear-gradient(135deg,var(--b2) 0%,var(--b) 100%);">
-    <div class="dash-hero-greeting" id="nanaGreeting">Bienvenida de vuelta</div>
-    <div class="dash-hero-name" id="nanaHeroNombre">Tu día</div>
-    <div class="dash-hero-sub" id="nanaFecha"></div>
-  </div>
+  <!-- CONTENIDO -->
+  <div class="nana-contenido" id="nanaContenido"></div>
 
-  <!-- Stats flotantes -->
-  <div class="dash-stats-float">
-    <div class="dash-stat-card">
-      <div class="dash-stat-n" id="progPct">—</div>
-      <div class="dash-stat-l">Progreso</div>
-    </div>
-    <div class="dash-stat-card">
-      <div class="dash-stat-n" id="statNanaTareas">—</div>
-      <div class="dash-stat-l">Tareas hoy</div>
-    </div>
-    <div class="dash-stat-card">
-      <div class="dash-stat-n" id="statNanaScore">—</div>
-      <div class="dash-stat-l">Mi score</div>
-    </div>
-  </div>
-
-  <!-- Barra progreso -->
-  <div style="padding:0 16px;margin-bottom:4px;">
-    <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-      <div style="font-size:12px;color:var(--txt2);" id="progLabel">Cargando tareas...</div>
-    </div>
-    <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
-  </div>
-
-  <!-- Botón escuchar -->
-  <div style="padding:0 16px 8px;">
-    <button class="audio-btn" id="audioBtn" onclick="leerTareasVoz()" style="width:100%;justify-content:center;font-size:14px;padding:10px 16px;">
-      🔊 Escuchar mis tareas en voz alta
+  <!-- INPUT CHAT -->
+  <div class="chat-input-wrap" id="chatInputWrap" style="display:none;">
+    <button class="chat-mic" onclick="showToast('🎙️ Mensaje de voz enviado')">🎙️</button>
+    <input type="text" class="chat-input" id="chatInput" placeholder="Escribe un mensaje..." />
+    <button class="chat-send" onclick="enviarMensaje()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
     </button>
   </div>
 
-  <div class="dash-content">
-    <div class="dash-grid" id="nanaContenido">
-      <!-- Cards cargadas dinámicamente -->
+  <!-- NAV MEJORADO - textos más claros -->
+  <div class="bottom-nav" id="bottomNav">
+    <div class="nav-item activo" onclick="location.href='/tareas.html'" id="tab-tareas">
+      <div class="nav-icon">✅</div>
+      <div class="nav-label">Mis tareas</div>
+    </div>
+    <div class="nav-item" onclick="location.href='/menu.html'" id="tab-menu">
+      <div class="nav-icon">🍽️</div>
+      <div class="nav-label">Qué cocinar</div>
+    </div>
+    <div class="nav-item" onclick="location.href='/chat.html'" id="tab-chat">
+      <div class="nav-icon">💬</div>
+      <div class="nav-label">Hablar</div>
+    </div>
+    <div class="nav-item" onclick="location.href='/videos.html'" id="tab-videos">
+      <div class="nav-icon">📹</div>
+      <div class="nav-label">Aprender</div>
     </div>
   </div>
 
@@ -1863,7 +1876,18 @@ async function verificarVinculacion() {
   let tieneNana = false;
   if (!snap.empty) {
     const hogar = snap.docs[0].data();
-    tieneNana = hogar.participantes.length > 1;
+    const participantes = hogar.participantes || [];
+    // Verificar si algún participante es de tipo nana
+    for (const uid of participantes) {
+      if (uid === user.uid) continue;
+      try {
+        const perfilSnap = await getDoc(doc(db, 'usuarios', uid));
+        if (perfilSnap.exists() && perfilSnap.data().tipo === 'nana') {
+          tieneNana = true;
+          break;
+        }
+      } catch(e) {}
+    }
   }
 
   if (!tieneNana) {
@@ -1904,12 +1928,22 @@ async function mostrarBannerVinculacion(uid, db) {
   // Verificar que el banner no esté ya en el DOM
   if (document.getElementById('bannerVinculacion')) return;
 
-  const hero = document.querySelector('.dash-hero');
-  if (!hero) return;
+  const dashContent = document.querySelector('#screen-familia .dash-content');
+  if (!dashContent) return;
 
   const banner = document.createElement('div');
   banner.id = 'bannerVinculacion';
-  banner.style.cssText = 'background:#fff;border-radius:14px;padding:16px 20px;margin:0 24px 20px;border:1px solid var(--g4);';
+  banner.style.cssText = 'background:#fff;border-radius:14px;padding:16px 20px;margin-bottom:16px;border:1.5px solid var(--g4);';
+  const waMsg = encodeURIComponent(`Hola, te invito a My Nana 🏠
+
+Para vincularte conmigo sigue estos pasos:
+1️⃣ Entra a: https://mynana.app/app.html
+2️⃣ Crea tu cuenta como Nana
+3️⃣ En tu dashboard toca "Ingresar código"
+4️⃣ Ingresa este código: *${codigo}*
+
+¡Nos vemos adentro! 💚`);
+
   banner.innerHTML = `
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
       <div style="font-size:22px;">👩</div>
@@ -1924,11 +1958,11 @@ async function mostrarBannerVinculacion(uid, db) {
       <div style="font-size:11px;color:#bbb;margin-top:4px;">De un solo uso · La vinculación es permanente</div>
     </div>
     <div style="display:flex;gap:8px;">
-      <button onclick="copiarCodigo('${codigo}')" style="flex:1;background:var(--g3);color:var(--g);border:none;border-radius:99px;padding:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">📋 Copiar código</button>
-      <a href="https://wa.me/?text=Hola%2C%20te%20invito%20a%20My%20Nana%20%F0%9F%8F%A0%0A%0APara%20vincularte%20conmigo%20sigue%20estos%20pasos%3A%0A1%EF%B8%8F%E2%83%A3%20Entra%20a%3A%20mynana.app%2Fapp.html%0A2%EF%B8%8F%E2%83%A3%20Selecciona%20%22Nana%22%0A3%EF%B8%8F%E2%83%A3%20Toca%20%22Crear%20cuenta%20gratis%22%0A4%EF%B8%8F%E2%83%A3%20Ingresa%20este%20c%C3%B3digo%3A%20*${codigo}*%0A%0A%C2%A1Nos%20vemos%20adentro!%20%F0%9F%92%9A" target="_blank" style="flex:1;background:#25D366;color:#fff;border:none;border-radius:99px;padding:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px;">💬 Enviar por WhatsApp</a>
+      <button onclick="copiarCodigo('${codigo}')" style="flex:1;background:var(--g3);color:var(--g);border:1px solid var(--g4);border-radius:99px;padding:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">📋 Copiar código</button>
+      <a href="https://wa.me/?text=${waMsg}" target="_blank" style="flex:1;background:#25D366;color:#fff;border:none;border-radius:99px;padding:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px;">💬 WhatsApp</a>
     </div>`;
 
-  hero.parentNode.insertBefore(banner, hero.nextSibling);
+  dashContent.insertBefore(banner, dashContent.firstChild);
 }
 
 window.copiarCodigo = (codigo) => {
@@ -1939,21 +1973,92 @@ window.copiarCodigo = (codigo) => {
   });
 };
 
+function mostrarIngresarCodigo() {
+  const c = document.getElementById('nanaContenido');
+  if (!c) return;
+  const codigoCard = document.createElement('div');
+  codigoCard.id = 'cardIngresarCodigo';
+  codigoCard.className = 'dash-card';
+  codigoCard.style.cssText = 'border:1.5px solid var(--b);';
+  codigoCard.innerHTML = `
+    <div class="dash-card-header">
+      <div class="dash-card-icon" style="background:var(--b3);">🔗</div>
+      <div><div class="dash-card-title">Vincularme a un hogar</div><div class="dash-card-sub">Ingresa el código que te dio la familia</div></div>
+    </div>
+    <div class="dash-card-body">
+      <div style="display:flex;gap:8px;margin-top:4px;">
+        <input id="inputCodigoNana" type="text" placeholder="Ej: ABC123" maxlength="6" 
+          style="flex:1;padding:10px 14px;border:1.5px solid var(--g4);border-radius:99px;font-size:15px;font-family:'DM Sans',sans-serif;text-transform:uppercase;letter-spacing:4px;text-align:center;outline:none;"
+          oninput="this.value=this.value.toUpperCase()" />
+        <button onclick="ingresarCodigoNana()" 
+          style="background:var(--b2);color:#fff;border:none;border-radius:99px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;">
+          Vincular →
+        </button>
+      </div>
+    </div>`;
+  c.insertBefore(codigoCard, c.firstChild);
+}
+
+window.ingresarCodigoNana = async () => {
+  const codigo = document.getElementById('inputCodigoNana')?.value?.trim().toUpperCase();
+  if (!codigo || codigo.length < 4) { showToast('⚠️ Ingresa el código completo'); return; }
+  
+  const btn = document.querySelector('#cardIngresarCodigo button');
+  if (btn) { btn.disabled = true; btn.textContent = 'Verificando...'; }
+
+  try {
+    const { getFirestore, doc, getDoc, getDocs, updateDoc, collection, query, where, arrayUnion, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+    const db = getFirestore();
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (!user) return;
+
+    // Buscar el código en Firestore
+    const codigoSnap = await getDoc(doc(db, 'codigos', codigo));
+    if (!codigoSnap.exists()) { showToast('❌ Código inválido. Verifica con tu familia.'); if (btn) { btn.disabled = false; btn.textContent = 'Vincular →'; } return; }
+    
+    const codigoData = codigoSnap.data();
+    if (codigoData.usado) { showToast('❌ Este código ya fue usado.'); if (btn) { btn.disabled = false; btn.textContent = 'Vincular →'; } return; }
+
+    // Buscar el hogar de la familia
+    const qHogar = query(collection(db, 'hogares'), where('participantes', 'array-contains', codigoData.familiaUid));
+    const snapHogar = await getDocs(qHogar);
+    if (snapHogar.empty) { showToast('❌ No se encontró el hogar. Contacta a la familia.'); if (btn) { btn.disabled = false; btn.textContent = 'Vincular →'; } return; }
+
+    const hogarRef = snapHogar.docs[0].ref;
+
+    // Agregar la nana al hogar
+    await updateDoc(hogarRef, { participantes: arrayUnion(user.uid) });
+
+    // Marcar código como usado
+    await updateDoc(doc(db, 'codigos', codigo), { usado: true, usadoPor: user.uid, usadoA: serverTimestamp() });
+
+    showToast('✅ ¡Vinculada exitosamente! Ya puedes ver las tareas del hogar.');
+    
+    // Recargar el dashboard
+    setTimeout(() => location.reload(), 1500);
+
+  } catch(e) {
+    console.error(e);
+    showToast('❌ Error al vincular. Intenta de nuevo.');
+    if (btn) { btn.disabled = false; btn.textContent = 'Vincular →'; }
+  }
+};
+
 function mostrarNana(data) {
   mostrarScreen('nana');
 
-  const nombre = data.nombre?.split(' ')[0] || 'Nana';
-  document.getElementById('nanaNombre').textContent = nombre;
-  const avatarNana = document.getElementById('nanaAvatarCircle');
-  if (avatarNana) avatarNana.textContent = data.nombre?.[0]?.toUpperCase() || 'N';
+  const inicial = data.nombre?.[0]?.toUpperCase() || 'N';
+  const avatarEl = document.getElementById('nanaAvatarCircle');
+  if (avatarEl) avatarEl.textContent = inicial;
+
+  const nombre = data.nombre?.split(' ')[0] || 'Maria';
+  document.getElementById('nanaNombre').textContent = `${nombre} 👋`;
 
   const hora = new Date().getHours();
   const saludo = hora < 12 ? 'Buenos días' : hora < 18 ? 'Buenas tardes' : 'Buenas noches';
   const saludoEl = document.getElementById('nanaGreeting');
-  if (saludoEl) saludoEl.textContent = `${saludo}, ${nombre} 👋`;
-
-  const heroNombre = document.getElementById('nanaHeroNombre');
-  if (heroNombre) heroNombre.textContent = 'Aquí tienes tu resumen de hoy';
+  if (saludoEl) saludoEl.textContent = saludo;
 
   setFechaHoy();
   cargarTareasNana();
@@ -1986,7 +2091,11 @@ async function cargarTareasNana() {
     // Buscar hogar
     const qHogar = query(collection(db, 'hogares'), where('participantes', 'array-contains', user.uid));
     const snapHogar = await getDocs(qHogar);
-    if (snapHogar.empty) { renderTareasNanaDemo(); return; }
+    if (snapHogar.empty) { 
+    renderTareasNanaDemo();
+    mostrarIngresarCodigo();
+    return; 
+  }
 
     const hogarId = snapHogar.docs[0].id;
     const qTareas = query(collection(db, 'hogares', hogarId, 'tareas'));
@@ -2015,145 +2124,99 @@ async function cargarTareasNana() {
 function renderTarjetasNana(tareas, hogarId) {
   const c = document.getElementById('nanaContenido');
   const pendientes = tareas.filter(t => t.estado !== 'completa');
-  const hechas = tareas.filter(t => t.estado === 'completa').length;
-
-  // Actualizar stats
-  const statScore = document.getElementById('statNanaScore');
-  const statTareas = document.getElementById('statNanaTareas');
-  if (statTareas) statTareas.textContent = tareas.length || '0';
 
   c.innerHTML = `
-    <!-- Tareas -->
-    <div class="dash-card" onclick="location.href='/tareas.html'" style="cursor:pointer;">
-      <div class="dash-card-header">
-        <div class="dash-card-icon" style="background:var(--g3);">✅</div>
-        <div><div class="dash-card-title">Mis tareas</div><div class="dash-card-sub">${pendientes.length} pendientes hoy</div></div>
-      </div>
-      <div class="dash-card-body">
-        ${pendientes.slice(0,3).map(t => `
-          <div class="task-item">
-            <span style="font-size:14px;">${t.cat?.split(' ')[0] || '📋'}</span>
-            <span class="task-name">${t.nombre}</span>
-            <span class="task-hora">${formatHora12(t.hora)}</span>
-          </div>`).join('') || '<div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Sin tareas pendientes</div>'}
-      </div>
+    <!-- ACCESOS RÁPIDOS - nueva cuadrícula 3 columnas -->
+    <div style="padding:16px 16px 0;" class="dash-section-title" style="padding:16px 16px 8px;">Accesos rápidos</div>
+    <div class="dash-grid-nana" style="padding:0 16px 16px;">
+      <a href="/tareas.html" class="nana-action-card" style="background:var(--g);color:#fff;">
+        <div class="nana-action-icon">✅</div>
+        <div class="nana-action-title">Mis tareas</div>
+        <div class="nana-action-sub">${pendientes.length} pendientes</div>
+      </a>
+      <a href="/menu.html" class="nana-action-card" style="background:var(--b);color:#fff;">
+        <div class="nana-action-icon">🍽️</div>
+        <div class="nana-action-title">Qué cocinar</div>
+        <div class="nana-action-sub">Ver el menú</div>
+      </a>
+      <a href="/chat.html" class="nana-action-card" style="background:#fff;color:var(--g);border:1.5px solid var(--g4);">
+        <div class="nana-action-icon">💬</div>
+        <div class="nana-action-title">Hablar</div>
+        <div class="nana-action-sub">Chat familiar</div>
+      </a>
+      <a href="/videos.html" class="nana-action-card" style="background:var(--b3);color:var(--b2);border:1.5px solid var(--b);">
+        <div class="nana-action-icon">📹</div>
+        <div class="nana-action-title">Aprender</div>
+        <div class="nana-action-sub">Ver videos</div>
+      </a>
+      <a href="/nomina.html" class="nana-action-card" style="background:var(--g3);color:var(--g);border:1.5px solid var(--g4);">
+        <div class="nana-action-icon">💰</div>
+        <div class="nana-action-title">Mis pagos</div>
+        <div class="nana-action-sub">Ver historial</div>
+      </a>
+      <a href="/buscador.html" class="nana-action-card" style="background:var(--cr);color:var(--txt2);border:1.5px solid var(--g4);">
+        <div class="nana-action-icon">👤</div>
+        <div class="nana-action-title">Mi perfil</div>
+        <div class="nana-action-sub">Editar perfil</div>
+      </a>
     </div>
 
-    <!-- Menú -->
-    <div class="dash-card" onclick="location.href='/menu.html'" style="cursor:pointer;">
-      <div class="dash-card-header">
-        <div class="dash-card-icon" style="background:var(--b3);">🍽️</div>
-        <div><div class="dash-card-title">Qué cocinar hoy</div><div class="dash-card-sub">Ver menú del día</div></div>
-      </div>
-      <div class="dash-card-body">
-        <div style="text-align:center;padding:12px;">
-          <div style="font-size:13px;color:var(--txt2);">Toca para ver el menú planificado</div>
-          <div style="margin-top:10px;background:var(--b3);color:var(--b2);border-radius:8px;padding:8px;font-size:13px;font-weight:500;">Ver menú →</div>
+    <!-- PRÓXIMA TAREA -->
+    ${pendientes.length > 0 ? `
+    <div style="padding:0 16px;margin-bottom:4px;" class="dash-section-title">Próxima tarea</div>
+    <div class="proxima-tarea">
+      <div class="proxima-tarea-header">
+        <div class="proxima-tarea-emoji" style="background:var(--g3);">${pendientes[0].cat?.split(' ')[0] || '📋'}</div>
+        <div style="flex:1;">
+          <div style="font-size:16px;font-weight:600;color:var(--txt);">${pendientes[0].nombre}</div>
+          <div style="font-size:13px;color:var(--txt2);margin-top:3px;">🕐 ${formatHora12(pendientes[0].hora)} · ${pendientes[0].cat || ''}</div>
+          ${pendientes[0].prioridad === 'urgente' ? '<div style="font-size:11px;color:#e05c5c;font-weight:600;margin-top:3px;">🔴 Urgente</div>' : ''}
         </div>
       </div>
-    </div>
-
-    <!-- Chat -->
-    <div class="dash-card" onclick="location.href='/chat.html'" style="cursor:pointer;">
-      <div class="dash-card-header">
-        <div class="dash-card-icon" style="background:var(--g3);">💬</div>
-        <div><div class="dash-card-title">Hablar con la familia</div><div class="dash-card-sub">Chat en tiempo real</div></div>
-      </div>
-      <div class="dash-card-body">
-        <div style="text-align:center;padding:12px;">
-          <div style="font-size:13px;color:var(--txt2);">Envía y recibe mensajes</div>
-          <div style="margin-top:10px;background:var(--g3);color:var(--g);border-radius:8px;padding:8px;font-size:13px;font-weight:500;">Abrir chat →</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Videos -->
-    <div class="dash-card" onclick="location.href='/videos.html'" style="cursor:pointer;">
-      <div class="dash-card-header">
-        <div class="dash-card-icon" style="background:var(--b3);">📹</div>
-        <div><div class="dash-card-title">Aprender</div><div class="dash-card-sub">Videos de capacitación</div></div>
-      </div>
-      <div class="dash-card-body">
-        <div class="task-item"><span style="font-size:14px;">🍲</span><span class="task-name">Sancocho de gallina</span><span class="task-hora" style="color:var(--g);">Cocina</span></div>
-        <div class="task-item"><span style="font-size:14px;">🧹</span><span class="task-name">Limpiar baños</span><span class="task-hora" style="color:var(--g);">Limpieza</span></div>
-        <div style="margin-top:10px;background:var(--b3);color:var(--b2);border-radius:8px;padding:8px;text-align:center;font-size:13px;font-weight:500;">Ver todos los videos →</div>
-      </div>
-    </div>
-
-    <!-- Mis pagos -->
-    <div class="dash-card" onclick="location.href='/nomina.html'" style="cursor:pointer;">
-      <div class="dash-card-header">
-        <div class="dash-card-icon" style="background:var(--g3);">💰</div>
-        <div><div class="dash-card-title">Mis pagos</div><div class="dash-card-sub">Historial y nómina</div></div>
-      </div>
-      <div class="dash-card-body">
-        <div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Ver historial de pagos →</div>
-      </div>
-    </div>
-
-    <!-- Mi perfil -->
-    <div class="dash-card" onclick="location.href='/buscador.html'" style="cursor:pointer;">
-      <div class="dash-card-header">
-        <div class="dash-card-icon" style="background:var(--b3);">👤</div>
-        <div><div class="dash-card-title">Mi perfil</div><div class="dash-card-sub">Editar y compartir</div></div>
-      </div>
-      <div class="dash-card-body">
-        <div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Actualiza tus datos y foto →</div>
-      </div>
-    </div>
+      <a href="/tareas.html" class="proxima-tarea-btn">✅ Ver y completar esta tarea</a>
+    </div>` : `
+    <div style="margin:0 16px;background:#fff;border-radius:18px;padding:24px;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.06);animation:cardEntrada .4s ease .35s both;">
+      <div style="font-size:40px;margin-bottom:8px;">🎉</div>
+      <div style="font-size:16px;font-weight:600;color:var(--g);margin-bottom:4px;">¡Todo listo!</div>
+      <div style="font-size:13px;color:var(--txt2);">Completaste todas las tareas de hoy</div>
+    </div>`}
   `;
 }
 
 function renderTareasNanaDemo() {
   document.getElementById('progLabel').textContent = 'Sin tareas asignadas hoy';
   document.getElementById('progPct').textContent = '0%';
-  const statTareas = document.getElementById('statNanaTareas');
-  if (statTareas) statTareas.textContent = '0';
 
   document.getElementById('nanaContenido').innerHTML = `
-    <div class="dash-card" onclick="location.href='/tareas.html'" style="cursor:pointer;">
-      <div class="dash-card-header">
-        <div class="dash-card-icon" style="background:var(--g3);">✅</div>
-        <div><div class="dash-card-title">Mis tareas</div><div class="dash-card-sub">Sin tareas asignadas hoy</div></div>
-      </div>
-      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Ver tareas del día →</div></div>
+    <div style="padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <a href="/tareas.html" style="background:var(--g);color:#fff;border-radius:16px;padding:18px 12px;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;">
+        <div style="font-size:32px;">✅</div>
+        <div style="font-size:15px;font-weight:600;">Mis tareas</div>
+        <div style="font-size:12px;opacity:.8;">Ver tareas del día</div>
+      </a>
+      <a href="/menu.html" style="background:var(--b);color:#fff;border-radius:16px;padding:18px 12px;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;">
+        <div style="font-size:32px;">🍽️</div>
+        <div style="font-size:15px;font-weight:600;">Qué cocinar</div>
+        <div style="font-size:12px;opacity:.8;">Ver el menú</div>
+      </a>
+      <a href="/chat.html" style="background:var(--g3);color:var(--g);border-radius:16px;padding:18px 12px;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;border:1.5px solid var(--g4);">
+        <div style="font-size:32px;">💬</div>
+        <div style="font-size:15px;font-weight:600;">Hablar</div>
+        <div style="font-size:12px;color:var(--txt2);">Chat familiar</div>
+      </a>
+      <a href="/videos.html" style="background:var(--b3);color:var(--b2);border-radius:16px;padding:18px 12px;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;border:1.5px solid var(--b);">
+        <div style="font-size:32px;">📹</div>
+        <div style="font-size:15px;font-weight:600;">Aprender</div>
+        <div style="font-size:12px;">Ver videos</div>
+      </a>
     </div>
-    <div class="dash-card" onclick="location.href='/menu.html'" style="cursor:pointer;">
-      <div class="dash-card-header">
-        <div class="dash-card-icon" style="background:var(--b3);">🍽️</div>
-        <div><div class="dash-card-title">Qué cocinar hoy</div><div class="dash-card-sub">Ver menú del día</div></div>
+    <div style="padding:0 16px 16px;">
+      <div style="background:var(--g3);border-radius:16px;padding:20px;text-align:center;border:1px solid var(--g4);">
+        <div style="font-size:32px;margin-bottom:8px;">👋</div>
+        <div style="font-size:15px;font-weight:600;color:var(--g);margin-bottom:4px;">¡Bienvenida!</div>
+        <div style="font-size:13px;color:var(--txt2);">La familia aún no ha asignado tareas para hoy</div>
       </div>
-      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Ver menú planificado →</div></div>
-    </div>
-    <div class="dash-card" onclick="location.href='/chat.html'" style="cursor:pointer;">
-      <div class="dash-card-header">
-        <div class="dash-card-icon" style="background:var(--g3);">💬</div>
-        <div><div class="dash-card-title">Hablar con la familia</div><div class="dash-card-sub">Chat en tiempo real</div></div>
-      </div>
-      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Abrir chat →</div></div>
-    </div>
-    <div class="dash-card" onclick="location.href='/videos.html'" style="cursor:pointer;">
-      <div class="dash-card-header">
-        <div class="dash-card-icon" style="background:var(--b3);">📹</div>
-        <div><div class="dash-card-title">Aprender</div><div class="dash-card-sub">Videos de capacitación</div></div>
-      </div>
-      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Ver videos →</div></div>
-    </div>
-    <div class="dash-card" onclick="location.href='/nomina.html'" style="cursor:pointer;">
-      <div class="dash-card-header">
-        <div class="dash-card-icon" style="background:var(--g3);">💰</div>
-        <div><div class="dash-card-title">Mis pagos</div><div class="dash-card-sub">Historial y nómina</div></div>
-      </div>
-      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Ver historial →</div></div>
-    </div>
-    <div class="dash-card" onclick="location.href='/buscador.html'" style="cursor:pointer;">
-      <div class="dash-card-header">
-        <div class="dash-card-icon" style="background:var(--b3);">👤</div>
-        <div><div class="dash-card-title">Mi perfil</div><div class="dash-card-sub">Editar y compartir</div></div>
-      </div>
-      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Actualizar perfil →</div></div>
-    </div>
-  `;
+    </div>`;
 }
 
 function formatHora12(hora24) {
