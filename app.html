@@ -1942,15 +1942,10 @@ window.copiarCodigo = (codigo) => {
 function mostrarNana(data) {
   mostrarScreen('nana');
 
-  const inicial = data.nombre?.[0]?.toUpperCase() || 'N';
-  const avatarEl = document.getElementById('nanaAvatarCircle');
-  if (avatarEl) avatarEl.textContent = inicial;
-
   const nombre = data.nombre?.split(' ')[0] || 'Nana';
-  const inicial = data.nombre?.[0]?.toUpperCase() || 'N';
   document.getElementById('nanaNombre').textContent = nombre;
-  const avatarEl = document.getElementById('nanaAvatarCircle');
-  if (avatarEl) avatarEl.textContent = inicial;
+  const avatarNana = document.getElementById('nanaAvatarCircle');
+  if (avatarNana) avatarNana.textContent = data.nombre?.[0]?.toUpperCase() || 'N';
 
   const hora = new Date().getHours();
   const saludo = hora < 12 ? 'Buenos días' : hora < 18 ? 'Buenas tardes' : 'Buenas noches';
