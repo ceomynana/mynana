@@ -1970,33 +1970,8 @@ function mostrarNana(data) {
   const avatarNana = document.getElementById('nanaAvatarCircle');
   if (avatarNana) avatarNana.textContent = data.nombre?.[0]?.toUpperCase() || 'N';
 
-  // Mostrar tarjeta de vincular si no tiene familia
-  setTimeout(async () => {
-    try {
-      const user2 = auth.currentUser;
-      if (!user2) return;
-      const qH = query(collection(db, 'hogares'), where('participantes', 'array-contains', user2.uid));
-      const sH = await getDocs(qH);
-      let vinculada = false;
-      if (!sH.empty) {
-        const parts = sH.docs[0].data().participantes || [];
-        for (const uid of parts) {
-          if (uid === user2.uid) continue;
-          const pSnap = await getDoc(doc(db, 'usuarios', uid));
-          if (pSnap.exists() && pSnap.data().tipo === 'familia') { vinculada = true; break; }
-        }
-      }
-      // Solo ocultar si confirmamos que HAY una familia vinculada
-      if (vinculada) {
-        const cardVincular = document.getElementById('cardVincularHogar');
-        if (cardVincular) cardVincular.style.display = 'none';
-      }
-      // Si no está vinculada, la tarjeta ya es visible por defecto en el HTML
-    } catch(e) { 
-      console.log('Error vincular check:', e);
-      // En caso de error, mantener visible
-    }
-  }, 800);
+  // La tarjeta de vincular es visible por defecto en el HTML
+  // Se ocultará solo cuando la nana se vincule exitosamente
 
   const hora = new Date().getHours();
   const saludo = hora < 12 ? 'Buenos días' : hora < 18 ? 'Buenas tardes' : 'Buenas noches';
@@ -2025,11 +2000,8 @@ function mostrarNana(data) {
 }
 
 async function cargarTareasNana() {
-  // Cargar tareas reales desde Firebase para mostrar progreso
+  // Usa db y auth globales — no import dinamico
   try {
-    const { getFirestore, collection, query, where, getDocs } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-    const db = getFirestore();
-    const auth = getAuth();
     const user = auth.currentUser;
     if (!user) return;
 
@@ -2049,6 +2021,11 @@ async function cargarTareasNana() {
         tieneFamilia = true; break;
       }
     }
+
+    // Ocultar tarjeta de vincular si ya hay familia
+    const cardVincular = document.getElementById('cardVincularHogar');
+    if (cardVincular) cardVincular.style.display = tieneFamilia ? 'none' : 'block';
+
     if (!tieneFamilia) { renderTareasNanaDemo(); return; }
 
     const hogarId = snapHogar.docs[0].id;
@@ -2060,17 +2037,16 @@ async function cargarTareasNana() {
     const total = tareas.length;
     const pct = total ? Math.round((hechas / total) * 100) : 0;
 
-    // Actualizar barra de progreso
     document.getElementById('progFill').style.width = pct + '%';
     document.getElementById('progLabel').textContent = total
       ? `${hechas} de ${total} tareas listas hoy`
       : 'No tienes tareas asignadas hoy';
     document.getElementById('progPct').textContent = pct + '%';
 
-    // Renderizar tarjetas en el dashboard
     renderTarjetasNana(tareas, hogarId);
 
   } catch(e) {
+    console.error('cargarTareasNana error:', e);
     renderTareasNanaDemo();
   }
 }
