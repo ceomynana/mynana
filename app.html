@@ -1962,6 +1962,46 @@ window.copiarCodigo = (codigo) => {
   });
 };
 
+window.ingresarCodigoNana = async () => {
+  const codigo = document.getElementById('inputCodigoNana')?.value?.trim().toUpperCase();
+  if (!codigo || codigo.length < 4) { showToast('Ingresa el codigo completo'); return; }
+  const btn = document.getElementById('cardVincularHogar')?.querySelector('button');
+  if (btn) { btn.disabled = true; btn.textContent = 'Verificando...'; }
+  try {
+    const user = auth.currentUser;
+    if (!user) return;
+    const codigoSnap = await getDoc(doc(db, 'codigos', codigo));
+    if (!codigoSnap.exists()) {
+      showToast('Codigo invalido. Verifica con tu familia.');
+      if (btn) { btn.disabled = false; btn.textContent = 'Vincular'; }
+      return;
+    }
+    const codigoData = codigoSnap.data();
+    if (codigoData.usado) {
+      showToast('Este codigo ya fue usado.');
+      if (btn) { btn.disabled = false; btn.textContent = 'Vincular'; }
+      return;
+    }
+    const qHogar = query(collection(db, 'hogares'), where('participantes', 'array-contains', codigoData.familiaUid));
+    const snapHogar = await getDocs(qHogar);
+    if (snapHogar.empty) {
+      showToast('No se encontro el hogar.');
+      if (btn) { btn.disabled = false; btn.textContent = 'Vincular'; }
+      return;
+    }
+    await updateDoc(snapHogar.docs[0].ref, { participantes: arrayUnion(user.uid) });
+    await updateDoc(doc(db, 'codigos', codigo), { usado: true, usadoPor: user.uid, usadoA: serverTimestamp() });
+    showToast('Vinculada exitosamente!');
+    const card = document.getElementById('cardVincularHogar');
+    if (card) card.style.display = 'none';
+    setTimeout(() => location.reload(), 1500);
+  } catch(e) {
+    console.error(e);
+    showToast('Error al vincular. Intenta de nuevo.');
+    if (btn) { btn.disabled = false; btn.textContent = 'Vincular'; }
+  }
+};
+
 function mostrarNana(data) {
   mostrarScreen('nana');
 
@@ -2115,39 +2155,47 @@ function renderTareasNanaDemo() {
   if (statTareas) statTareas.textContent = '0';
 
   document.getElementById('nanaGrid').innerHTML = `
-    <div class="dash-card" style="border:2px solid var(--b);background:linear-gradient(135deg,var(--b3),#fff);">
-      <div class="dash-card-header">
-        <div class="dash-card-icon" style="background:var(--b3);font-size:20px;">🔗</div>
-        <div>
-          <div class="dash-card-title">Vincularme a un hogar</div>
-          <div class="dash-card-sub">Ingresa el código que te dio la familia</div>
-        </div>
-      </div>
-      <div class="dash-card-body">
-        <div style="display:flex;gap:8px;">
-          <input id="inputCodigoNana" type="text" placeholder="ABC123" maxlength="6"
-            style="flex:1;padding:12px 14px;border:2px solid var(--b);border-radius:99px;font-size:18px;font-family:'DM Sans',sans-serif;text-transform:uppercase;letter-spacing:6px;text-align:center;outline:none;font-weight:600;"
-            oninput="this.value=this.value.toUpperCase()" />
-          <button onclick="ingresarCodigoNana()"
-            style="background:var(--b2);color:#fff;border:none;border-radius:99px;padding:12px 20px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">
-            Vincular →
-          </button>
-        </div>
-      </div>
-    </div>
     <div class="dash-card" onclick="location.href='/tareas.html'" style="cursor:pointer;">
       <div class="dash-card-header">
         <div class="dash-card-icon" style="background:var(--g3);">✅</div>
-        <div><div class="dash-card-title">Mis tareas</div><div class="dash-card-sub">Sin tareas asignadas aún</div></div>
+        <div><div class="dash-card-title">Mis tareas</div><div class="dash-card-sub">Sin tareas asignadas aun</div></div>
       </div>
-      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Ver tareas del día →</div></div>
+      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Ver tareas del dia</div></div>
+    </div>
+    <div class="dash-card" onclick="location.href='/menu.html'" style="cursor:pointer;">
+      <div class="dash-card-header">
+        <div class="dash-card-icon" style="background:var(--b3);">🍽️</div>
+        <div><div class="dash-card-title">Que cocinar hoy</div><div class="dash-card-sub">Ver menu del dia</div></div>
+      </div>
+      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Ver menu planificado</div></div>
+    </div>
+    <div class="dash-card" onclick="location.href='/chat.html'" style="cursor:pointer;">
+      <div class="dash-card-header">
+        <div class="dash-card-icon" style="background:var(--g3);">💬</div>
+        <div><div class="dash-card-title">Hablar con la familia</div><div class="dash-card-sub">Chat en tiempo real</div></div>
+      </div>
+      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Abrir chat</div></div>
+    </div>
+    <div class="dash-card" onclick="location.href='/videos.html'" style="cursor:pointer;">
+      <div class="dash-card-header">
+        <div class="dash-card-icon" style="background:var(--b3);">📹</div>
+        <div><div class="dash-card-title">Aprender</div><div class="dash-card-sub">Videos de capacitacion</div></div>
+      </div>
+      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Ver videos</div></div>
+    </div>
+    <div class="dash-card" onclick="location.href='/nomina.html'" style="cursor:pointer;">
+      <div class="dash-card-header">
+        <div class="dash-card-icon" style="background:var(--g3);">💰</div>
+        <div><div class="dash-card-title">Mis pagos</div><div class="dash-card-sub">Historial y nomina</div></div>
+      </div>
+      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Ver historial</div></div>
     </div>
     <div class="dash-card" onclick="location.href='/buscador.html'" style="cursor:pointer;">
       <div class="dash-card-header">
         <div class="dash-card-icon" style="background:var(--b3);">👤</div>
         <div><div class="dash-card-title">Mi perfil</div><div class="dash-card-sub">Editar y compartir</div></div>
       </div>
-      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Actualizar perfil →</div></div>
+      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Actualizar perfil</div></div>
     </div>
   `;
 }
