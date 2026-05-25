@@ -1618,12 +1618,34 @@ window.enviarListaAlChat = async () => {
   }
 };
 
-window.pedirDelivery = () => {
+window.pedirDelivery = async () => {
   const pendientes = mercadoItems.filter(i => !i.comprado);
   if (!pendientes.length) { showToast('✅ ¡Todo comprado!'); return; }
+
   const lista = pendientes.map(i => `• ${i.nombre}`).join('\n');
-  const msg = encodeURIComponent(`Hola! Esta es la lista del mercado de My Nana:\n\n${lista}\n\nFavor traer estos productos. Gracias!`);
-  window.open(`https://wa.me/50760243324?text=${msg}`, '_blank');
+  const msg = encodeURIComponent(`🛒 Lista del mercado — My Nana\n\n${lista}\n\nTotal: ${pendientes.length} productos. Gracias!`);
+
+  // Intentar obtener el teléfono del titular de la familia desde Firestore
+  let telefono = null;
+  try {
+    const snapHogar = await getDoc(doc(db, 'hogares', hogarId));
+    if (snapHogar.exists()) {
+      const creadoPor = snapHogar.data().creadoPor;
+      if (creadoPor) {
+        const snapUser = await getDoc(doc(db, 'usuarios', creadoPor));
+        if (snapUser.exists()) telefono = snapUser.data().telefono || snapUser.data().celular || null;
+      }
+    }
+  } catch(e) {}
+
+  if (telefono) {
+    // Enviar directo al teléfono de la titular
+    const num = telefono.replace(/\D/g,'');
+    window.open(`https://wa.me/${num}?text=${msg}`, '_blank');
+  } else {
+    // Sin teléfono guardado: abre WhatsApp para que el usuario elija contacto
+    window.open(`https://wa.me/?text=${msg}`, '_blank');
+  }
 };
 
 // ── MODAL ──
