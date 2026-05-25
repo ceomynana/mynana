@@ -1543,11 +1543,12 @@ window.enviarListaAlChat = async () => {
   const pendientes = mercadoItems.filter(i => !i.comprado);
   if (!pendientes.length) { showToast('✅ No hay productos pendientes'); return; }
 
-  // Construir mensaje formateado
   const fecha = new Date().toLocaleDateString('es-PA', { weekday:'long', day:'numeric', month:'long' });
+
+  // Agrupar por categoría real
   const porCategoria = {};
   pendientes.forEach(item => {
-    const cat = item.cat || 'Otros';
+    const cat = categorizarIngrediente(item.nombre);
     if (!porCategoria[cat]) porCategoria[cat] = [];
     porCategoria[cat].push(item.nombre);
   });
@@ -1563,26 +1564,30 @@ window.enviarListaAlChat = async () => {
   showToast('📤 Enviando al chat...');
 
   try {
-    // Buscar conversación existente del hogar
-    const q = query(collection(db, 'conversaciones'), where('participantes', 'array-contains', usuarioActual.uid));
-    const snap = await getDocs(q);
+    // Buscar por hogarId — igual que chat.html
+    const qConv = query(collection(db, 'conversaciones'), where('hogarId', '==', hogarId));
+    const snap = await getDocs(qConv);
 
     let convId = null;
-    snap.forEach(d => { if (!convId) convId = d.id; });
 
-    if (!convId) {
-      // Crear conversación si no existe
+    if (!snap.empty) {
+      convId = snap.docs[0].id;
+    } else {
+      // Crear conversación con hogarId para que chat.html la encuentre
+      const qHogar = await getDoc(doc(db, 'hogares', hogarId));
+      const participantes = qHogar.exists() ? (qHogar.data().participantes || [usuarioActual.uid]) : [usuarioActual.uid];
       const ref = await addDoc(collection(db, 'conversaciones'), {
-        participantes: [usuarioActual.uid],
+        hogarId,
+        participantes,
         ultimoMensaje: '🛒 Lista del mercado',
         ultimaHora: serverTimestamp(),
         noLeidos: 1,
+        esGrupo: true,
         creado: serverTimestamp()
       });
       convId = ref.id;
     }
 
-    // Enviar mensaje al chat
     await addDoc(collection(db, 'conversaciones', convId, 'mensajes'), {
       tipo: 'mercado',
       texto,
@@ -1594,7 +1599,6 @@ window.enviarListaAlChat = async () => {
       leido: false
     });
 
-    // Actualizar último mensaje de la conversación
     await updateDoc(doc(db, 'conversaciones', convId), {
       ultimoMensaje: `🛒 Lista del mercado (${pendientes.length} productos)`,
       ultimaHora: serverTimestamp(),
@@ -1602,8 +1606,6 @@ window.enviarListaAlChat = async () => {
     });
 
     showToast('✅ Lista enviada al chat familiar');
-
-    // Preguntar si ir al chat
     setTimeout(() => {
       if (confirm('✅ Lista enviada al chat.\n¿Quieres ir al chat ahora?')) {
         location.href = '/chat.html';
