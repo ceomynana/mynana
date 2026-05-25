@@ -1588,9 +1588,10 @@ async function cargarDashboardFamilia() {
     if (snapHogar.empty) { mostrarDashVacio(); return; }
     const hogarId = snapHogar.docs[0].id;
 
-    // Actualizar stats flotantes
+    // Stats flotantes — solo tareas de hoy
+    const hoyStr = (() => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })();
     const snapTareasStats = await getDocs(query(collection(db, 'hogares', hogarId, 'tareas')));
-    const tareasStats = snapTareasStats.docs.map(d => d.data());
+    const tareasStats = snapTareasStats.docs.map(d => d.data()).filter(t => t.fecha ? t.fecha === hoyStr : true);
     document.getElementById('statTareas').textContent = tareasStats.length || '0';
 
     const snapConvStats = await getDocs(query(collection(db, 'conversaciones'), where('participantes', 'array-contains', user.uid)));
@@ -1617,8 +1618,11 @@ async function cargarDashboardFamilia() {
 }
 
 async function cargarTareasDash(hogarId, uid) {
+  const hoyStr = (() => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })();
   const snap = await getDocs(query(collection(db, 'hogares', hogarId, 'tareas')));
-  const tareas = snap.docs.map(d => d.data()).sort((a,b) => a.hora?.localeCompare(b.hora));
+  const tareas = snap.docs.map(d => d.data())
+    .filter(t => t.fecha ? t.fecha === hoyStr : true)
+    .sort((a,b) => a.hora?.localeCompare(b.hora));
   const hechas = tareas.filter(t => t.estado === 'completa').length;
   const total = tareas.length;
 
@@ -2133,10 +2137,12 @@ async function cargarTareasNana() {
     if (!tieneFamilia) { renderTareasNanaDemo(); return; }
 
     const hogarId = snapHogar.docs[0].id;
+    const hoyStr = (() => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })();
     const qTareas = query(collection(db, 'hogares', hogarId, 'tareas'));
     const snapTareas = await getDocs(qTareas);
 
-    const tareas = snapTareas.docs.map(d => ({ id: d.id, ...d.data() }));
+    const tareas = snapTareas.docs.map(d => ({ id: d.id, ...d.data() }))
+      .filter(t => t.fecha ? t.fecha === hoyStr : true);
     const hechas = tareas.filter(t => t.estado === 'completa').length;
     const total = tareas.length;
     const pct = total ? Math.round((hechas / total) * 100) : 0;
