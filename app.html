@@ -535,6 +535,18 @@ body.lang-es [data-en]{display:none !important;}
   <div class="dash-content">
     <div class="dash-grid">
 
+      <!-- Estado del Hogar -->
+      <div class="dash-card" onclick="location.href='/estado.html'" style="cursor:pointer;border:2px solid var(--g4);grid-column:1/-1;">
+        <div class="dash-card-header">
+          <div class="dash-card-icon" style="background:var(--g3);">🏠</div>
+          <div><div class="dash-card-title">Estado del Hogar</div><div class="dash-card-sub" id="subEstadoFam">Cargando resumen...</div></div>
+          <div style="margin-left:auto;font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;background:var(--g3);color:var(--g);" id="pctEstadoFam">—</div>
+        </div>
+        <div class="dash-card-body" id="bodyEstadoFam">
+          <div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Cargando...</div>
+        </div>
+      </div>
+
       <!-- Tareas -->
       <div class="dash-card" onclick="location.href='/tareas.html'" style="cursor:pointer;">
         <div class="dash-card-header">
@@ -737,7 +749,7 @@ body.lang-es [data-en]{display:none !important;}
   </div>
 
   <div class="dash-content">
-    <!-- Tarjeta vincular — visible cuando nana no tiene familia vinculada -->
+    <!-- Tarjeta vincular -->
     <div class="dash-card" id="cardVincularHogar" style="border:2px solid var(--b);">
       <div class="dash-card-header">
         <div class="dash-card-icon" style="background:var(--b3);font-size:20px;">&#x1F517;</div>
@@ -751,6 +763,19 @@ body.lang-es [data-en]{display:none !important;}
         </div>
       </div>
     </div>
+
+    <!-- Estado del Hogar nana -->
+    <div class="dash-card" onclick="location.href='/estado.html'" style="cursor:pointer;border:2px solid var(--g4);width:100%;">
+      <div class="dash-card-header">
+        <div class="dash-card-icon" style="background:var(--g3);">🏠</div>
+        <div><div class="dash-card-title">Estado del Hogar</div><div class="dash-card-sub" id="subEstadoNana">Tu resumen de hoy</div></div>
+        <div style="margin-left:auto;font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;background:var(--g3);color:var(--g);" id="pctEstadoNana">—</div>
+      </div>
+      <div class="dash-card-body" id="bodyEstadoNana">
+        <div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Cargando...</div>
+      </div>
+    </div>
+
     <div class="dash-grid" id="nanaGrid"></div>
   </div>
 
@@ -1605,6 +1630,7 @@ async function cargarDashboardFamilia() {
 
     // Cargar todo en paralelo
     await Promise.all([
+      cargarEstadoDash(hogarId, user.uid),
       cargarTareasDash(hogarId, user.uid),
       cargarMenuDash(hogarId),
       cargarChatDash(user.uid, hogarId),
@@ -1615,6 +1641,47 @@ async function cargarDashboardFamilia() {
   } catch(e) {
     console.error('Error dashboard:', e);
   }
+}
+
+async function cargarEstadoDash(hogarId, uid) {
+  const hoy = (() => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })();
+  try {
+    const snap = await getDocs(query(collection(db, 'hogares', hogarId, 'tareas')));
+    const tareas = snap.docs.map(d => d.data()).filter(t => t.fecha ? t.fecha === hoy : true);
+    const hechas = tareas.filter(t => t.estado === 'completa').length;
+    const total = tareas.length;
+    const pct = total ? Math.round((hechas/total)*100) : 100;
+
+    const pctEl = document.getElementById('pctEstadoFam') || document.getElementById('pctEstadoNana');
+    const subEl = document.getElementById('subEstadoFam') || document.getElementById('subEstadoNana');
+    const bodyEl = document.getElementById('bodyEstadoFam') || document.getElementById('bodyEstadoNana');
+    ['pctEstadoFam','pctEstadoNana'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = pct + '%';
+    });
+    ['subEstadoFam','subEstadoNana'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = total
+        ? pct === 100 ? '✨ Todo listo hoy' : `${hechas} de ${total} tareas · ${pct}% completado`
+        : 'Sin tareas asignadas hoy';
+    });
+    ['bodyEstadoFam','bodyEstadoNana'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const pendientes = tareas.filter(t => t.estado !== 'completa').slice(0,3);
+      if (!pendientes.length) {
+        el.innerHTML = `<div style="text-align:center;padding:12px;"><div style="font-size:20px;margin-bottom:4px;">🎉</div><div style="font-size:13px;color:var(--g);font-weight:500;">Hogar al día · Todo completado</div></div>`;
+        return;
+      }
+      el.innerHTML = pendientes.map(t => `
+        <div class="task-item">
+          <span style="font-size:14px;">${t.cat?.split(' ')[0]||'📋'}</span>
+          <span class="task-name">${t.nombre}</span>
+          <span class="task-hora">${t.prioridad==='urgente'?'🔴 Urgente':formatHora12(t.hora)}</span>
+        </div>`).join('') +
+        `<div style="font-size:12px;color:var(--g);text-align:right;margin-top:4px;padding-top:4px;border-top:1px solid var(--g4);">Ver estado completo →</div>`;
+    });
+  } catch(e) { console.error('cargarEstadoDash:', e); }
 }
 
 async function cargarTareasDash(hogarId, uid) {
