@@ -788,34 +788,42 @@ let audioCtx = null;
 function iniciarNotificaciones(uid, hogarId) {
   if (!hogarId) return;
 
-  // Escuchar tareas completadas en tiempo real
+  const leidasFam = getNotifLeidas(FAM_LEIDAS_KEY);
+
+  // ── Tareas completadas ──
+  let tareasConocidasCompletas = new Set();
+  let initialLoadFam = true;  // primer snapshot = solo registrar, no notificar
+
   const qTareas = query(
     collection(db, 'hogares', hogarId, 'tareas'),
     where('estado', '==', 'completa')
   );
 
-  let tareasConocidasCompletas = new Set();
-
   onSnapshot(qTareas, (snap) => {
+    if (initialLoadFam) {
+      snap.docs.forEach(d => tareasConocidasCompletas.add(d.id));
+      initialLoadFam = false;
+      return;
+    }
+
     snap.docChanges().forEach(change => {
       if (change.type === 'modified' || change.type === 'added') {
         const tarea = change.doc.data();
-        const id = change.doc.id;
+        const id    = change.doc.id;
         if (!tareasConocidasCompletas.has(id) && tarea.estado === 'completa') {
           tareasConocidasCompletas.add(id);
-          // Solo notificar si la tarea fue completada recientemente (último minuto)
-          const completadaMs = tarea.completadaA ? Date.now() : 0;
           if (change.type === 'modified') {
+            const notifId = `tarea-${id}`;
             agregarNotificacion({
-              id: `tarea-${id}`,
-              tipo: 'tarea',
-              icon: '✅',
-              color: 'var(--g3)',
+              id:     notifId,
+              tipo:   'tarea',
+              icon:   '✅',
+              color:  'var(--g3)',
               titulo: '¡Tarea completada!',
-              desc: `${tarea.nombre} fue marcada como lista`,
-              hora: new Date(),
-              leida: false,
-              link: '/tareas.html'
+              desc:   `${tarea.nombre} fue marcada como lista`,
+              hora:   new Date(),
+              leida:  leidasFam.has(notifId),
+              link:   '/tareas.html'
             });
           }
         }
@@ -823,27 +831,32 @@ function iniciarNotificaciones(uid, hogarId) {
     });
   });
 
-  // Escuchar mensajes nuevos en el chat
+  // ── Mensajes nuevos ──
+  let initialLoadChatFam = true;
   const qConvs = query(
     collection(db, 'conversaciones'),
     where('participantes', 'array-contains', uid)
   );
 
   onSnapshot(qConvs, (snap) => {
+    if (initialLoadChatFam) { initialLoadChatFam = false; return; }
     snap.docChanges().forEach(change => {
       if (change.type === 'modified') {
         const conv = change.doc.data();
         if (conv.noLeidos > 0 && conv.ultimoMensaje) {
+          const notifId = `chat-${change.doc.id}-${conv.ultimaHora?.toMillis?.() || Date.now()}`;
           agregarNotificacion({
-            id: `chat-${change.doc.id}-${Date.now()}`,
-            tipo: 'chat',
-            icon: '💬',
-            color: 'var(--b3)',
+            id:     notifId,
+            tipo:   'chat',
+            icon:   '💬',
+            color:  'var(--b3)',
             titulo: 'Mensaje nuevo',
-            desc: conv.ultimoMensaje.length > 40 ? conv.ultimoMensaje.slice(0, 40) + '...' : conv.ultimoMensaje,
-            hora: new Date(),
-            leida: false,
-            link: '/chat.html'
+            desc:   conv.ultimoMensaje.length > 40
+                      ? conv.ultimoMensaje.slice(0, 40) + '...'
+                      : conv.ultimoMensaje,
+            hora:   new Date(),
+            leida:  leidasFam.has(notifId),
+            link:   '/chat.html'
           });
         }
       }
@@ -855,17 +868,19 @@ function iniciarNotificaciones(uid, hogarId) {
 }
 
 function agregarNotificacion(notif) {
-  // Evitar duplicados recientes (mismo id en últimos 30 segundos)
-  const reciente = notificaciones.find(n => n.id === notif.id);
-  if (reciente) return;
+  // Evitar duplicado exacto en la sesión actual
+  if (notificaciones.find(n => n.id === notif.id)) return;
 
   notificaciones.unshift(notif);
   if (notificaciones.length > 50) notificaciones.pop();
 
   actualizarBadge();
   renderNotifPanel();
-  mostrarNotifToast(notif);
-  reproducirSonido(notif.tipo);
+  // Solo mostrar toast y sonido si no estaba ya leída
+  if (!notif.leida) {
+    mostrarNotifToast(notif);
+    reproducirSonido(notif.tipo);
+  }
 }
 
 function actualizarBadge() {
@@ -919,6 +934,7 @@ window.irANotif = (idx) => {
   const n = notificaciones[idx];
   if (!n) return;
   notificaciones[idx].leida = true;
+  persistirNotifLeida(FAM_LEIDAS_KEY, n.id);  // persiste entre reloads
   actualizarBadge();
   renderNotifPanel();
   cerrarNotifPanel();
@@ -926,7 +942,10 @@ window.irANotif = (idx) => {
 };
 
 window.marcarTodasLeidas = () => {
-  notificaciones.forEach(n => n.leida = true);
+  notificaciones.forEach(n => {
+    n.leida = true;
+    persistirNotifLeida(FAM_LEIDAS_KEY, n.id);  // persiste cada una
+  });
   actualizarBadge();
   renderNotifPanel();
   showToast('✓ Todas las notificaciones marcadas como leídas');
@@ -1028,61 +1047,90 @@ let nanaNotifs = [];
 let nanaNotifVisible = false;
 let nanaToastTimer = null;
 
+// ── PERSISTENCIA DE NOTIFICACIONES LEÍDAS (localStorage) ──
+const NANA_LEIDAS_KEY = 'mynana_nana_notifs_leidas';
+const FAM_LEIDAS_KEY  = 'mynana_fam_notifs_leidas';
+
+function getNotifLeidas(key) {
+  try { return new Set(JSON.parse(localStorage.getItem(key) || '[]')); }
+  catch { return new Set(); }
+}
+function persistirNotifLeida(key, id) {
+  try {
+    const s = getNotifLeidas(key);
+    s.add(id);
+    // Mantener solo las últimas 200 para no crecer indefinidamente
+    const arr = [...s].slice(-200);
+    localStorage.setItem(key, JSON.stringify(arr));
+  } catch(e) {}
+}
+
 function iniciarNotificacionesNana(uid, hogarId) {
   if (!hogarId) return;
 
-  // Escuchar tareas nuevas asignadas por la familia
+  const leidasNana = getNotifLeidas(NANA_LEIDAS_KEY);
+
+  // ── Tareas nuevas ──
   let tareasConocidas = new Set();
+  let initialLoadNana = true;  // bandera: primer snapshot = solo registrar IDs, no notificar
+
   const qTareas = query(collection(db, 'hogares', hogarId, 'tareas'));
 
   onSnapshot(qTareas, (snap) => {
+    if (initialLoadNana) {
+      // Primer disparo: poblar el Set con todas las tareas existentes sin notificar
+      snap.docs.forEach(d => tareasConocidas.add(d.id));
+      initialLoadNana = false;
+      return;
+    }
+
+    // Snapshots posteriores: solo eventos reales
     snap.docChanges().forEach(change => {
       const tarea = change.doc.data();
-      const id = change.doc.id;
+      const id    = change.doc.id;
 
-      if (change.type === 'added' && !tareasConocidas.has(id)) {
+      // Solo tareas NUEVAS que no están completadas
+      if (change.type === 'added' && !tareasConocidas.has(id) && tarea.estado !== 'completa') {
         tareasConocidas.add(id);
-        // Solo notificar si la tarea fue creada recientemente
-        if (tareasConocidas.size > 1) { // Evitar notificaciones al cargar inicial
-          agregarNotifNana({
-            id: `nueva-tarea-${id}`,
-            icon: tarea.cat?.split(' ')[0] || '📋',
-            color: 'var(--g3)',
-            titulo: '¡Nueva tarea asignada!',
-            desc: `${tarea.nombre} — ${tarea.hora || ''}`,
-            hora: new Date(),
-            leida: false,
-            link: '/tareas.html'
-          });
-        } else {
-          tareasConocidas.add(id);
-        }
+        agregarNotifNana({
+          id:     `nueva-tarea-${id}`,
+          icon:   tarea.cat?.split(' ')[0] || '📋',
+          color:  'var(--g3)',
+          titulo: '¡Nueva tarea asignada!',
+          desc:   `${tarea.nombre} — ${tarea.hora || ''}`,
+          hora:   new Date(),
+          leida:  leidasNana.has(`nueva-tarea-${id}`),  // respeta lo leído antes
+          link:   '/tareas.html'
+        });
       }
     });
   });
 
-  // Escuchar mensajes nuevos de la familia
+  // ── Mensajes nuevos ──
+  let initialLoadChat = true;
   const qConvs = query(
     collection(db, 'conversaciones'),
     where('participantes', 'array-contains', uid)
   );
 
   onSnapshot(qConvs, (snap) => {
+    if (initialLoadChat) { initialLoadChat = false; return; }  // ignorar carga inicial
     snap.docChanges().forEach(change => {
       if (change.type === 'modified') {
         const conv = change.doc.data();
         if (conv.noLeidos > 0 && conv.ultimoMensaje) {
+          const notifId = `nana-chat-${change.doc.id}-${conv.ultimaHora?.toMillis?.() || Date.now()}`;
           agregarNotifNana({
-            id: `nana-chat-${Date.now()}`,
-            icon: '💬',
-            color: 'var(--b3)',
+            id:     notifId,
+            icon:   '💬',
+            color:  'var(--b3)',
             titulo: 'Mensaje de la familia',
-            desc: conv.ultimoMensaje.length > 40
-              ? conv.ultimoMensaje.slice(0, 40) + '...'
-              : conv.ultimoMensaje,
-            hora: new Date(),
-            leida: false,
-            link: '/chat.html'
+            desc:   conv.ultimoMensaje.length > 40
+                      ? conv.ultimoMensaje.slice(0, 40) + '...'
+                      : conv.ultimoMensaje,
+            hora:   new Date(),
+            leida:  leidasNana.has(notifId),
+            link:   '/chat.html'
           });
         }
       }
@@ -1091,14 +1139,17 @@ function iniciarNotificacionesNana(uid, hogarId) {
 }
 
 function agregarNotifNana(notif) {
-  const reciente = nanaNotifs.find(n => n.id === notif.id);
-  if (reciente) return;
+  // Evitar duplicado exacto en la sesión actual
+  if (nanaNotifs.find(n => n.id === notif.id)) return;
   nanaNotifs.unshift(notif);
   if (nanaNotifs.length > 30) nanaNotifs.pop();
   actualizarBadgeNana();
   renderNotifPanelNana();
-  mostrarNanaToast(notif);
-  reproducirSonido(notif.icon === '💬' ? 'chat' : 'tarea');
+  // Solo mostrar toast y sonido si no estaba ya leída
+  if (!notif.leida) {
+    mostrarNanaToast(notif);
+    reproducirSonido(notif.icon === '💬' ? 'chat' : 'tarea');
+  }
 }
 
 function actualizarBadgeNana() {
@@ -1142,6 +1193,7 @@ window.irANotifNana = (idx) => {
   const n = nanaNotifs[idx];
   if (!n) return;
   nanaNotifs[idx].leida = true;
+  persistirNotifLeida(NANA_LEIDAS_KEY, n.id);  // persiste entre reloads
   actualizarBadgeNana();
   renderNotifPanelNana();
   toggleNotifPanelNana();
@@ -1149,7 +1201,10 @@ window.irANotifNana = (idx) => {
 };
 
 window.marcarTodasLeidasNana = () => {
-  nanaNotifs.forEach(n => n.leida = true);
+  nanaNotifs.forEach(n => {
+    n.leida = true;
+    persistirNotifLeida(NANA_LEIDAS_KEY, n.id);  // persiste cada una
+  });
   actualizarBadgeNana();
   renderNotifPanelNana();
 };
