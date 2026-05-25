@@ -636,7 +636,9 @@ window.modoSemanaOcupada = async () => {
     TIEMPOS.forEach(t => {
       const lista = PLATOS_RAPIDOS[t.id] || [];
       if (!lista.length) return;
-      menuData[`dia_${i}`][t.id] = { nombre: lista[Math.floor(Math.random() * lista.length)] };
+      const nombre = lista[Math.floor(Math.random() * lista.length)];
+      const ings = getIngredientesActuales(nombre);
+      menuData[`dia_${i}`][t.id] = { nombre, ...(ings ? { ingredientes: [...ings] } : {}) };
     });
   });
   await guardarMenu();
@@ -1034,8 +1036,8 @@ function generarListaMercado() {
 
       // Buscar ingredientes: primero en el plato, luego en INGREDIENTES_SALUDABLES
       let ingredientes = plato.ingredientes || [];
-      if (!ingredientes.length && plato.nombre && INGREDIENTES_SALUDABLES[plato.nombre]) {
-        ingredientes = INGREDIENTES_SALUDABLES[plato.nombre];
+      if (!ingredientes.length && plato.nombre) {
+        ingredientes = getIngredientesActuales(plato.nombre) || [];
       }
 
       ingredientes.forEach(ing => {
