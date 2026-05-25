@@ -258,7 +258,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--g2);}
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import { getFirestore, doc, getDoc, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, updateDoc, getDocs, where } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getFirestore, doc, getDoc, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, updateDoc, getDocs, where, arrayUnion } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 const app = initializeApp({ apiKey:"AIzaSyDDJRJ8A8P507lllGRBOoXO30ESAH1GAnw", authDomain:"mynanapapp.firebaseapp.com", projectId:"mynanapapp", storageBucket:"mynanapapp.firebasestorage.app", messagingSenderId:"124180779437", appId:"1:124180779437:web:d217743000b0f1fedfd124" });
 const auth = getAuth(app), db = getFirestore(app);
@@ -272,8 +272,7 @@ const EMOJIS = {
 };
 const RAPIDOS = ['👍','✅','❤️','😊','👏','🙏','😂','🔥'];
 
-let me=null, perfil=null, chatId=null, unsub=null, convs=[], msgsDemo=[], mr=null, chunks=[], grabando=false, t=null, segs=0, fotoUrl='', emojiOpen=false, catActual='😊';
-let hogarId = null; // ← guardado para que enviarTarea pueda escribir en hogares/{id}/tareas
+let hogarId=null, me=null, perfil=null, chatId=null, unsub=null, convs=[], msgsDemo=[], mr=null, chunks=[], grabando=false, t=null, segs=0, fotoUrl='', emojiOpen=false, catActual='😊';
 
 onAuthStateChanged(auth, async user => {
   document.getElementById('splash').classList.add('oculto');
@@ -291,41 +290,51 @@ onAuthStateChanged(auth, async user => {
 });
 
 async function cargarConvs() {
-  // 1. Buscar el hogar para obtener todos los participantes
+  // Buscar el hogar del usuario
   const qHogar = query(collection(db,'hogares'), where('participantes','array-contains',me.uid));
   const snapHogar = await getDocs(qHogar);
-  let uidsHogar = [me.uid];
-  if (!snapHogar.empty) {
-    uidsHogar = snapHogar.docs[0].data().participantes || [me.uid];
-    hogarId = snapHogar.docs[0].id; // ← guardar para tareas desde chat
+
+  if (snapHogar.empty) {
+    document.getElementById('convLista').innerHTML = '<div style="padding:24px;text-align:center;color:#bbb;font-size:13px;">Sin hogar vinculado aun</div>';
+    return;
   }
 
-  // 2. Buscar la conversación por cualquier participante del hogar
-  let convExistente = null;
-  for (const uid of uidsHogar) {
-    const q = query(collection(db,'conversaciones'), where('participantes','array-contains',uid));
-    const snap = await getDocs(q);
-    if (!snap.empty) { convExistente = snap.docs[0]; break; }
-  }
+  hogarId = snapHogar.docs[0].id;  // asigna a la variable del módulo
+  const todosUids = snapHogar.docs[0].data().participantes || [me.uid];
 
-  if (!convExistente) { await initConv(); return; }
+  // Buscar o crear conversacion grupal del hogar
+  const qConv = query(collection(db,'conversaciones'), where('hogarId','==',hogarId));
+  const snapConv = await getDocs(qConv);
 
-  // 3. Escuchar en tiempo real esa conversación específica
-  const convRef = query(collection(db,'conversaciones'), where('participantes','array-contains',uidsHogar[0]));
-  onSnapshot(convRef, async snap => {
-    convs = [];
-    for (const d of snap.docs) {
-      const data = d.data();
-      const otroUid = data.participantes?.find(p => p !== me.uid);
-      let otroPerfil = null;
-      if (otroUid && otroUid !== 'demo') {
-        const op = await getDoc(doc(db,'usuarios',otroUid));
-        if (op.exists()) otroPerfil = op.data();
-      }
-      convs.push({id:d.id,...data,otroPerfil,otroUid});
+  let convId;
+  if (snapConv.empty) {
+    const ref = await addDoc(collection(db,'conversaciones'), {
+      hogarId, participantes: todosUids,
+      ultimoMensaje: '', ultimaHora: serverTimestamp(), noLeidos: 0,
+      creado: serverTimestamp(), esGrupo: true
+    });
+    convId = ref.id;
+  } else {
+    convId = snapConv.docs[0].id;
+    // Asegurar que todos los participantes del hogar esten en la conversacion
+    const convParts = snapConv.docs[0].data().participantes || [];
+    const faltantes = todosUids.filter(u => !convParts.includes(u));
+    if (faltantes.length > 0) {
+      await updateDoc(doc(db,'conversaciones',convId), { participantes: [...convParts, ...faltantes] });
     }
-    if (!convs.length) await initConv();
-    else renderConvs(convs);
+  }
+
+  // Escuchar en tiempo real
+  const convRef = query(collection(db,'conversaciones'), where('hogarId','==',hogarId));
+  onSnapshot(convRef, snap => {
+    convs = [];
+    snap.docs.forEach(d => {
+      convs.push({ id: d.id, ...d.data(), otroPerfil: { nombre: 'Chat del hogar', tipo: 'grupo' }, esGrupo: true });
+    });
+    if (convs.length) {
+      renderConvs(convs);
+      window.abrirChat(convs[0].id);
+    }
   });
 }
 
@@ -348,10 +357,12 @@ function renderConvs(lista) {
   const el=document.getElementById('convLista');
   if (!lista.length) { el.innerHTML='<div style="padding:24px;text-align:center;color:#bbb;font-size:13px;">Sin conversaciones</div>'; return; }
   el.innerHTML=lista.map(c=>{
-    const nm=c.otroPerfil?.nombre||'Usuario', bg=c.otroPerfil?.tipo==='nana'?'#BF9090':'#1A6B52';
+    const nm = c.esGrupo ? 'Chat del hogar' : (c.otroPerfil?.nombre||'Usuario');
+    const bg = c.esGrupo ? '#1A6B52' : (c.otroPerfil?.tipo==='nana'?'#BF9090':'#1A6B52');
+    const icon = c.esGrupo ? '🏠' : (nm[0]?.toUpperCase()||'?');
     const h=c.ultimaHora?.toDate?fh(c.ultimaHora.toDate()):'';
     return `<div class="conv ${chatId===c.id?'activa':''}" onclick="abrirChat('${c.id}')">
-      <div class="conv-av" style="background:${bg};">${nm[0]?.toUpperCase()}<div class="conv-online"></div></div>
+      <div class="conv-av" style="background:${bg};">${icon}<div class="conv-online"></div></div>
       <div class="conv-info"><div class="conv-nombre">${nm}</div><div class="conv-ultimo">${c.ultimoMensaje||'Toca para chatear'}</div></div>
       <div class="conv-meta"><span class="conv-hora">${h}</span>${c.noLeidos>0?`<span class="conv-badge">${c.noLeidos}</span>`:''}</div>
     </div>`;
@@ -360,8 +371,9 @@ function renderConvs(lista) {
 
 window.abrirChat = async id => {
   chatId=id; const c=convs.find(c=>c.id===id); if(!c) return;
-  const nm=c.otroPerfil?.nombre||'Usuario', bg=c.otroPerfil?.tipo==='nana'?'#BF9090':'#1A6B52';
-  document.getElementById('chAv').textContent=nm[0]?.toUpperCase();
+  const nm = c.esGrupo ? 'Chat del hogar' : (c.otroPerfil?.nombre||'Usuario');
+  const bg = c.esGrupo ? '#1A6B52' : (c.otroPerfil?.tipo==='nana'?'#BF9090':'#1A6B52');
+  document.getElementById('chAv').textContent = c.esGrupo ? '🏠' : nm[0]?.toUpperCase();
   document.getElementById('chAv').style.background=bg;
   document.getElementById('chNombre').textContent=nm;
   document.getElementById('chEstado').textContent='● En línea';
@@ -545,127 +557,72 @@ window.toggleReac = async (msgId,emoji) => {
   } catch(e){}
 };
 
-window.enviarTarea = () => {
+window.enviarTarea = async () => {
   cerrarAdj();
 
-  // ── Catálogo de tareas predefinidas ──
-  const CATALOGO = [
-    { n:'Preparar desayuno',  h:'07:00', e:'🍳', cat:'🍳 Cocina'      },
-    { n:'Barrer y trapear',   h:'09:00', e:'🧹', cat:'🧹 Limpieza'    },
-    { n:'Lavandería',         h:'10:00', e:'👕', cat:'👕 Lavandería'  },
-    { n:'Almuerzo: Sancocho', h:'12:30', e:'🍲', cat:'🍳 Cocina'      },
-    { n:'Recoger niños',      h:'14:00', e:'🎒', cat:'🎒 Niños'       },
-    { n:'Limpiar baños',      h:'16:00', e:'🧹', cat:'🧹 Limpieza'    },
+  // Horas en "HH:MM" (24h) y categorías que coinciden exactamente con tareas.html
+  const tareas = [
+    { n:'Preparar desayuno',  h:'07:00', cat:'🍳 Cocina',    e:'🍳' },
+    { n:'Barrer y trapear',   h:'09:00', cat:'🧹 Limpieza',  e:'🧹' },
+    { n:'Lavandería',         h:'10:00', cat:'👕 Lavandería', e:'👕' },
+    { n:'Almuerzo: Sancocho', h:'12:30', cat:'🍳 Cocina',    e:'🍲' },
+    { n:'Recoger niños',      h:'14:00', cat:'🎒 Niños',     e:'🎒' },
+    { n:'Limpiar baños',      h:'16:00', cat:'🧹 Limpieza',  e:'🧹' },
   ];
 
-  // ── Modal de selección ──
-  const overlay = document.createElement('div');
-  overlay.id = 'modalTareaChat';
-  overlay.style.cssText = `
-    position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:999;
-    display:flex;align-items:flex-end;justify-content:center;`;
+  const sel = window.prompt(
+    `Elige una tarea (1-${tareas.length}):\n\n` +
+    tareas.map((t, i) => `${i + 1}. ${t.e} ${t.n}`).join('\n')
+  );
+  if (!sel) return;
+  const idx = parseInt(sel) - 1;
+  if (idx < 0 || idx >= tareas.length) return;
 
-  overlay.innerHTML = `
-    <div style="background:#fff;width:100%;max-width:430px;border-radius:20px 20px 0 0;padding:20px 16px 32px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-        <div style="font-size:15px;font-weight:600;color:var(--txt);">📋 Asignar tarea</div>
-        <button onclick="document.getElementById('modalTareaChat').remove()"
-          style="background:none;border:none;font-size:20px;cursor:pointer;color:#bbb;">✕</button>
-      </div>
-
-      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
-        ${CATALOGO.map((t,i) => `
-          <button onclick="confirmarTareaChat(${i})"
-            style="display:flex;align-items:center;gap:10px;background:var(--cr);border:1px solid var(--g4);
-                   border-radius:10px;padding:10px 12px;cursor:pointer;text-align:left;width:100%;">
-            <span style="font-size:20px;">${t.e}</span>
-            <div>
-              <div style="font-size:13px;font-weight:500;color:var(--txt);">${t.n}</div>
-              <div style="font-size:11px;color:var(--txt2);">🕐 ${t.h.replace(':','h')} · ${t.cat}</div>
-            </div>
-          </button>`).join('')}
-      </div>
-
-      <div style="border-top:1px solid var(--g4);padding-top:12px;">
-        <div style="font-size:11px;color:#bbb;margin-bottom:8px;">O escribe una tarea personalizada:</div>
-        <div style="display:flex;gap:8px;">
-          <input id="tareaCustomNombre" placeholder="Nombre de la tarea"
-            style="flex:1;border:1px solid var(--g4);border-radius:8px;padding:8px 10px;
-                   font-family:'DM Sans',sans-serif;font-size:13px;outline:none;background:var(--cr);"/>
-          <input id="tareaCustomHora" type="time" value="08:00"
-            style="width:90px;border:1px solid var(--g4);border-radius:8px;padding:8px 10px;
-                   font-family:'DM Sans',sans-serif;font-size:13px;outline:none;background:var(--cr);"/>
-        </div>
-        <button onclick="confirmarTareaChat(-1)"
-          style="width:100%;margin-top:8px;background:var(--g);color:#fff;border:none;
-                 border-radius:99px;padding:10px;font-family:'DM Sans',sans-serif;
-                 font-size:13px;font-weight:500;cursor:pointer;">
-          ✅ Enviar tarea personalizada
-        </button>
-      </div>
-    </div>`;
-
-  document.body.appendChild(overlay);
-  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
-
-  // ── Confirmar y guardar ──
-  window.confirmarTareaChat = async (idx) => {
-    overlay.remove();
-
-    let tarea;
-    if (idx === -1) {
-      const nombre = document.getElementById('tareaCustomNombre')?.value.trim();
-      const hora   = document.getElementById('tareaCustomHora')?.value || '08:00';
-      if (!nombre) { showToast?.('Escribe el nombre de la tarea') || alert('Escribe el nombre'); return; }
-      tarea = { nombre, hora, emoji: '📋', cat: '🏠 General' };
-    } else {
-      const t = CATALOGO[idx];
-      tarea = { nombre: t.n, hora: t.h, emoji: t.e, cat: t.cat };
-    }
-
-    const md = {
-      tipo: 'tarea',
-      tarea,
-      remitenteUid: me.uid,
-      remitenteNombre: perfil.nombre,
-      timestamp: serverTimestamp(),
-      leido: false,
-    };
-
-    // Demo mode — solo local
-    if (chatId === 'demo') {
-      msgsDemo.push({ ...md, id:`dt-${Date.now()}`, timestamp:{ toDate:()=>new Date() } });
-      renderMsgs(msgsDemo);
-      return;
-    }
-
-    try {
-      // 1. Guardar mensaje en el chat
-      await addDoc(collection(db,'conversaciones',chatId,'mensajes'), md);
-      await updateDoc(doc(db,'conversaciones',chatId), {
-        ultimoMensaje: `📋 ${tarea.nombre}`,
-        ultimaHora: serverTimestamp(),
-        noLeidos: 1,
-      });
-
-      // 2. ✅ CORRECCIÓN: también guardar en hogares/{hogarId}/tareas
-      //    para que aparezca en tareas.html y en el dashboard
-      if (hogarId) {
-        await addDoc(collection(db,'hogares',hogarId,'tareas'), {
-          nombre:    tarea.nombre,
-          hora:      tarea.hora,
-          cat:       tarea.cat,
-          emoji:     tarea.emoji,
-          estado:    'pendiente',
-          prioridad: 'normal',
-          creadaA:   serverTimestamp(),
-          creadaPor: me.uid,
-        });
-      }
-    } catch(e) {
-      console.error('enviarTarea error:', e);
-    }
+  const tarea = {
+    nombre: tareas[idx].n,
+    hora:   tareas[idx].h,    // "07:00" — compatible con formatHora de tareas.html
+    cat:    tareas[idx].cat,  // "🍳 Cocina" — compatible con filtros y colores
+    emoji:  tareas[idx].e,
   };
+
+  // 1. Guardar como mensaje en el chat
+  const md = {
+    tipo:            'tarea',
+    tarea,
+    remitenteUid:    me.uid,
+    remitenteNombre: perfil.nombre,
+    timestamp:       serverTimestamp(),
+    leido:           false
+  };
+
+  if (chatId === 'demo') {
+    msgsDemo.push({ ...md, id: `dt-${Date.now()}`, timestamp: { toDate: () => new Date() } });
+    renderMsgs(msgsDemo);
+    return;
+  }
+
+  await addDoc(collection(db, 'conversaciones', chatId, 'mensajes'), md);
+  await updateDoc(doc(db, 'conversaciones', chatId), {
+    ultimoMensaje: `📋 ${tarea.nombre}`,
+    ultimaHora:    serverTimestamp(),
+    noLeidos:      1
+  });
+
+  // 2. Guardar en hogares/{hogarId}/tareas para que aparezca en tareas.html
+  if (hogarId) {
+    await addDoc(collection(db, 'hogares', hogarId, 'tareas'), {
+      nombre:            tarea.nombre,
+      hora:              tarea.hora,     // "07:00" → ordena y formatea correctamente
+      cat:               tarea.cat,      // "🍳 Cocina" → filtros y colores OK
+      prioridad:         'normal',
+      estado:            'pendiente',
+      fotoUrl:           null,
+      completadaA:       null,
+      asignadaDesdeChat: true,
+      creadoEn:          serverTimestamp()
+    });
+    showToast(`📋 "${tarea.nombre}" asignada`);
+  }
 };
 
 function initEmojis() {
@@ -739,6 +696,23 @@ document.addEventListener('click',e=>{
   const ap=document.getElementById('adjPanel'),ab=document.getElementById('btnAdj');
   if(ap&&ab&&!ap.contains(e.target)&&!ab.contains(e.target)) cerrarAdj();
 });
+
+// Exponer variables y funciones al scope global
+Object.defineProperty(window, 'convs', { get: () => convs });
+window.chatId = null;
+window.db = db;
+window.auth = auth;
+window.getDoc = getDoc;
+window.doc = doc;
+window.collection = collection;
+window.query = query;
+window.where = where;
+window.getDocs = getDocs;
+window.updateDoc = updateDoc;
+window.onSnapshot = onSnapshot;
+window.serverTimestamp = serverTimestamp;
+window.addDoc = addDoc;
+window.arrayUnion = arrayUnion;
 </script>
 </body>
 </html>
