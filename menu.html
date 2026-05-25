@@ -150,6 +150,23 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
 .toast{position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--g);color:#fff;font-size:13px;font-weight:500;padding:10px 20px;border-radius:99px;z-index:300;transition:transform .3s;white-space:nowrap;box-shadow:0 4px 16px rgba(26,107,82,.3);}
 .toast.visible{transform:translateX(-50%) translateY(0);}
 
+/* PERFIL ALIMENTARIO */
+.perfil-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:300;display:flex;align-items:flex-end;justify-content:center;}
+.perfil-modal.oculto{display:none;}
+.perfil-box{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;padding:24px 20px 40px;}
+@media(min-width:600px){.perfil-modal{align-items:center;}.perfil-box{border-radius:20px;}}
+.perfil-seccion{margin-bottom:20px;}
+.perfil-label{font-size:12px;font-weight:600;color:var(--txt2);letter-spacing:.04em;text-transform:uppercase;margin-bottom:8px;}
+.perfil-chips{display:flex;flex-wrap:wrap;gap:6px;}
+.chip{padding:6px 12px;border-radius:99px;border:1.5px solid var(--g4);background:var(--cr);font-size:13px;font-weight:500;color:var(--txt2);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.chip.activo{background:var(--g);border-color:var(--g);color:#fff;}
+.chip.alergia.activo{background:#DC2626;border-color:#DC2626;color:#fff;}
+.perfil-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
+.perfil-counter{display:flex;align-items:center;gap:8px;background:var(--cr);border-radius:10px;padding:8px 12px;border:1px solid var(--g4);}
+.perfil-counter-label{flex:1;font-size:13px;color:var(--txt);}
+.counter-btn{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--g4);background:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;color:var(--g);}
+.counter-val{font-size:15px;font-weight:600;color:var(--txt);min-width:20px;text-align:center;}
+.alerta-alergia{background:#FEE2E2;border-radius:8px;padding:8px 12px;font-size:12px;color:#991B1B;display:flex;align-items:center;gap:6px;margin-bottom:8px;}
 .empty-menu{text-align:center;padding:32px 20px;color:var(--txt2);}
 .empty-menu-icon{font-size:36px;margin-bottom:10px;}
 
@@ -199,6 +216,83 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
   </div>
 </div>
 
+<!-- PERFIL ALIMENTARIO MODAL -->
+<div class="perfil-modal oculto" id="perfilModal">
+  <div class="perfil-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div>
+        <div style="font-size:18px;font-weight:600;color:var(--txt);">Perfil de tu hogar</div>
+        <div style="font-size:12px;color:var(--txt2);">My Nana adapta el menú a tu realidad</div>
+      </div>
+      <button onclick="cerrarPerfil()" style="background:var(--g3);border:none;border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer;">×</button>
+    </div>
+
+    <!-- Personas -->
+    <div class="perfil-seccion">
+      <div class="perfil-label">👨‍👩‍👧 Personas del hogar</div>
+      <div id="contadores"></div>
+    </div>
+
+    <!-- Comidas en casa -->
+    <div class="perfil-seccion">
+      <div class="perfil-label">🍽️ ¿Quién come en casa?</div>
+      <div class="perfil-chips" id="comidasEnCasa">
+        <div class="chip activo" data-key="desayunaCasa" onclick="toggleChip(this)">🌅 Desayunan en casa</div>
+        <div class="chip activo" data-key="almuerzan" onclick="toggleChip(this)">☀️ Almuerzan en casa</div>
+        <div class="chip activo" data-key="cenan" onclick="toggleChip(this)">🌙 Cenan en casa</div>
+        <div class="chip" data-key="nanaComeCasa" onclick="toggleChip(this)">👩 La nana come en casa</div>
+      </div>
+    </div>
+
+    <!-- Alergias -->
+    <div class="perfil-seccion">
+      <div class="perfil-label">⚠️ Alergias e intolerancias</div>
+      <div class="perfil-chips" id="alergiasChips">
+        <div class="chip alergia" data-key="mariscos" onclick="toggleChip(this)">🦐 Mariscos</div>
+        <div class="chip alergia" data-key="pescado" onclick="toggleChip(this)">🐟 Pescado</div>
+        <div class="chip alergia" data-key="gluten" onclick="toggleChip(this)">🌾 Gluten</div>
+        <div class="chip alergia" data-key="lactosa" onclick="toggleChip(this)">🥛 Lactosa</div>
+        <div class="chip alergia" data-key="huevo" onclick="toggleChip(this)">🥚 Huevo</div>
+        <div class="chip alergia" data-key="nueces" onclick="toggleChip(this)">🥜 Frutos secos</div>
+        <div class="chip alergia" data-key="soya" onclick="toggleChip(this)">🌱 Soya</div>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:8px;">
+        <input id="alergiaPers" type="text" placeholder="Otra alergia..." class="form-input" style="flex:1;padding:7px 10px;font-size:12px;" />
+        <button onclick="agregarAlergiaPers()" class="btn-guardar" style="padding:7px 12px;font-size:12px;">+</button>
+      </div>
+      <div class="perfil-chips" id="alergiasPers" style="margin-top:6px;"></div>
+    </div>
+
+    <!-- Objetivos -->
+    <div class="perfil-seccion">
+      <div class="perfil-label">🎯 Objetivos y preferencias</div>
+      <div class="perfil-chips" id="objetivosChips">
+        <div class="chip" data-key="saludable" onclick="toggleChip(this)">🥗 Saludable</div>
+        <div class="chip" data-key="economico" onclick="toggleChip(this)">💰 Económico</div>
+        <div class="chip" data-key="rapido" onclick="toggleChip(this)">⚡ Rápido</div>
+        <div class="chip" data-key="infantil" onclick="toggleChip(this)">👶 Amigable niños</div>
+        <div class="chip" data-key="altaproteina" onclick="toggleChip(this)">💪 Alto en proteína</div>
+        <div class="chip activo" data-key="panameno" onclick="toggleChip(this)">🇵🇦 Panameño</div>
+        <div class="chip" data-key="comfort" onclick="toggleChip(this)">❤️ Comfort food</div>
+      </div>
+    </div>
+
+    <!-- Presupuesto -->
+    <div class="perfil-seccion">
+      <div class="perfil-label">💵 Presupuesto semanal estimado</div>
+      <div class="perfil-chips" id="presupuestoChips">
+        <div class="chip" data-key="bajo" onclick="selectPresupuesto(this)">Bajo (hasta $30)</div>
+        <div class="chip activo" data-key="medio" onclick="selectPresupuesto(this)">Medio ($30–$70)</div>
+        <div class="chip" data-key="alto" onclick="selectPresupuesto(this)">Sin límite</div>
+      </div>
+    </div>
+
+    <button onclick="guardarPerfil()" style="width:100%;background:var(--g);color:#fff;border:none;border-radius:99px;padding:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;margin-top:4px;">
+      Guardar perfil del hogar ✓
+    </button>
+  </div>
+</div>
+
 <!-- HEADER -->
 <div id="appHeader" style="display:none;">
   <div class="app-header">
@@ -244,6 +338,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
           <button class="modo-btn" id="btnEconomico" onclick="toggleModoEconomico()">
             <span class="modo-icon">💰</span>
             <div><div style="font-weight:600;">Modo económico</div><div style="font-size:11px;color:var(--txt2);">Ingredientes accesibles</div></div>
+          </button>
+          <button class="modo-btn" onclick="abrirPerfil()" style="grid-column:1/-1;border-color:var(--g);">
+            <span class="modo-icon">👨‍👩‍👧</span>
+            <div><div style="font-weight:600;">Perfil de mi hogar</div><div style="font-size:11px;color:var(--txt2);" id="perfilResumen">Personas, alergias y preferencias</div></div>
+            <span style="margin-left:auto;font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;background:var(--g3);color:var(--g);" id="perfilBadge">Configurar</span>
           </button>
         </div>
       </div>
@@ -692,22 +791,221 @@ function categorizarIngrediente(nombre) {
   return 'Otros';
 }
 
+// ── ALERGENOS: ingredientes asociados a cada alergia ──
+const ALERGENOS_MAP = {
+  mariscos: ['camarones','mariscos','calamar','pulpo','langosta','cangrejo','jaiba'],
+  pescado:  ['corvina','pargo','pescado','atún','tilapia','salmón','guacho de mariscos','cazuela de mariscos','ceviche','corvina al ajillo','arroz con camarones','arroz con coco y camarones'],
+  gluten:   ['harina','pan','pasta','fideos','galletas','tortilla de trigo','hojaldras','bollo de maíz','tamales'],
+  lactosa:  ['leche','queso','mantequilla','yogur','crema','leche de coco','leche condensada','leche descremada'],
+  huevo:    ['huevo','huevos','yemas'],
+  nueces:   ['nueces','almendras','maní','mantequilla de maní','nueces mixtas'],
+  soya:     ['salsa de soya','tofu','edamame','soya'],
+};
+
+let perfilAlimentario = {
+  adultos: 2, ninos: 0, nanaComeCasa: false,
+  desayunaCasa: true, almuerzan: true, cenan: true,
+  alergias: [], alergiasPersonalizadas: [],
+  objetivos: ['panameno'], presupuesto: 'medio',
+};
+
+// ── PERFIL: helpers ──
+function personasEnComida(tiempo) {
+  const p = perfilAlimentario;
+  const base = p.adultos + p.ninos + (p.nanaComeCasa ? 1 : 0);
+  if (tiempo === 'desayuno' && !p.desayunaCasa) return Math.ceil(base * 0.5);
+  if (tiempo === 'almuerzo' && !p.almuerzan) return Math.ceil(base * 0.5);
+  if (tiempo === 'cena' && !p.cenan) return Math.ceil(base * 0.5);
+  return base;
+}
+
+function ingredienteTieneAlergia(ing) {
+  const ingLow = ing.toLowerCase();
+  const todasAlergias = [...perfilAlimentario.alergias, ...perfilAlimentario.alergiasPersonalizadas];
+  return todasAlergias.some(a => {
+    const keywords = ALERGENOS_MAP[a] || [a.toLowerCase()];
+    return keywords.some(k => ingLow.includes(k));
+  });
+}
+
+function platoTieneAlergia(nombrePlato) {
+  const ings = getIngredientesActuales(nombrePlato) || [];
+  return ings.some(ing => ingredienteTieneAlergia(ing));
+}
+
+function filtrarPlatosSeguros(lista) {
+  if (!perfilAlimentario.alergias.length && !perfilAlimentario.alergiasPersonalizadas.length) return lista;
+  return lista.filter(p => !platoTieneAlergia(p));
+}
+
+function escalarCantidad(ingStr, personas) {
+  if (personas <= 1) return ingStr;
+  // Detectar patrón número + unidad, multiplicar
+  return ingStr.replace(/(\d+(?:\.\d+)?)\s*(kg|g|ml|l|tazas?|cdas?|cdtas?|litros?|unidades?|x\d+)/gi, (match, num, unit) => {
+    const scaled = Math.round(parseFloat(num) * (personas / 4) * 10) / 10;
+    return `${scaled} ${unit}`;
+  }).replace(/\bx(\d+)\b/gi, (match, num) => {
+    const scaled = Math.ceil(parseInt(num) * (personas / 4));
+    return `x${scaled}`;
+  });
+}
+
+// ── PERFIL UI ──
+window.abrirPerfil = () => {
+  renderContadores();
+  sincronizarChipsFromPerfil();
+  document.getElementById('perfilModal').classList.remove('oculto');
+};
+window.cerrarPerfil = () => document.getElementById('perfilModal').classList.add('oculto');
+
+function renderContadores() {
+  const campos = [
+    { key:'adultos', label:'Adultos', min:1 },
+    { key:'ninos',   label:'Niños',   min:0 },
+  ];
+  document.getElementById('contadores').innerHTML = campos.map(c => `
+    <div class="perfil-counter" style="margin-bottom:8px;">
+      <span class="perfil-counter-label">${c.label}</span>
+      <button class="counter-btn" onclick="cambiarContador('${c.key}',-1,${c.min})">−</button>
+      <span class="counter-val" id="cnt_${c.key}">${perfilAlimentario[c.key]}</span>
+      <button class="counter-btn" onclick="cambiarContador('${c.key}',1,${c.min})">+</button>
+    </div>`).join('');
+}
+
+window.cambiarContador = (key, delta, min) => {
+  perfilAlimentario[key] = Math.max(min, (perfilAlimentario[key] || 0) + delta);
+  const el = document.getElementById(`cnt_${key}`);
+  if (el) el.textContent = perfilAlimentario[key];
+};
+
+window.toggleChip = (el) => {
+  const key = el.dataset.key;
+  el.classList.toggle('activo');
+  const isAlergia = el.closest('#alergiasChips');
+  if (isAlergia) {
+    if (el.classList.contains('activo')) {
+      if (!perfilAlimentario.alergias.includes(key)) perfilAlimentario.alergias.push(key);
+    } else {
+      perfilAlimentario.alergias = perfilAlimentario.alergias.filter(a => a !== key);
+    }
+    return;
+  }
+  const isComida = el.closest('#comidasEnCasa');
+  if (isComida) { perfilAlimentario[key] = el.classList.contains('activo'); return; }
+  const isObj = el.closest('#objetivosChips');
+  if (isObj) {
+    if (el.classList.contains('activo')) {
+      if (!perfilAlimentario.objetivos.includes(key)) perfilAlimentario.objetivos.push(key);
+    } else {
+      perfilAlimentario.objetivos = perfilAlimentario.objetivos.filter(o => o !== key);
+    }
+  }
+};
+
+window.selectPresupuesto = (el) => {
+  document.querySelectorAll('#presupuestoChips .chip').forEach(c => c.classList.remove('activo'));
+  el.classList.add('activo');
+  perfilAlimentario.presupuesto = el.dataset.key;
+};
+
+window.agregarAlergiaPers = () => {
+  const input = document.getElementById('alergiaPers');
+  const val = input.value.trim().toLowerCase();
+  if (!val || perfilAlimentario.alergiasPersonalizadas.includes(val)) return;
+  perfilAlimentario.alergiasPersonalizadas.push(val);
+  renderAlergiasPers();
+  input.value = '';
+};
+
+function renderAlergiasPers() {
+  const cont = document.getElementById('alergiasPers');
+  if (!cont) return;
+  cont.innerHTML = perfilAlimentario.alergiasPersonalizadas.map((a,i) => `
+    <div class="chip alergia activo" style="display:flex;align-items:center;gap:4px;">
+      ${a} <span onclick="quitarAlergiaPers(${i})" style="cursor:pointer;opacity:.7;">×</span>
+    </div>`).join('');
+}
+
+window.quitarAlergiaPers = (i) => {
+  perfilAlimentario.alergiasPersonalizadas.splice(i, 1);
+  renderAlergiasPers();
+};
+
+function sincronizarChipsFromPerfil() {
+  // Alergias
+  document.querySelectorAll('#alergiasChips .chip').forEach(c => {
+    c.classList.toggle('activo', perfilAlimentario.alergias.includes(c.dataset.key));
+  });
+  // Comidas
+  ['desayunaCasa','almuerzan','cenan','nanaComeCasa'].forEach(key => {
+    const el = document.querySelector(`[data-key="${key}"]`);
+    if (el) el.classList.toggle('activo', !!perfilAlimentario[key]);
+  });
+  // Objetivos
+  document.querySelectorAll('#objetivosChips .chip').forEach(c => {
+    c.classList.toggle('activo', perfilAlimentario.objetivos.includes(c.dataset.key));
+  });
+  // Presupuesto
+  document.querySelectorAll('#presupuestoChips .chip').forEach(c => {
+    c.classList.toggle('activo', c.dataset.key === perfilAlimentario.presupuesto);
+  });
+  renderAlergiasPers();
+}
+
+window.guardarPerfil = async () => {
+  try {
+    await setDoc(doc(db, 'hogares', hogarId, 'configuracion', 'alimentaria'), {
+      ...perfilAlimentario, actualizadoA: serverTimestamp()
+    });
+    actualizarBadgePerfil();
+    cerrarPerfil();
+    showToast('✅ Perfil del hogar guardado');
+    renderMenuDia(); // re-render to show allergy warnings
+  } catch(e) { showToast('Error al guardar'); console.error(e); }
+};
+
+async function cargarPerfilAlimentario() {
+  try {
+    const snap = await getDoc(doc(db, 'hogares', hogarId, 'configuracion', 'alimentaria'));
+    if (snap.exists()) {
+      perfilAlimentario = { ...perfilAlimentario, ...snap.data() };
+    }
+  } catch(e) {}
+  actualizarBadgePerfil();
+}
+
+function actualizarBadgePerfil() {
+  const badge = document.getElementById('perfilBadge');
+  const resumen = document.getElementById('perfilResumen');
+  const total = perfilAlimentario.adultos + perfilAlimentario.ninos;
+  const alergias = [...perfilAlimentario.alergias, ...perfilAlimentario.alergiasPersonalizadas];
+  if (badge) badge.textContent = `${total} persona${total !== 1 ? 's' : ''}`;
+  if (resumen) resumen.textContent = alergias.length
+    ? `⚠️ ${alergias.length} alergia${alergias.length > 1 ? 's' : ''} configurada${alergias.length > 1 ? 's' : ''}`
+    : `${total} persona${total !== 1 ? 's' : ''} · ${perfilAlimentario.objetivos.length} preferencias`;
+}
+
 window.autoPlanificar = async () => {
-  const platos = modoEconomico ? PLATOS_ECONOMICOS : modoSaludable ? PLATOS_SALUDABLES : PLATOS_SUGERIDOS;
+  // Elegir fuente según objetivos del perfil
+  let platos = PLATOS_SUGERIDOS;
+  if (perfilAlimentario.objetivos.includes('saludable') || modoSaludable) platos = PLATOS_SALUDABLES;
+  else if (perfilAlimentario.objetivos.includes('economico') || perfilAlimentario.presupuesto === 'bajo' || modoEconomico) platos = PLATOS_ECONOMICOS;
+  else if (perfilAlimentario.objetivos.includes('rapido')) platos = PLATOS_RAPIDOS;
+
   DIAS.forEach((_, i) => {
     if (!menuData[`dia_${i}`]) menuData[`dia_${i}`] = {};
     TIEMPOS.forEach(t => {
-      if (menuData[`dia_${i}`][t.id]?.nombre) return; // no sobreescribir
-      const lista = platos[t.id] || [];
-      if (!lista.length) return;
-      const plato = lista[Math.floor(Math.random() * lista.length)];
+      if (menuData[`dia_${i}`][t.id]?.nombre) return;
+      const listaFiltrada = filtrarPlatosSeguros(platos[t.id] || []);
+      if (!listaFiltrada.length) return;
+      const plato = listaFiltrada[Math.floor(Math.random() * listaFiltrada.length)];
       menuData[`dia_${i}`][t.id] = { nombre: plato };
       const ings = getIngredientesActuales(plato);
       if (ings) menuData[`dia_${i}`][t.id].ingredientes = [...ings];
     });
   });
   await guardarMenu();
-  showToast('✨ Semana planificada automáticamente');
+  showToast('✨ Semana planificada según tu perfil');
 };
 
 window.modoSemanaOcupada = async () => {
@@ -809,6 +1107,7 @@ function inicializar() {
     const p = document.getElementById('modosPanelFam');
     if (p) p.style.display = 'none';
   }
+  cargarPerfilAlimentario();
   renderDias();
   renderSemanaLabel();
   seleccionarDia(diaSemanaActual());
@@ -911,6 +1210,7 @@ function renderMenuFamilia(contenedor, diaMenu, diaKey) {
             <div class="tiempo-nombre">${t.nombre}</div>
             <div class="tiempo-plato ${tieneContenido ? '' : 'vacio'}">${plato.nombre || 'Toca para agregar plato...'}</div>
             <div class="tiempo-hora">${t.hora}</div>
+            ${tieneContenido && platoTieneAlergia(plato.nombre) ? `<div class="alerta-alergia">⚠️ Contiene alergia del hogar</div>` : ''}
           </div>
           <div class="tiempo-actions">
             ${tieneContenido ? `<button class="btn-del" onclick="event.stopPropagation();eliminarPlato('${diaKey}','${t.id}')">✕</button>` : ''}
@@ -1106,37 +1406,56 @@ function renderSemanaGrid() {
 
 // ── LISTA MERCADO ──
 function generarListaMercado() {
-  const nuevosItems = [];
-  DIAS.forEach((d, i) => {
+  const consolidado = {}; // nombre_base → { nombre, cant, tiempos, tieneAlergia }
+
+  DIAS.forEach((_, i) => {
     const diaMenu = menuData[`dia_${i}`] || {};
     TIEMPOS.forEach(t => {
       const plato = diaMenu[t.id];
-      if (!plato) return;
+      if (!plato?.nombre) return;
 
-      // Buscar ingredientes: primero en el plato, luego en INGREDIENTES_SALUDABLES
       let ingredientes = plato.ingredientes || [];
-      if (!ingredientes.length && plato.nombre) {
-        ingredientes = getIngredientesActuales(plato.nombre) || [];
-      }
+      if (!ingredientes.length) ingredientes = getIngredientesActuales(plato.nombre) || [];
+
+      const personas = personasEnComida(t.id);
 
       ingredientes.forEach(ing => {
-        const existe = nuevosItems.find(item => item.nombre.toLowerCase() === ing.toLowerCase());
-        if (!existe) {
-          nuevosItems.push({ nombre: ing, cat: t.nombre, origen: 'menu', comprado: false });
+        const scaled = escalarCantidad(ing, personas);
+        const key = ing.toLowerCase().replace(/\(.*?\)/g,'').trim().split(' ').slice(0,2).join(' ');
+
+        if (consolidado[key]) {
+          // Ya existe — marcar como "×varios días" si viene de otro día
+          if (!consolidado[key].dias.includes(i)) {
+            consolidado[key].dias.push(i);
+            consolidado[key].nombre = `${key} (×${consolidado[key].dias.length} usos)`;
+          }
+        } else {
+          consolidado[key] = {
+            nombre: scaled,
+            dias: [i],
+            origen: 'menu',
+            comprado: false,
+            tieneAlergia: ingredienteTieneAlergia(ing),
+            opcional: false,
+          };
         }
       });
     });
   });
 
-  // Mantener los manuales y el estado de comprados
+  const nuevosItems = Object.values(consolidado);
+
+  // Mantener manuales y estado de comprados
   const manuales = mercadoItems.filter(i => i.origen === 'manual');
   const autoItems = nuevosItems.map(ni => {
-    const existente = mercadoItems.find(m => m.nombre.toLowerCase() === ni.nombre.toLowerCase());
+    const key = ni.nombre.toLowerCase().split('(')[0].trim().split(' ').slice(0,2).join(' ');
+    const existente = mercadoItems.find(m =>
+      m.nombre.toLowerCase().split('(')[0].trim().split(' ').slice(0,2).join(' ') === key
+    );
     return existente ? { ...ni, comprado: existente.comprado } : ni;
   });
 
-  const todosItems = [...autoItems, ...manuales];
-  guardarMercado(todosItems);
+  guardarMercado([...autoItems, ...manuales]);
 }
 
 async function guardarMercado(items) {
@@ -1185,7 +1504,7 @@ function renderMercado() {
         <div class="mercado-check ${item.comprado ? 'comprado' : ''}">
           ${item.comprado ? '<svg width="10" height="8" viewBox="0 0 10 8" fill="none"><polyline points="1,4 3,7 9,1" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>' : ''}
         </div>
-        <span class="mercado-nombre">${item.nombre}${dup ? '<span class="dup-badge">×varios</span>' : ''}</span>
+        <span class="mercado-nombre">${item.nombre}${item.tieneAlergia ? ' <span style="font-size:10px;background:#FEE2E2;color:#991B1B;padding:1px 5px;border-radius:4px;">⚠️ Alergia</span>' : ''}${dup ? '<span class="dup-badge">×varios</span>' : ''}</span>
       </div>`).join('')}
   `).join('') + (comprados.length ? `
     <div style="font-size:10px;color:var(--txt2);font-weight:600;text-transform:uppercase;letter-spacing:.04em;padding:10px 10px 6px;border-top:1px solid var(--g4);">
