@@ -1264,7 +1264,8 @@ footer {
   border-radius: 24px;
   width: 100%;
   max-width: 480px;
-overflow-y: auto; max-height: 90vh;
+  max-height: 90vh;
+  overflow-y: auto;
   box-shadow: 0 32px 80px rgba(15,74,56,.25);
   transform: translateY(24px) scale(.97);
   transition: transform .35s cubic-bezier(.4,0,.2,1);
@@ -2418,7 +2419,7 @@ body.lang-es .es{display:initial !important;}
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, doc, setDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyDDJRJ8A8P507lllGRBOoXO30ESAH1GAnw",
@@ -2487,6 +2488,89 @@ window.registrarNanaFirebase = async function({ nombre, apellido, cedula, correo
     return { ok: false, error: e.message };
   }
 };
+
+// ── CÓDIGO FAMILIAR ──
+window.toggleCodigoFamiliar = function() {
+  const form = document.getElementById('formCodigoFamiliar');
+  const btn  = document.getElementById('btnToggleCodigo');
+  const abierto = form.style.display !== 'none';
+  form.style.display = abierto ? 'none' : 'block';
+  btn.style.background = abierto ? 'transparent' : 'var(--g3)';
+  btn.style.borderColor = abierto ? 'var(--g4)' : 'var(--g)';
+  btn.style.color = abierto ? 'var(--txt2)' : 'var(--g)';
+};
+
+window.unirseConCodigo = async function() {
+  const nombre   = document.getElementById('cfNombre').value.trim();
+  const correo   = document.getElementById('cfCorreo').value.trim();
+  const password = document.getElementById('cfPassword').value.trim();
+  const codigo   = document.getElementById('cfCodigo').value.trim().toUpperCase();
+  const errEl    = document.getElementById('cfError');
+  const btn      = document.getElementById('btnUnirse');
+
+  const mostrarError = (msg) => {
+    errEl.textContent = msg;
+    errEl.style.display = 'block';
+    btn.textContent = 'Unirme al hogar →';
+    btn.disabled = false;
+  };
+
+  errEl.style.display = 'none';
+
+  if (!nombre)             return mostrarError('⚠️ Ingresa tu nombre.');
+  if (!correo || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) return mostrarError('⚠️ Ingresa un correo válido.');
+  if (password.length < 6) return mostrarError('⚠️ La contraseña debe tener al menos 6 caracteres.');
+  if (!codigo)             return mostrarError('⚠️ Ingresa el código familiar.');
+
+  btn.textContent = 'Verificando código...';
+  btn.disabled = true;
+
+  try {
+    const codigoSnap = await getDoc(doc(db, 'codigos_familia', codigo));
+    if (!codigoSnap.exists()) {
+      return mostrarError('❌ Código no encontrado. Pídele al titular que lo comparta desde su perfil.');
+    }
+    const hogarId = codigoSnap.data().hogarId;
+    if (!hogarId) return mostrarError('❌ Código inválido. Solicita uno nuevo.');
+
+    btn.textContent = 'Creando cuenta...';
+    const cred = await createUserWithEmailAndPassword(auth, correo, password);
+    const uid  = cred.user.uid;
+
+    await setDoc(doc(db, 'usuarios', uid), {
+      nombre, email: correo, tipo: 'familia',
+      hogarId, creado: serverTimestamp(), unidoConCodigo: codigo
+    });
+
+    await updateDoc(doc(db, 'hogares', hogarId), { participantes: arrayUnion(uid) });
+
+    try {
+      await fetch('/.netlify/functions/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tipo: 'familia', nombre, email: correo })
+      });
+    } catch(e) { console.log('Correo no enviado:', e); }
+
+    document.getElementById('modalForm').style.display = 'none';
+    document.getElementById('successMsg').innerHTML =
+      `¡Bienvenido/a al hogar, <strong>${nombre}</strong>!<br><br>
+       Ya puedes ver tareas, el chat y el menú de tu familia en tiempo real.<br><br>
+       <a href="/app.html" style="display:inline-block;margin-top:12px;background:var(--g);color:#fff;padding:12px 24px;border-radius:99px;text-decoration:none;font-weight:500;">
+         Ir al Dashboard →
+       </a>`;
+    document.getElementById('modalSuccess').classList.add('visible');
+
+  } catch(e) {
+    if (e.code === 'auth/email-already-in-use') {
+      mostrarError('⚠️ Este correo ya tiene cuenta. Ve a mynana.app/app.html e inicia sesión.');
+    } else {
+      mostrarError('❌ Error: ' + (e.message || 'Intenta de nuevo.'));
+      console.error(e);
+    }
+  }
+};
+
 </script>
 </head>
 <body>
@@ -2555,7 +2639,50 @@ window.registrarNanaFirebase = async function({ nombre, apellido, cedula, correo
       <div class="form-note">
         🔒 <span class="es">Tu tarjeta se registra de forma segura. El cobro inicia el día 16 según el plan que elijas.</span><span class="en">Your card is stored securely. Billing starts on day 16 based on the plan you choose.</span>
       </div>
-    </div>
+
+      <!-- ACCESO CON CÓDIGO FAMILIAR -->
+      <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--g4);">
+        <button onclick="toggleCodigoFamiliar()" id="btnToggleCodigo"
+          style="width:100%;background:transparent;border:1.5px solid var(--g4);border-radius:99px;padding:12px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--txt2);cursor:pointer;transition:all .2s;">
+          <span class="es">👨‍👩‍👧 ¿Tienes un código familiar? Únete sin plan</span>
+          <span class="en">👨‍👩‍👧 Have a family code? Join without a plan</span>
+        </button>
+
+        <div id="formCodigoFamiliar" style="display:none;margin-top:14px;">
+          <div style="font-size:12px;color:var(--txt2);margin-bottom:14px;background:var(--g3);padding:10px 12px;border-radius:8px;">
+            <span class="es">Un miembro de tu familia compartió este hogar contigo. Ingresa tus datos y el código para unirte.</span>
+            <span class="en">A family member shared this home with you. Enter your details and the code to join.</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label"><span class="es">Tu nombre</span><span class="en">Your name</span></label>
+            <input type="text" class="form-input" id="cfNombre" placeholder="¿Cómo te llamas?" />
+          </div>
+          <div class="form-group">
+            <label class="form-label"><span class="es">Correo electrónico</span><span class="en">Email address</span></label>
+            <input type="email" class="form-input" id="cfCorreo" placeholder="tucorreo@email.com" />
+          </div>
+          <div class="form-group">
+            <label class="form-label"><span class="es">Contraseña</span><span class="en">Password</span></label>
+            <input type="password" class="form-input" id="cfPassword" placeholder="Mínimo 6 caracteres" />
+          </div>
+          <div class="form-group">
+            <label class="form-label"><span class="es">Código familiar</span><span class="en">Family code</span></label>
+            <input type="text" class="form-input" id="cfCodigo"
+              placeholder="Ej: FG2QD0"
+              style="text-transform:uppercase;letter-spacing:.1em;font-weight:600;font-size:16px;" />
+            <div style="font-size:11px;color:var(--txt2);margin-top:4px;">
+              <span class="es">El código lo comparte quien creó el hogar. Solo para familiares, no para la nana.</span>
+              <span class="en">The code is shared by whoever created the home. Family members only, not for the nana.</span>
+            </div>
+          </div>
+          <div id="cfError" style="display:none;font-size:12px;color:#e05c5c;margin-bottom:10px;padding:8px 12px;background:#FEF2F2;border-radius:8px;"></div>
+          <button onclick="unirseConCodigo()"
+            style="width:100%;background:var(--g);color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;padding:14px;border-radius:99px;border:none;cursor:pointer;transition:all .2s;"
+            id="btnUnirse">
+            <span class="es">Unirme al hogar →</span><span class="en">Join home →</span>
+          </button>
+        </div>
+      </div>
 
     <!-- PASO 2: PLAN -->
     <div class="modal-body" id="modalPlan" style="display:none;">
