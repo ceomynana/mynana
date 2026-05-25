@@ -563,8 +563,88 @@ const INGREDIENTES_SALUDABLES = {
   'Smoothie verde de espinaca': ['Espinaca (2 tazas)','Banano x1','Leche de almendras (1 taza)','Miel (1 cda)','Hielo'],
   'Batido de papaya y jengibre': ['Papaya (200g)','Jengibre fresco (1 trozo)','Agua fría (1 taza)','Limón','Miel'],
   'Yogur natural con granola y frutas': ['Yogur griego natural (200g)','Granola sin azúcar (3 cdas)','Fresas (100g)','Banano','Miel de abeja'],
+  'Smoothie verde de espinaca': ['Espinaca (2 tazas)','Banano x1','Leche de almendras (1 taza)','Miel (1 cda)','Hielo'],
+  'Batido de papaya y jengibre': ['Papaya (200g)','Jengibre fresco (1 trozo)','Agua fría (1 taza)','Limón','Miel'],
+  'Yogur natural con granola y frutas': ['Yogur griego natural (200g)','Granola sin azúcar (3 cdas)','Fresas (100g)','Banano','Miel de abeja'],
+  // Saludables faltantes
+  'Avena con chía y coco': ['Avena (1 taza)','Chía (2 cdas)','Coco rallado (3 cdas)','Leche descremada (1 taza)','Miel','Canela'],
+  'Huevos duros con vegetales': ['Huevos x4','Zanahoria (100g)','Apio x2','Tomate cherry','Sal','Pimienta'],
+  'Bowl de arroz integral con vegetales': ['Arroz integral (1.5 tazas)','Brócoli (150g)','Zanahoria (100g)','Edamame (100g)','Salsa de soya','Aceite de sésamo','Sal'],
+  'Ensalada verde con atún': ['Atún en agua (2 latas)','Lechuga','Tomate x2','Pepino','Cebolla','Limón','Aceite de oliva','Sal'],
+  'Pollo horneado con camote': ['Pollo (1kg)','Camote (400g)','Ajo','Romero','Aceite de oliva','Sal','Pimienta','Limón'],
+  'Chayote guisado con pollo': ['Pollo (600g)','Chayote x3','Tomate x2','Cebolla','Ajo','Culantro','Sal','Aceite'],
+  'Ensalada de garbanzos': ['Garbanzos cocidos (2 latas)','Tomate x2','Pepino','Cebolla morada','Culantro','Limón','Aceite de oliva','Sal','Comino'],
+  'Vegetales salteados con tofu': ['Tofu firme (400g)','Brócoli (200g)','Zanahoria (150g)','Pimiento rojo','Ajo','Salsa de soya','Aceite de sésamo','Jengibre'],
+  'Ensalada César con pollo a la plancha': ['Pechuga (400g)','Lechuga romana','Crutones','Queso parmesano','Aderezo César','Limón','Sal'],
+  'Caldo de res desgrasado': ['Huesos de res (1kg)','Zanahoria x2','Apio x2','Cebolla','Ajo','Culantro','Sal','Agua'],
+  'Tortilla de vegetales al horno': ['Huevos x4','Pimiento rojo','Espinaca (1 taza)','Cebolla','Tomate','Sal','Pimienta','Aceite de oliva'],
+  'Puré de batata con pollo': ['Batata (500g)','Pechuga de pollo (400g)','Mantequilla (1 cda)','Leche descremada','Sal','Pimienta','Ajo'],
+  'Ensalada de espinaca con huevo': ['Espinaca (3 tazas)','Huevos x3','Tomate cherry','Cebolla morada','Limón','Aceite de oliva','Sal'],
+  'Brócoli al vapor con pollo': ['Brócoli (300g)','Pechuga de pollo (400g)','Ajo','Limón','Sal','Pimienta','Aceite de oliva'],
+  'Sopa de zanahoria y jengibre': ['Zanahoria x6','Jengibre fresco (2 trozos)','Cebolla','Ajo','Caldo de vegetales (1L)','Sal','Pimienta'],
+  'Fruta natural con limón': ['Sandía (300g)','Melón (200g)','Piña (200g)','Limón x2','Sal','Chile en polvo (opcional)'],
+  'Yogur griego con frutas': ['Yogur griego (200g)','Fresas (100g)','Banano x1','Miel (1 cda)','Granola (2 cdas)'],
+  'Zanahoria y apio con hummus': ['Zanahoria x3','Apio x3','Hummus (150g)','Limón','Sal'],
+  'Manzana con mantequilla de maní': ['Manzana x2','Mantequilla de maní natural (3 cdas)','Canela'],
+  'Jugo verde natural': ['Espinaca (2 tazas)','Pepino x1','Manzana verde x1','Limón x1','Jengibre','Agua (1 taza)'],
+  'Nueces y almendras': ['Nueces (30g)','Almendras (30g)','Pasas (15g)'],
+  'Batido de maracuyá sin azúcar': ['Maracuyá x4','Agua fría (1 taza)','Hielo','Stevia al gusto'],
+  'Pepino con limón y sal': ['Pepino x2','Limón x1','Sal','Chile en polvo (opcional)'],
+  'Gelatina de frutas natural': ['Gelatina sin sabor (14g)','Jugo de frutas natural (2 tazas)','Fresas (100g)','Kiwi x1'],
+  'Palitos de zanahoria con hummus': ['Zanahoria x4','Hummus (200g)','Limón','Sal'],
+  'Manzana verde con canela': ['Manzana verde x2','Canela en polvo','Miel (opcional)'],
+  'Puñado de nueces mixtas': ['Nueces (25g)','Almendras (25g)','Maní tostado (25g)'],
+  'Fresas con miel de abeja': ['Fresas (200g)','Miel de abeja (2 cdas)','Menta fresca'],
+  'Apio con queso bajo en grasa': ['Apio x4','Queso cottage (100g)','Sal','Pimienta'],
 };
-let usuarioActual = null;
+
+// ── INGREDIENTES PLATOS TRADICIONALES FALTANTES ──
+const INGREDIENTES_EXTRA = {
+  'Avena con leche y canela': ['Avena (1.5 tazas)','Leche (1.5 tazas)','Azúcar (2 cdas)','Canela en polvo','Sal (pizca)'],
+  'Pan tostado con mantequilla y queso': ['Pan de molde x4','Mantequilla (2 cdas)','Queso blanco (150g)'],
+  'Chicha de maíz con desayuno': ['Maíz (2 tazas)','Azúcar','Agua','Canela','Clavos de olor'],
+  'Tamales de maíz': ['Maíz molido (3 tazas)','Carne de cerdo (400g)','Pollo (300g)','Alcaparras','Aceitunas','Pimientos','Sal','Aceite','Hojas de bijao'],
+  'Raspao de tamarindo': ['Hielo en bloque','Tamarindo (200g)','Azúcar','Agua'],
+  'Sopa de pata': ['Pata de res (1kg)','Garbanzos (200g)','Papas (300g)','Zanahoria','Cebolla','Ajo','Culantro','Sal','Orégano'],
+  'Ceviche de corvina': ['Corvina fresca (500g)','Limón (10 unidades)','Cebolla morada','Culantro','Ají chombo','Sal','Pimienta'],
+  'Arroz con coco y camarones': ['Arroz (2 tazas)','Leche de coco (400ml)','Camarones (400g)','Cebolla','Ajo','Sal','Aceite'],
+  'Cabeza de gato': ['Arroz (2 tazas)','Frijoles rojos (1 taza)','Cebolla','Ajo','Culantro','Sal','Aceite','Cerdo ahumado (200g)'],
+  'Puerco guisado con arroz': ['Costillas de cerdo (800g)','Arroz (2 tazas)','Cebolla','Ajo','Tomate x2','Culantro','Sal','Aceite','Achiote'],
+  'Bienmesabe de coco': ['Leche de coco (400ml)','Azúcar (1 taza)','Yemas de huevo x4','Vainilla','Canela'],
+  'Raspao de tamarindo o guanábana': ['Hielo en bloque','Tamarindo o guanábana (200g)','Azúcar','Agua'],
+  'Chicha de piña': ['Piña x1','Azúcar (1 taza)','Agua (2 litros)','Clavos de olor','Canela'],
+  'Platano maduro asado': ['Plátano maduro x4','Mantequilla (1 cda)','Sal (pizca)'],
+  'Dulce de naranja': ['Naranja x6','Azúcar (2 tazas)','Agua','Canela','Clavos de olor'],
+  'Nance en almíbar': ['Nance (1 kg)','Azúcar (2 tazas)','Agua','Canela'],
+  'Conserva de marañón': ['Marañón (1kg)','Azúcar (2 tazas)','Agua','Canela'],
+  'Pasta con carne molida': ['Pasta (400g)','Carne molida (400g)','Tomate (3 unidades)','Cebolla','Ajo','Pimiento','Culantro','Sal','Aceite','Orégano'],
+  'Pollo asado con ensalada': ['Pollo entero (1.5kg)','Ajo','Limón x2','Romero','Sal','Pimienta','Aceite','Lechuga','Tomate','Pepino'],
+  'Guiso de res con vegetales': ['Carne de res (600g)','Zanahoria x2','Papa x2','Chayote x1','Cebolla','Ajo','Tomate x2','Culantro','Sal','Aceite'],
+  'Arroz con habichuelas': ['Arroz (2 tazas)','Habichuelas (1 taza)','Ajo','Cebolla','Sal','Aceite','Culantro'],
+  'Tortilla de maíz con pollo': ['Tortillas de maíz x6','Pollo desmenuzado (400g)','Lechuga','Tomate','Crema agria','Sal','Aceite'],
+  'Ensalada de atún': ['Atún en agua (2 latas)','Mayonesa (3 cdas)','Cebolla','Apio','Pepino','Sal','Pimienta','Limón'],
+  'Pescado en salsa de tomate': ['Corvina (4 filetes)','Tomate (4 unidades)','Cebolla','Ajo','Pimiento','Culantro','Sal','Aceite','Limón'],
+  'Arroz con queso y vegetales': ['Arroz (2 tazas)','Queso blanco (200g)','Zanahoria','Arvejas (1 taza)','Cebolla','Ajo','Sal','Aceite'],
+  'Cazuela de mariscos': ['Mariscos surtidos (600g)','Leche de coco (400ml)','Tomate x2','Cebolla','Ajo','Culantro','Sal','Aceite','Pimiento'],
+  'Sándwich de pollo': ['Pollo desmenuzado (300g)','Pan de sándwich x4','Lechuga','Tomate','Mayonesa','Mostaza','Sal','Pimienta'],
+  'Arroz blanco con pollo frito': ['Arroz (2 tazas)','Pollo en presas (800g)','Ajo','Sal','Pimienta','Aceite para freír'],
+  'Pasta con salsa de tomate': ['Pasta (400g)','Tomate (4 unidades)','Ajo','Cebolla','Sal','Aceite de oliva','Orégano','Albahaca'],
+  'Arroz con salchicha guisada': ['Arroz (2 tazas)','Salchicha (1 paquete)','Tomate x2','Cebolla','Ajo','Pimiento','Sal','Aceite'],
+  'Arroz frito con huevo': ['Arroz cocido (3 tazas)','Huevos x3','Cebolla','Ajo','Zanahoria','Salsa de soya','Aceite','Sal'],
+  'Huevos revueltos rápidos': ['Huevos x4','Mantequilla (1 cda)','Sal','Pimienta','Leche (2 cdas)'],
+  'Avena instantánea': ['Avena instantánea (2 tazas)','Leche o agua (2 tazas)','Azúcar (2 cdas)','Canela'],
+  'Fruta picada con queso': ['Sandía (300g)','Melón (200g)','Queso blanco (100g)','Limón','Sal'],
+  'Cereal con leche': ['Cereal (2 tazas)','Leche (2 tazas)'],
+  'Sopa de sobre con pan': ['Sopa en sobre x2','Agua (1 litro)','Pan x4','Sal'],
+  'Arroz con frijoles en lata': ['Arroz (2 tazas)','Frijoles en lata x1','Ajo','Sal','Aceite','Culantro'],
+  'Huevos fritos con arroz': ['Huevos x4','Arroz (2 tazas)','Aceite','Sal','Ajo'],
+  'Pasta con mantequilla y queso': ['Pasta (400g)','Mantequilla (3 cdas)','Queso parmesano (100g)','Sal','Ajo en polvo'],
+};
+
+// Merge all ingredient dictionaries into one lookup
+function getIngredientesActuales(nombre) {
+  return INGREDIENTES_SALUDABLES[nombre] || INGREDIENTES_BASE[nombre] || INGREDIENTES_EXTRA[nombre] || null;
+}
 let perfilActual = null;
 let hogarId = null;
 let diaSeleccionado = 0;
@@ -689,9 +769,6 @@ function getPlatosActuales() {
   return modoSaludable ? PLATOS_SALUDABLES : PLATOS_SUGERIDOS;
 }
 
-function getIngredientesActuales(nombre) {
-  return INGREDIENTES_SALUDABLES[nombre] || INGREDIENTES_BASE[nombre] || null;
-}
 
 // ── AUTH ──
 onAuthStateChanged(auth, async (user) => {
@@ -937,9 +1014,10 @@ window.guardarPlato = async (diaKey, tiempoId) => {
   menuData[diaKey][tiempoId].nombre = nombre;
 
   // Auto-agregar ingredientes si existen
-  if (getIngredientesActuales(nombre) && !menuData[diaKey][tiempoId].ingredientes?.length) {
-    menuData[diaKey][tiempoId].ingredientes = [...getIngredientesActuales(nombre)];
-  }
+  const ings = getIngredientesActuales(nombre);
+  if (ings) menuData[diaKey][tiempoId].ingredientes = [...ings];
+  // Si no hay en diccionario, limpiar los anteriores para no mostrar ingredientes del plato viejo
+  else if (menuData[diaKey][tiempoId].nombre !== nombre) menuData[diaKey][tiempoId].ingredientes = [];
 
   await guardarMenu();
   showToast(`🍽️ "${nombre}" guardado`);
