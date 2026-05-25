@@ -299,17 +299,17 @@ async function cargarNanaVinculada() {
     if (pUid === usuarioActual.uid) continue;
     const pSnap = await getDoc(doc(db, 'usuarios', pUid));
     if (pSnap.exists() && pSnap.data().tipo === 'nana') {
-      nanaVinculada = { uid: pUid, ...pSnap.data() };
+      nanaVinculada = { ...pSnap.data(), uid: pUid };  // uid siempre es el doc ID, no lo que venga del data()
       break;
     }
   }
 }
 
-function inicializar() {
-  renderPerfil();
-  renderAccion();
-  escucharHistorial();
+async function inicializar() {
+  await renderAccion();   // esperar a que el form esté en el DOM antes de insertar el selector
   renderSemanas();
+  renderPerfil();
+  escucharHistorial();
 }
 
 // ── SCORE ──
@@ -359,8 +359,9 @@ async function renderPerfil() {
     return;
   }
 
-  // Cargar calificaciones de Firestore
-  const scoreDoc = await getDoc(doc(db, 'scores', perfil.uid || usuarioActual.uid));
+  const nanaUidPerfil = perfilActual.tipo === 'nana' ? usuarioActual.uid : nanaVinculada?.uid;
+  if (!nanaUidPerfil) return;
+  const scoreDoc = await getDoc(doc(db, 'scores', nanaUidPerfil));
   const scoreData = scoreDoc.exists() ? scoreDoc.data() : {};
   const { total, cats } = calcularScore(scoreData.calificaciones || {});
   const nivel = getNivel(total);
@@ -512,7 +513,7 @@ async function renderFormCalificacion() {
   }
 
   // Verificar si ya calificó esta semana
-  const calRef = doc(db, 'scores', nanaVinculada.uid || nanaVinculada.uid, 'calificaciones_semana', `${semanaSeleccionada}_${usuarioActual.uid}`);
+  const calRef = doc(db, 'scores', nanaVinculada.uid, 'calificaciones_semana', `${semanaSeleccionada}_${usuarioActual.uid}`);
 
   try {
     const calSnap = await getDoc(calRef);
@@ -581,7 +582,13 @@ window.enviarCalificacion = async () => {
 
   const comentario = document.getElementById('calComentario')?.value.trim() || '';
   const scoreTotal = Math.round((Object.values(calificacionesEstrellas).reduce((a,b) => a+b, 0) / CATEGORIAS.length) * 10) / 10;
-  const nanaUid = nanaVinculada.uid || nanaVinculada.uid;
+  const nanaUid = nanaVinculada?.uid;
+  if (!nanaUid) {
+    showToast('❌ No se encontró la nana vinculada');
+    btn.textContent = 'Enviar calificación →';
+    btn.disabled = false;
+    return;
+  }
 
   try {
     // Guardar calificación de esta semana
