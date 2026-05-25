@@ -162,6 +162,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
 .toast.visible{transform:translateX(-50%) translateY(0);}
 
 /* ── FILTROS ── */
+.dia-selector{display:flex;gap:6px;overflow-x:auto;padding:12px 16px 4px;-ms-overflow-style:none;scrollbar-width:none;}
+.dia-selector::-webkit-scrollbar{display:none;}
+.dia-pill{flex-shrink:0;display:flex;flex-direction:column;align-items:center;padding:8px 12px;border-radius:12px;border:1.5px solid var(--g4);background:var(--cr);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;min-width:48px;}
+.dia-pill.activo{background:var(--g);border-color:var(--g);}
+.dia-pill .dia-letra{font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--txt2);}
+.dia-pill.activo .dia-letra,.dia-pill.activo .dia-num{color:#fff;}
+.dia-pill .dia-num{font-size:15px;font-weight:600;color:var(--txt);}
+.dia-pill.hoy .dia-num{color:var(--g);}
 .filtros{display:flex;gap:6px;overflow-x:auto;padding:12px 12px 0;-ms-overflow-style:none;scrollbar-width:none;}
 .filtros::-webkit-scrollbar{display:none;}
 .filtro{flex-shrink:0;padding:5px 12px;border-radius:99px;border:1.5px solid var(--g4);background:#fff;font-size:12px;font-weight:500;color:var(--txt2);cursor:pointer;font-family:'DM Sans',sans-serif;}
@@ -272,6 +280,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
           </button>
         </div>
 
+        <!-- Selector de día -->
+        <div class="dia-selector" id="diaSelectorFam"></div>
+
         <!-- Filtros -->
         <div class="filtros" id="filtrosFam">
           <button class="filtro activo" onclick="filtrar('todas', this)">Todas</button>
@@ -302,6 +313,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
           </div>
           <div class="panel-badge" id="badgeNana">0 tareas</div>
         </div>
+
+        <!-- Selector de día -->
+        <div class="dia-selector" id="diaSelectorNana"></div>
 
         <!-- Filtros nana -->
         <div class="filtros">
@@ -485,18 +499,75 @@ function iniciarPaneles() {
 }
 
 // ── ESCUCHAR TAREAS EN TIEMPO REAL ──
+// ── HELPERS DE FECHA ──
+function getFechaStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function getLunesDeSemana(d) {
+  const dia = d.getDay() === 0 ? 6 : d.getDay() - 1;
+  const lunes = new Date(d);
+  lunes.setDate(d.getDate() - dia);
+  lunes.setHours(0,0,0,0);
+  return lunes;
+}
+
+let fechaSeleccionada = getFechaStr(new Date());
+let todasTareasCache = [];
+
+// ── SELECTOR DE DÍAS ──
+function renderDiaSelector() {
+  const hoy = new Date();
+  const lunes = getLunesDeSemana(hoy);
+  const dias = ['Lu','Ma','Mi','Ju','Vi','Sa','Do'];
+  const hoyStr = getFechaStr(hoy);
+  const esNana = perfilActual?.tipo === 'nana';
+  const selectorId = esNana ? 'diaSelectorNana' : 'diaSelectorFam';
+  const sel = document.getElementById(selectorId);
+  if (!sel) return;
+
+  sel.innerHTML = Array.from({length: 7}, (_, i) => {
+    const d = new Date(lunes);
+    d.setDate(lunes.getDate() + i);
+    const str = getFechaStr(d);
+    const esHoy = str === hoyStr;
+    const activo = str === fechaSeleccionada;
+    return `<div class="dia-pill ${activo ? 'activo' : ''} ${esHoy ? 'hoy' : ''}" onclick="seleccionarDia('${str}', this)">
+      <span class="dia-letra">${dias[i]}</span>
+      <span class="dia-num">${d.getDate()}</span>
+    </div>`;
+  }).join('');
+}
+
+window.seleccionarDia = (fecha, el) => {
+  fechaSeleccionada = fecha;
+  document.querySelectorAll('.dia-pill').forEach(p => p.classList.remove('activo'));
+  el.classList.add('activo');
+  // Sincronizar el otro selector si existe
+  document.querySelectorAll('.dia-pill').forEach(p => {
+    if (p !== el && p.onclick?.toString().includes(fecha)) p.classList.add('activo');
+  });
+  renderTareas();
+  actualizarProgreso();
+  actualizarStats();
+};
+
 function escucharTareas() {
   if (!hogarId) return;
   const hoy = new Date();
-  hoy.setHours(0,0,0,0);
+  const lunes = getLunesDeSemana(hoy);
+  const domingo = new Date(lunes);
+  domingo.setDate(lunes.getDate() + 6);
 
+  // Escuchar toda la semana, filtrar por día en cliente
   const q = query(
     collection(db, 'hogares', hogarId, 'tareas'),
     orderBy('hora', 'asc')
   );
 
   onSnapshot(q, (snap) => {
-    todasTareas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    todasTareasCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderDiaSelector();
     renderTareas();
     actualizarProgreso();
     actualizarStats();
@@ -505,6 +576,11 @@ function escucharTareas() {
 
 // ── RENDER TAREAS ──
 function renderTareas() {
+  // Tareas del día seleccionado (sin fecha = legacy, mostrar solo hoy)
+  const hoyStr = getFechaStr(new Date());
+  todasTareas = todasTareasCache.filter(t =>
+    t.fecha ? t.fecha === fechaSeleccionada : fechaSeleccionada === hoyStr
+  );
   const lista = filtrarTareas();
   const esNana = perfilActual.tipo === 'nana';
   const contenedor = document.getElementById(esNana ? 'listaNana' : 'listaFamilia');
@@ -623,6 +699,7 @@ window.crearTarea = async () => {
       prioridad,
       estado: 'pendiente',
       fotoUrl: null,
+      fecha: fechaSeleccionada,   // YYYY-MM-DD — filtra por día
       creadoPor: usuarioActual.uid,
       creadoA: serverTimestamp(),
       completadaA: null
