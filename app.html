@@ -1731,56 +1731,48 @@ async function cargarTareasDash(hogarId, uid) {
 function cargarMenuDash(hogarId) {
   const hoy = new Date();
   const diaSemana = hoy.getDay() === 0 ? 6 : hoy.getDay() - 1;
+  // semanaId idéntico a getSemanaId() de menu.html
   const lunes = new Date(hoy);
   lunes.setDate(hoy.getDate() - diaSemana);
+  lunes.setHours(0,0,0,0);
   const semanaId = `${lunes.getFullYear()}-${String(lunes.getMonth()+1).padStart(2,'0')}-${String(lunes.getDate()).padStart(2,'0')}`;
 
   const TIEMPOS = [
-    { id:'desayuno', nombre:'Desayuno', hora:'7:00 am', emoji:'🍳' },
-    { id:'almuerzo', nombre:'Almuerzo', hora:'12:30 pm', emoji:'🍲' },
-    { id:'merienda', nombre:'Merienda', hora:'3:30 pm', emoji:'🍌' },
-    { id:'cena',    nombre:'Cena',    hora:'7:00 pm', emoji:'🥗' },
-    { id:'snack',   nombre:'Snack',   hora:'10:00 am', emoji:'🍎' },
+    { id:'desayuno', hora:'7:00 am',  emoji:'🍳' },
+    { id:'almuerzo', hora:'12:30 pm', emoji:'🍲' },
+    { id:'merienda', hora:'3:30 pm',  emoji:'🍌' },
+    { id:'cena',     hora:'7:00 pm',  emoji:'🥗' },
+    { id:'snack',    hora:'10:00 am', emoji:'🍎' },
   ];
 
-  onSnapshot(doc(db, 'hogares', hogarId, 'menus', semanaId), (snap) => {
-    const menuDia = snap.exists() ? (snap.data()[`dia_${diaSemana}`] || {}) : {};
+  function renderMenu(menuDia) {
     const conPlato = TIEMPOS.filter(t => menuDia[t.id]?.nombre);
+    const subTxt = conPlato.length ? `${conPlato.length} tiempos planificados hoy` : 'Sin menú planificado hoy';
+    ['subMenu','subMenuNana'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=subTxt; });
 
-    // Actualizar ambos dashboards (familia y nana)
-    const subEl   = document.getElementById('subMenu')   || document.getElementById('subMenuNana');
-    const bodyEl  = document.getElementById('bodyMenu')  || document.getElementById('bodyMenuNana');
-    // También actualizar el que NO fue elegido por ||
-    const subFam  = document.getElementById('subMenu');
-    const subNana = document.getElementById('subMenuNana');
-    const bodyFam = document.getElementById('bodyMenu');
-    const bodyNana= document.getElementById('bodyMenuNana');
+    const html = conPlato.length
+      ? conPlato.slice(0,3).map(t => `
+          <div class="task-item">
+            <span style="font-size:16px;">${t.emoji}</span>
+            <span class="task-name">${menuDia[t.id].nombre}</span>
+            <span class="task-hora">${t.hora}</span>
+          </div>`).join('') +
+          (conPlato.length > 3 ? `<div style="font-size:12px;color:#bbb;text-align:center;margin-top:8px;">+${conPlato.length-3} más →</div>` : '')
+      : `<div style="text-align:center;padding:16px;">
+          <div style="font-size:28px;margin-bottom:6px;">🍽️</div>
+          <div style="font-size:13px;color:var(--txt2);">No hay menú para hoy</div>
+          <div style="font-size:12px;color:#bbb;margin-top:2px;">Toca aquí para planificar</div>
+        </div>`;
+    ['bodyMenu','bodyMenuNana'].forEach(id => { const el=document.getElementById(id); if(el) el.innerHTML=html; });
+  }
 
-    const subTxt = conPlato.length
-      ? `${conPlato.length} tiempos planificados hoy`
-      : 'Sin menú planificado hoy';
-
-    if (subFam)  subFam.textContent  = subTxt;
-    if (subNana) subNana.textContent = subTxt;
-
-    const emptyHtml = `
-      <div style="text-align:center;padding:16px;">
-        <div style="font-size:28px;margin-bottom:6px;">🍽️</div>
-        <div style="font-size:13px;color:var(--txt2);">No hay menú para hoy</div>
-        <div style="font-size:12px;color:#bbb;margin-top:2px;">Toca aquí para planificar</div>
-      </div>`;
-
-    const filledHtml = conPlato.slice(0, 3).map(t => `
-      <div class="task-item">
-        <span style="font-size:16px;">${t.emoji}</span>
-        <span class="task-name">${menuDia[t.id].nombre}</span>
-        <span class="task-hora">${t.hora}</span>
-      </div>`).join('') +
-      (conPlato.length > 3 ? `<div style="font-size:12px;color:#bbb;text-align:center;margin-top:8px;">+${conPlato.length-3} más →</div>` : '');
-
-    const html = conPlato.length ? filledHtml : emptyHtml;
-    if (bodyFam)  bodyFam.innerHTML  = html;
-    if (bodyNana) bodyNana.innerHTML = html;
+  // Escuchar la colección completa — más robusto que adivinar el semanaId exacto
+  onSnapshot(collection(db, 'hogares', hogarId, 'menus'), (snap) => {
+    if (snap.empty) { renderMenu({}); return; }
+    // Preferir el doc de esta semana; si no hay, usar el más reciente
+    const weekDoc = snap.docs.find(d => d.id === semanaId)
+      || snap.docs.sort((a,b) => b.id.localeCompare(a.id))[0];
+    renderMenu(weekDoc.data()[`dia_${diaSemana}`] || {});
   });
 }
 
