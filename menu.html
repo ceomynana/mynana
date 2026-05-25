@@ -645,6 +645,7 @@ const INGREDIENTES_EXTRA = {
 function getIngredientesActuales(nombre) {
   return INGREDIENTES_SALUDABLES[nombre] || INGREDIENTES_BASE[nombre] || INGREDIENTES_EXTRA[nombre] || null;
 }
+let usuarioActual = null;
 let perfilActual = null;
 let hogarId = null;
 let diaSeleccionado = 0;
