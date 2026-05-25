@@ -1747,27 +1747,40 @@ function cargarMenuDash(hogarId) {
     const menuDia = snap.exists() ? (snap.data()[`dia_${diaSemana}`] || {}) : {};
     const conPlato = TIEMPOS.filter(t => menuDia[t.id]?.nombre);
 
-    document.getElementById('subMenu').textContent = conPlato.length
+    // Actualizar ambos dashboards (familia y nana)
+    const subEl   = document.getElementById('subMenu')   || document.getElementById('subMenuNana');
+    const bodyEl  = document.getElementById('bodyMenu')  || document.getElementById('bodyMenuNana');
+    // También actualizar el que NO fue elegido por ||
+    const subFam  = document.getElementById('subMenu');
+    const subNana = document.getElementById('subMenuNana');
+    const bodyFam = document.getElementById('bodyMenu');
+    const bodyNana= document.getElementById('bodyMenuNana');
+
+    const subTxt = conPlato.length
       ? `${conPlato.length} tiempos planificados hoy`
       : 'Sin menú planificado hoy';
 
-    if (!conPlato.length) {
-      document.getElementById('bodyMenu').innerHTML = `
-        <div style="text-align:center;padding:16px;">
-          <div style="font-size:28px;margin-bottom:6px;">🍽️</div>
-          <div style="font-size:13px;color:var(--txt2);">No hay menú para hoy</div>
-          <div style="font-size:12px;color:#bbb;margin-top:2px;">Toca aquí para planificar</div>
-        </div>`;
-      return;
-    }
+    if (subFam)  subFam.textContent  = subTxt;
+    if (subNana) subNana.textContent = subTxt;
 
-  document.getElementById('bodyMenu').innerHTML = conPlato.slice(0, 3).map(t => `
+    const emptyHtml = `
+      <div style="text-align:center;padding:16px;">
+        <div style="font-size:28px;margin-bottom:6px;">🍽️</div>
+        <div style="font-size:13px;color:var(--txt2);">No hay menú para hoy</div>
+        <div style="font-size:12px;color:#bbb;margin-top:2px;">Toca aquí para planificar</div>
+      </div>`;
+
+    const filledHtml = conPlato.slice(0, 3).map(t => `
       <div class="task-item">
         <span style="font-size:16px;">${t.emoji}</span>
         <span class="task-name">${menuDia[t.id].nombre}</span>
         <span class="task-hora">${t.hora}</span>
       </div>`).join('') +
       (conPlato.length > 3 ? `<div style="font-size:12px;color:#bbb;text-align:center;margin-top:8px;">+${conPlato.length-3} más →</div>` : '');
+
+    const html = conPlato.length ? filledHtml : emptyHtml;
+    if (bodyFam)  bodyFam.innerHTML  = html;
+    if (bodyNana) bodyNana.innerHTML = html;
   });
 }
 
@@ -1908,36 +1921,44 @@ function cargarMercadoDash(hogarId) {
   onSnapshot(doc(db, 'hogares', hogarId, 'mercado', semanaId), (snap) => {
     const items = snap.exists() ? (snap.data().items || []) : [];
     const pendientes = items.filter(i => !i.comprado);
-    const comprados = items.filter(i => i.comprado);
+    const comprados  = items.filter(i => i.comprado);
 
-    document.getElementById('subMercado').textContent = items.length
+    const subTxt = items.length
       ? comprados.length === items.length
         ? '✅ Lista completa — todo comprado'
         : `${pendientes.length} pendientes · ${comprados.length} comprados`
       : 'Sin productos en la lista';
 
-    if (!items.length) {
-      document.getElementById('bodyMercado').innerHTML = `
-        <div style="text-align:center;padding:16px;">
-          <div style="font-size:28px;margin-bottom:6px;">🛒</div>
-          <div style="font-size:13px;color:var(--txt2);">Lista vacía</div>
-          <div style="font-size:12px;color:#bbb;margin-top:2px;">Se genera desde el menú</div>
-        </div>`;
-      return;
-    }
+    // Escribir en familia y nana simultáneamente
+    ['subMercado','subMercadoNana'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = subTxt;
+    });
+
+    const emptyHtml = `
+      <div style="text-align:center;padding:16px;">
+        <div style="font-size:28px;margin-bottom:6px;">🛒</div>
+        <div style="font-size:13px;color:var(--txt2);">Lista vacía</div>
+        <div style="font-size:12px;color:#bbb;margin-top:2px;">Se genera desde el menú</div>
+      </div>`;
 
     const preview = [
       ...pendientes.slice(0, 3).map(i => ({ ...i, done: false })),
       ...comprados.slice(0, 2).map(i => ({ ...i, done: true })),
     ];
-
-    document.getElementById('bodyMercado').innerHTML = preview.map(item => `
+    const filledHtml = preview.map(item => `
       <div class="task-item">
         <span style="font-size:14px;">${item.done ? '✅' : '🔲'}</span>
         <span class="task-name" style="${item.done ? 'text-decoration:line-through;color:#bbb;' : ''}">${item.nombre}</span>
         ${item.done ? '' : `<span class="task-hora" style="font-size:10px;background:var(--g3);color:var(--g);padding:2px 6px;border-radius:99px;">Pendiente</span>`}
       </div>`).join('') +
       (items.length > 5 ? `<div style="font-size:12px;color:#bbb;text-align:center;margin-top:8px;">Ver lista completa (${items.length}) →</div>` : '');
+
+    const html = items.length ? filledHtml : emptyHtml;
+    ['bodyMercado','bodyMercadoNana'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = html;
+    });
   });
 }
 
@@ -2258,9 +2279,9 @@ function renderTarjetasNana(tareas, hogarId) {
     <div class="dash-card" onclick="location.href='/menu.html'" style="cursor:pointer;">
       <div class="dash-card-header">
         <div class="dash-card-icon" style="background:var(--b3);">🍽️</div>
-        <div><div class="dash-card-title">Qué cocinar hoy</div><div class="dash-card-sub">Ver menú del día</div></div>
+        <div><div class="dash-card-title">Qué cocinar hoy</div><div class="dash-card-sub" id="subMenuNana">Cargando...</div></div>
       </div>
-      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Toca para ver el menú planificado</div></div>
+      <div class="dash-card-body" id="bodyMenuNana"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Cargando...</div></div>
     </div>
     <div class="dash-card" onclick="location.href='/chat.html'" style="cursor:pointer;">
       <div class="dash-card-header">
@@ -2275,6 +2296,13 @@ function renderTarjetasNana(tareas, hogarId) {
         <div><div class="dash-card-title">Mi trayectoria</div><div class="dash-card-sub">Tu historial profesional</div></div>
       </div>
       <div class="dash-card-body"><div style="text-align:center;padding:12px;color:var(--txt2);font-size:13px;">Ver tu consistencia y reconocimientos →</div></div>
+    </div>
+    <div class="dash-card" onclick="location.href='/menu.html'" style="cursor:pointer;">
+      <div class="dash-card-header">
+        <div class="dash-card-icon" style="background:var(--g3);">🛒</div>
+        <div><div class="dash-card-title">Lista del mercado</div><div class="dash-card-sub" id="subMercadoNana">Cargando...</div></div>
+      </div>
+      <div class="dash-card-body" id="bodyMercadoNana"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Cargando...</div></div>
     </div>
     <div class="dash-card" onclick="location.href='/videos.html'" style="cursor:pointer;">
       <div class="dash-card-header">
@@ -2301,6 +2329,10 @@ function renderTarjetasNana(tareas, hogarId) {
       <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Actualizar perfil →</div></div>
     </div>
   `;
+
+  // Activar listeners en tiempo real para menú y mercado del nana
+  cargarMenuDash(hogarId);
+  cargarMercadoDash(hogarId);
 }
 
 function renderTareasNanaDemo() {
