@@ -669,6 +669,16 @@ function renderTareas() {
           <button class="btn-sm btn-sm-del" onclick="eliminarTarea('${t.id}')">🗑 Eliminar</button>
           ${urgente ? '' : `<button class="btn-sm" style="background:var(--b3);color:var(--b2);" onclick="marcarUrgente('${t.id}')">🔴 Urgente</button>`}
         </div>` : ''}
+
+      <!-- Observación contextual -->
+      <div style="border-top:1px solid var(--g4);padding:8px 14px;display:flex;gap:6px;align-items:center;">
+        <input id="obs_${t.id}" type="text"
+          placeholder="${esNana ? 'Dejar observación a la familia...' : 'Agregar nota para la nana...'}"
+          value="${t.observacion || ''}"
+          style="flex:1;background:var(--cr);border:1px solid var(--g4);border-radius:8px;padding:7px 10px;font-size:12px;font-family:'DM Sans',sans-serif;color:var(--txt);outline:none;"
+          onkeydown="if(event.key==='Enter')guardarObservacion('${t.id}')" />
+        <button onclick="guardarObservacion('${t.id}')" style="background:var(--g3);color:var(--g);border:none;border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;">✓</button>
+      </div>
     </div>`;
   }).join('');
 }
@@ -747,6 +757,16 @@ window.eliminarTarea = async (id) => {
 window.marcarUrgente = async (id) => {
   await updateDoc(doc(db, 'hogares', hogarId, 'tareas', id), { prioridad: 'urgente' });
   showToast('🔴 Marcada como urgente');
+};
+
+window.guardarObservacion = async (id) => {
+  const val = document.getElementById(`obs_${id}`)?.value.trim() ?? '';
+  await updateDoc(doc(db, 'hogares', hogarId, 'tareas', id), {
+    observacion: val,
+    observacionPor: perfilActual.nombre,
+    observacionTs: serverTimestamp()
+  });
+  showToast('💬 Nota guardada');
 };
 
 // ── FOTO ──
