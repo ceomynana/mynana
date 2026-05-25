@@ -152,6 +152,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
 
 .empty-menu{text-align:center;padding:32px 20px;color:var(--txt2);}
 .empty-menu-icon{font-size:36px;margin-bottom:10px;}
+
+/* MODOS RÁPIDOS */
+.modos-panel{background:#fff;border-radius:var(--r);border:1px solid var(--g4);overflow:hidden;margin-bottom:16px;}
+.modos-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;padding:12px;}
+.modo-btn{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;border:1.5px solid var(--g4);background:var(--cr);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--txt);transition:all .2s;text-align:left;}
+.modo-btn:hover{border-color:var(--g);background:var(--g3);}
+.modo-btn.activo{border-color:var(--g);background:var(--g3);color:var(--g);}
+.modo-icon{font-size:20px;flex-shrink:0;}
+
+/* MERCADO CATEGORÍAS */
+.mercado-cat-hdr{font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--txt2);padding:6px 10px 3px;margin-top:4px;}
+.mercado-duplicado{background:#FEF3C7;}
+.dup-badge{font-size:10px;background:#FEF3C7;color:#92400E;padding:1px 6px;border-radius:99px;margin-left:4px;}
 </style>
 </head>
 <body>
@@ -209,6 +222,32 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
 
     <!-- COLUMNA PRINCIPAL -->
     <div>
+      <!-- Modos rápidos -->
+      <div class="modos-panel" id="modosPanelFam">
+        <div class="panel-header">
+          <div class="panel-title">Planificación rápida</div>
+          <div class="panel-badge" id="badgeModo">Menú tradicional</div>
+        </div>
+        <div class="modos-grid">
+          <button class="modo-btn" onclick="autoPlanificar()">
+            <span class="modo-icon">✨</span>
+            <div><div style="font-weight:600;">Auto-planificar</div><div style="font-size:11px;color:var(--txt2);">Llena la semana automáticamente</div></div>
+          </button>
+          <button class="modo-btn" onclick="modoSemanaOcupada()">
+            <span class="modo-icon">⚡</span>
+            <div><div style="font-weight:600;">Semana ocupada</div><div style="font-size:11px;color:var(--txt2);">Comidas simples y rápidas</div></div>
+          </button>
+          <button class="modo-btn" onclick="copiarSemanaAnterior()">
+            <span class="modo-icon">🔄</span>
+            <div><div style="font-weight:600;">Repetir semana</div><div style="font-size:11px;color:var(--txt2);">Copia la semana anterior</div></div>
+          </button>
+          <button class="modo-btn" id="btnEconomico" onclick="toggleModoEconomico()">
+            <span class="modo-icon">💰</span>
+            <div><div style="font-weight:600;">Modo económico</div><div style="font-size:11px;color:var(--txt2);">Ingredientes accesibles</div></div>
+          </button>
+        </div>
+      </div>
+
       <!-- Vista rápida semanal -->
       <div class="semana-quick" id="semanaQuick">
         <div class="panel-header">
@@ -536,6 +575,101 @@ let ingModalTiempoId = null;
 let unsubMenu = null;
 let unsubMercado = null;
 let modoSaludable = false;
+let modoEconomico = false;
+
+const PLATOS_RAPIDOS = {
+  desayuno: ['Pan tostado con mantequilla y queso','Cereal con leche','Huevos revueltos rápidos','Avena instantánea','Fruta picada con queso'],
+  almuerzo: ['Arroz blanco con pollo frito','Pasta con salsa de tomate','Arroz con salchicha guisada','Sándwich de pollo','Arroz frito con huevo'],
+  merienda: ['Fruta de temporada','Galletas con queso blanco','Jugo en caja','Chicheme en vaso','Pan con mantequilla'],
+  cena: ['Sopa de sobre con pan','Arroz con frijoles en lata','Huevos fritos con arroz','Ensalada de atún con pan','Pasta con mantequilla y queso'],
+  snack: ['Fruta natural','Galletas de soda','Pan con mermelada'],
+};
+
+const PLATOS_ECONOMICOS = {
+  desayuno: ['Huevos perico con cebolla y pimiento','Avena con leche y canela','Tortillas con queso y huevos','Changa con queso','Yuca frita con huevos'],
+  almuerzo: ['Arroz con pollo guisado','Arroz con costillas','Carne guisada con arroz','Mondongo panameño','Arroz con habichuelas'],
+  merienda: ['Chicha de piña','Arroz con leche','Fruta de temporada','Cocada panameña','Chicheme frío'],
+  cena: ['Sopa de lentejas con patacones','Arroz con frijoles negros','Sopa de frijoles colorados','Huevo frito con arroz','Plátano maduro relleno'],
+  snack: ['Patacones con guacamole','Plátano maduro frito','Maíz tostado'],
+};
+
+const CATS_MERCADO = {
+  'Proteínas': ['pollo','res','cerdo','pescado','corvina','pargo','camarones','mariscos','carne','bistec','gallina','tilapia','salmón','atún','huevos','salchicha','chuleta'],
+  'Vegetales': ['cebolla','ajo','tomate','pimiento','zanahoria','culantro','apio','espinaca','lechuga','brócoli','chayote','pepino'],
+  'Tubérculos': ['papa','yuca','ñame','otoe','plátano','camote'],
+  'Granos': ['arroz','lentejas','frijoles','guandú','garbanzos','fideos','pasta','maíz','avena'],
+  'Lácteos': ['leche','queso','mantequilla','yogur','crema'],
+  'Otros': [],
+};
+
+function categorizarIngrediente(nombre) {
+  const n = nombre.toLowerCase();
+  for (const [cat, keywords] of Object.entries(CATS_MERCADO)) {
+    if (cat === 'Otros') continue;
+    if (keywords.some(k => n.includes(k))) return cat;
+  }
+  return 'Otros';
+}
+
+window.autoPlanificar = async () => {
+  const platos = modoEconomico ? PLATOS_ECONOMICOS : modoSaludable ? PLATOS_SALUDABLES : PLATOS_SUGERIDOS;
+  DIAS.forEach((_, i) => {
+    if (!menuData[`dia_${i}`]) menuData[`dia_${i}`] = {};
+    TIEMPOS.forEach(t => {
+      if (menuData[`dia_${i}`][t.id]?.nombre) return; // no sobreescribir
+      const lista = platos[t.id] || [];
+      if (!lista.length) return;
+      const plato = lista[Math.floor(Math.random() * lista.length)];
+      menuData[`dia_${i}`][t.id] = { nombre: plato };
+      const ings = getIngredientesActuales(plato);
+      if (ings) menuData[`dia_${i}`][t.id].ingredientes = [...ings];
+    });
+  });
+  await guardarMenu();
+  showToast('✨ Semana planificada automáticamente');
+};
+
+window.modoSemanaOcupada = async () => {
+  if (!confirm('¿Llenar la semana completa con comidas rápidas y simples?')) return;
+  DIAS.forEach((_, i) => {
+    menuData[`dia_${i}`] = {};
+    TIEMPOS.forEach(t => {
+      const lista = PLATOS_RAPIDOS[t.id] || [];
+      if (!lista.length) return;
+      menuData[`dia_${i}`][t.id] = { nombre: lista[Math.floor(Math.random() * lista.length)] };
+    });
+  });
+  await guardarMenu();
+  showToast('⚡ Semana ocupada configurada');
+};
+
+window.copiarSemanaAnterior = async () => {
+  const hoy = new Date();
+  const dia = hoy.getDay() === 0 ? 6 : hoy.getDay() - 1;
+  const lunes = new Date(hoy); lunes.setDate(hoy.getDate() - dia);
+  const lunesAnterior = new Date(lunes); lunesAnterior.setDate(lunes.getDate() - 7);
+  const sid = `${lunesAnterior.getFullYear()}-${String(lunesAnterior.getMonth()+1).padStart(2,'0')}-${String(lunesAnterior.getDate()).padStart(2,'0')}`;
+  try {
+    const snap = await getDocs(query(collection(db, 'hogares', hogarId, 'menus')));
+    let semanaAnt = null;
+    snap.forEach(d => { if (d.id === sid) semanaAnt = d.data(); });
+    if (!semanaAnt) { showToast('No hay menú de la semana anterior'); return; }
+    menuData = { ...semanaAnt };
+    await guardarMenu();
+    showToast('🔄 Semana anterior copiada');
+  } catch(e) { showToast('Error al copiar'); console.error(e); }
+};
+
+window.toggleModoEconomico = () => {
+  modoEconomico = !modoEconomico;
+  const btn = document.getElementById('btnEconomico');
+  if (btn) btn.classList.toggle('activo', modoEconomico);
+  const badge = document.getElementById('badgeModo');
+  if (badge) badge.textContent = modoEconomico ? 'Modo económico' : modoSaludable ? 'Modo saludable' : 'Menú tradicional';
+  renderMenuDia();
+  showToast(modoEconomico ? '💰 Modo económico activado' : 'Modo normal restaurado');
+};
+
 
 window.cambiarModo = (saludable) => {
   modoSaludable = saludable;
@@ -543,6 +677,8 @@ window.cambiarModo = (saludable) => {
   const knob = document.getElementById('knobSaludable');
   if (slider) slider.style.background = saludable ? '#1A6B52' : '#ddd';
   if (knob) knob.style.transform = saludable ? 'translateX(16px)' : 'translateX(0)';
+  const badge = document.getElementById('badgeModo');
+  if (badge) badge.textContent = modoEconomico ? 'Modo económico' : saludable ? 'Modo saludable' : 'Menú tradicional';
   renderMenuDia();
   showToast(saludable ? '🥗 Modo saludable activado' : '🍽️ Menú panameño tradicional');
 };
@@ -589,6 +725,10 @@ async function encontrarHogar() {
 }
 
 function inicializar() {
+  if (perfilActual.tipo === 'nana') {
+    const p = document.getElementById('modosPanelFam');
+    if (p) p.style.display = 'none';
+  }
   renderDias();
   renderSemanaLabel();
   seleccionarDia(diaSemanaActual());
@@ -925,7 +1065,9 @@ async function guardarMercado(items) {
 
 function renderMercado() {
   const lista = document.getElementById('mercadoLista');
-  document.getElementById('mercadoBadge').textContent = `${mercadoItems.length} items`;
+  const pendientes = mercadoItems.filter(i => !i.comprado);
+  const comprados = mercadoItems.filter(i => i.comprado);
+  document.getElementById('mercadoBadge').textContent = `${pendientes.length} pendientes`;
 
   if (!mercadoItems.length) {
     lista.innerHTML = `<div class="empty-menu">
@@ -936,25 +1078,44 @@ function renderMercado() {
     return;
   }
 
-  const pendientes = mercadoItems.filter(i => !i.comprado);
-  const comprados = mercadoItems.filter(i => i.comprado);
+  // Detectar nombres repetidos (duplicados)
+  const nombreCount = {};
+  pendientes.forEach(i => {
+    const key = i.nombre.toLowerCase().split('(')[0].trim();
+    nombreCount[key] = (nombreCount[key] || 0) + 1;
+  });
 
-  lista.innerHTML = `
-    ${pendientes.length ? `<div style="font-size:10px;color:var(--txt2);font-weight:600;text-transform:uppercase;letter-spacing:.04em;padding:4px 10px 6px;">Por comprar (${pendientes.length})</div>` : ''}
-    ${pendientes.map((item, idx) => renderMercadoItem(item, mercadoItems.indexOf(item))).join('')}
-    ${comprados.length ? `<div style="font-size:10px;color:var(--txt2);font-weight:600;text-transform:uppercase;letter-spacing:.04em;padding:10px 10px 6px;border-top:1px solid var(--g4);">Comprados (${comprados.length})</div>` : ''}
-    ${comprados.map((item, idx) => renderMercadoItem(item, mercadoItems.indexOf(item))).join('')}
-  `;
-}
+  // Agrupar por categoría de supermercado
+  const grupos = {};
+  pendientes.forEach((item, idx) => {
+    const cat = categorizarIngrediente(item.nombre);
+    if (!grupos[cat]) grupos[cat] = [];
+    const key = item.nombre.toLowerCase().split('(')[0].trim();
+    grupos[cat].push({ item, idx: mercadoItems.indexOf(item), dup: nombreCount[key] > 1 });
+  });
 
-function renderMercadoItem(item, idx) {
-  return `<div class="mercado-item" onclick="toggleMercadoItem(${idx})">
-    <div class="mercado-check ${item.comprado ? 'comprado' : ''}">
-      ${item.comprado ? '<svg width="10" height="8" viewBox="0 0 10 8" fill="none"><polyline points="1,4 3,7 9,1" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>' : ''}
+  const ORDEN_CATS = ['Proteínas','Vegetales','Tubérculos','Granos','Lácteos','Otros'];
+  const catEmojis = {'Proteínas':'🥩','Vegetales':'🥦','Tubérculos':'🍠','Granos':'🌾','Lácteos':'🥛','Otros':'🛍️'};
+
+  lista.innerHTML = ORDEN_CATS.filter(c => grupos[c]?.length).map(cat => `
+    <div class="mercado-cat-hdr">${catEmojis[cat]} ${cat} (${grupos[cat].length})</div>
+    ${grupos[cat].map(({item, idx, dup}) => `
+      <div class="mercado-item ${dup ? 'mercado-duplicado' : ''}" onclick="toggleMercadoItem(${idx})">
+        <div class="mercado-check ${item.comprado ? 'comprado' : ''}">
+          ${item.comprado ? '<svg width="10" height="8" viewBox="0 0 10 8" fill="none"><polyline points="1,4 3,7 9,1" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>' : ''}
+        </div>
+        <span class="mercado-nombre">${item.nombre}${dup ? '<span class="dup-badge">×varios</span>' : ''}</span>
+      </div>`).join('')}
+  `).join('') + (comprados.length ? `
+    <div style="font-size:10px;color:var(--txt2);font-weight:600;text-transform:uppercase;letter-spacing:.04em;padding:10px 10px 6px;border-top:1px solid var(--g4);">
+      ✓ Comprados (${comprados.length})
     </div>
-    <span class="mercado-nombre ${item.comprado ? 'comprado' : ''}">${item.nombre}</span>
-    <span class="mercado-cat">${item.cat}</span>
-  </div>`;
+    ${comprados.map((item) => `
+      <div class="mercado-item" onclick="toggleMercadoItem(${mercadoItems.indexOf(item)})">
+        <div class="mercado-check comprado"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><polyline points="1,4 3,7 9,1" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <span class="mercado-nombre comprado">${item.nombre}</span>
+      </div>`).join('')}
+  ` : '');
 }
 
 window.toggleMercadoItem = async (idx) => {
