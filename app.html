@@ -1443,6 +1443,14 @@ window.registrarse = async () => {
       uid: cred.user.uid,
       fecha: new Date().toISOString(),
     };
+    if (tipoReg === 'familia') {
+      // Recuperar teléfono guardado desde el registro en index.html
+      const telPendiente = localStorage.getItem('mynana_tel_pendiente');
+      if (telPendiente) {
+        datos.telefono = telPendiente;
+        localStorage.removeItem('mynana_tel_pendiente');
+      }
+    }
     if (tipoReg === 'nana') {
       datos.apellido = document.getElementById('regApellido').value.trim();
       datos.cedula = document.getElementById('regCedula').value.trim();
