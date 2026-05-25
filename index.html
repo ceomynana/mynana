@@ -2609,6 +2609,11 @@ window.unirseConCodigo = async function() {
         <input type="email" class="form-input" id="fieldCorreo" placeholder="tucorreo@email.com" />
       </div>
       <div class="form-group">
+        <label class="form-label"><span class="es">WhatsApp / Teléfono</span><span class="en">WhatsApp / Phone</span></label>
+        <input type="tel" class="form-input" id="fieldTelefono" placeholder="Ej: 6000-0000" />
+        <div style="font-size:11px;color:var(--txt2);margin-top:4px;"><span class="es">Para enviarte la lista del mercado directo a tu WhatsApp</span><span class="en">So we can send your grocery list directly to your WhatsApp</span></div>
+      </div>
+      <div class="form-group">
         <label class="form-label"><span class="es">¿Qué tipo de nana tienes?</span><span class="en">What type of nana do you have?</span></label>
         <div class="type-selector">
           <div class="type-option selected" id="tipoFija" onclick="selectTipo('fija')">
@@ -4659,6 +4664,7 @@ const overlay = document.getElementById('modalOverlay');
 const modalClose = document.getElementById('modalClose');
 let tipoSeleccionado = 'fija';
 let planSeleccionado = 'fija';
+let telefonoRegistro = '';
 
 function openModal() {
   overlay.classList.add('active');
@@ -4769,6 +4775,7 @@ function irAlPaso2() {
 
   // Sugerir plan según tipo de nana seleccionado
   planSeleccionado = tipoSeleccionado;
+  telefonoRegistro = (document.getElementById('fieldTelefono')?.value.trim() || '').replace(/\D/g,'');
   actualizarPlanVisual();
 
   // Ir al paso 2
@@ -4803,6 +4810,7 @@ function submitForm() {
     const registros = JSON.parse(localStorage.getItem('mynana_registros') || '[]');
     registros.push({
       nombre, correo,
+      telefono: telefonoRegistro,
       tipoNana: tipoSeleccionado,
       planElegido: planSeleccionado,
       planNombre,
@@ -4811,6 +4819,7 @@ function submitForm() {
       fecha: new Date().toISOString()
     });
     localStorage.setItem('mynana_registros', JSON.stringify(registros));
+    if (telefonoRegistro) localStorage.setItem('mynana_tel_pendiente', telefonoRegistro);
 
     // Enviar correo de bienvenida a la familia
     emailjs.send('mynana_service', 'bienvenida_familia', {
