@@ -332,12 +332,17 @@ function cargarMercado() {
   lunes.setHours(0,0,0,0);
   const sid = `${lunes.getFullYear()}-${String(lunes.getMonth()+1).padStart(2,'0')}-${String(lunes.getDate()).padStart(2,'0')}`;
 
-  onSnapshot(doc(db, 'hogares', hogarId, 'mercado', sid), (snap) => {
-    const items = snap.exists() ? (snap.data().items || []) : [];
+  // Escuchar colección completa — igual que el menú
+  onSnapshot(collection(db, 'hogares', hogarId, 'mercado'), (snap) => {
+    const weekDoc = snap.docs.find(d => d.id === sid)
+      || snap.docs.sort((a,b) => b.id.localeCompare(a.id))[0];
+    const items = weekDoc ? (weekDoc.data().items || []) : [];
     const pendientes = items.filter(i => !i.comprado);
     const comprados  = items.filter(i => i.comprado);
 
-    document.getElementById('badgeMercado').textContent = pendientes.length ? `${pendientes.length} pendientes` : 'Todo comprado';
+    document.getElementById('badgeMercado').textContent = items.length
+      ? pendientes.length ? `${pendientes.length} pendientes` : 'Todo comprado'
+      : 'Sin lista';
     document.getElementById('mnMercado').textContent = pendientes.length || '0';
 
     estadoData.alertas = estadoData.alertas.filter(a => a.tipo !== 'mercado');
