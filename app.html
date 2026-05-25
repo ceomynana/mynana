@@ -1720,53 +1720,47 @@ async function cargarTareasDash(hogarId, uid) {
   }).join('') + (tareas.length > 3 ? `<div style="font-size:12px;color:#bbb;text-align:center;margin-top:8px;">+${tareas.length - 3} tareas más →</div>` : '');
 }
 
-async function cargarMenuDash(hogarId) {
+function cargarMenuDash(hogarId) {
   const hoy = new Date();
   const diaSemana = hoy.getDay() === 0 ? 6 : hoy.getDay() - 1;
   const lunes = new Date(hoy);
   lunes.setDate(hoy.getDate() - diaSemana);
   const semanaId = `${lunes.getFullYear()}-${String(lunes.getMonth()+1).padStart(2,'0')}-${String(lunes.getDate()).padStart(2,'0')}`;
 
-  const menuSnap = await getDocs(query(collection(db, 'hogares', hogarId, 'menus')));
-  let menuDia = {};
-
-  menuSnap.forEach(d => {
-    if (d.id === semanaId) {
-      menuDia = d.data()[`dia_${diaSemana}`] || {};
-    }
-  });
-
   const TIEMPOS = [
-    { id:'desayuno', nombre:'Desayuno', hora:'7:00 am', emoji:'🍳', bg:'#FEF7EE' },
-    { id:'almuerzo', nombre:'Almuerzo', hora:'12:30 pm', emoji:'🍲', bg:'var(--g3)' },
-    { id:'merienda', nombre:'Merienda', hora:'3:30 pm', emoji:'🍌', bg:'var(--b3)' },
-    { id:'cena', nombre:'Cena', hora:'7:00 pm', emoji:'🥗', bg:'#F5F0F9' },
-    { id:'snack', nombre:'Snack', hora:'10:00 am', emoji:'🍎', bg:'var(--g3)' },
+    { id:'desayuno', nombre:'Desayuno', hora:'7:00 am', emoji:'🍳' },
+    { id:'almuerzo', nombre:'Almuerzo', hora:'12:30 pm', emoji:'🍲' },
+    { id:'merienda', nombre:'Merienda', hora:'3:30 pm', emoji:'🍌' },
+    { id:'cena',    nombre:'Cena',    hora:'7:00 pm', emoji:'🥗' },
+    { id:'snack',   nombre:'Snack',   hora:'10:00 am', emoji:'🍎' },
   ];
 
-  const conPlato = TIEMPOS.filter(t => menuDia[t.id]?.nombre);
-  document.getElementById('subMenu').textContent = conPlato.length
-    ? `${conPlato.length} tiempos planificados hoy`
-    : 'Sin menú planificado hoy';
+  onSnapshot(doc(db, 'hogares', hogarId, 'menus', semanaId), (snap) => {
+    const menuDia = snap.exists() ? (snap.data()[`dia_${diaSemana}`] || {}) : {};
+    const conPlato = TIEMPOS.filter(t => menuDia[t.id]?.nombre);
 
-  if (!conPlato.length) {
-    document.getElementById('bodyMenu').innerHTML = `
-      <div style="text-align:center;padding:16px;">
-        <div style="font-size:28px;margin-bottom:6px;">🍽️</div>
-        <div style="font-size:13px;color:var(--txt2);">No hay menú para hoy</div>
-        <div style="font-size:12px;color:#bbb;margin-top:2px;">Toca aquí para planificar</div>
-      </div>`;
-    return;
-  }
+    document.getElementById('subMenu').textContent = conPlato.length
+      ? `${conPlato.length} tiempos planificados hoy`
+      : 'Sin menú planificado hoy';
+
+    if (!conPlato.length) {
+      document.getElementById('bodyMenu').innerHTML = `
+        <div style="text-align:center;padding:16px;">
+          <div style="font-size:28px;margin-bottom:6px;">🍽️</div>
+          <div style="font-size:13px;color:var(--txt2);">No hay menú para hoy</div>
+          <div style="font-size:12px;color:#bbb;margin-top:2px;">Toca aquí para planificar</div>
+        </div>`;
+      return;
+    }
 
   document.getElementById('bodyMenu').innerHTML = conPlato.slice(0, 3).map(t => `
-    <div class="menu-item">
-      <div class="menu-emoji" style="background:${t.bg};">${t.emoji}</div>
-      <div>
-        <div class="menu-plato">${menuDia[t.id].nombre}</div>
-        <div class="menu-hora">${t.nombre} · ${t.hora}</div>
-      </div>
-    </div>`).join('');
+      <div class="task-item">
+        <span style="font-size:16px;">${t.emoji}</span>
+        <span class="task-name">${menuDia[t.id].nombre}</span>
+        <span class="task-hora">${t.hora}</span>
+      </div>`).join('') +
+      (conPlato.length > 3 ? `<div style="font-size:12px;color:#bbb;text-align:center;margin-top:8px;">+${conPlato.length-3} más →</div>` : '');
+  });
 }
 
 function cargarChatDash(uid, hogarId) {
@@ -1896,40 +1890,47 @@ async function cargarScoreDash(hogarId, uid) {
       </div>`}`;
 }
 
-async function cargarMercadoDash(hogarId) {
+function cargarMercadoDash(hogarId) {
   const hoy = new Date();
   const diaSemana = hoy.getDay() === 0 ? 6 : hoy.getDay() - 1;
   const lunes = new Date(hoy);
   lunes.setDate(hoy.getDate() - diaSemana);
   const semanaId = `${lunes.getFullYear()}-${String(lunes.getMonth()+1).padStart(2,'0')}-${String(lunes.getDate()).padStart(2,'0')}`;
 
-  const snap = await getDoc(doc(db, 'hogares', hogarId, 'mercado', semanaId));
-  const items = snap.exists() ? (snap.data().items || []) : [];
-  const pendientes = items.filter(i => !i.comprado);
-  const comprados = items.filter(i => i.comprado);
+  onSnapshot(doc(db, 'hogares', hogarId, 'mercado', semanaId), (snap) => {
+    const items = snap.exists() ? (snap.data().items || []) : [];
+    const pendientes = items.filter(i => !i.comprado);
+    const comprados = items.filter(i => i.comprado);
 
-  document.getElementById('subMercado').textContent = items.length
-    ? `${pendientes.length} pendientes · ${comprados.length} comprados`
-    : 'Sin productos en la lista';
+    document.getElementById('subMercado').textContent = items.length
+      ? comprados.length === items.length
+        ? '✅ Lista completa — todo comprado'
+        : `${pendientes.length} pendientes · ${comprados.length} comprados`
+      : 'Sin productos en la lista';
 
-  if (!items.length) {
-    document.getElementById('bodyMercado').innerHTML = `
-      <div style="text-align:center;padding:16px;">
-        <div style="font-size:28px;margin-bottom:6px;">🛒</div>
-        <div style="font-size:13px;color:var(--txt2);">Lista vacía</div>
-        <div style="font-size:12px;color:#bbb;margin-top:2px;">Se genera desde el menú</div>
-      </div>`;
-    return;
-  }
+    if (!items.length) {
+      document.getElementById('bodyMercado').innerHTML = `
+        <div style="text-align:center;padding:16px;">
+          <div style="font-size:28px;margin-bottom:6px;">🛒</div>
+          <div style="font-size:13px;color:var(--txt2);">Lista vacía</div>
+          <div style="font-size:12px;color:#bbb;margin-top:2px;">Se genera desde el menú</div>
+        </div>`;
+      return;
+    }
 
-  const preview = [...pendientes.slice(0, 3)];
-  document.getElementById('bodyMercado').innerHTML = preview.map(item => `
-    <div class="task-item">
-      <div class="task-dot" style="background:var(--b);"></div>
-      <span class="task-name">${item.nombre}</span>
-      <span class="task-hora">${item.cat || ''}</span>
-    </div>`).join('') +
-    (pendientes.length > 3 ? `<div style="font-size:12px;color:#bbb;text-align:center;margin-top:8px;">+${pendientes.length - 3} productos más →</div>` : '');
+    const preview = [
+      ...pendientes.slice(0, 3).map(i => ({ ...i, done: false })),
+      ...comprados.slice(0, 2).map(i => ({ ...i, done: true })),
+    ];
+
+    document.getElementById('bodyMercado').innerHTML = preview.map(item => `
+      <div class="task-item">
+        <span style="font-size:14px;">${item.done ? '✅' : '🔲'}</span>
+        <span class="task-name" style="${item.done ? 'text-decoration:line-through;color:#bbb;' : ''}">${item.nombre}</span>
+        ${item.done ? '' : `<span class="task-hora" style="font-size:10px;background:var(--g3);color:var(--g);padding:2px 6px;border-radius:99px;">Pendiente</span>`}
+      </div>`).join('') +
+      (items.length > 5 ? `<div style="font-size:12px;color:#bbb;text-align:center;margin-top:8px;">Ver lista completa (${items.length}) →</div>` : '');
+  });
 }
 
 async function cargarNominaDash(hogarId) {
