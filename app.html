@@ -660,47 +660,22 @@ body.lang-es [data-en]{display:none !important;}
 <!-- ══════════════════════ DASHBOARD NANA ══════════════════════ -->
 <div class="screen" id="screen-nana">
 
-  <!-- HEADER MEJORADO -->
-  <div class="nana-header" id="nanaHeader">
-    <div class="nana-header-top">
-      <div style="display:flex;align-items:center;gap:12px;">
-        <div id="nanaAvatarCircle" style="width:46px;height:46px;border-radius:50%;background:var(--g);border:2.5px solid var(--b);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:#fff;flex-shrink:0;">M</div>
-        <div>
-          <div class="nana-greeting" id="nanaGreeting">Buenos días</div>
-          <div class="nana-name" id="nanaNombre">Maria 👋</div>
-        </div>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;">
-        <!-- Botón notificaciones nana -->
-        <button class="notif-btn" onclick="toggleNotifPanelNana()" id="nanaNotifBtn" title="Notificaciones" style="background:rgba(255,255,255,.1);">
-          🔔
-          <div class="notif-badge" id="nanaNotifBadge">0</div>
-        </button>
-        <div style="display:flex;align-items:center;gap:6px;">
-          <button class="nana-lang-btn" onclick="toggleLangDash()" id="nanaLangBtn">🇺🇸 EN</button>
-          <button class="nana-logout" onclick="cerrarSesion()">Salir</button>
-        </div>
-      </div>
+  <nav class="dash-nav">
+    <div class="dash-logo">My <em>Nana</em></div>
+    <div class="dash-user" style="gap:8px;">
+      <button class="notif-btn" onclick="toggleNotifPanelNana()" id="nanaNotifBtn" title="Notificaciones">
+        🔔
+        <div class="notif-badge" id="nanaNotifBadge">0</div>
+      </button>
+      <button class="dash-lang-btn" onclick="toggleLangDash()" id="nanaLangBtn" style="margin-right:4px;">🇺🇸 EN</button>
+      <div class="dash-avatar" id="nanaAvatarCircle">N</div>
+      <div class="dash-nombre" id="nanaNombre">Nana</div>
+      <button class="dash-logout" onclick="cerrarSesion()">Salir</button>
     </div>
-    <div class="nana-fecha" id="nanaFecha"></div>
-
-    <!-- Barra progreso grande -->
-    <div style="margin-top:10px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
-        <div style="font-size:12px;color:rgba(255,255,255,.6);" id="progLabel">Cargando tareas...</div>
-        <div style="font-size:12px;color:var(--b);font-weight:500;" id="progPct">0%</div>
-      </div>
-      <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
-    </div>
-
-    <!-- Botón audio GRANDE y visible -->
-    <button class="audio-btn" id="audioBtn" onclick="leerTareasVoz()" style="margin-top:12px;width:100%;justify-content:center;font-size:14px;padding:10px 16px;">
-      🔊 Escuchar mis tareas en voz alta
-    </button>
-  </div>
+  </nav>
 
   <!-- PANEL NOTIFICACIONES NANA -->
-  <div class="notif-panel" id="nanaNotifPanel" style="top:auto;right:auto;left:0;right:0;border-radius:0 0 16px 16px;max-width:430px;margin:0 auto;">
+  <div class="notif-panel" id="nanaNotifPanel">
     <div class="notif-panel-header">
       <div>
         <div class="notif-panel-title">Mis alertas</div>
@@ -711,13 +686,14 @@ body.lang-es [data-en]{display:none !important;}
     <div class="notif-lista" id="nanaNotifLista">
       <div class="notif-empty">
         <div class="notif-empty-icon">🔔</div>
-        <div style="font-size:13px;color:var(--txt2);">Sin alertas por ahora</div>
+        <div style="font-size:14px;font-weight:500;color:var(--txt);margin-bottom:4px;">Todo al día</div>
+        <div style="font-size:12px;color:var(--txt2);">Las notificaciones aparecerán aquí</div>
       </div>
     </div>
   </div>
 
   <!-- TOAST NANA -->
-  <div class="notif-toast" id="nanaNotifToast" style="bottom:90px;">
+  <div class="notif-toast" id="nanaNotifToast">
     <div class="notif-toast-icon" id="nanaNotifToastIcon">🔔</div>
     <div class="notif-toast-body">
       <div class="notif-toast-titulo" id="nanaNotifToastTitulo"></div>
@@ -726,36 +702,56 @@ body.lang-es [data-en]{display:none !important;}
     <button class="notif-toast-close" onclick="cerrarNanaNotifToast()">✕</button>
   </div>
 
-  <!-- CONTENIDO -->
-  <div class="nana-contenido" id="nanaContenido"></div>
+  <div class="dash-hero" style="background:linear-gradient(135deg,var(--b2) 0%,var(--b) 100%);">
+    <div class="dash-hero-greeting" id="nanaGreeting">Bienvenida de vuelta</div>
+    <div class="dash-hero-name" id="nanaHeroNombre">Tu día</div>
+    <div class="dash-hero-sub" id="nanaFecha"></div>
+  </div>
 
-  <!-- INPUT CHAT -->
-  <div class="chat-input-wrap" id="chatInputWrap" style="display:none;">
-    <button class="chat-mic" onclick="showToast('🎙️ Mensaje de voz enviado')">🎙️</button>
-    <input type="text" class="chat-input" id="chatInput" placeholder="Escribe un mensaje..." />
-    <button class="chat-send" onclick="enviarMensaje()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+  <div class="dash-stats-float">
+    <div class="dash-stat-card">
+      <div class="dash-stat-n" id="progPct">—</div>
+      <div class="dash-stat-l">Progreso</div>
+    </div>
+    <div class="dash-stat-card">
+      <div class="dash-stat-n" id="statNanaTareas">—</div>
+      <div class="dash-stat-l">Tareas hoy</div>
+    </div>
+    <div class="dash-stat-card">
+      <div class="dash-stat-n" id="statNanaScore">—</div>
+      <div class="dash-stat-l">Mi score</div>
+    </div>
+  </div>
+
+  <div style="padding:0 16px;margin-bottom:4px;">
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+      <div style="font-size:12px;color:var(--txt2);" id="progLabel">Cargando tareas...</div>
+    </div>
+    <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+  </div>
+
+  <div style="padding:0 16px 8px;">
+    <button class="audio-btn" id="audioBtn" onclick="leerTareasVoz()" style="width:100%;justify-content:center;font-size:14px;padding:10px 16px;">
+      🔊 Escuchar mis tareas en voz alta
     </button>
   </div>
 
-  <!-- NAV MEJORADO - textos más claros -->
-  <div class="bottom-nav" id="bottomNav">
-    <div class="nav-item activo" onclick="location.href='/tareas.html'" id="tab-tareas">
-      <div class="nav-icon">✅</div>
-      <div class="nav-label">Mis tareas</div>
+  <div class="dash-content">
+    <!-- Tarjeta vincular — visible cuando nana no tiene familia vinculada -->
+    <div class="dash-card" id="cardVincularHogar" style="border:2px solid var(--b);">
+      <div class="dash-card-header">
+        <div class="dash-card-icon" style="background:var(--b3);font-size:20px;">&#x1F517;</div>
+        <div><div class="dash-card-title">Vincularme a un hogar</div><div class="dash-card-sub">Ingresa el codigo que te dio la familia</div></div>
+      </div>
+      <div class="dash-card-body">
+        <div style="display:flex;gap:8px;">
+          <input id="inputCodigoNana" type="text" placeholder="ABC123" maxlength="6"
+            style="flex:1;padding:12px;border:2px solid var(--b);border-radius:99px;font-size:16px;font-family:'DM Sans',sans-serif;text-transform:uppercase;letter-spacing:4px;text-align:center;outline:none;font-weight:600;" oninput="this.value=this.value.toUpperCase()" />
+          <button onclick="ingresarCodigoNana()" style="background:var(--b2);color:#fff;border:none;border-radius:99px;padding:12px 20px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Vincular</button>
+        </div>
+      </div>
     </div>
-    <div class="nav-item" onclick="location.href='/menu.html'" id="tab-menu">
-      <div class="nav-icon">🍽️</div>
-      <div class="nav-label">Qué cocinar</div>
-    </div>
-    <div class="nav-item" onclick="location.href='/chat.html'" id="tab-chat">
-      <div class="nav-icon">💬</div>
-      <div class="nav-label">Hablar</div>
-    </div>
-    <div class="nav-item" onclick="location.href='/videos.html'" id="tab-videos">
-      <div class="nav-icon">📹</div>
-      <div class="nav-label">Aprender</div>
-    </div>
+    <div class="dash-grid" id="nanaGrid"></div>
   </div>
 
 </div>
@@ -764,7 +760,7 @@ body.lang-es [data-en]{display:none !important;}
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import { getFirestore, doc, setDoc, getDoc, collection, addDoc, query, where, getDocs, updateDoc, onSnapshot, serverTimestamp, orderBy, limit, increment } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getFirestore, doc, setDoc, getDoc, collection, addDoc, query, where, getDocs, updateDoc, onSnapshot, orderBy, serverTimestamp, arrayUnion } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyDDJRJ8A8P507lllGRBOoXO30ESAH1GAnw",
@@ -1555,7 +1551,7 @@ async function cargarDashboardFamilia() {
     await Promise.all([
       cargarTareasDash(hogarId, user.uid),
       cargarMenuDash(hogarId),
-      cargarChatDash(user.uid),
+      cargarChatDash(user.uid, hogarId),
       cargarScoreDash(hogarId, user.uid),
       cargarMercadoDash(hogarId),
       cargarNominaDash(hogarId),
@@ -1647,85 +1643,71 @@ async function cargarMenuDash(hogarId) {
     </div>`).join('');
 }
 
-// ── Unsubs para listeners del chat en el dashboard ──
-let _chatDashUnsub1 = null;
-let _chatDashUnsub2 = null;
-
-async function cargarChatDash(uid) {
+function cargarChatDash(uid, hogarId) {
   try {
-    // Cancelar listeners anteriores si los hay
-    if (_chatDashUnsub1) { _chatDashUnsub1(); _chatDashUnsub1 = null; }
-    if (_chatDashUnsub2) { _chatDashUnsub2(); _chatDashUnsub2 = null; }
-
-    // Buscar hogar (lectura única — no cambia en tiempo real)
-    const qHogar = query(collection(db, 'hogares'), where('participantes', 'array-contains', uid));
-    const snapHogar = await getDocs(qHogar);
-    const uidsHogar = snapHogar.empty ? [uid] : (snapHogar.docs[0].data().participantes || [uid]);
-
-    // Encontrar conversación del hogar (lectura única)
-    let convDoc = null;
-    for (const pUid of uidsHogar) {
-      const q = query(collection(db, 'conversaciones'), where('participantes', 'array-contains', pUid));
-      const s = await getDocs(q);
-      if (!s.empty) { convDoc = s.docs[0]; break; }
-    }
-
-    if (!convDoc) {
-      document.getElementById('subChat').textContent = 'Sin conversaciones aún';
-      document.getElementById('bodyChat').innerHTML = `
-        <div style="text-align:center;padding:16px;">
-          <div style="font-size:28px;margin-bottom:6px;">💬</div>
-          <div style="font-size:13px;color:var(--txt2);">Sin mensajes aún</div>
-          <div style="font-size:12px;color:#bbb;margin-top:2px;">Toca aquí para chatear</div>
-        </div>`;
-      return;
-    }
-
-    const convId = convDoc.id;
-
-    // ── LISTENER 1: metadatos de la conversación (noLeidos, ultimoMensaje) ──
-    _chatDashUnsub1 = onSnapshot(doc(db, 'conversaciones', convId), (snap) => {
-      if (!snap.exists()) return;
-      const data = snap.data();
-      const noLeidos = data.noLeidos || 0;
-      document.getElementById('subChat').textContent = noLeidos > 0
-        ? `${noLeidos} mensaje${noLeidos > 1 ? 's' : ''} sin leer`
-        : 'Al día';
-    });
-
-    // ── LISTENER 2: últimos 3 mensajes en tiempo real ──
-    const qMsgs = query(
-      collection(db, 'conversaciones', convId, 'mensajes'),
-      orderBy('timestamp', 'desc'),
-      limit(3)
+    // Listener en tiempo real sobre la conversación del hogar (igual que chat.html)
+    const qConv = query(
+      collection(db, 'conversaciones'),
+      where('hogarId', '==', hogarId)
     );
 
-    _chatDashUnsub2 = onSnapshot(qMsgs, (snap) => {
-      const msgs = snap.docs
-        .map(d => d.data())
-        .sort((a, b) => (a.timestamp?.toMillis?.() || 0) - (b.timestamp?.toMillis?.() || 0));
-
-      if (!msgs.length) {
-        document.getElementById('bodyChat').innerHTML =
-          `<div style="font-size:13px;color:#bbb;text-align:center;padding:12px;">Sin mensajes aún</div>`;
+    onSnapshot(qConv, (convSnap) => {
+      if (convSnap.empty) {
+        document.getElementById('subChat').textContent = 'Sin conversaciones aún';
+        document.getElementById('bodyChat').innerHTML = `
+          <div style="text-align:center;padding:16px;">
+            <div style="font-size:28px;margin-bottom:6px;">💬</div>
+            <div style="font-size:13px;color:var(--txt2);">Sin mensajes aún</div>
+            <div style="font-size:12px;color:#bbb;margin-top:2px;">Toca aquí para chatear</div>
+          </div>`;
         return;
       }
 
-      document.getElementById('bodyChat').innerHTML = `
-        <div style="display:flex;flex-direction:column;gap:6px;">
-          ${msgs.map(m => {
-            const esPropio = m.remitenteUid === uid;
-            const texto = m.tipo === 'texto'   ? m.texto
-                        : m.tipo === 'foto'    ? '📷 Foto'
-                        : m.tipo === 'audio'   ? '🎙️ Mensaje de voz'
-                        : m.tipo === 'mercado' ? '🛒 Lista del mercado'
-                        : m.tipo === 'tarea'   ? `📋 ${m.tarea?.nombre || 'Tarea'}`
-                        : (m.texto || '');
-            return `<div class="${esPropio ? 'chat-msg-out' : 'chat-msg-in'}" style="font-size:12px;max-width:85%;">${texto}</div>`;
-          }).join('')}
-        </div>`;
-    });
+      const convDoc = convSnap.docs[0];
+      const conv = convDoc.data();
+      const noLeidos = conv.noLeidos || 0;
 
+      // Actualizar subheader y stat flotante de mensajes
+      document.getElementById('subChat').textContent = noLeidos > 0
+        ? `${noLeidos} mensaje${noLeidos > 1 ? 's' : ''} sin leer`
+        : 'Al día';
+      const statMensajes = document.getElementById('statMensajes');
+      if (statMensajes) statMensajes.textContent = noLeidos || '0';
+
+      // Listener en tiempo real sobre los mensajes (últimos 3)
+      const qMsgs = query(
+        collection(db, 'conversaciones', convDoc.id, 'mensajes'),
+        orderBy('timestamp', 'asc')
+      );
+
+      onSnapshot(qMsgs, (msgsSnap) => {
+        const msgs = msgsSnap.docs
+          .map(d => d.data())
+          .slice(-3);
+
+        if (!msgs.length) {
+          document.getElementById('bodyChat').innerHTML =
+            `<div style="font-size:13px;color:#bbb;text-align:center;padding:12px;">Sin mensajes aún</div>`;
+          return;
+        }
+
+        document.getElementById('bodyChat').innerHTML = `
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            ${msgs.map(m => {
+              const esPropio = m.remitenteUid === uid;
+              const texto =
+                m.tipo === 'texto'   ? m.texto :
+                m.tipo === 'foto'    ? '📷 Foto' :
+                m.tipo === 'audio'   ? '🎙️ Mensaje de voz' :
+                m.tipo === 'mercado' ? '🛒 Lista del mercado' :
+                m.tipo === 'tarea'   ? `📋 ${m.tarea?.nombre || 'Tarea'}` :
+                m.texto || '';
+              return `<div class="${esPropio ? 'chat-msg-out' : 'chat-msg-in'}"
+                           style="font-size:12px;max-width:85%;">${texto}</div>`;
+            }).join('')}
+          </div>`;
+      });
+    });
   } catch(e) { console.error('Chat dash error:', e); }
 }
 
@@ -1897,7 +1879,16 @@ async function verificarVinculacion() {
   let tieneNana = false;
   if (!snap.empty) {
     const hogar = snap.docs[0].data();
-    tieneNana = hogar.participantes.length > 1;
+    const participantes = hogar.participantes || [];
+    for (const uid of participantes) {
+      if (uid === user.uid) continue;
+      try {
+        const perfilSnap = await getDoc(doc(db, 'usuarios', uid));
+        if (perfilSnap.exists() && perfilSnap.data().tipo === 'nana') {
+          tieneNana = true; break;
+        }
+      } catch(e) {}
+    }
   }
 
   if (!tieneNana) {
@@ -1959,10 +1950,15 @@ async function mostrarBannerVinculacion(uid, db) {
     </div>
     <div style="display:flex;gap:8px;">
       <button onclick="copiarCodigo('${codigo}')" style="flex:1;background:var(--g3);color:var(--g);border:none;border-radius:99px;padding:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">📋 Copiar código</button>
-      <a href="https://wa.me/?text=Hola%2C%20te%20invito%20a%20My%20Nana%20%F0%9F%8F%A0%0A%0APara%20vincularte%20conmigo%20sigue%20estos%20pasos%3A%0A1%EF%B8%8F%E2%83%A3%20Entra%20a%3A%20mynana.app%2Fapp.html%0A2%EF%B8%8F%E2%83%A3%20Selecciona%20%22Nana%22%0A3%EF%B8%8F%E2%83%A3%20Toca%20%22Crear%20cuenta%20gratis%22%0A4%EF%B8%8F%E2%83%A3%20Ingresa%20este%20c%C3%B3digo%3A%20*${codigo}*%0A%0A%C2%A1Nos%20vemos%20adentro!%20%F0%9F%92%9A" target="_blank" style="flex:1;background:#25D366;color:#fff;border:none;border-radius:99px;padding:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px;">💬 Enviar por WhatsApp</a>
+      <a href="https://wa.me/?text=Hola%2C%20te%20invito%20a%20My%20Nana%20%F0%9F%8F%A0%0A%0APara%20vincularte%20conmigo%3A%0A1%EF%B8%8F%E2%83%A3%20Entra%20a%3A%20https%3A%2F%2Fmynana.app%2Fapp.html%0A2%EF%B8%8F%E2%83%A3%20Crea%20tu%20cuenta%20como%20Nana%0A3%EF%B8%8F%E2%83%A3%20En%20tu%20dashboard%20ingresa%20este%20c%C3%B3digo%3A%20*${codigo}*%0A%0A%C2%A1Nos%20vemos%20adentro!%20%F0%9F%92%9A" target="_blank" style="flex:1;background:#25D366;color:#fff;border:none;border-radius:99px;padding:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px;">💬 WhatsApp</a>
     </div>`;
 
-  hero.parentNode.insertBefore(banner, hero.nextSibling);
+  const dashContent = document.querySelector('#screen-familia .dash-content');
+  if (dashContent) dashContent.insertBefore(banner, dashContent.firstChild);
+  else {
+    const hero = document.querySelector('.dash-hero');
+    if (hero) hero.parentNode.insertBefore(banner, hero.nextSibling);
+  }
 }
 
 window.copiarCodigo = (codigo) => {
@@ -1973,28 +1969,66 @@ window.copiarCodigo = (codigo) => {
   });
 };
 
+window.ingresarCodigoNana = async () => {
+  const codigo = document.getElementById('inputCodigoNana')?.value?.trim().toUpperCase();
+  if (!codigo || codigo.length < 4) { showToast('Ingresa el codigo completo'); return; }
+  const btn = document.getElementById('cardVincularHogar')?.querySelector('button');
+  if (btn) { btn.disabled = true; btn.textContent = 'Verificando...'; }
+  try {
+    const user = auth.currentUser;
+    if (!user) return;
+    const codigoSnap = await getDoc(doc(db, 'codigos', codigo));
+    if (!codigoSnap.exists()) {
+      showToast('Codigo invalido. Verifica con tu familia.');
+      if (btn) { btn.disabled = false; btn.textContent = 'Vincular'; }
+      return;
+    }
+    const codigoData = codigoSnap.data();
+    if (codigoData.usado) {
+      showToast('Este codigo ya fue usado.');
+      if (btn) { btn.disabled = false; btn.textContent = 'Vincular'; }
+      return;
+    }
+    const qHogar = query(collection(db, 'hogares'), where('participantes', 'array-contains', codigoData.familiaUid));
+    const snapHogar = await getDocs(qHogar);
+    if (snapHogar.empty) {
+      showToast('No se encontro el hogar.');
+      if (btn) { btn.disabled = false; btn.textContent = 'Vincular'; }
+      return;
+    }
+    await updateDoc(snapHogar.docs[0].ref, { participantes: arrayUnion(user.uid) });
+    await updateDoc(doc(db, 'codigos', codigo), { usado: true, usadoPor: user.uid, usadoA: serverTimestamp() });
+    showToast('Vinculada exitosamente!');
+    const card = document.getElementById('cardVincularHogar');
+    if (card) card.style.display = 'none';
+    setTimeout(() => location.reload(), 1500);
+  } catch(e) {
+    console.error(e);
+    showToast('Error al vincular. Intenta de nuevo.');
+    if (btn) { btn.disabled = false; btn.textContent = 'Vincular'; }
+  }
+};
+
 function mostrarNana(data) {
   mostrarScreen('nana');
 
-  const inicial = data.nombre?.[0]?.toUpperCase() || 'N';
-  const avatarEl = document.getElementById('nanaAvatarCircle');
-  if (avatarEl) avatarEl.textContent = inicial;
+  const nombre = data.nombre?.split(' ')[0] || 'Nana';
+  document.getElementById('nanaNombre').textContent = nombre;
+  const avatarNana = document.getElementById('nanaAvatarCircle');
+  if (avatarNana) avatarNana.textContent = data.nombre?.[0]?.toUpperCase() || 'N';
 
-  const nombre = data.nombre?.split(' ')[0] || 'Maria';
-  document.getElementById('nanaNombre').textContent = `${nombre} 👋`;
+  // La tarjeta de vincular es visible por defecto en el HTML
+  // Se ocultará solo cuando la nana se vincule exitosamente
 
   const hora = new Date().getHours();
   const saludo = hora < 12 ? 'Buenos días' : hora < 18 ? 'Buenas tardes' : 'Buenas noches';
   const saludoEl = document.getElementById('nanaGreeting');
-  if (saludoEl) saludoEl.textContent = saludo;
+  if (saludoEl) saludoEl.textContent = `${saludo}, ${nombre} 👋`;
+  const heroNombre = document.getElementById('nanaHeroNombre');
+  if (heroNombre) heroNombre.textContent = 'Aquí tienes tu resumen de hoy';
 
   setFechaHoy();
   cargarTareasNana();
-
-  // Iniciar contexto Firestore del chat (para enviarMensaje y crearTareaDesdeChat)
-  const authCtx = getAuth();
-  const userCtx = authCtx.currentUser;
-  if (userCtx) iniciarContextoChatNana(userCtx.uid);
 
   // Iniciar notificaciones de nana
   setTimeout(async () => {
@@ -2013,11 +2047,8 @@ function mostrarNana(data) {
 }
 
 async function cargarTareasNana() {
-  // Cargar tareas reales desde Firebase para mostrar progreso
+  // Usa db y auth globales — no import dinamico
   try {
-    const { getFirestore, collection, query, where, getDocs } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-    const db = getFirestore();
-    const auth = getAuth();
     const user = auth.currentUser;
     if (!user) return;
 
@@ -2025,6 +2056,24 @@ async function cargarTareasNana() {
     const qHogar = query(collection(db, 'hogares'), where('participantes', 'array-contains', user.uid));
     const snapHogar = await getDocs(qHogar);
     if (snapHogar.empty) { renderTareasNanaDemo(); return; }
+
+    // Verificar si hay una familia en el hogar
+    const hogarData = snapHogar.docs[0].data();
+    const participantes = hogarData.participantes || [];
+    let tieneFamilia = false;
+    for (const uid of participantes) {
+      if (uid === user.uid) continue;
+      const perfilSnap = await getDoc(doc(db, 'usuarios', uid));
+      if (perfilSnap.exists() && perfilSnap.data().tipo === 'familia') {
+        tieneFamilia = true; break;
+      }
+    }
+
+    // Ocultar tarjeta de vincular si ya hay familia
+    const cardVincular = document.getElementById('cardVincularHogar');
+    if (cardVincular) cardVincular.style.display = tieneFamilia ? 'none' : 'block';
+
+    if (!tieneFamilia) { renderTareasNanaDemo(); return; }
 
     const hogarId = snapHogar.docs[0].id;
     const qTareas = query(collection(db, 'hogares', hogarId, 'tareas'));
@@ -2035,117 +2084,127 @@ async function cargarTareasNana() {
     const total = tareas.length;
     const pct = total ? Math.round((hechas / total) * 100) : 0;
 
-    // Actualizar barra de progreso
     document.getElementById('progFill').style.width = pct + '%';
     document.getElementById('progLabel').textContent = total
       ? `${hechas} de ${total} tareas listas hoy`
       : 'No tienes tareas asignadas hoy';
     document.getElementById('progPct').textContent = pct + '%';
 
-    // Renderizar tarjetas en el dashboard
     renderTarjetasNana(tareas, hogarId);
 
   } catch(e) {
+    console.error('cargarTareasNana error:', e);
     renderTareasNanaDemo();
   }
 }
 
 function renderTarjetasNana(tareas, hogarId) {
-  const c = document.getElementById('nanaContenido');
+  const c = document.getElementById('nanaGrid');
   const pendientes = tareas.filter(t => t.estado !== 'completa');
+  const statTareas = document.getElementById('statNanaTareas');
+  if (statTareas) statTareas.textContent = tareas.length || '0';
 
   c.innerHTML = `
-    <!-- ACCESOS RÁPIDOS - nueva cuadrícula 3 columnas -->
-    <div style="padding:16px 16px 0;" class="dash-section-title" style="padding:16px 16px 8px;">Accesos rápidos</div>
-    <div class="dash-grid-nana" style="padding:0 16px 16px;">
-      <a href="/tareas.html" class="nana-action-card" style="background:var(--g);color:#fff;">
-        <div class="nana-action-icon">✅</div>
-        <div class="nana-action-title">Mis tareas</div>
-        <div class="nana-action-sub">${pendientes.length} pendientes</div>
-      </a>
-      <a href="/menu.html" class="nana-action-card" style="background:var(--b);color:#fff;">
-        <div class="nana-action-icon">🍽️</div>
-        <div class="nana-action-title">Qué cocinar</div>
-        <div class="nana-action-sub">Ver el menú</div>
-      </a>
-      <a href="/chat.html" class="nana-action-card" style="background:#fff;color:var(--g);border:1.5px solid var(--g4);">
-        <div class="nana-action-icon">💬</div>
-        <div class="nana-action-title">Hablar</div>
-        <div class="nana-action-sub">Chat familiar</div>
-      </a>
-      <a href="/videos.html" class="nana-action-card" style="background:var(--b3);color:var(--b2);border:1.5px solid var(--b);">
-        <div class="nana-action-icon">📹</div>
-        <div class="nana-action-title">Aprender</div>
-        <div class="nana-action-sub">Ver videos</div>
-      </a>
-      <a href="/nomina.html" class="nana-action-card" style="background:var(--g3);color:var(--g);border:1.5px solid var(--g4);">
-        <div class="nana-action-icon">💰</div>
-        <div class="nana-action-title">Mis pagos</div>
-        <div class="nana-action-sub">Ver historial</div>
-      </a>
-      <a href="/buscador.html" class="nana-action-card" style="background:var(--cr);color:var(--txt2);border:1.5px solid var(--g4);">
-        <div class="nana-action-icon">👤</div>
-        <div class="nana-action-title">Mi perfil</div>
-        <div class="nana-action-sub">Editar perfil</div>
-      </a>
-    </div>
-
-    <!-- PRÓXIMA TAREA -->
-    ${pendientes.length > 0 ? `
-    <div style="padding:0 16px;margin-bottom:4px;" class="dash-section-title">Próxima tarea</div>
-    <div class="proxima-tarea">
-      <div class="proxima-tarea-header">
-        <div class="proxima-tarea-emoji" style="background:var(--g3);">${pendientes[0].cat?.split(' ')[0] || '📋'}</div>
-        <div style="flex:1;">
-          <div style="font-size:16px;font-weight:600;color:var(--txt);">${pendientes[0].nombre}</div>
-          <div style="font-size:13px;color:var(--txt2);margin-top:3px;">🕐 ${formatHora12(pendientes[0].hora)} · ${pendientes[0].cat || ''}</div>
-          ${pendientes[0].prioridad === 'urgente' ? '<div style="font-size:11px;color:#e05c5c;font-weight:600;margin-top:3px;">🔴 Urgente</div>' : ''}
-        </div>
+    <div class="dash-card" onclick="location.href='/tareas.html'" style="cursor:pointer;">
+      <div class="dash-card-header">
+        <div class="dash-card-icon" style="background:var(--g3);">✅</div>
+        <div><div class="dash-card-title">Mis tareas</div><div class="dash-card-sub">${pendientes.length} pendientes hoy</div></div>
       </div>
-      <a href="/tareas.html" class="proxima-tarea-btn">✅ Ver y completar esta tarea</a>
-    </div>` : `
-    <div style="margin:0 16px;background:#fff;border-radius:18px;padding:24px;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.06);animation:cardEntrada .4s ease .35s both;">
-      <div style="font-size:40px;margin-bottom:8px;">🎉</div>
-      <div style="font-size:16px;font-weight:600;color:var(--g);margin-bottom:4px;">¡Todo listo!</div>
-      <div style="font-size:13px;color:var(--txt2);">Completaste todas las tareas de hoy</div>
-    </div>`}
+      <div class="dash-card-body">
+        ${pendientes.slice(0,3).map(t => `<div class="task-item"><span style="font-size:14px;">${t.cat?.split(' ')[0]||'📋'}</span><span class="task-name">${t.nombre}</span><span class="task-hora">${formatHora12(t.hora)}</span></div>`).join('') || '<div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Sin tareas pendientes</div>'}
+      </div>
+    </div>
+    <div class="dash-card" onclick="location.href='/menu.html'" style="cursor:pointer;">
+      <div class="dash-card-header">
+        <div class="dash-card-icon" style="background:var(--b3);">🍽️</div>
+        <div><div class="dash-card-title">Qué cocinar hoy</div><div class="dash-card-sub">Ver menú del día</div></div>
+      </div>
+      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Toca para ver el menú planificado</div></div>
+    </div>
+    <div class="dash-card" onclick="location.href='/chat.html'" style="cursor:pointer;">
+      <div class="dash-card-header">
+        <div class="dash-card-icon" style="background:var(--g3);">💬</div>
+        <div><div class="dash-card-title">Hablar con la familia</div><div class="dash-card-sub">Chat en tiempo real</div></div>
+      </div>
+      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Abrir chat →</div></div>
+    </div>
+    <div class="dash-card" onclick="location.href='/videos.html'" style="cursor:pointer;">
+      <div class="dash-card-header">
+        <div class="dash-card-icon" style="background:var(--b3);">📹</div>
+        <div><div class="dash-card-title">Aprender</div><div class="dash-card-sub">Videos de capacitación</div></div>
+      </div>
+      <div class="dash-card-body">
+        <div class="task-item"><span style="font-size:14px;">🍲</span><span class="task-name">Sancocho de gallina</span><span class="task-hora" style="color:var(--g);">Cocina</span></div>
+        <div class="task-item"><span style="font-size:14px;">🧹</span><span class="task-name">Limpiar baños</span><span class="task-hora" style="color:var(--g);">Limpieza</span></div>
+      </div>
+    </div>
+    <div class="dash-card" onclick="location.href='/nomina.html'" style="cursor:pointer;">
+      <div class="dash-card-header">
+        <div class="dash-card-icon" style="background:var(--g3);">💰</div>
+        <div><div class="dash-card-title">Mis pagos</div><div class="dash-card-sub">Historial y nómina</div></div>
+      </div>
+      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Ver historial de pagos →</div></div>
+    </div>
+    <div class="dash-card" onclick="location.href='/buscador.html'" style="cursor:pointer;">
+      <div class="dash-card-header">
+        <div class="dash-card-icon" style="background:var(--b3);">👤</div>
+        <div><div class="dash-card-title">Mi perfil</div><div class="dash-card-sub">Editar y compartir</div></div>
+      </div>
+      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Actualizar perfil →</div></div>
+    </div>
   `;
 }
 
 function renderTareasNanaDemo() {
   document.getElementById('progLabel').textContent = 'Sin tareas asignadas hoy';
   document.getElementById('progPct').textContent = '0%';
+  const statTareas = document.getElementById('statNanaTareas');
+  if (statTareas) statTareas.textContent = '0';
 
-  document.getElementById('nanaContenido').innerHTML = `
-    <div style="padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-      <a href="/tareas.html" style="background:var(--g);color:#fff;border-radius:16px;padding:18px 12px;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;">
-        <div style="font-size:32px;">✅</div>
-        <div style="font-size:15px;font-weight:600;">Mis tareas</div>
-        <div style="font-size:12px;opacity:.8;">Ver tareas del día</div>
-      </a>
-      <a href="/menu.html" style="background:var(--b);color:#fff;border-radius:16px;padding:18px 12px;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;">
-        <div style="font-size:32px;">🍽️</div>
-        <div style="font-size:15px;font-weight:600;">Qué cocinar</div>
-        <div style="font-size:12px;opacity:.8;">Ver el menú</div>
-      </a>
-      <a href="/chat.html" style="background:var(--g3);color:var(--g);border-radius:16px;padding:18px 12px;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;border:1.5px solid var(--g4);">
-        <div style="font-size:32px;">💬</div>
-        <div style="font-size:15px;font-weight:600;">Hablar</div>
-        <div style="font-size:12px;color:var(--txt2);">Chat familiar</div>
-      </a>
-      <a href="/videos.html" style="background:var(--b3);color:var(--b2);border-radius:16px;padding:18px 12px;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;border:1.5px solid var(--b);">
-        <div style="font-size:32px;">📹</div>
-        <div style="font-size:15px;font-weight:600;">Aprender</div>
-        <div style="font-size:12px;">Ver videos</div>
-      </a>
-    </div>
-    <div style="padding:0 16px 16px;">
-      <div style="background:var(--g3);border-radius:16px;padding:20px;text-align:center;border:1px solid var(--g4);">
-        <div style="font-size:32px;margin-bottom:8px;">👋</div>
-        <div style="font-size:15px;font-weight:600;color:var(--g);margin-bottom:4px;">¡Bienvenida!</div>
-        <div style="font-size:13px;color:var(--txt2);">La familia aún no ha asignado tareas para hoy</div>
+  document.getElementById('nanaGrid').innerHTML = `
+    <div class="dash-card" onclick="location.href='/tareas.html'" style="cursor:pointer;">
+      <div class="dash-card-header">
+        <div class="dash-card-icon" style="background:var(--g3);">✅</div>
+        <div><div class="dash-card-title">Mis tareas</div><div class="dash-card-sub">Sin tareas asignadas aun</div></div>
       </div>
-    </div>`;
+      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Ver tareas del dia</div></div>
+    </div>
+    <div class="dash-card" onclick="location.href='/menu.html'" style="cursor:pointer;">
+      <div class="dash-card-header">
+        <div class="dash-card-icon" style="background:var(--b3);">🍽️</div>
+        <div><div class="dash-card-title">Que cocinar hoy</div><div class="dash-card-sub">Ver menu del dia</div></div>
+      </div>
+      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Ver menu planificado</div></div>
+    </div>
+    <div class="dash-card" onclick="location.href='/chat.html'" style="cursor:pointer;">
+      <div class="dash-card-header">
+        <div class="dash-card-icon" style="background:var(--g3);">💬</div>
+        <div><div class="dash-card-title">Hablar con la familia</div><div class="dash-card-sub">Chat en tiempo real</div></div>
+      </div>
+      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Abrir chat</div></div>
+    </div>
+    <div class="dash-card" onclick="location.href='/videos.html'" style="cursor:pointer;">
+      <div class="dash-card-header">
+        <div class="dash-card-icon" style="background:var(--b3);">📹</div>
+        <div><div class="dash-card-title">Aprender</div><div class="dash-card-sub">Videos de capacitacion</div></div>
+      </div>
+      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Ver videos</div></div>
+    </div>
+    <div class="dash-card" onclick="location.href='/nomina.html'" style="cursor:pointer;">
+      <div class="dash-card-header">
+        <div class="dash-card-icon" style="background:var(--g3);">💰</div>
+        <div><div class="dash-card-title">Mis pagos</div><div class="dash-card-sub">Historial y nomina</div></div>
+      </div>
+      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Ver historial</div></div>
+    </div>
+    <div class="dash-card" onclick="location.href='/buscador.html'" style="cursor:pointer;">
+      <div class="dash-card-header">
+        <div class="dash-card-icon" style="background:var(--b3);">👤</div>
+        <div><div class="dash-card-title">Mi perfil</div><div class="dash-card-sub">Editar y compartir</div></div>
+      </div>
+      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Actualizar perfil</div></div>
+    </div>
+  `;
 }
 
 function formatHora12(hora24) {
@@ -2287,13 +2346,13 @@ window.cambiarTab = (tab) => {
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('activo'));
   document.getElementById(`tab-${tab}`).classList.add('activo');
   document.getElementById('chatInputWrap').style.display = tab==='chat' ? 'flex' : 'none';
-  const c = document.getElementById('nanaContenido');
+  const c = document.getElementById('nanaGrid');
   c.style.opacity='0';
   setTimeout(()=>{renderTab(tab);c.style.opacity='1';c.style.transition='opacity .2s';},150);
 };
 
 function renderTab(tab) {
-  const c = document.getElementById('nanaContenido');
+  const c = document.getElementById('nanaGrid');
   if(tab==='tareas') renderTareas(c);
   else if(tab==='menu') renderMenu(c);
   else if(tab==='chat') renderChat(c);
@@ -2324,9 +2383,9 @@ function renderTareas(c) {
     </div>`).join('');
 }
 
-window.toggleTarea = (id)=>{ const t=tareasState.find(t=>t.id===id); if(t&&t.hecha){t.hecha=false;t.foto=false;renderTareas(document.getElementById('nanaContenido'));actualizarProgreso();} else simularFoto(id); };
-window.simularFoto = (id)=>{ const t=tareasState.find(t=>t.id===id); if(t){t.hecha=true;t.foto=true;} renderTareas(document.getElementById('nanaContenido')); actualizarProgreso(); showToast('📸 ¡Foto enviada a la familia!'); mensajesState.push({tipo:'sistema',texto:`✅ Completó: ${t?.nombre}`}); };
-window.marcarHecha = (id)=>{ const t=tareasState.find(t=>t.id===id); if(t){t.hecha=true;} renderTareas(document.getElementById('nanaContenido')); actualizarProgreso(); showToast(`✅ ${t?.nombre} marcada como lista`); };
+window.toggleTarea = (id)=>{ const t=tareasState.find(t=>t.id===id); if(t&&t.hecha){t.hecha=false;t.foto=false;renderTareas(document.getElementById('nanaGrid'));actualizarProgreso();} else simularFoto(id); };
+window.simularFoto = (id)=>{ const t=tareasState.find(t=>t.id===id); if(t){t.hecha=true;t.foto=true;} renderTareas(document.getElementById('nanaGrid')); actualizarProgreso(); showToast('📸 ¡Foto enviada a la familia!'); mensajesState.push({tipo:'sistema',texto:`✅ Completó: ${t?.nombre}`}); };
+window.marcarHecha = (id)=>{ const t=tareasState.find(t=>t.id===id); if(t){t.hecha=true;} renderTareas(document.getElementById('nanaGrid')); actualizarProgreso(); showToast(`✅ ${t?.nombre} marcada como lista`); };
 
 function actualizarProgreso(){
   const hechas=tareasState.filter(t=>t.hecha).length;
@@ -2369,100 +2428,18 @@ function renderMsg(m){
   return `<div class="nana-msg-yo"><div class="burbuja-yo">${m.texto}</div><div class="msg-hora-yo">${m.hora||''} ✓✓</div></div>`;
 }
 
-// ── Estado persistente del chat de la nana ──
-let _nanaConvId = null;
-let _nanaHogarId = null;
-
-async function iniciarContextoChatNana(uid) {
-  try {
-    const qHogar = query(collection(db, 'hogares'), where('participantes', 'array-contains', uid));
-    const snapHogar = await getDocs(qHogar);
-    if (snapHogar.empty) return;
-    _nanaHogarId = snapHogar.docs[0].id;
-    const participantes = snapHogar.docs[0].data().participantes || [];
-    for (const pUid of participantes) {
-      const q = query(collection(db, 'conversaciones'), where('participantes', 'array-contains', pUid));
-      const s = await getDocs(q);
-      if (!s.empty) { _nanaConvId = s.docs[0].id; break; }
-    }
-  } catch(e) { console.error('iniciarContextoChatNana error:', e); }
-}
-
-window.enviarMensaje = async () => {
-  const input = document.getElementById('chatInput');
-  const texto = input?.value.trim();
-  if (!texto) return;
-
-  const auth = getAuth();
-  const user = auth.currentUser;
-  if (!user) return;
-
-  const hora = new Date().toLocaleTimeString('es-PA', {hour:'2-digit', minute:'2-digit'});
-  input.value = '';
-
-  // Actualización optimista local
-  mensajesState.push({tipo:'nana', texto, hora});
-  renderChat(document.getElementById('nanaContenido'));
-
-  // Si no hay conversación en Firestore todavía, solo local
-  if (!_nanaConvId) return;
-
-  try {
-    await addDoc(collection(db, 'conversaciones', _nanaConvId, 'mensajes'), {
-      tipo: 'texto',
-      texto,
-      remitenteUid: user.uid,
-      timestamp: serverTimestamp(),
-    });
-    await updateDoc(doc(db, 'conversaciones', _nanaConvId), {
-      ultimoMensaje: texto,
-      updatedAt: serverTimestamp(),
-      noLeidos: increment(1),
-    });
-  } catch(e) { console.error('enviarMensaje Firestore error:', e); }
-};
-
-// ── Crear tarea desde el chat y guardarla en el módulo de tareas ──
-window.crearTareaDesdeChat = async (nombre, hora, cat) => {
-  const auth = getAuth();
-  const user = auth.currentUser;
-  if (!user) { showToast('Inicia sesión primero'); return; }
-  if (!_nanaHogarId) { showToast('Sin hogar vinculado'); return; }
-
-  try {
-    // 1. Guardar en la colección correcta (la que lee tareas.html)
-    const tareaRef = await addDoc(collection(db, 'hogares', _nanaHogarId, 'tareas'), {
-      nombre,
-      hora: hora || '08:00',
-      cat: cat || '🏠 General',
-      estado: 'pendiente',
-      prioridad: 'normal',
-      creadaA: serverTimestamp(),
-      creadaPor: user.uid,
-    });
-
-    // 2. Enviar mensaje tipo tarea al chat (si hay conversación)
-    if (_nanaConvId) {
-      const msgTexto = `📋 Nueva tarea: ${nombre}`;
-      await addDoc(collection(db, 'conversaciones', _nanaConvId, 'mensajes'), {
-        tipo: 'tarea',
-        tarea: { nombre, hora, cat, id: tareaRef.id },
-        texto: msgTexto,
-        remitenteUid: user.uid,
-        timestamp: serverTimestamp(),
-      });
-      await updateDoc(doc(db, 'conversaciones', _nanaConvId), {
-        ultimoMensaje: msgTexto,
-        updatedAt: serverTimestamp(),
-        noLeidos: increment(1),
-      });
-    }
-
-    showToast('✅ Tarea creada y visible en el módulo de tareas');
-  } catch(e) {
-    console.error('crearTareaDesdeChat error:', e);
-    showToast('❌ Error al crear la tarea');
-  }
+window.enviarMensaje = ()=>{
+  const input=document.getElementById('chatInput');
+  const texto=input?.value.trim();
+  if(!texto) return;
+  const hora=new Date().toLocaleTimeString('es-PA',{hour:'2-digit',minute:'2-digit'});
+  mensajesState.push({tipo:'nana',texto,hora});
+  input.value='';
+  renderChat(document.getElementById('nanaGrid'));
+  setTimeout(()=>{
+    mensajesState.push({tipo:'familia',texto:'Gracias Maria! 👍',hora:new Date().toLocaleTimeString('es-PA',{hour:'2-digit',minute:'2-digit'})});
+    renderChat(document.getElementById('nanaGrid'));
+  },1500);
 };
 
 function renderVideos(c){
@@ -2742,6 +2719,19 @@ async function procesarCodigoFamiliar(codigo, nuevoUid) {
 }
 
 // ══ FIN MIEMBROS FAMILIARES ══
+
+// Exponer Firebase al scope global para onclick handlers
+window.db = db;
+window.auth = auth;
+window.getDoc = getDoc;
+window.doc = doc;
+window.getDocs = getDocs;
+window.collection = collection;
+window.query = query;
+window.where = where;
+window.updateDoc = updateDoc;
+window.arrayUnion = arrayUnion;
+window.serverTimestamp = serverTimestamp;
 </script>
 
 </body>
