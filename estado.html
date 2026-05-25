@@ -278,84 +278,95 @@ function renderTareas() {
 }
 
 // ── MENÚ ──
-async function cargarMenu() {
-  const sid = semanaId();
-  const snap = await getDocs(query(collection(db, 'hogares', hogarId, 'menus')));
-  let menuSemana = null;
-  snap.forEach(d => { if (d.id === sid) menuSemana = d.data(); });
-
-  const dias = ['lunes','martes','miercoles','jueves','viernes','sabado','domingo'];
+// ── MENÚ ──
+function cargarMenu() {
   const hoy = new Date();
-  const diaIdx = hoy.getDay() === 0 ? 6 : hoy.getDay() - 1;
-  const diaKey = dias[diaIdx];
-  const menuDia = menuSemana?.[diaKey] || {};
+  const diaIdx = hoy.getDay() === 0 ? 6 : hoy.getDay() - 1; // 0=lunes
+  const lunes = new Date(hoy);
+  lunes.setDate(hoy.getDate() - diaIdx);
+  lunes.setHours(0,0,0,0);
+  const sid = `${lunes.getFullYear()}-${String(lunes.getMonth()+1).padStart(2,'0')}-${String(lunes.getDate()).padStart(2,'0')}`;
 
   const tiempos = [
-    { id:'desayuno', nombre:'Desayuno', emoji:'☀️', hora:'7:00 am' },
+    { id:'desayuno', nombre:'Desayuno', emoji:'☀️',  hora:'7:00 am' },
     { id:'almuerzo', nombre:'Almuerzo', emoji:'🍽️', hora:'12:30 pm' },
-    { id:'cena',    nombre:'Cena',    emoji:'🌙', hora:'7:00 pm' },
+    { id:'cena',     nombre:'Cena',     emoji:'🌙',  hora:'7:00 pm' },
   ];
 
-  const conPlato = tiempos.filter(t => menuDia[t.id]);
-  document.getElementById('badgeMenu').textContent = conPlato.length ? `${conPlato.length} comidas` : 'Sin planificar';
+  // Escuchar colección completa para encontrar el doc de esta semana
+  onSnapshot(collection(db, 'hogares', hogarId, 'menus'), (snap) => {
+    const weekDoc = snap.docs.find(d => d.id === sid)
+      || snap.docs.sort((a,b) => b.id.localeCompare(a.id))[0];
+    // menu.html guarda con claves dia_0..dia_6, NO 'lunes','martes'
+    const menuDia = weekDoc ? (weekDoc.data()[`dia_${diaIdx}`] || {}) : {};
+    const conPlato = tiempos.filter(t => menuDia[t.id]?.nombre);
 
-  if (!conPlato.length) {
-    document.getElementById('bodyMenu').innerHTML = `<div class="empty-item">No hay menú planificado hoy · <a href="/menu.html" style="color:var(--g);">Planificar</a></div>`;
-    return;
-  }
+    document.getElementById('badgeMenu').textContent = conPlato.length ? `${conPlato.length} comidas` : 'Sin planificar';
 
-  document.getElementById('bodyMenu').innerHTML = tiempos.map(t => {
-    const plato = menuDia[t.id];
-    if (!plato) return '';
-    return `<div class="item-row">
-      <div class="item-emoji">${t.emoji}</div>
-      <div class="item-info">
-        <div class="item-nombre">${plato.nombre || plato}</div>
-        <div class="item-sub">${t.nombre} · ${t.hora}</div>
-      </div>
-      <div class="item-badge ok">Planificado</div>
-    </div>`;
-  }).join('');
+    if (!conPlato.length) {
+      document.getElementById('bodyMenu').innerHTML = `<div class="empty-item">No hay menú planificado hoy · <a href="/menu.html" style="color:var(--g);">Planificar</a></div>`;
+      return;
+    }
+
+    document.getElementById('bodyMenu').innerHTML = tiempos.map(t => {
+      const plato = menuDia[t.id];
+      if (!plato?.nombre) return '';
+      return `<div class="item-row">
+        <div class="item-emoji">${t.emoji}</div>
+        <div class="item-info">
+          <div class="item-nombre">${plato.nombre}</div>
+          <div class="item-sub">${t.nombre} · ${t.hora}</div>
+        </div>
+        <div class="item-badge ok">Planificado</div>
+      </div>`;
+    }).join('');
+  });
 }
 
 // ── MERCADO ──
-async function cargarMercado() {
-  const sid = semanaId();
-  const snap = await getDoc(doc(db, 'hogares', hogarId, 'mercado', sid));
-  const items = snap.exists() ? (snap.data().items || []) : [];
-  const pendientes = items.filter(i => !i.comprado);
-  const comprados = items.filter(i => i.comprado);
+function cargarMercado() {
+  const hoy = new Date();
+  const diaIdx = hoy.getDay() === 0 ? 6 : hoy.getDay() - 1;
+  const lunes = new Date(hoy);
+  lunes.setDate(hoy.getDate() - diaIdx);
+  lunes.setHours(0,0,0,0);
+  const sid = `${lunes.getFullYear()}-${String(lunes.getMonth()+1).padStart(2,'0')}-${String(lunes.getDate()).padStart(2,'0')}`;
 
-  document.getElementById('badgeMercado').textContent = pendientes.length ? `${pendientes.length} pendientes` : 'Todo comprado';
-  document.getElementById('mnMercado').textContent = pendientes.length || '0';
+  onSnapshot(doc(db, 'hogares', hogarId, 'mercado', sid), (snap) => {
+    const items = snap.exists() ? (snap.data().items || []) : [];
+    const pendientes = items.filter(i => !i.comprado);
+    const comprados  = items.filter(i => i.comprado);
 
-  // Alerta si hay muchos pendientes
-  estadoData.alertas = estadoData.alertas.filter(a => a.tipo !== 'mercado');
-  if (pendientes.length >= 5) {
-    estadoData.alertas.push({ tipo:'mercado', texto:`🛒 ${pendientes.length} artículos por comprar`, sub:'Lista del mercado' });
-    renderAlertas();
-  }
+    document.getElementById('badgeMercado').textContent = pendientes.length ? `${pendientes.length} pendientes` : 'Todo comprado';
+    document.getElementById('mnMercado').textContent = pendientes.length || '0';
 
-  if (!items.length) {
-    document.getElementById('bodyMercado').innerHTML = `<div class="empty-item">Lista vacía · <a href="/menu.html" style="color:var(--g);">Agregar artículos</a></div>`;
-    return;
-  }
+    estadoData.alertas = estadoData.alertas.filter(a => a.tipo !== 'mercado');
+    if (pendientes.length >= 5) {
+      estadoData.alertas.push({ tipo:'mercado', texto:`🛒 ${pendientes.length} artículos por comprar`, sub:'Lista del mercado' });
+      renderAlertas();
+    }
 
-  document.getElementById('bodyMercado').innerHTML = [
-    ...pendientes.slice(0,5).map(i => `
-      <div class="item-row">
-        <div class="item-emoji">🔲</div>
-        <div class="item-info"><div class="item-nombre">${i.nombre}</div><div class="item-sub">${i.cant || ''} ${i.unidad || ''}</div></div>
-        <div class="item-badge warn">Pendiente</div>
-      </div>`),
-    ...comprados.slice(0,2).map(i => `
-      <div class="item-row">
-        <div class="item-emoji">✅</div>
-        <div class="item-info"><div class="item-nombre" style="text-decoration:line-through;color:#bbb;">${i.nombre}</div></div>
-        <div class="item-badge ok">Comprado</div>
-      </div>`),
-    pendientes.length > 5 ? `<div style="font-size:12px;color:var(--txt2);text-align:center;padding:8px;">+${pendientes.length-5} más · <a href="/menu.html" style="color:var(--g);">Ver lista</a></div>` : ''
-  ].join('');
+    if (!items.length) {
+      document.getElementById('bodyMercado').innerHTML = `<div class="empty-item">Lista vacía · <a href="/menu.html" style="color:var(--g);">Agregar artículos</a></div>`;
+      return;
+    }
+
+    document.getElementById('bodyMercado').innerHTML = [
+      ...pendientes.slice(0,5).map(i => `
+        <div class="item-row">
+          <div class="item-emoji">🔲</div>
+          <div class="item-info"><div class="item-nombre">${i.nombre}</div></div>
+          <div class="item-badge warn">Pendiente</div>
+        </div>`),
+      ...comprados.slice(0,2).map(i => `
+        <div class="item-row">
+          <div class="item-emoji">✅</div>
+          <div class="item-info"><div class="item-nombre" style="text-decoration:line-through;color:#bbb;">${i.nombre}</div></div>
+          <div class="item-badge ok">Comprado</div>
+        </div>`),
+      pendientes.length > 5 ? `<div style="font-size:12px;color:var(--txt2);text-align:center;padding:8px;">+${pendientes.length-5} más · <a href="/menu.html" style="color:var(--g);">Ver lista</a></div>` : ''
+    ].join('');
+  });
 }
 
 // ── CHAT ──
