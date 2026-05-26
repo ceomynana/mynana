@@ -69,12 +69,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
 
 /* ── TAREA CARD ── */
 .tarea-card{background:#fff;border-radius:16px;overflow:hidden;border:1px solid var(--g4);transition:all .2s;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,.05);}
-.tarea-card.hecha{background:var(--g3);box-shadow:inset 4px 0 0 var(--g);}
+.tarea-card.hecha{opacity:.75;}
 .tarea-top{display:flex;align-items:center;gap:10px;padding:12px 14px;}
 .tarea-emoji-wrap{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
 .tarea-info{flex:1;min-width:0;}
 .tarea-nombre{font-size:13px;font-weight:500;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.tarea-nombre.hecha{text-decoration:line-through;color:var(--txt2);}
+.tarea-nombre.hecha{text-decoration:line-through;color:#bbb;}
 .tarea-meta{font-size:11px;color:var(--txt2);margin-top:2px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
 .tarea-cat{font-size:10px;padding:2px 7px;border-radius:99px;font-weight:500;}
 /* ── BOTONES NANA MEJORADOS ── */
@@ -626,8 +626,8 @@ function renderTareas() {
     sub.textContent = `${hechas} de ${todasTareas.length} completadas hoy`;
   }
 
-  // Renderizar sección de evidencias (fotos) independiente del filtro
-  renderEvidencias(esNana);
+  // Renderizar sección de evidencias desactivada temporalmente
+  // renderEvidencias(esNana);
 
   if (!lista.length) {
     contenedor.innerHTML = `<div class="empty-state">
@@ -655,7 +655,7 @@ function renderTareas() {
     const hora12 = formatHora(t.hora);
     const urgente = t.prioridad === 'urgente';
 
-    return `<div class="tarea-card ${hecha ? 'hecha' : ''}" id="tarea_${t.id}">
+    return `<div class="tarea-card ${hecha ? 'hecha' : ''}" id="card_${t.id}">
       <div class="tarea-top">
         <div class="tarea-emoji-wrap" style="background:${bg};">${emoji}</div>
         <div class="tarea-info">
@@ -672,16 +672,14 @@ function renderTareas() {
       </div>
 
       ${hecha && t.fotoUrl ? `
-        <div style="margin:8px 14px 10px;border-radius:10px;overflow:hidden;border:2px solid var(--g4);">
-          <img src="${t.fotoUrl}" style="width:100%;max-height:180px;object-fit:cover;display:block;cursor:pointer;" 
-               onclick="window.open(this.src,'_blank')"
-               onerror="this.parentElement.innerHTML='<div style=padding:10px;font-size:12px;color:#bbb;>⚠️ Error cargando foto</div>'" />
-          <div style="padding:6px 10px;background:var(--g3);font-size:11px;color:var(--g);font-weight:500;">
-            📸 Evidencia · Completada ${t.completadaA || ''} · Toca para ampliar
+        <div style="padding:0 14px 12px;">
+          <div class="foto-badge" onclick="window.open('${t.fotoUrl}','_blank')" style="cursor:pointer;">
+            <img src="${t.fotoUrl}" style="width:100%;max-height:160px;object-fit:cover;display:block;"/>
           </div>
+          <div style="font-size:11px;color:var(--g);margin-top:5px;">📸 Evidencia · Toca para ampliar</div>
         </div>` : ''}
 
-      ${hecha && !t.fotoUrl ? `<div class="tarea-done-banner">✅ Completada ${t.completadaA || ''}</div>` : ''}
+      ${hecha && !t.fotoUrl ? `<div class="tarea-done-banner">✅ Completada ${t.completadaA||''}</div>` : ''}
 
       ${!hecha && esNana ? `
         <!-- BOTÓN GRANDE COMPLETAR -->
