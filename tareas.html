@@ -69,12 +69,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
 
 /* ── TAREA CARD ── */
 .tarea-card{background:#fff;border-radius:16px;overflow:hidden;border:1px solid var(--g4);transition:all .2s;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,.05);}
-.tarea-card.hecha{opacity:.75;}
+.tarea-card.hecha{background:#fff;border-left:4px solid var(--g);}
 .tarea-top{display:flex;align-items:center;gap:10px;padding:12px 14px;}
 .tarea-emoji-wrap{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
 .tarea-info{flex:1;min-width:0;}
 .tarea-nombre{font-size:13px;font-weight:500;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.tarea-nombre.hecha{text-decoration:line-through;color:#bbb;}
+.tarea-nombre.hecha{text-decoration:line-through;color:var(--txt2);}
 .tarea-meta{font-size:11px;color:var(--txt2);margin-top:2px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
 .tarea-cat{font-size:10px;padding:2px 7px;border-radius:99px;font-weight:500;}
 /* ── BOTONES NANA MEJORADOS ── */
@@ -655,7 +655,7 @@ function renderTareas() {
     const hora12 = formatHora(t.hora);
     const urgente = t.prioridad === 'urgente';
 
-    return `<div class="tarea-card ${hecha ? 'hecha' : ''}">
+    return `<div class="tarea-card ${hecha ? 'hecha' : ''}" id="tarea_${t.id}">
       <div class="tarea-top">
         <div class="tarea-emoji-wrap" style="background:${bg};">${emoji}</div>
         <div class="tarea-info">
@@ -892,10 +892,34 @@ window.procesarFoto = async (input) => {
     const tarea = todasTareas.find(t => t.id === tareaFotoId);
     const hora = new Date().toLocaleTimeString('es-PA', { hour:'2-digit', minute:'2-digit' });
 
-    // 2. Guardar foto + completar tarea
+    // 2. Guardar foto + completar tarea en Firestore
     await updateDoc(doc(db, 'hogares', hogarId, 'tareas', tareaFotoId), {
       fotoUrl: url, estado: 'completa', completadaA: hora
     });
+
+    // 3. Inyectar foto DIRECTAMENTE en el DOM sin esperar onSnapshot
+    const cardEl = document.getElementById(`tarea_${tareaFotoId}`);
+    if (cardEl) {
+      // Remover banner de completada si existe
+      cardEl.querySelectorAll('.tarea-done-banner, .tarea-foto-block').forEach(el => el.remove());
+      // Insertar bloque de foto
+      const fotoBlock = document.createElement('div');
+      fotoBlock.className = 'tarea-foto-block';
+      fotoBlock.style.cssText = 'margin:0 14px 12px;border-radius:10px;overflow:hidden;border:2px solid var(--g4);';
+      fotoBlock.innerHTML = `
+        <img src="${url}" style="width:100%;max-height:200px;object-fit:cover;display:block;cursor:pointer;"
+             onclick="window.open('${url}','_blank')"/>
+        <div style="padding:6px 10px;background:var(--g3);font-size:11px;color:var(--g);font-weight:500;">
+          📸 Evidencia · Completada ${hora} · Toca para ampliar
+        </div>`;
+      cardEl.appendChild(fotoBlock);
+      cardEl.classList.add('hecha');
+    }
+
+    // También actualizar todasTareasCache en memoria
+    const idx = todasTareasCache.findIndex(t => t.id === tareaFotoId);
+    if (idx >= 0) { todasTareasCache[idx].fotoUrl = url; todasTareasCache[idx].estado = 'completa'; }
+    renderEvidencias(perfilActual.tipo === 'nana');
 
     // 3. Enviar al chat — buscar o crear conversación
     try {
