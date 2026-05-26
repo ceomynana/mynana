@@ -954,217 +954,331 @@ function actualizarStats() {
 /* ════════════════════════════════════════
    GENERAR SEMANA CON CLAUDE API
 ════════════════════════════════════════ */
-window.generarSemana = async (modo) => {
-  if (!perfilHogar) { showToast('⚠️ Primero configura tu perfil del hogar'); abrirWizard(); return; }
-
-  // Bloquear botones
-  ['btnAuto','btnRapida','btnRepetir'].forEach(id=>document.getElementById(id).disabled=true);
-  document.getElementById('emptyState').style.display='none';
-  document.getElementById('tareasContent').style.display='none';
-  document.getElementById('insightCard').style.display='none';
-  document.getElementById('loadingState').style.display='block';
-  document.getElementById('spinnerText').innerHTML = modo==='rapida'
-    ? 'Preparando semana express...<br>Tareas simples y rápidas ⚡'
-    : 'My Nana está analizando tu hogar...<br>Generando plan personalizado ✨';
-
-  const prompt = buildPrompt(modo);
-
-  try {
-    const resp = await fetch('/.netlify/functions/generate-plan',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        system:`Eres My Nana, el asistente de gestion del hogar mas inteligente de Latinoamerica. Generas planes semanales 100% personalizados. Respondes UNICAMENTE en JSON valido, sin texto adicional ni markdown.`,
-        messages:[{role:'user',content:prompt}]
-      })
-    });
-
-    if (!resp.ok) {
-      const errText = await resp.text();
-      throw new Error('Funcion error ' + resp.status + ': ' + errText.slice(0,200));
-    }
-
-    const data = await resp.json();
-
-    // Si Anthropic devolvio error
-    if (data.type === 'error' || data.error) {
-      throw new Error(data.error?.message || JSON.stringify(data));
-    }
-    if (!data.content || !data.content.length) {
-      throw new Error('Respuesta vacia. Verifica la API key ANTHROPIC_API_KEY en Netlify.');
-    }
-
-    const raw = data.content.map(c => c.text || '').join('');
-    const jsonStr = raw.replace(/^```json\s*/,'').replace(/```\s*$/,'').trim();
-    const resultado = JSON.parse(jsonStr);
-
-    // Construir semanaActual en memoria
-    semanaActual={};
-    DIAS.forEach(dia=>{
-      const tareas=resultado[dia]||resultado[dia.toLowerCase()]||[];
-      semanaActual[dia]=tareas.map(t=>({
-        ...t,
-        cat: mapCat(t.cat),      // ← convierte a formato tareas.html
-        estado:'pendiente'
-      }));
-    });
-    semanaAnterior={};
-    DIAS.forEach(dia=>{ semanaAnterior[dia]=[...semanaActual[dia]]; });
-
-    // Mostrar insight
-    if(resultado.__insight){
-      document.getElementById('insightText').textContent=resultado.__insight;
-      document.getElementById('insightCard').style.display='block';
-    }
-
-    // ═══ GUARDAR EN FIREBASE (colección hogares/{hogarId}/tareas) ═══
-    await guardarSemanaFirebase();
-
-    document.getElementById('loadingState').style.display='none';
-    document.getElementById('tareasContent').style.display='block';
-    renderDias();
-    renderTareasDelDia();
-    actualizarStats();
-    showToast('✨ Plan guardado · La nana ya puede verlo en tareas.html');
-
-  } catch(e) {
-    console.error(e);
-    document.getElementById('loadingState').style.display='none';
-    document.getElementById('emptyState').style.display='block';
-    showToast('❌ Error generando plan: '+e.message);
-  } finally {
-    ['btnAuto','btnRapida','btnRepetir'].forEach(id=>document.getElementById(id).disabled=false);
-  }
-};
-
-/* ── GUARDAR EN FIRESTORE (mismo formato que crearTarea en tareas.html) ── */
-async function guardarSemanaFirebase() {
-  if (!hogarId || !lunesDeSemana) return;
-
-  document.getElementById('savingBanner').classList.add('visible');
-
-  try {
-    // 1. Borrar tareas AI-generadas existentes de esta semana
-    const lunesStr = getFechaStr(lunesDeSemana);
-    const domingoDate = new Date(lunesDeSemana);
-    domingoDate.setDate(lunesDeSemana.getDate()+6);
-    const domingoStr = getFechaStr(domingoDate);
-
-    const existentes = await getDocs(
-      query(collection(db,'hogares',hogarId,'tareas'),
-        where('generadoPorIA','==',true))
-    );
-    // Borrar en batches de 499
-    const batch = writeBatch(db);
-    let count=0;
-    existentes.docs.forEach(d=>{
-      const fecha=d.data().fecha||'';
-      if(fecha>=lunesStr && fecha<=domingoStr){
-        batch.delete(d.ref);
-        count++;
-      }
-    });
-    if(count>0) await batch.commit();
-
-    // 2. Escribir nuevas tareas — una por una (addDoc) — igual que crearTarea
-    const writes=[];
-    DIAS.forEach((dia,diaIdx)=>{
-      const tareas=semanaActual[dia]||[];
-      const fechaStr=diaIndexToFecha(lunesDeSemana,diaIdx);
-      tareas.forEach(t=>{
-        writes.push(addDoc(collection(db,'hogares',hogarId,'tareas'),{
-          nombre:    t.nombre,
-          hora:      t.hora||'08:00',
-          cat:       t.cat,
-          prioridad: t.prioridad||'normal',
-          estado:    'pendiente',
-          fotoUrl:   null,
-          fecha:     fechaStr,      // YYYY-MM-DD — igual que tareas.html
-          dia:       dia,
-          duracion:  t.duracion||'',
-          nota:      t.nota||'',
-          generadoPorIA: true,      // flag para poder borrarlas después
-          creadoPor: usuarioActual.uid,
-          creadoA:   serverTimestamp(),
-          completadaA: null
-        }));
-      });
-    });
-    await Promise.all(writes);
-
-  } finally {
-    document.getElementById('savingBanner').classList.remove('visible');
-  }
-}
-
-/* ── REPETIR SEMANA ── */
-window.repetirSemana = async () => {
-  if(!Object.keys(semanaAnterior).some(d=>semanaAnterior[d]?.length>0)){
-    showToast('⚠️ Primero genera un plan con ✨ Auto-planificar');
-    return;
-  }
-  semanaActual={};
-  DIAS.forEach(dia=>{ semanaActual[dia]=(semanaAnterior[dia]||[]).map(t=>({...t,estado:'pendiente'})); });
-  await guardarSemanaFirebase();
-  document.getElementById('tareasContent').style.display='block';
-  document.getElementById('emptyState').style.display='none';
-  renderDias();
-  renderTareasDelDia();
-  actualizarStats();
-  showToast('🔄 Semana repetida · Guardada en Firebase');
+/* ════════════════════════════════════════
+   BASE DE DATOS DE TAREAS (sin API, igual que menú)
+════════════════════════════════════════ */
+const TAREAS_DB = {
+  Cocina: {
+    desayuno: [
+      'Preparar desayuno para la familia','Hacer café y jugo natural','Preparar frutas del desayuno',
+      'Hacer tostadas y huevos','Preparar avena con frutas','Limpiar cocina después del desayuno',
+      'Lavar platos del desayuno','Ordenar nevera','Revisar stock de la despensa',
+    ],
+    almuerzo: [
+      'Preparar almuerzo completo','Cocinar arroz y guiso','Preparar sopa del día',
+      'Hacer ensalada fresca','Cocinar proteína del día','Preparar sancocho',
+      'Hacer patacones','Limpiar cocina después del almuerzo','Lavar ollas y platos del almuerzo',
+      'Preparar arroz con pollo','Cocinar guacho','Hacer corvina al ajillo',
+    ],
+    cena: [
+      'Preparar cena ligera','Calentar sobras del almuerzo','Hacer sándwiches para la cena',
+      'Preparar ensalada de cena','Lavar platos de la cena','Limpiar cocina después de la cena',
+    ],
+    general: [
+      'Limpiar horno y microondas','Limpiar campana extractora','Organizar alacena',
+      'Lavar y organizar tuppers','Limpiar nevera por dentro','Revisar fechas de vencimiento',
+      'Lavar licuadora y procesadora','Limpiar estufa a fondo',
+    ],
+  },
+  Limpieza: {
+    cuartos: [
+      'Tender camas de los cuartos','Barrer y trapear cuartos','Limpiar espejos de los cuartos',
+      'Aspirar alfombras','Limpiar mesitas de noche','Organizar closets','Cambiar sábanas',
+      'Limpiar ventanas de los cuartos','Sacudir muebles del cuarto',
+    ],
+    banos: [
+      'Limpiar baños completos','Fregar inodoros','Limpiar lavamanos y espejo del baño',
+      'Limpiar ducha y bañera','Reponer papel higiénico y jabón','Lavar tapetes del baño',
+      'Desinfectar baños','Limpiar azulejos del baño',
+    ],
+    general: [
+      'Barrer y trapear sala y comedor','Limpiar ventanas','Sacudir muebles y adornos',
+      'Aspirar sofás','Limpiar puertas y marcos','Limpiar interruptores y tomacorrientes',
+      'Barrer entrada y pasillos','Limpiar a fondo sala','Sacudir cuadros y decoración',
+      'Limpiar balcón o terraza','Barrer terraza','Limpiar muebles de terraza',
+      'Limpiar patio','Barrer garaje',
+    ],
+  },
+  Lavandería: {
+    general: [
+      'Lavar ropa de la semana','Secar y doblar ropa','Planchar ropa de trabajo',
+      'Planchar uniformes escolares','Guardar ropa limpia en closets','Lavar ropa de cama',
+      'Lavar toallas del baño','Lavar manteles','Revisar ropa para reparar',
+      'Lavar ropa delicada a mano','Organizar ropa por persona',
+    ],
+  },
+  Niños: {
+    bebe: [
+      'Preparar biberones y fórmula','Lavar y esterilizar biberones','Lavar ropa del bebé',
+      'Limpiar y ordenar cuarto del bebé','Preparar papillas','Lavar juguetes del bebé',
+    ],
+    infante: [
+      'Preparar merienda de los niños','Ayudar con tarea escolar','Ordenar cuarto de los niños',
+      'Lavar lonchera escolar','Preparar uniforme para el día siguiente','Organizar juguetes',
+      'Lavar ropa de los niños','Preparar mochila escolar',
+    ],
+    escolar: [
+      'Preparar lonchera escolar','Lavar uniforme','Ordenar cuarto de los niños',
+      'Ayudar con tareas','Preparar merienda después del colegio','Organizar mochila',
+    ],
+    adolescente: [
+      'Lavar ropa de los jóvenes','Limpiar cuarto de los adolescentes','Preparar merienda',
+    ],
+    general: [
+      'Preparar merienda de los niños','Ordenar cuarto de los niños','Lavar ropa de los niños',
+      'Revisar loncheras y mochilas',
+    ],
+  },
+  Mascotas: {
+    perro: [
+      'Alimentar al perro','Sacar a pasear al perro','Limpiar área del perro',
+      'Lavar platos de comida del perro','Lavar cama del perro','Darle agua fresca al perro',
+      'Cepillar al perro','Revisar que tenga agua y comida',
+    ],
+    gato: [
+      'Alimentar al gato','Limpiar caja de arena','Cambiar agua del gato',
+      'Lavar platos del gato','Limpiar área del gato',
+    ],
+    ave: [
+      'Alimentar las aves','Cambiar agua del ave','Limpiar jaula',
+    ],
+    general: [
+      'Alimentar a las mascotas','Limpiar área de las mascotas','Cambiar agua de las mascotas',
+      'Revisar comida y agua de las mascotas',
+    ],
+  },
+  Mercado: {
+    general: [
+      'Hacer lista del mercado semanal','Ir al supermercado','Organizar compras en la despensa',
+      'Revisar qué hace falta en la nevera','Comprar frutas y verduras frescas',
+      'Comprar productos de limpieza','Comprar productos de cuidado personal',
+    ],
+  },
+  Plantas: {
+    general: [
+      'Regar plantas del balcón','Regar plantas de la sala','Regar jardín',
+      'Limpiar hojas de las plantas','Podar plantas del balcón','Abonar plantas',
+      'Revisar estado de las plantas',
+    ],
+  },
+  Organización: {
+    general: [
+      'Organizar sala y comedor','Ordenar entrada de la casa','Organizar closet de la entrada',
+      'Limpiar y ordenar cuarto de servicio','Organizar área de lavandería',
+      'Doblar y guardar cobijas','Organizar archivos y papeles del hogar',
+      'Limpiar y ordenar garaje',
+    ],
+  },
 };
 
 /* ════════════════════════════════════════
-   PROMPT PARA CLAUDE
+   HORARIOS SEGÚN PERFIL
 ════════════════════════════════════════ */
-function buildPrompt(modo) {
-  const p=perfilHogar;
-  const modoDesc={
-    auto:'Plan completo y detallado, bien distribuido en la semana, con tareas específicas a este hogar',
-    rapida:'Solo tareas esenciales y rápidas (máximo 3 por día), para semana ocupada'
-  };
-  return `Genera un plan semanal de tareas para este hogar latinoamericano.
-
-PERFIL DEL HOGAR:
-- Nombre: ${p.nombreHogar}
-- Personas: ${p.adultos} adulto(s), ${p.ninos} niño(s)${p.edadesNinos?.length?` (edades: ${p.edadesNinos.join(', ')})`:''} 
-- Hay nana: ${p.hayNana!=='no'?'Sí':'No'}
-- Residencia: ${p.tipoResidencia}, ${p.cuartos} cuartos, ${p.banos} baños
-- Espacios extra: ${p.espaciosExtra?.join(', ')||'ninguno'}
-- Mascotas: ${p.mascotas>0?`${p.mascotas} ${p.tiposMascota?.join('/')||'mascota(s)'}. Necesidades: ${p.necesidadesMascota?.join(', ')||'ninguna'}` : 'No tiene'}
-- Comidas: desayuno ${p.horarios?.desayuno}, almuerzo ${p.horarios?.almuerzo}, cena ${p.horarios?.cena}
-- Nana: llega ${p.horarios?.nanaLlegada}, sale ${p.horarios?.nanaSalida}
-- Días de la nana: ${p.diasTrabajo?.join(', ')||'Lunes a Viernes'}
-- Prioridades: ${p.prioridades?.join(', ')||'cocina, limpieza'}
-- Estilo de semana: ${p.estilo}
-${p.notas?`- Notas: ${p.notas}`:''}
-
-MODO: ${modoDesc[modo]||modoDesc.auto}
-
-REGLAS:
-1. Tareas ESPECÍFICAS a este hogar, nunca genéricas.
-2. Tareas de cocina se programan 30-60 min antes de cada comida.
-3. Si hay mascotas, incluye cuidado diario.
-4. Si hay niños pequeños, incluye tareas de cuidado mañana y tarde.
-5. Solo incluye tareas en los días que trabaja la nana.
-6. Categorías válidas: Cocina, Limpieza, Lavandería, Niños, Mascotas, Mercado, Plantas, Organización.
-7. Incluye campo "duracion" (ej: "30 min").
-8. Máximo 1-2 tareas con prioridad "urgente" por semana.
-9. Los días que la nana no trabaja devuelve array vacío [].
-
-FORMATO (JSON puro sin markdown):
-{
-  "Lunes": [{"nombre":"...","cat":"Cocina","hora":"07:30","duracion":"30 min","prioridad":"normal"}],
-  "Martes": [...],
-  "Miércoles": [...],
-  "Jueves": [...],
-  "Viernes": [...],
-  "Sábado": [],
-  "Domingo": [],
-  "__insight": "Mensaje corto y personal para este hogar específico (1-2 oraciones)"
-}`;
+function getTareaConHora(nombre, cat, hora, prioridad = 'normal', duracion = '30 min') {
+  return { nombre, cat: mapCat(cat), hora, duracion, prioridad, estado: 'pendiente' };
 }
 
+function horaAntes(horaStr, minutosAntes) {
+  if (!horaStr) return '07:00';
+  const [h, m] = horaStr.split(':').map(Number);
+  const total = h * 60 + m - minutosAntes;
+  const nh = Math.max(0, Math.floor(total / 60));
+  const nm = ((total % 60) + 60) % 60;
+  return `${String(nh).padStart(2,'0')}:${String(nm).padStart(2,'0')}`;
+}
+
+function pick(arr) {
+  if (!arr || !arr.length) return null;
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function pickVarios(arr, n) {
+  const copia = [...arr];
+  const resultado = [];
+  for (let i = 0; i < n && copia.length; i++) {
+    const idx = Math.floor(Math.random() * copia.length);
+    resultado.push(copia.splice(idx, 1)[0]);
+  }
+  return resultado;
+}
+
+/* ════════════════════════════════════════
+   GENERAR SEMANA (sin API, igual que menú)
+════════════════════════════════════════ */
+window.generarSemana = async (modo) => {
+  if (!perfilHogar) { showToast('⚠️ Primero configura tu perfil del hogar'); abrirWizard(); return; }
+
+  ['btnAuto','btnRapida','btnRepetir'].forEach(id => document.getElementById(id).disabled = true);
+  document.getElementById('emptyState').style.display    = 'none';
+  document.getElementById('tareasContent').style.display = 'none';
+  document.getElementById('insightCard').style.display   = 'none';
+  document.getElementById('loadingState').style.display  = 'block';
+  document.getElementById('spinnerText').innerHTML = modo === 'rapida'
+    ? 'Preparando semana express...<br>Tareas simples y rápidas ⚡'
+    : 'My Nana está analizando tu hogar...<br>Generando plan personalizado ✨';
+
+  // Simular tiempo de "generación" para mejor UX
+  await new Promise(r => setTimeout(r, 1200));
+
+  try {
+    const p = perfilHogar;
+    const diasTrabajo = p.diasTrabajo || ['Lunes','Martes','Miércoles','Jueves','Viernes'];
+    const h = p.horarios || {};
+    const tareasMaxDia = modo === 'rapida' ? 3 : 6;
+
+    semanaActual = {};
+
+    DIAS.forEach(dia => {
+      if (!diasTrabajo.includes(dia)) { semanaActual[dia] = []; return; }
+
+      const tareas = [];
+
+      // ── COCINA: antes de cada comida ──
+      if (!p.prioridades || p.prioridades.includes('cocina')) {
+        // Desayuno
+        tareas.push(getTareaConHora(
+          pick(TAREAS_DB.Cocina.desayuno), 'Cocina',
+          horaAntes(h.desayuno, 30), 'normal', '30 min'
+        ));
+        // Almuerzo
+        tareas.push(getTareaConHora(
+          pick(TAREAS_DB.Cocina.almuerzo), 'Cocina',
+          horaAntes(h.almuerzo, 60), 'normal', '45 min'
+        ));
+        // Cena (solo si no semana rápida)
+        if (modo !== 'rapida') {
+          tareas.push(getTareaConHora(
+            pick(TAREAS_DB.Cocina.cena), 'Cocina',
+            horaAntes(h.cena, 30), 'normal', '20 min'
+          ));
+        }
+      }
+
+      // ── LIMPIEZA según tamaño de casa ──
+      if (!p.prioridades || p.prioridades.includes('limpieza')) {
+        // Baños (según cantidad)
+        const tareasLimpieza = [];
+        if (p.banos >= 2) tareasLimpieza.push(...TAREAS_DB.Limpieza.banos);
+        tareasLimpieza.push(...TAREAS_DB.Limpieza.general);
+        if (p.cuartos >= 3) tareasLimpieza.push(...TAREAS_DB.Limpieza.cuartos);
+
+        const nLimpieza = modo === 'rapida' ? 1 : 2;
+        pickVarios(tareasLimpieza, nLimpieza).forEach(nombre => {
+          tareas.push(getTareaConHora(nombre, 'Limpieza', h.nanaLlegada || '08:00', 'normal', '40 min'));
+        });
+      }
+
+      // ── LAVANDERÍA (2-3 días por semana) ──
+      if (p.prioridades?.includes('lavanderia') || (!p.prioridades && ['Lunes','Miércoles','Viernes'].includes(dia))) {
+        if (['Lunes','Miércoles','Viernes'].includes(dia) && modo !== 'rapida') {
+          tareas.push(getTareaConHora(
+            pick(TAREAS_DB.Lavandería.general), 'Lavandería',
+            '09:00', 'normal', '45 min'
+          ));
+        }
+      }
+
+      // ── NIÑOS ──
+      if (p.ninos > 0 && (p.prioridades?.includes('ninos') || !p.prioridades)) {
+        const edades = p.edadesNinos || ['general'];
+        let poolNinos = [...TAREAS_DB.Niños.general];
+        if (edades.includes('bebe'))       poolNinos = [...poolNinos, ...TAREAS_DB.Niños.bebe];
+        if (edades.includes('infante'))    poolNinos = [...poolNinos, ...TAREAS_DB.Niños.infante];
+        if (edades.includes('escolar'))    poolNinos = [...poolNinos, ...TAREAS_DB.Niños.escolar];
+        if (edades.includes('adolescente'))poolNinos = [...poolNinos, ...TAREAS_DB.Niños.adolescente];
+
+        const nNinos = modo === 'rapida' ? 1 : 2;
+        pickVarios(poolNinos, nNinos).forEach(nombre => {
+          tareas.push(getTareaConHora(nombre, 'Niños', h.almuerzo || '12:00', 'normal', '20 min'));
+        });
+      }
+
+      // ── MASCOTAS ──
+      if (p.mascotas > 0 && (p.prioridades?.includes('mascotas') || !p.prioridades)) {
+        const tipos = p.tiposMascota || ['general'];
+        let poolMasc = [...TAREAS_DB.Mascotas.general];
+        if (tipos.includes('perro')) poolMasc = [...poolMasc, ...TAREAS_DB.Mascotas.perro];
+        if (tipos.includes('gato'))  poolMasc = [...poolMasc, ...TAREAS_DB.Mascotas.gato];
+        if (tipos.includes('ave'))   poolMasc = [...poolMasc, ...TAREAS_DB.Mascotas.ave];
+
+        const nMasc = modo === 'rapida' ? 1 : 2;
+        pickVarios(poolMasc, nMasc).forEach(nombre => {
+          tareas.push(getTareaConHora(nombre, 'Mascotas', h.nanaLlegada || '08:00', 'normal', '15 min'));
+        });
+      }
+
+      // ── MERCADO (lunes) ──
+      if (dia === 'Lunes' && (p.prioridades?.includes('compras') || !p.prioridades)) {
+        tareas.push(getTareaConHora(
+          pick(TAREAS_DB.Mercado.general), 'Mercado',
+          '10:00', 'urgente', '60 min'
+        ));
+      }
+
+      // ── PLANTAS (si hay balcón o patio) ──
+      if ((p.hasBalcon || p.hasPatio) && (p.prioridades?.includes('plantas') || !p.prioridades)) {
+        if (dia === 'Martes' || dia === 'Viernes') {
+          tareas.push(getTareaConHora(
+            pick(TAREAS_DB.Plantas.general), 'Plantas',
+            '08:30', 'normal', '20 min'
+          ));
+        }
+      }
+
+      // ── ORGANIZACIÓN ──
+      if (!p.prioridades || p.prioridades.includes('orden')) {
+        if (dia === 'Viernes' && modo !== 'rapida') {
+          tareas.push(getTareaConHora(
+            pick(TAREAS_DB.Organización.general), 'Organización',
+            '15:00', 'normal', '30 min'
+          ));
+        }
+      }
+
+      // Limitar al máximo por día y ordenar por hora
+      const tareasFiltradas = tareas
+        .filter(t => t.nombre)
+        .slice(0, tareasMaxDia)
+        .sort((a, b) => (a.hora || '').localeCompare(b.hora || ''));
+
+      semanaActual[dia] = tareasFiltradas;
+    });
+
+    // Guardar copia para "Repetir semana"
+    semanaAnterior = {};
+    DIAS.forEach(dia => { semanaAnterior[dia] = [...(semanaActual[dia] || [])]; });
+
+    // Insight personalizado
+    const insights = [
+      `Con ${p.adultos} adulto${p.adultos>1?'s':''} y ${p.cuartos} cuartos, distribuí el trabajo para que nada se acumule.`,
+      p.mascotas > 0 ? `Incluí ${p.mascotas} tarea${p.mascotas>1?'s':''} diaria${p.mascotas>1?'s':''} para tus mascotas — así nunca se olvidan.` : null,
+      p.ninos > 0   ? `Las tareas de los niños están programadas cerca del almuerzo para que todo esté listo a tiempo.` : null,
+      `El plan está ajustado para que la nana llegue a las ${p.horarios?.nanaLlegada||'08:00'} y todo quede listo antes de las comidas.`,
+      modo === 'rapida' ? `Semana ocupada: solo ${tareasMaxDia} tareas esenciales por día para no saturar.` : null,
+    ].filter(Boolean);
+    const insight = insights[Math.floor(Math.random() * insights.length)];
+    document.getElementById('insightText').textContent = insight;
+    document.getElementById('insightCard').style.display = 'block';
+
+    // Guardar en Firebase
+    await guardarSemanaFirebase();
+
+    document.getElementById('loadingState').style.display  = 'none';
+    document.getElementById('tareasContent').style.display = 'block';
+    renderDias();
+    renderTareasDelDia();
+    actualizarStats();
+    showToast(modo === 'rapida' ? '⚡ Semana express lista' : '✨ Plan personalizado generado');
+
+  } catch(e) {
+    console.error(e);
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('emptyState').style.display   = 'block';
+    showToast('❌ Error: ' + e.message);
+  } finally {
+    ['btnAuto','btnRapida','btnRepetir'].forEach(id => document.getElementById(id).disabled = false);
+  }
+};
 /* ── TOAST ── */
 window.showToast = (msg) => {
   const t=document.getElementById('toast');
