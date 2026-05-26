@@ -584,7 +584,6 @@ function renderEvidencias(esNana) {
   const conFoto = todasTareas.filter(t => t.fotoUrl && t.estado === 'completa');
   const el = document.getElementById(esNana ? 'evidenciasNana' : 'evidenciasFam');
   if (!el) return;
-
   if (!conFoto.length) { el.style.display = 'none'; return; }
   el.style.display = 'block';
 
@@ -603,8 +602,7 @@ function renderEvidencias(esNana) {
         </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;padding:14px;">
           ${conFoto.map(t => `
-            <div style="border-radius:12px;overflow:hidden;border:1.5px solid var(--g4);cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.06);"
-                 onclick="window.open('${t.fotoUrl}','_blank')">
+            <div style="border-radius:12px;overflow:hidden;border:1.5px solid var(--g4);cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.06);" onclick="window.open('${t.fotoUrl}','_blank')">
               <div style="position:relative;">
                 <img src="${t.fotoUrl}" style="width:100%;height:110px;object-fit:cover;display:block;"/>
                 <div style="position:absolute;top:6px;right:6px;background:rgba(26,107,82,.85);border-radius:99px;padding:2px 7px;font-size:10px;color:#fff;font-weight:500;">✅ Lista</div>
@@ -636,6 +634,348 @@ function renderEvidencias(esNana) {
       </div>`;
   }
 }
+
+
+// ── RENDER TAREAS ──
+function renderTareas() {
+  // Tareas del día seleccionado (sin fecha = legacy, mostrar solo hoy)
+  const hoyStr = getFechaStr(new Date());
+  todasTareas = todasTareasCache.filter(t =>
+    t.fecha ? t.fecha === fechaSeleccionada : fechaSeleccionada === hoyStr
+  );
+  const lista = filtrarTareas();
+  const esNana = perfilActual.tipo === 'nana';
+  const contenedor = document.getElementById(esNana ? 'listaNana' : 'listaFamilia');
+  const badge = document.getElementById(esNana ? 'badgeNana' : 'badgeFam');
+  badge.textContent = `${todasTareas.length} tarea${todasTareas.length !== 1 ? 's' : ''}`;
+
+  if (esNana) {
+    const sub = document.getElementById('panelNanaSub');
+    const hechas = todasTareas.filter(t => t.estado === 'completa').length;
+    sub.textContent = `${hechas} de ${todasTareas.length} completadas hoy`;
+  }
+
+  renderEvidencias(esNana);
+
+  if (!lista.length) {
+    contenedor.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">${filtroActual === 'completa' ? '🎉' : '✅'}</div>
+      <div class="empty-title">${filtroActual === 'completa' ? '¡Todo pendiente!' : filtroActual === 'pendiente' ? '¡Todo listo!' : 'Sin tareas aún'}</div>
+      <div class="empty-sub">${esNana ? 'La familia aún no ha creado tareas' : 'Crea la primera tarea del día'}</div>
+    </div>`;
+    return;
+  }
+
+  const colores = {
+    '🍳 Cocina':'#FEF7EE',
+    '🧹 Limpieza':'#F0F0F7',
+    '👕 Lavandería':'var(--b3)',
+    '🎒 Niños':'#FEF7EE',
+    '🛒 Mercado':'var(--g3)',
+    '🐾 Mascotas':'#FEF7EE',
+    '📦 Otro':'var(--cr)'
+  };
+
+  contenedor.innerHTML = lista.map(t => {
+    const hecha = t.estado === 'completa';
+    const emoji = t.cat?.split(' ')[0] || '📋';
+    const hora12 = formatHora(t.hora);
+
+    return `<div style="background:#fff;border-radius:12px;border:1px solid ${hecha ? '#1A6B52' : '#e5e7eb'};margin-bottom:10px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+      <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;">
+        <div style="width:40px;height:40px;border-radius:10px;background:#F0F7F4;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">${emoji}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:500;color:${hecha ? '#6b7280' : '#1A2E25'};${hecha ? 'text-decoration:line-through;' : ''}line-height:1.4;word-break:break-word;">${t.nombre}</div>
+          <div style="font-size:11px;color:#9ca3af;margin-top:2px;">🕐 ${hora12} &nbsp;·&nbsp; ${t.cat || ''}</div>
+        </div>
+        <div style="width:28px;height:28px;border-radius:50%;border:2px solid ${hecha ? '#1A6B52' : '#d1d5db'};background:${hecha ? '#1A6B52' : 'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;" onclick="${esNana ? `marcarHecha('${t.id}', ${hecha})` : ''}">
+          ${hecha ? '<svg width="12" height="10" viewBox="0 0 12 10" fill="none"><polyline points="1,5 4,9 11,1" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>' : ''}
+        </div>
+      </div>
+
+      ${hecha && t.fotoUrl ? `
+        <div style="margin:0 12px 12px;border-radius:8px;overflow:hidden;border:1px solid #e5e7eb;">
+          <img src="${t.fotoUrl}" style="width:100%;max-height:160px;object-fit:cover;display:block;cursor:pointer;" onclick="window.open('${t.fotoUrl}','_blank')"/>
+          <div style="padding:6px 10px;background:#F0F7F4;font-size:11px;color:#1A6B52;font-weight:500;">📸 Foto de evidencia · Toca para ampliar</div>
+        </div>` : ''}
+
+      ${hecha && !t.fotoUrl ? `<div style="padding:6px 14px 12px;font-size:12px;color:#6b7280;">✅ Completada ${t.completadaA||''}</div>` : ''}
+
+      ${!hecha && esNana ? `
+        <div style="margin:0 12px 12px;display:flex;gap:8px;">
+          <button onclick="marcarHecha('${t.id}', false)" style="flex:1;background:#1A6B52;color:#fff;border:none;border-radius:10px;padding:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;">✅ Marcar lista</button>
+          <button onclick="abrirModalFoto('${t.id}')" style="background:#F0F7F4;color:#1A6B52;border:none;border-radius:10px;padding:10px 12px;font-size:18px;cursor:pointer;">📷</button>
+        </div>` : ''}
+
+      ${!esNana ? `
+        <div style="padding:0 12px 10px;display:flex;gap:6px;">
+          <button onclick="eliminarTarea('${t.id}')" style="background:#FEF2F2;color:#DC2626;border:none;border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;">🗑 Eliminar</button>
+        </div>` : ''}
+
+      <div style="border-top:1px solid #f3f4f6;padding:8px 12px;display:flex;gap:6px;align-items:center;">
+        <input id="obs_${t.id}" type="text" placeholder="${esNana ? 'Observación para la familia...' : 'Nota para la nana...'}" value="${t.observacion||''}"
+          style="flex:1;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:6px 10px;font-size:12px;font-family:'DM Sans',sans-serif;color:#374151;outline:none;"
+          onkeydown="if(event.key==='Enter')guardarObservacion('${t.id}')"/>
+        <button onclick="guardarObservacion('${t.id}')" style="background:#F0F7F4;color:#1A6B52;border:none;border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer;">✓</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── CREAR TAREA ──
+window.crearTarea = async () => {
+  const nombre = document.getElementById('inNombre').value.trim();
+  const hora = document.getElementById('inHora').value;
+  const cat = document.getElementById('inCat').value;
+  const prioridad = document.getElementById('inPrioridad').value;
+  const btn = document.getElementById('btnCrear');
+
+  if (!nombre) {
+    document.getElementById('inNombre').style.borderColor = '#e05c5c';
+    document.getElementById('inNombre').focus();
+    setTimeout(() => document.getElementById('inNombre').style.borderColor = '', 2000);
+    return;
+  }
+
+  btn.textContent = 'Agregando...';
+  btn.disabled = true;
+
+  try {
+    await addDoc(collection(db, 'hogares', hogarId, 'tareas'), {
+      nombre,
+      hora,
+      cat,
+      prioridad,
+      estado: 'pendiente',
+      fotoUrl: null,
+      fecha: fechaSeleccionada,   // YYYY-MM-DD — filtra por día
+      creadoPor: usuarioActual.uid,
+      creadoA: serverTimestamp(),
+      completadaA: null
+    });
+
+    document.getElementById('inNombre').value = '';
+    document.getElementById('inHora').value = '08:00';
+    showToast(`✅ "${nombre}" agregada`);
+  } catch(e) {
+    showToast('❌ Error al crear la tarea');
+    console.error(e);
+  }
+
+  btn.textContent = '+ Agregar tarea';
+  btn.disabled = false;
+};
+
+// ── MARCAR HECHA ──
+window.marcarHecha = async (id, estaHecha) => {
+  if (estaHecha) {
+    await updateDoc(doc(db, 'hogares', hogarId, 'tareas', id), {
+      estado: 'pendiente', completadaA: null
+    });
+    return;
+  }
+
+  // Animación de celebración
+  showToast('✅ ¡Tarea completada! Buen trabajo 🎉');
+  if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
+
+  const hora = new Date().toLocaleTimeString('es-PA', { hour: '2-digit', minute: '2-digit' });
+  await updateDoc(doc(db, 'hogares', hogarId, 'tareas', id), {
+    estado: 'completa', completadaA: hora
+  });
+
+  // Notificar al chat del hogar
+  const tarea = todasTareas.find(t => t.id === id);
+  await enviarMensajeAlChat({
+    tipo: 'texto',
+    texto: `✅ ${tarea?.nombre || 'Tarea'} — completada a las ${hora}`
+  });
+};
+
+// ── ELIMINAR TAREA ──
+window.eliminarTarea = async (id) => {
+  if (!confirm('¿Eliminar esta tarea?')) return;
+  await deleteDoc(doc(db, 'hogares', hogarId, 'tareas', id));
+  showToast('🗑 Tarea eliminada');
+};
+
+// ── URGENTE ──
+window.marcarUrgente = async (id) => {
+  await updateDoc(doc(db, 'hogares', hogarId, 'tareas', id), { prioridad: 'urgente' });
+  showToast('🔴 Marcada como urgente');
+};
+
+window.guardarObservacion = async (id) => {
+  const val = document.getElementById(`obs_${id}`)?.value.trim() ?? '';
+  await updateDoc(doc(db, 'hogares', hogarId, 'tareas', id), {
+    observacion: val,
+    observacionPor: perfilActual.nombre,
+    observacionTs: serverTimestamp()
+  });
+  showToast('💬 Nota guardada');
+};
+
+// ── FOTO ──
+window.abrirModalFoto = (id) => {
+  tareaFotoId = id;
+  const t = todasTareas.find(t => t.id === id);
+  document.getElementById('modalFotoTitle').textContent = `📷 ${t?.nombre || 'Tarea'}`;
+  document.getElementById('modalFoto').classList.remove('oculto');
+};
+
+window.cerrarModalFoto = (resetId = true) => {
+  document.getElementById('modalFoto').classList.add('oculto');
+  if (resetId) tareaFotoId = null;
+};
+
+window.dispararCamara = () => {
+  cerrarModalFoto(false); // preserva tareaFotoId
+  setTimeout(() => document.getElementById('cameraInput').click(), 100);
+};
+
+window.dispararGaleria = () => {
+  cerrarModalFoto(false); // preserva tareaFotoId
+  setTimeout(() => document.getElementById('galeriaInput').click(), 100);
+};
+
+// ── ENVIAR AL CHAT DEL HOGAR ──
+async function enviarMensajeAlChat(mensaje) {
+  try {
+    const qConv = query(collection(db, 'conversaciones'), where('hogarId', '==', hogarId));
+    const snap = await getDocs(qConv);
+    let convId;
+
+    if (!snap.empty) {
+      convId = snap.docs[0].id;
+    } else {
+      // Crear conversación si no existe
+      const snapHogar = await getDocs(query(collection(db, 'hogares'), where('participantes', 'array-contains', usuarioActual.uid)));
+      const participantes = snapHogar.empty ? [usuarioActual.uid] : snapHogar.docs[0].data().participantes || [usuarioActual.uid];
+      const ref = await addDoc(collection(db, 'conversaciones'), {
+        hogarId, participantes, esGrupo: true,
+        ultimoMensaje: '', ultimaHora: serverTimestamp(), noLeidos: 0, creado: serverTimestamp()
+      });
+      convId = ref.id;
+    }
+
+    await addDoc(collection(db, 'conversaciones', convId, 'mensajes'), {
+      ...mensaje,
+      remitenteUid: usuarioActual.uid,
+      remitenteNombre: perfilActual.nombre,
+      timestamp: serverTimestamp(),
+      leido: false
+    });
+    await updateDoc(doc(db, 'conversaciones', convId), {
+      ultimoMensaje: mensaje.texto || '📸 Foto de tarea',
+      ultimaHora: serverTimestamp(),
+      noLeidos: 1
+    });
+  } catch(e) { console.error('Chat send error:', e); }
+}
+
+window.procesarFoto = async (input) => {
+  const archivo = input.files[0];
+  if (!archivo || !tareaFotoId) { tareaFotoId = null; return; }
+  showToast('📷 Subiendo foto...');
+
+  try {
+    // 1. Subir a Cloudinary
+    const formData = new FormData();
+    formData.append('file', archivo);
+    formData.append('upload_preset', PRESET);
+    formData.append('folder', 'mynana_tareas');
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/image/upload`, { method:'POST', body:formData });
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error?.message || 'Cloudinary error ' + res.status);
+    const url = data.secure_url;
+    if (!url) throw new Error('Sin URL de Cloudinary');
+
+    const tarea = todasTareas.find(t => t.id === tareaFotoId);
+    const hora = new Date().toLocaleTimeString('es-PA', { hour:'2-digit', minute:'2-digit' });
+
+    // 2. Guardar foto + completar tarea en Firestore
+    await updateDoc(doc(db, 'hogares', hogarId, 'tareas', tareaFotoId), {
+      fotoUrl: url, estado: 'completa', completadaA: hora
+    });
+
+    // 3. Inyectar foto DIRECTAMENTE en el DOM sin esperar onSnapshot
+    const cardEl = document.getElementById(`tarea_${tareaFotoId}`);
+    if (cardEl) {
+      // Remover banner de completada si existe
+      cardEl.querySelectorAll('.tarea-done-banner, .tarea-foto-block').forEach(el => el.remove());
+      // Insertar bloque de foto
+      const fotoBlock = document.createElement('div');
+      fotoBlock.className = 'tarea-foto-block';
+      fotoBlock.style.cssText = 'margin:0 14px 12px;border-radius:10px;overflow:hidden;border:2px solid var(--g4);';
+      fotoBlock.innerHTML = `
+        <img src="${url}" style="width:100%;max-height:200px;object-fit:cover;display:block;cursor:pointer;"
+             onclick="window.open('${url}','_blank')"/>
+        <div style="padding:6px 10px;background:var(--g3);font-size:11px;color:var(--g);font-weight:500;">
+          📸 Evidencia · Completada ${hora} · Toca para ampliar
+        </div>`;
+      cardEl.appendChild(fotoBlock);
+      cardEl.classList.add('hecha');
+    }
+
+    // También actualizar todasTareasCache en memoria
+    const idx = todasTareasCache.findIndex(t => t.id === tareaFotoId);
+    if (idx >= 0) { todasTareasCache[idx].fotoUrl = url; todasTareasCache[idx].estado = 'completa'; }
+    renderEvidencias(perfilActual.tipo === 'nana');
+
+    // 3. Enviar al chat — buscar o crear conversación
+    try {
+      let convId = null;
+      const qConv = query(collection(db, 'conversaciones'), where('hogarId', '==', hogarId));
+      const convSnap = await getDocs(qConv);
+
+      if (!convSnap.empty) {
+        convId = convSnap.docs[0].id;
+      } else {
+        // Crear conversación nueva con todos los participantes del hogar
+        const hogarSnap = await getDocs(query(collection(db, 'hogares'), where('participantes', 'array-contains', usuarioActual.uid)));
+        const participantes = hogarSnap.empty ? [usuarioActual.uid] : hogarSnap.docs[0].data().participantes;
+        const newConv = await addDoc(collection(db, 'conversaciones'), {
+          hogarId, participantes, esGrupo: true,
+          ultimoMensaje: '', ultimaHora: serverTimestamp(), noLeidos: 0, creado: serverTimestamp()
+        });
+        convId = newConv.id;
+      }
+
+      await addDoc(collection(db, 'conversaciones', convId, 'mensajes'), {
+        tipo: 'foto',
+        fotoUrl: url,
+        texto: `✅ ${tarea?.nombre || 'Tarea'} completada — ${hora}`,
+        remitenteUid: usuarioActual.uid,
+        remitenteNombre: perfilActual.nombre,
+        timestamp: serverTimestamp(),
+        leido: false
+      });
+      await updateDoc(doc(db, 'conversaciones', convId), {
+        ultimoMensaje: `📸 Foto: ${tarea?.nombre || 'Tarea completada'}`,
+        ultimaHora: serverTimestamp(),
+        noLeidos: 1
+      });
+    } catch(chatErr) {
+      console.error('Error enviando al chat:', chatErr);
+    }
+
+    // 4. Cambiar filtro a "Todas" para que la foto sea visible inmediatamente
+    filtroActual = 'todas';
+    document.querySelectorAll('.filtro').forEach(b => {
+      b.classList.toggle('activo', b.textContent.trim() === 'Todas');
+    });
+    renderTareas();
+
+    showToast('📸 Foto guardada — visible en tareas y chat');
+
+  } catch(e) {
+    console.error('Error en procesarFoto:', e);
+    showToast('❌ Error al subir foto: ' + e.message);
+  }
+
+  input.value = '';
+  tareaFotoId = null;
+};
 
 window.verFotoGrande = (url) => window.open(url, '_blank');
 
