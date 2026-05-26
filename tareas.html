@@ -300,6 +300,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
             <div class="empty-sub">Crea la primera tarea del día</div>
           </div>
         </div>
+
+        <!-- Evidencias del día - siempre visible si hay fotos -->
+        <div id="evidenciasFam" style="display:none;margin-top:12px;"></div>
       </div>
     </div>
 
@@ -331,6 +334,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
             <div class="empty-sub">La familia aún no ha creado tareas para hoy</div>
           </div>
         </div>
+
+        <!-- Evidencias del día -->
+        <div id="evidenciasNana" style="display:none;margin-top:12px;"></div>
       </div>
     </div>
 
@@ -574,6 +580,33 @@ function escucharTareas() {
   });
 }
 
+function renderEvidencias(esNana) {
+  const conFoto = todasTareas.filter(t => t.fotoUrl && t.estado === 'completa');
+  const el = document.getElementById(esNana ? 'evidenciasNana' : 'evidenciasFam');
+  if (!el) return;
+
+  if (!conFoto.length) { el.style.display = 'none'; return; }
+
+  el.style.display = 'block';
+  el.innerHTML = `
+    <div style="background:#fff;border-radius:12px;border:1px solid var(--g4);overflow:hidden;">
+      <div style="padding:10px 14px;border-bottom:1px solid var(--g4);display:flex;align-items:center;gap:8px;">
+        <span style="font-size:16px;">📸</span>
+        <span style="font-size:13px;font-weight:600;color:var(--txt);">Evidencias del día (${conFoto.length})</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;padding:10px;">
+        ${conFoto.map(t => `
+          <div style="border-radius:8px;overflow:hidden;border:1px solid var(--g4);cursor:pointer;" onclick="window.open('${t.fotoUrl}','_blank')">
+            <img src="${t.fotoUrl}" style="width:100%;height:90px;object-fit:cover;display:block;"
+                 onerror="this.src='';this.parentElement.style.background='var(--g3)'"/>
+            <div style="padding:4px 6px;font-size:10px;color:var(--txt2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+              ${t.nombre}
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
 // ── RENDER TAREAS ──
 function renderTareas() {
   // Tareas del día seleccionado (sin fecha = legacy, mostrar solo hoy)
@@ -592,6 +625,9 @@ function renderTareas() {
     const hechas = todasTareas.filter(t => t.estado === 'completa').length;
     sub.textContent = `${hechas} de ${todasTareas.length} completadas hoy`;
   }
+
+  // Renderizar sección de evidencias (fotos) independiente del filtro
+  renderEvidencias(esNana);
 
   if (!lista.length) {
     contenedor.innerHTML = `<div class="empty-state">
@@ -636,11 +672,13 @@ function renderTareas() {
       </div>
 
       ${hecha && t.fotoUrl ? `
-        <div style="padding:0 14px 10px;">
-          <div class="foto-badge">
-            <img src="${t.fotoUrl}" alt="evidencia" onclick="verFotoGrande('${t.fotoUrl}')"/>
+        <div style="margin:8px 14px 10px;border-radius:10px;overflow:hidden;border:2px solid var(--g4);">
+          <img src="${t.fotoUrl}" style="width:100%;max-height:180px;object-fit:cover;display:block;cursor:pointer;" 
+               onclick="window.open(this.src,'_blank')"
+               onerror="this.parentElement.innerHTML='<div style=padding:10px;font-size:12px;color:#bbb;>⚠️ Error cargando foto</div>'" />
+          <div style="padding:6px 10px;background:var(--g3);font-size:11px;color:var(--g);font-weight:500;">
+            📸 Evidencia · Completada ${t.completadaA || ''} · Toca para ampliar
           </div>
-          <div style="font-size:11px;color:var(--g);margin-top:5px;padding:4px 8px;background:var(--g3);border-radius:6px;">📸 Foto de evidencia enviada</div>
         </div>` : ''}
 
       ${hecha && !t.fotoUrl ? `<div class="tarea-done-banner">✅ Completada ${t.completadaA || ''}</div>` : ''}
