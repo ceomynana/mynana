@@ -1699,42 +1699,45 @@ async function cargarEstadoDash(hogarId, uid) {
   } catch(e) { console.error('cargarEstadoDash:', e); }
 }
 
-async function cargarTareasDash(hogarId, uid) {
+function cargarTareasDash(hogarId, uid) {
   const hoyStr = (() => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })();
-  const snap = await getDocs(query(collection(db, 'hogares', hogarId, 'tareas')));
-  const tareas = snap.docs.map(d => d.data())
-    .filter(t => t.fecha ? t.fecha === hoyStr : true)
-    .sort((a,b) => a.hora?.localeCompare(b.hora));
-  const hechas = tareas.filter(t => t.estado === 'completa').length;
-  const total = tareas.length;
 
-  document.getElementById('subTareas').textContent = total
-    ? `${hechas} de ${total} completadas hoy`
-    : 'Sin tareas asignadas hoy';
+  onSnapshot(query(collection(db, 'hogares', hogarId, 'tareas')), (snap) => {
+    const tareas = snap.docs.map(d => d.data())
+      .filter(t => t.fecha ? t.fecha === hoyStr : true)
+      .sort((a,b) => a.hora?.localeCompare(b.hora));
+    const hechas = tareas.filter(t => t.estado === 'completa').length;
+    const total = tareas.length;
 
-  if (!total) {
-    document.getElementById('bodyTareas').innerHTML = `
-      <div style="text-align:center;padding:16px;">
-        <div style="font-size:28px;margin-bottom:6px;">✅</div>
-        <div style="font-size:13px;color:var(--txt2);">No hay tareas hoy</div>
-        <div style="font-size:12px;color:#bbb;margin-top:2px;">Toca aquí para agregar</div>
+    document.getElementById('subTareas').textContent = total
+      ? `${hechas} de ${total} completadas hoy`
+      : 'Sin tareas asignadas hoy';
+
+    const statEl = document.getElementById('statTareas');
+    if (statEl) statEl.textContent = total || '0';
+
+    if (!total) {
+      document.getElementById('bodyTareas').innerHTML = `
+        <div style="text-align:center;padding:16px;">
+          <div style="font-size:28px;margin-bottom:6px;">✅</div>
+          <div style="font-size:13px;color:var(--txt2);">No hay tareas hoy</div>
+          <div style="font-size:12px;color:#bbb;margin-top:2px;">Toca aquí para agregar</div>
+        </div>`;
+      return;
+    }
+
+    document.getElementById('bodyTareas').innerHTML = tareas.slice(0, 3).map(t => {
+      const hecha = t.estado === 'completa';
+      return `<div class="task-item">
+        <div class="task-dot" style="background:${hecha ? 'var(--g)' : 'var(--b)'};"></div>
+        <span class="task-name" style="${hecha ? 'text-decoration:line-through;color:#bbb;' : ''}">${t.nombre}</span>
+        ${t.fotoUrl
+          ? `<img src="${t.fotoUrl}" onclick="window.open('${t.fotoUrl}','_blank')" style="width:32px;height:32px;border-radius:6px;object-fit:cover;cursor:pointer;flex-shrink:0;" title="📸 Foto de evidencia"/>`
+          : `<span class="task-hora" style="font-size:11px;color:#bbb;">${hecha ? '✅' : formatHora12(t.hora)}</span>`
+        }
       </div>`;
-    return;
-  }
-
-  const preview = tareas.slice(0, 3);
-  document.getElementById('bodyTareas').innerHTML = preview.map(t => {
-    const hecha = t.estado === 'completa';
-    return `<div class="task-item">
-      <div class="task-dot" style="background:${hecha ? 'var(--g)' : 'var(--b)'};"></div>
-      <span class="task-name" style="${hecha ? 'text-decoration:line-through;color:#bbb;' : ''}">${t.nombre}</span>
-      ${t.fotoUrl
-        ? `<img src="${t.fotoUrl}" onclick="window.open('${t.fotoUrl}','_blank')" style="width:28px;height:28px;border-radius:5px;object-fit:cover;cursor:pointer;flex-shrink:0;" title="📸 Ver evidencia"/>`
-        : `<span class="task-hora">${t.hora || ''}</span>
-           <div class="task-check" style="${hecha ? 'background:var(--g);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;' : 'border:2px solid var(--g4);border-radius:50%;width:18px;height:18px;'}">${hecha ? '✓' : ''}</div>`
-      }
-    </div>`;
-  }).join('') + (tareas.length > 3 ? `<div style="font-size:12px;color:#bbb;text-align:center;margin-top:8px;">+${tareas.length - 3} tareas más →</div>` : '');
+    }).join('') + (tareas.length > 3 ? `<div style="font-size:12px;color:#bbb;text-align:center;margin-top:8px;">+${tareas.length-3} tareas más →</div>` : '');
+  });
 }
 
 function cargarMenuDash(hogarId) {
