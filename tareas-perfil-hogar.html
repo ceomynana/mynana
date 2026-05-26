@@ -974,15 +974,29 @@ window.generarSemana = async (modo) => {
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:4000,
-        system:`Eres My Nana, el asistente de gestión del hogar más inteligente de Latinoamérica. Generas planes semanales 100% personalizados según el perfil real de cada hogar. Respondes ÚNICAMENTE en JSON válido, sin texto adicional ni markdown.`,
+        system:`Eres My Nana, el asistente de gestion del hogar mas inteligente de Latinoamerica. Generas planes semanales 100% personalizados. Respondes UNICAMENTE en JSON valido, sin texto adicional ni markdown.`,
         messages:[{role:'user',content:prompt}]
       })
     });
+
+    if (!resp.ok) {
+      const errText = await resp.text();
+      throw new Error('Funcion error ' + resp.status + ': ' + errText.slice(0,200));
+    }
+
     const data = await resp.json();
-    const raw = data.content?.map(c=>c.text||'').join('');
-    const resultado = JSON.parse(raw.replace(/```json|```/g,'').trim());
+
+    // Si Anthropic devolvio error
+    if (data.type === 'error' || data.error) {
+      throw new Error(data.error?.message || JSON.stringify(data));
+    }
+    if (!data.content || !data.content.length) {
+      throw new Error('Respuesta vacia. Verifica la API key ANTHROPIC_API_KEY en Netlify.');
+    }
+
+    const raw = data.content.map(c => c.text || '').join('');
+    const jsonStr = raw.replace(/^```json\s*/,'').replace(/```\s*$/,'').trim();
+    const resultado = JSON.parse(jsonStr);
 
     // Construir semanaActual en memoria
     semanaActual={};
