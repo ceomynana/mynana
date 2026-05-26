@@ -2403,11 +2403,18 @@ window.leerTareasVoz = () => {
     : `Hola ${nombre}. Tienes ${pendientes.length} tarea${pendientes.length > 1 ? 's' : ''} pendiente${pendientes.length > 1 ? 's' : ''} hoy. ` +
       pendientes.map((t, i) => `Número ${i + 1}: ${t.nombre}.`).join(' ');
 
-  // Crear utterance ANTES de cancel — Safari requiere speak() síncrono al click
   const u = new SpeechSynthesisUtterance(textoAudio);
   u.lang = 'es'; u.rate = 0.85; u.pitch = 1;
 
+  const voces = window.speechSynthesis.getVoices();
+  const vozES = voces.find(v => v.lang.startsWith('es'));
+  if (vozES) u.voice = vozES;
+
   u.onend = () => {
+    if (btn) { btn.innerHTML = '🔊 Escuchar mis tareas en voz alta'; btn.style.background = ''; btn.onclick = leerTareasVoz; }
+  };
+  u.onerror = (e) => {
+    console.error('TTS error:', e);
     if (btn) { btn.innerHTML = '🔊 Escuchar mis tareas en voz alta'; btn.style.background = ''; btn.onclick = leerTareasVoz; }
   };
 
@@ -2417,14 +2424,9 @@ window.leerTareasVoz = () => {
     btn.onclick = () => { window.speechSynthesis.cancel(); btn.innerHTML = '🔊 Escuchar mis tareas en voz alta'; btn.style.background = ''; btn.onclick = leerTareasVoz; };
   }
 
-  window.speechSynthesis.cancel();
-  // setTimeout 0 para evitar el bug de cancel+speak en Safari
-  setTimeout(() => {
-    const voces = window.speechSynthesis.getVoices();
-    const vozES = voces.find(v => v.lang.startsWith('es'));
-    if (vozES) u.voice = vozES;
-    window.speechSynthesis.speak(u);
-  }, 0);
+  // Solo cancelar si ya hay algo reproduciéndose (Mac Safari falla si cancel() en vacío)
+  if (window.speechSynthesis.speaking) window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(u);
 
   showToast(pendientes.length > 0 ? '🔊 Leyendo tus tareas...' : '🎉 ¡Todas las tareas listas!');
 };
