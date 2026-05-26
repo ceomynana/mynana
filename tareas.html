@@ -804,8 +804,21 @@ async function enviarMensajeAlChat(mensaje) {
   try {
     const qConv = query(collection(db, 'conversaciones'), where('hogarId', '==', hogarId));
     const snap = await getDocs(qConv);
-    if (snap.empty) return;
-    const convId = snap.docs[0].id;
+    let convId;
+
+    if (!snap.empty) {
+      convId = snap.docs[0].id;
+    } else {
+      // Crear conversación si no existe
+      const snapHogar = await getDocs(query(collection(db, 'hogares'), where('participantes', 'array-contains', usuarioActual.uid)));
+      const participantes = snapHogar.empty ? [usuarioActual.uid] : snapHogar.docs[0].data().participantes || [usuarioActual.uid];
+      const ref = await addDoc(collection(db, 'conversaciones'), {
+        hogarId, participantes, esGrupo: true,
+        ultimoMensaje: '', ultimaHora: serverTimestamp(), noLeidos: 0, creado: serverTimestamp()
+      });
+      convId = ref.id;
+    }
+
     await addDoc(collection(db, 'conversaciones', convId, 'mensajes'), {
       ...mensaje,
       remitenteUid: usuarioActual.uid,
