@@ -1,5 +1,17 @@
 exports.handler = async (event) => {
-  // Solo aceptar POST
+
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin':  '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      },
+      body: '',
+    };
+  }
+
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
@@ -15,14 +27,23 @@ exports.handler = async (event) => {
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model:      'claude-sonnet-4-20250514',
+        model:      'claude-opus-4-5',
         max_tokens: 4000,
-        system:     body.system,
-        messages:   body.messages,
+        system:     body.system   || 'Responde en JSON.',
+        messages:   body.messages || [],
       }),
     });
 
     const data = await response.json();
+
+    // Si Anthropic devuelve error, reenviarlo al cliente para debug
+    if (!response.ok || data.type === 'error') {
+      return {
+        statusCode: response.status || 500,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      };
+    }
 
     return {
       statusCode: 200,
@@ -32,9 +53,11 @@ exports.handler = async (event) => {
       },
       body: JSON.stringify(data),
     };
+
   } catch (err) {
     return {
       statusCode: 500,
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ error: err.message }),
     };
   }
