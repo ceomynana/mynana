@@ -1725,12 +1725,14 @@ async function cargarTareasDash(hogarId, uid) {
   const preview = tareas.slice(0, 3);
   document.getElementById('bodyTareas').innerHTML = preview.map(t => {
     const hecha = t.estado === 'completa';
-    const emoji = t.cat?.split(' ')[0] || '📋';
     return `<div class="task-item">
       <div class="task-dot" style="background:${hecha ? 'var(--g)' : 'var(--b)'};"></div>
       <span class="task-name" style="${hecha ? 'text-decoration:line-through;color:#bbb;' : ''}">${t.nombre}</span>
-      <span class="task-hora">${t.hora || ''}</span>
-      <div class="task-check" style="${hecha ? 'background:var(--g);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;' : 'border:2px solid var(--g4);border-radius:50%;width:18px;height:18px;'}">${hecha ? '✓' : ''}</div>
+      ${t.fotoUrl
+        ? `<img src="${t.fotoUrl}" onclick="window.open('${t.fotoUrl}','_blank')" style="width:28px;height:28px;border-radius:5px;object-fit:cover;cursor:pointer;flex-shrink:0;" title="📸 Ver evidencia"/>`
+        : `<span class="task-hora">${t.hora || ''}</span>
+           <div class="task-check" style="${hecha ? 'background:var(--g);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;' : 'border:2px solid var(--g4);border-radius:50%;width:18px;height:18px;'}">${hecha ? '✓' : ''}</div>`
+      }
     </div>`;
   }).join('') + (tareas.length > 3 ? `<div style="font-size:12px;color:#bbb;text-align:center;margin-top:8px;">+${tareas.length - 3} tareas más →</div>` : '');
 }
@@ -2392,7 +2394,13 @@ function formatHora12(hora24) {
 
 // Audio mejorado
 window.leerTareasVoz = () => {
-  if (!window.speechSynthesis) { showToast('Tu teléfono no soporta el audio'); return; }
+  // Safari en Mac Desktop no soporta Web Speech API correctamente
+  const isSafariMac = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) && !/iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if (isSafariMac) {
+    showToast('🔊 El audio no está disponible en Safari Mac — usa Chrome o el iPhone');
+    return;
+  }
+  if (!window.speechSynthesis) { showToast('Tu dispositivo no soporta el audio'); return; }
 
   const btn = document.getElementById('audioBtn');
   const nombre = document.getElementById('nanaNombre')?.textContent.replace('👋','').trim() || '';
