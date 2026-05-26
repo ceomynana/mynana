@@ -38,7 +38,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
 
 /* ── LAYOUT ── */
 .layout{max-width:1100px;margin:0 auto;padding:24px;}
-@media(min-width:768px){.layout{display:grid;grid-template-columns:1fr 1fr;gap:24px;}}
+@media(min-width:768px){.layout{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;}}
 
 /* ── PANEL ── */
 .panel{background:#fff;border-radius:var(--r);border:1px solid var(--g4);overflow:hidden;}
@@ -61,19 +61,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
 .btn-crear:disabled{opacity:.6;cursor:not-allowed;}
 
 /* ── LISTA TAREAS ── */
-.tareas-lista{padding:12px;display:flex;flex-direction:column;gap:8px;max-height:520px;overflow-y:auto;}
+.tareas-lista{padding:12px;display:flex;flex-direction:column;gap:8px;}
 .empty-state{text-align:center;padding:40px 20px;color:var(--txt2);}
 .empty-icon{font-size:40px;margin-bottom:10px;}
 .empty-title{font-size:15px;font-weight:500;color:var(--txt);margin-bottom:4px;}
 .empty-sub{font-size:13px;}
 
 /* ── TAREA CARD ── */
-.tarea-card{background:#fff;border-radius:16px;overflow:hidden;border:1px solid var(--g4);transition:all .2s;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,.05);}
+.tarea-card{background:#fff;border-radius:16px;overflow:hidden;border:1px solid var(--g4);transition:all .2s;margin-bottom:8px;box-shadow:0 2px 8px rgba(0,0,0,.05);}
 .tarea-card.hecha{opacity:.75;}
 .tarea-top{display:flex;align-items:center;gap:10px;padding:12px 14px;}
 .tarea-emoji-wrap{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
 .tarea-info{flex:1;min-width:0;}
-.tarea-nombre{font-size:13px;font-weight:500;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tarea-nombre{font-size:13px;font-weight:500;color:var(--txt);white-space:normal;word-break:break-word;line-height:1.4;}
 .tarea-nombre.hecha{text-decoration:line-through;color:#bbb;}
 .tarea-meta{font-size:11px;color:var(--txt2);margin-top:2px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
 .tarea-cat{font-size:10px;padding:2px 7px;border-radius:99px;font-weight:500;}
