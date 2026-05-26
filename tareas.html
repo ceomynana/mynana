@@ -744,6 +744,13 @@ window.marcarHecha = async (id, estaHecha) => {
   await updateDoc(doc(db, 'hogares', hogarId, 'tareas', id), {
     estado: 'completa', completadaA: hora
   });
+
+  // Notificar al chat del hogar
+  const tarea = todasTareas.find(t => t.id === id);
+  await enviarMensajeAlChat({
+    tipo: 'texto',
+    texto: `✅ ${tarea?.nombre || 'Tarea'} — completada a las ${hora}`
+  });
 };
 
 // ── ELIMINAR TAREA ──
@@ -792,6 +799,28 @@ window.dispararGaleria = () => {
   document.getElementById('galeriaInput').click();
 };
 
+// ── ENVIAR AL CHAT DEL HOGAR ──
+async function enviarMensajeAlChat(mensaje) {
+  try {
+    const qConv = query(collection(db, 'conversaciones'), where('hogarId', '==', hogarId));
+    const snap = await getDocs(qConv);
+    if (snap.empty) return;
+    const convId = snap.docs[0].id;
+    await addDoc(collection(db, 'conversaciones', convId, 'mensajes'), {
+      ...mensaje,
+      remitenteUid: usuarioActual.uid,
+      remitenteNombre: perfilActual.nombre,
+      timestamp: serverTimestamp(),
+      leido: false
+    });
+    await updateDoc(doc(db, 'conversaciones', convId), {
+      ultimoMensaje: mensaje.texto || '📸 Foto de tarea',
+      ultimaHora: serverTimestamp(),
+      noLeidos: 1
+    });
+  } catch(e) { console.error('Chat send error:', e); }
+}
+
 window.procesarFoto = async (input) => {
   const archivo = input.files[0];
   if (!archivo || !tareaFotoId) { tareaFotoId = null; return; }
@@ -808,13 +837,24 @@ window.procesarFoto = async (input) => {
     const data = await res.json();
     const url = data.secure_url;
 
+    const tarea = todasTareas.find(t => t.id === tareaFotoId);
     const hora = new Date().toLocaleTimeString('es-PA', { hour:'2-digit', minute:'2-digit' });
+
+    // 1. Actualizar tarea como completa con foto
     await updateDoc(doc(db, 'hogares', hogarId, 'tareas', tareaFotoId), {
-      fotoUrl: url,
-      estado: 'completa',
-      completadaA: hora
+      fotoUrl: url, estado: 'completa', completadaA: hora
     });
-    showToast('📸 ¡Foto enviada a la familia!');
+
+    // 2. Enviar foto + confirmación al chat del hogar
+    await enviarMensajeAlChat({
+      tipo: 'foto',
+      fotoUrl: url,
+      texto: `✅ Tarea completada: ${tarea?.nombre || 'Tarea'} — ${hora}`,
+      tareaId: tareaFotoId,
+      tareaNombre: tarea?.nombre || ''
+    });
+
+    showToast('📸 ¡Foto enviada al chat de la familia!');
   } catch(e) {
     showToast('❌ Error al subir foto');
     console.error(e);
