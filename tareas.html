@@ -840,37 +840,74 @@ window.procesarFoto = async (input) => {
   showToast('📷 Subiendo foto...');
 
   try {
+    // 1. Subir a Cloudinary
     const formData = new FormData();
     formData.append('file', archivo);
     formData.append('upload_preset', PRESET);
     formData.append('folder', 'mynana_tareas');
-
     const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/image/upload`, { method:'POST', body:formData });
-    if (!res.ok) throw new Error('Error Cloudinary');
+    if (!res.ok) throw new Error('Cloudinary error ' + res.status);
     const data = await res.json();
     const url = data.secure_url;
+    if (!url) throw new Error('Sin URL de Cloudinary');
 
     const tarea = todasTareas.find(t => t.id === tareaFotoId);
     const hora = new Date().toLocaleTimeString('es-PA', { hour:'2-digit', minute:'2-digit' });
 
-    // 1. Actualizar tarea como completa con foto
+    // 2. Guardar foto + completar tarea
     await updateDoc(doc(db, 'hogares', hogarId, 'tareas', tareaFotoId), {
       fotoUrl: url, estado: 'completa', completadaA: hora
     });
 
-    // 2. Enviar foto + confirmación al chat del hogar
-    await enviarMensajeAlChat({
-      tipo: 'foto',
-      fotoUrl: url,
-      texto: `✅ Tarea completada: ${tarea?.nombre || 'Tarea'} — ${hora}`,
-      tareaId: tareaFotoId,
-      tareaNombre: tarea?.nombre || ''
-    });
+    // 3. Enviar al chat — buscar o crear conversación
+    try {
+      let convId = null;
+      const qConv = query(collection(db, 'conversaciones'), where('hogarId', '==', hogarId));
+      const convSnap = await getDocs(qConv);
 
-    showToast('📸 ¡Foto enviada al chat de la familia!');
+      if (!convSnap.empty) {
+        convId = convSnap.docs[0].id;
+      } else {
+        // Crear conversación nueva con todos los participantes del hogar
+        const hogarSnap = await getDocs(query(collection(db, 'hogares'), where('participantes', 'array-contains', usuarioActual.uid)));
+        const participantes = hogarSnap.empty ? [usuarioActual.uid] : hogarSnap.docs[0].data().participantes;
+        const newConv = await addDoc(collection(db, 'conversaciones'), {
+          hogarId, participantes, esGrupo: true,
+          ultimoMensaje: '', ultimaHora: serverTimestamp(), noLeidos: 0, creado: serverTimestamp()
+        });
+        convId = newConv.id;
+      }
+
+      await addDoc(collection(db, 'conversaciones', convId, 'mensajes'), {
+        tipo: 'foto',
+        fotoUrl: url,
+        texto: `✅ ${tarea?.nombre || 'Tarea'} completada — ${hora}`,
+        remitenteUid: usuarioActual.uid,
+        remitenteNombre: perfilActual.nombre,
+        timestamp: serverTimestamp(),
+        leido: false
+      });
+      await updateDoc(doc(db, 'conversaciones', convId), {
+        ultimoMensaje: `📸 Foto: ${tarea?.nombre || 'Tarea completada'}`,
+        ultimaHora: serverTimestamp(),
+        noLeidos: 1
+      });
+    } catch(chatErr) {
+      console.error('Error enviando al chat:', chatErr);
+    }
+
+    // 4. Cambiar filtro a "Todas" para que la foto sea visible inmediatamente
+    filtroActual = 'todas';
+    document.querySelectorAll('.filtro').forEach(b => {
+      b.classList.toggle('activo', b.textContent.trim() === 'Todas');
+    });
+    renderTareas();
+
+    showToast('📸 Foto guardada — visible en tareas y chat');
+
   } catch(e) {
-    showToast('❌ Error al subir foto');
-    console.error(e);
+    console.error('Error en procesarFoto:', e);
+    showToast('❌ Error al subir foto: ' + e.message);
   }
 
   input.value = '';
