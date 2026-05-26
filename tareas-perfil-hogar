@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>My Nana — Planificador Inteligente</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Cormorant+Garamond:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   TOKENS — igual al design system de My Nana
+═══════════════════════════════════════════ */
+:root{
+  --g:#1A6B52;--g2:#0F4A38;--g3:#F0F7F4;--g4:#E1F0EB;
+  --b:#D4A5A5;--b2:#BF9090;--b3:#F7EFEF;
+  --cr:#F9F5F0;--txt:#1A2E25;--txt2:#4A6358;
+  --r:14px;--shadow:0 4px 24px rgba(15,74,56,.10);
+  --warn:#F5A623;--warn-bg:#FFF8EE;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{min-height:100vh;scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);overflow-x:hidden;}
+
+/* ── HEADER ── */
+.app-header{background:var(--g2);padding:48px 24px 16px;position:sticky;top:0;z-index:50;}
+@media(min-width:768px){.app-header{padding-top:16px;}}
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.header-logo{font-family:'Cormorant Garamond',serif;font-size:20px;color:#fff;}
+.header-logo em{color:var(--b);font-style:normal;}
+.header-nav{display:flex;align-items:center;gap:10px;}
+.header-back{background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.7);font-size:13px;padding:7px 14px;border-radius:99px;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;display:inline-block;}
+.progreso-wrap{background:rgba(255,255,255,.1);border-radius:99px;height:5px;overflow:hidden;}
+.progreso-fill{height:100%;background:var(--b);border-radius:99px;transition:width .6s ease;}
+.progreso-label{font-size:11px;color:rgba(255,255,255,.45);margin-top:5px;text-align:right;}
+
+/* ── LAYOUT ── */
+.layout{max-width:1160px;margin:0 auto;padding:24px 16px;}
+
+/* ── PANEL ── */
+.panel{background:#fff;border-radius:var(--r);border:1px solid var(--g4);overflow:hidden;margin-bottom:16px;}
+.panel-header{background:var(--g2);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;}
+.panel-title{font-family:'Cormorant Garamond',serif;font-size:18px;color:#fff;}
+.panel-sub{font-size:11px;color:rgba(255,255,255,.55);margin-top:2px;}
+.panel-badge{background:var(--b);color:#fff;font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;}
+
+/* ═══════════════════════════════════════════
+   SETUP WIZARD (PERFIL DEL HOGAR)
+═══════════════════════════════════════════ */
+#wizardOverlay{
+  position:fixed;inset:0;background:rgba(15,74,56,.85);z-index:200;
+  display:flex;align-items:flex-end;justify-content:center;
+  backdrop-filter:blur(4px);
+}
+#wizardOverlay.oculto{display:none;}
+.wizard-sheet{
+  background:#fff;border-radius:28px 28px 0 0;width:100%;max-width:560px;
+  max-height:92vh;overflow-y:auto;padding:0 0 40px;
+  animation:slideUp .38s cubic-bezier(.25,.46,.45,.94);
+}
+@media(min-width:640px){
+  #wizardOverlay{align-items:center;}
+  .wizard-sheet{border-radius:28px;max-height:88vh;}
+}
+@keyframes slideUp{from{transform:translateY(60px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+
+.wizard-header{
+  background:var(--g2);padding:24px 24px 20px;position:sticky;top:0;z-index:5;
+}
+.wizard-title{font-family:'Cormorant Garamond',serif;font-size:22px;color:#fff;margin-bottom:4px;}
+.wizard-sub{font-size:12px;color:rgba(255,255,255,.55);}
+.wizard-steps{display:flex;gap:5px;margin-top:14px;}
+.wstep{flex:1;height:3px;border-radius:99px;background:rgba(255,255,255,.2);transition:background .3s;}
+.wstep.activo{background:var(--b);}
+.wstep.hecho{background:rgba(255,255,255,.6);}
+
+.wizard-body{padding:24px;}
+.wizard-step{display:none;}
+.wizard-step.activo{display:block;animation:fadeIn .25s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+.wstep-title{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--txt);margin-bottom:4px;}
+.wstep-desc{font-size:13px;color:var(--txt2);margin-bottom:20px;line-height:1.6;}
+
+/* form inputs wizard */
+.w-label{font-size:11px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:5px;}
+.w-input{width:100%;background:var(--cr);border:1.5px solid var(--g4);border-radius:10px;padding:11px 14px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--txt);outline:none;transition:all .2s;margin-bottom:14px;}
+.w-input:focus{border-color:var(--g);background:#fff;box-shadow:0 0 0 3px rgba(26,107,82,.07);}
+.w-select{width:100%;background:var(--cr);border:1.5px solid var(--g4);border-radius:10px;padding:11px 14px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--txt);outline:none;appearance:none;cursor:pointer;margin-bottom:14px;}
+.w-select:focus{border-color:var(--g);}
+
+/* counter widget */
+.counter-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.counter-item{background:var(--g3);border-radius:12px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;}
+.counter-label{font-size:13px;font-weight:500;color:var(--txt);}
+.counter-sub{font-size:11px;color:var(--txt2);}
+.counter-ctrl{display:flex;align-items:center;gap:8px;}
+.c-btn{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--g4);background:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--g);transition:all .15s;line-height:1;}
+.c-btn:hover{background:var(--g);color:#fff;border-color:var(--g);}
+.c-val{font-size:17px;font-weight:600;color:var(--txt);min-width:20px;text-align:center;}
+
+/* toggle chips */
+.chip-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+.chip{padding:8px 14px;border-radius:99px;border:1.5px solid var(--g4);background:#fff;font-size:13px;font-weight:500;color:var(--txt2);cursor:pointer;transition:all .18s;font-family:'DM Sans',sans-serif;}
+.chip:hover{border-color:var(--g);color:var(--g);}
+.chip.sel{background:var(--g);border-color:var(--g);color:#fff;}
+
+/* horario table */
+.horario-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.horario-item{background:var(--cr);border-radius:10px;padding:12px;border:1px solid var(--g4);}
+.horario-name{font-size:11px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;}
+.horario-time{width:100%;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;color:var(--txt);outline:none;cursor:pointer;}
+
+/* wizard footer */
+.wizard-footer{display:flex;gap:10px;padding:0 24px;margin-top:4px;}
+.btn-next{flex:1;background:var(--g);color:#fff;border:none;border-radius:99px;padding:14px;font-size:14px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .2s;}
+.btn-next:hover{background:var(--g2);}
+.btn-back{background:var(--cr);color:var(--txt2);border:1.5px solid var(--g4);border-radius:99px;padding:14px 20px;font-size:14px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .2s;}
+.btn-back:hover{background:var(--g3);}
+
+/* ═══════════════════════════════════════════
+   PERFIL RESUMEN — banner superior
+═══════════════════════════════════════════ */
+#perfilBanner{
+  background:linear-gradient(135deg,var(--g2) 0%,#1a5540 100%);
+  border-radius:var(--r);padding:20px;margin-bottom:20px;
+  display:none;border:none;
+}
+#perfilBanner.visible{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.perfil-avatar{
+  width:54px;height:54px;border-radius:50%;background:var(--g);
+  border:3px solid var(--b);display:flex;align-items:center;justify-content:center;
+  font-size:24px;flex-shrink:0;
+}
+.perfil-info{flex:1;min-width:0;}
+.perfil-nombre{font-family:'Cormorant Garamond',serif;font-size:20px;color:#fff;margin-bottom:2px;}
+.perfil-desc{font-size:12px;color:rgba(255,255,255,.6);line-height:1.5;}
+.perfil-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}
+.perfil-chip{background:rgba(255,255,255,.12);color:rgba(255,255,255,.85);font-size:11px;padding:3px 10px;border-radius:99px;border:1px solid rgba(255,255,255,.15);}
+.btn-editar-perfil{background:rgba(255,255,255,.1);color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.2);border-radius:99px;padding:7px 14px;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .2s;flex-shrink:0;}
+.btn-editar-perfil:hover{background:rgba(255,255,255,.2);}
+
+/* ═══════════════════════════════════════════
+   BOTONES DE GENERACIÓN
+═══════════════════════════════════════════ */
+.gen-btns{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;}
+@media(max-width:480px){.gen-btns{grid-template-columns:1fr;}}
+.gen-btn{
+  background:#fff;border:1.5px solid var(--g4);border-radius:14px;
+  padding:16px 12px;cursor:pointer;text-align:center;transition:all .22s;
+  font-family:'DM Sans',sans-serif;position:relative;overflow:hidden;
+}
+.gen-btn::before{content:'';position:absolute;inset:0;background:var(--g);opacity:0;transition:opacity .2s;}
+.gen-btn:hover::before{opacity:.04;}
+.gen-btn:hover{border-color:var(--g);transform:translateY(-2px);box-shadow:0 6px 20px rgba(26,107,82,.12);}
+.gen-btn:active{transform:translateY(0);}
+.gen-btn.loading{pointer-events:none;opacity:.7;}
+.gen-icon{font-size:26px;margin-bottom:6px;}
+.gen-label{font-size:13px;font-weight:600;color:var(--txt);margin-bottom:2px;}
+.gen-desc{font-size:11px;color:var(--txt2);line-height:1.4;}
+
+/* ═══════════════════════════════════════════
+   SEMANA CALENDARIO
+═══════════════════════════════════════════ */
+.semana-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.semana-titulo{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--txt);}
+.semana-range{font-size:12px;color:var(--txt2);margin-top:1px;}
+.btn-semana{background:var(--g3);border:1.5px solid var(--g4);border-radius:99px;padding:7px 14px;font-size:12px;font-weight:500;cursor:pointer;color:var(--g);font-family:'DM Sans',sans-serif;transition:all .15s;}
+.btn-semana:hover{background:var(--g4);}
+
+.dias-scroll{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;-ms-overflow-style:none;scrollbar-width:none;margin-bottom:16px;}
+.dias-scroll::-webkit-scrollbar{display:none;}
+.dia-tab{flex-shrink:0;width:72px;border-radius:12px;border:1.5px solid var(--g4);background:#fff;padding:10px 6px;text-align:center;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;}
+.dia-tab.activo{background:var(--g);border-color:var(--g);}
+.dia-tab.hoy{border-color:var(--g);}
+.dia-letra{font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--txt2);}
+.dia-num{font-size:18px;font-weight:600;color:var(--txt);margin-top:1px;}
+.dia-dot{width:5px;height:5px;border-radius:50%;background:var(--b);margin:4px auto 0;}
+.dia-tab.activo .dia-letra,.dia-tab.activo .dia-num{color:#fff;}
+.dia-tab.activo .dia-dot{background:rgba(255,255,255,.6);}
+.dia-tab.hoy:not(.activo) .dia-num{color:var(--g);}
+.dia-count{font-size:9px;color:var(--txt2);margin-top:2px;}
+.dia-tab.activo .dia-count{color:rgba(255,255,255,.7);}
+
+/* tareas del día */
+.dia-panel{display:none;}
+.dia-panel.activo{display:block;}
+.tarea-card{
+  background:#fff;border-radius:14px;border:1px solid var(--g4);
+  margin-bottom:10px;overflow:hidden;transition:all .2s;
+  box-shadow:0 2px 8px rgba(0,0,0,.04);
+}
+.tarea-card.hecha{opacity:.65;}
+.tarea-top{display:flex;align-items:center;gap:10px;padding:13px 14px;}
+.tarea-emoji-wrap{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.tarea-info{flex:1;min-width:0;}
+.tarea-nombre{font-size:13px;font-weight:500;color:var(--txt);}
+.tarea-nombre.hecha{text-decoration:line-through;color:#bbb;}
+.tarea-meta{font-size:11px;color:var(--txt2);margin-top:3px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.cat-pill{font-size:10px;padding:2px 8px;border-radius:99px;font-weight:500;}
+.prioridad-dot{width:6px;height:6px;border-radius:50%;}
+.tarea-check{
+  width:34px;height:34px;border-radius:50%;border:2.5px solid var(--g4);
+  background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .2s;flex-shrink:0;
+}
+.tarea-check.done{background:var(--g);border-color:var(--g);}
+.tarea-check .check-icon{font-size:15px;opacity:0;}
+.tarea-check.done .check-icon{opacity:1;}
+
+/* empty / loading state */
+.empty-dia{text-align:center;padding:48px 20px;color:var(--txt2);}
+.empty-dia-icon{font-size:44px;margin-bottom:12px;}
+.empty-dia-title{font-size:15px;font-weight:500;color:var(--txt);margin-bottom:4px;}
+.empty-dia-sub{font-size:13px;}
+
+.loading-spinner{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:56px 20px;gap:14px;
+}
+.spinner{
+  width:42px;height:42px;border:3px solid var(--g4);border-top-color:var(--g);
+  border-radius:50%;animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+.spinner-text{font-size:13px;color:var(--txt2);text-align:center;line-height:1.6;}
+
+/* ═══════════════════════════════════════════
+   PANEL LATERAL — resumen + perfil
+═══════════════════════════════════════════ */
+@media(min-width:860px){
+  .grid-layout{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start;}
+}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:16px;border-bottom:1px solid var(--g4);}
+.stat-box{background:var(--g3);border-radius:10px;padding:12px 8px;text-align:center;}
+.stat-num{font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--g);}
+.stat-lbl{font-size:11px;color:var(--txt2);}
+.stat-box.rosa{background:var(--b3);}
+.stat-box.rosa .stat-num{color:var(--b2);}
+
+/* cat bars */
+.cat-bars{padding:14px 16px;display:flex;flex-direction:column;gap:8px;}
+.cat-row{display:flex;align-items:center;gap:8px;}
+.cat-row-label{font-size:12px;color:var(--txt2);width:90px;flex-shrink:0;}
+.cat-bar-wrap{flex:1;background:var(--g4);border-radius:99px;height:5px;overflow:hidden;}
+.cat-bar-fill{height:100%;background:var(--g);border-radius:99px;transition:width .5s ease;}
+.cat-row-count{font-size:11px;color:var(--g);font-weight:500;width:28px;text-align:right;}
+
+/* prioridades cards */
+.prio-section{padding:14px 16px;border-top:1px solid var(--g4);}
+.prio-title{font-size:12px;font-weight:600;color:var(--txt);margin-bottom:10px;text-transform:uppercase;letter-spacing:.04em;}
+.prio-list{display:flex;flex-direction:column;gap:6px;}
+.prio-item{display:flex;align-items:center;gap:8px;background:var(--cr);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--txt2);}
+.prio-bullet{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+
+/* ── TOAST ── */
+.toast{position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--g);color:#fff;font-size:13px;font-weight:500;padding:10px 20px;border-radius:99px;z-index:400;transition:transform .3s;white-space:nowrap;box-shadow:0 4px 16px rgba(26,107,82,.3);}
+.toast.visible{transform:translateX(-50%) translateY(0);}
+
+/* ── NO PERFIL state ── */
+#noperfilState{text-align:center;padding:56px 24px;}
+.np-icon{font-size:56px;margin-bottom:16px;}
+.np-title{font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--txt);margin-bottom:8px;}
+.np-sub{font-size:14px;color:var(--txt2);line-height:1.7;max-width:340px;margin:0 auto 28px;}
+.np-btn{background:var(--g);color:#fff;border:none;border-radius:99px;padding:15px 32px;font-size:15px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.np-btn:hover{background:var(--g2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(26,107,82,.25);}
+
+/* ─ Ajustes rápidos inline ─ */
+.inline-badge{display:inline-block;background:var(--g3);color:var(--g);font-size:10px;font-weight:600;padding:2px 7px;border-radius:99px;margin-left:4px;border:1px solid var(--g4);}
+
+/* Paso mascota */
+.mascota-tipo{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;}
+.mascota-opt{
+  border:1.5px solid var(--g4);border-radius:12px;background:#fff;
+  padding:12px 6px;text-align:center;cursor:pointer;transition:all .18s;
+}
+.mascota-opt.sel{border-color:var(--g);background:var(--g3);}
+.mascota-opt:hover{border-color:var(--g);}
+.mascota-emoji{font-size:24px;margin-bottom:4px;}
+.mascota-name{font-size:11px;font-weight:500;color:var(--txt2);}
+.mascota-opt.sel .mascota-name{color:var(--g);}
+
+/* highlight de insights */
+.insight-card{
+  background:linear-gradient(135deg,var(--g3) 0%,var(--b3) 100%);
+  border:1px solid var(--g4);border-radius:12px;padding:14px 16px;
+  margin-bottom:14px;
+}
+.insight-title{font-size:12px;font-weight:600;color:var(--g);margin-bottom:4px;display:flex;align-items:center;gap:5px;}
+.insight-text{font-size:12px;color:var(--txt2);line-height:1.6;}
+</style>
+</head>
+<body>
+
+<!-- ═══ TOAST ═══ -->
+<div class="toast" id="toast"></div>
+
+<!-- ═══════════════════════════════════════════
+     WIZARD — Perfil del Hogar (overlay)
+═══════════════════════════════════════════ -->
+<div id="wizardOverlay" class="oculto">
+  <div class="wizard-sheet">
+
+    <div class="wizard-header">
+      <div class="wizard-title">Cuéntame sobre tu hogar 🏠</div>
+      <div class="wizard-sub">Solo tomará 2 minutos · My Nana aprenderá tu rutina</div>
+      <div class="wizard-steps" id="wstepsBar">
+        <div class="wstep activo" id="ws0"></div>
+        <div class="wstep" id="ws1"></div>
+        <div class="wstep" id="ws2"></div>
+        <div class="wstep" id="ws3"></div>
+        <div class="wstep" id="ws4"></div>
+      </div>
+    </div>
+
+    <div class="wizard-body">
+
+      <!-- PASO 0 — Personas -->
+      <div class="wizard-step activo" id="step0">
+        <div class="wstep-title">¿Quiénes viven en casa? 👨‍👩‍👧</div>
+        <div class="wstep-desc">Esto permite que My Nana calcule la carga de trabajo correcta.</div>
+
+        <div class="counter-grid">
+          <div class="counter-item">
+            <div><div class="counter-label">Adultos</div><div class="counter-sub">Mayores de 18</div></div>
+            <div class="counter-ctrl">
+              <button class="c-btn" onclick="cambiarContador('adultos',-1)">−</button>
+              <span class="c-val" id="vAdultos">2</span>
+              <button class="c-btn" onclick="cambiarContador('adultos',1)">+</button>
+            </div>
+          </div>
+          <div class="counter-item">
+            <div><div class="counter-label">Niños</div><div class="counter-sub">Menores de 18</div></div>
+            <div class="counter-ctrl">
+              <button class="c-btn" onclick="cambiarContador('ninos',-1)">−</button>
+              <span class="c-val" id="vNinos">0</span>
+              <button class="c-btn" onclick="cambiarContador('ninos',1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- edades niños (dinámicas) -->
+        <div id="edadesNinos" style="display:none;">
+          <label class="w-label">Edades aproximadas de los niños</label>
+          <div class="chip-grid" id="edadesChips">
+            <span class="chip" data-val="bebe" onclick="toggleChip(this)">👶 Bebé (&lt;2)</span>
+            <span class="chip" data-val="infante" onclick="toggleChip(this)">🧸 Infante (2–5)</span>
+            <span class="chip" data-val="escolar" onclick="toggleChip(this)">🎒 Escolar (6–12)</span>
+            <span class="chip" data-val="adolescente" onclick="toggleChip(this)">🎮 Adolescente (13+)</span>
+          </div>
+        </div>
+
+        <label class="w-label">¿Hay empleada del hogar / nana?</label>
+        <div class="chip-grid">
+          <span class="chip sel" data-grp="nana" data-val="si" onclick="toggleSingle(this,'nana')">✅ Sí, hay nana</span>
+          <span class="chip" data-grp="nana" data-val="no" onclick="toggleSingle(this,'nana')">❌ No por ahora</span>
+        </div>
+
+        <label class="w-label">Nombre de tu hogar (opcional)</label>
+        <input type="text" class="w-input" id="inNombreHogar" placeholder="Ej: Casa de los Martínez">
+      </div>
+
+      <!-- PASO 1 — La casa -->
+      <div class="wizard-step" id="step1">
+        <div class="wstep-title">Cuéntame sobre tu casa 🏘️</div>
+        <div class="wstep-desc">Más cuartos y baños = más tareas de limpieza y orden.</div>
+
+        <div class="counter-grid">
+          <div class="counter-item">
+            <div><div class="counter-label">Cuartos</div><div class="counter-sub">Habitaciones</div></div>
+            <div class="counter-ctrl">
+              <button class="c-btn" onclick="cambiarContador('cuartos',-1)">−</button>
+              <span class="c-val" id="vCuartos">3</span>
+              <button class="c-btn" onclick="cambiarContador('cuartos',1)">+</button>
+            </div>
+          </div>
+          <div class="counter-item">
+            <div><div class="counter-label">Baños</div><div class="counter-sub">Incluyendo medios</div></div>
+            <div class="counter-ctrl">
+              <button class="c-btn" onclick="cambiarContador('banos',-1)">−</button>
+              <span class="c-val" id="vBanos">2</span>
+              <button class="c-btn" onclick="cambiarContador('banos',1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <label class="w-label">¿Qué espacios adicionales hay?</label>
+        <div class="chip-grid">
+          <span class="chip" data-val="balcon" onclick="toggleChip(this)">🌿 Balcón</span>
+          <span class="chip" data-val="patio" onclick="toggleChip(this)">🌳 Patio / Jardín</span>
+          <span class="chip" data-val="sala_comedor" onclick="toggleChip(this)">🛋️ Sala-comedor</span>
+          <span class="chip" data-val="cuarto_servicio" onclick="toggleChip(this)">🧹 Cuarto de servicio</span>
+          <span class="chip" data-val="terraza" onclick="toggleChip(this)">🌤️ Terraza</span>
+          <span class="chip" data-val="garage" onclick="toggleChip(this)">🚗 Garaje</span>
+          <span class="chip" data-val="lavanderia" onclick="toggleChip(this)">👕 Área de lavandería</span>
+          <span class="chip" data-val="cocina_separada" onclick="toggleChip(this)">🍳 Cocina separada</span>
+        </div>
+
+        <label class="w-label">Tipo de residencia</label>
+        <select class="w-select" id="inTipoRes">
+          <option value="apartamento">Apartamento</option>
+          <option value="casa">Casa / Villa</option>
+          <option value="penthouse">Penthouse</option>
+          <option value="townhouse">Townhouse</option>
+        </select>
+      </div>
+
+      <!-- PASO 2 — Mascotas -->
+      <div class="wizard-step" id="step2">
+        <div class="wstep-title">¿Tienes mascotas? 🐾</div>
+        <div class="wstep-desc">Las mascotas generan tareas diarias de limpieza y cuidado.</div>
+
+        <label class="w-label">Tipo de mascotas</label>
+        <div class="mascota-tipo" id="mascotaGrid">
+          <div class="mascota-opt" data-val="perro" onclick="toggleMascota(this)">
+            <div class="mascota-emoji">🐶</div><div class="mascota-name">Perro</div>
+          </div>
+          <div class="mascota-opt" data-val="gato" onclick="toggleMascota(this)">
+            <div class="mascota-emoji">🐱</div><div class="mascota-name">Gato</div>
+          </div>
+          <div class="mascota-opt" data-val="ave" onclick="toggleMascota(this)">
+            <div class="mascota-emoji">🦜</div><div class="mascota-name">Ave</div>
+          </div>
+          <div class="mascota-opt" data-val="otro" onclick="toggleMascota(this)">
+            <div class="mascota-emoji">🐠</div><div class="mascota-name">Otro</div>
+          </div>
+        </div>
+
+        <!-- Cantidad mascotas -->
+        <div id="mascotaCtrl" style="display:none;">
+          <div class="counter-grid">
+            <div class="counter-item">
+              <div><div class="counter-label">Cantidad</div><div class="counter-sub">Total de mascotas</div></div>
+              <div class="counter-ctrl">
+                <button class="c-btn" onclick="cambiarContador('mascotas',-1)">−</button>
+                <span class="c-val" id="vMascotas">1</span>
+                <button class="c-btn" onclick="cambiarContador('mascotas',1)">+</button>
+              </div>
+            </div>
+          </div>
+          <label class="w-label">Necesidades especiales</label>
+          <div class="chip-grid">
+            <span class="chip" data-val="paseo_diario" onclick="toggleChip(this)">🦮 Paseo diario</span>
+            <span class="chip" data-val="bano_semanal" onclick="toggleChip(this)">🚿 Baño semanal</span>
+            <span class="chip" data-val="medicina" onclick="toggleChip(this)">💊 Medicamentos</span>
+            <span class="chip" data-val="limpieza_cama" onclick="toggleChip(this)">🛏️ Limpiar cama</span>
+          </div>
+        </div>
+        <div id="noMascotaMsg" style="background:var(--g3);border-radius:10px;padding:14px 16px;font-size:13px;color:var(--txt2);text-align:center;">
+          Sin mascotas — perfectamente organizado 🙂
+        </div>
+      </div>
+
+      <!-- PASO 3 — Horarios -->
+      <div class="wizard-step" id="step3">
+        <div class="wstep-title">¿Cuáles son sus horarios? ⏰</div>
+        <div class="wstep-desc">My Nana programa las tareas para que todo esté listo a tiempo.</div>
+
+        <label class="w-label">Horarios de comida</label>
+        <div class="horario-grid">
+          <div class="horario-item">
+            <div class="horario-name">☀️ Desayuno</div>
+            <input type="time" class="horario-time" id="hDesayuno" value="07:00">
+          </div>
+          <div class="horario-item">
+            <div class="horario-name">🥗 Almuerzo</div>
+            <input type="time" class="horario-time" id="hAlmuerzo" value="12:30">
+          </div>
+          <div class="horario-item">
+            <div class="horario-name">☕ Merienda</div>
+            <input type="time" class="horario-time" id="hMerienda" value="16:00">
+          </div>
+          <div class="horario-item">
+            <div class="horario-name">🌙 Cena</div>
+            <input type="time" class="horario-time" id="hCena" value="19:00">
+          </div>
+        </div>
+
+        <label class="w-label">Horario de la nana</label>
+        <div class="horario-grid">
+          <div class="horario-item">
+            <div class="horario-name">🕐 Llegada</div>
+            <input type="time" class="horario-time" id="hNanaLlegada" value="08:00">
+          </div>
+          <div class="horario-item">
+            <div class="horario-name">🚪 Salida</div>
+            <input type="time" class="horario-time" id="hNanaSalida" value="17:00">
+          </div>
+        </div>
+
+        <label class="w-label">Días de trabajo de la nana</label>
+        <div class="chip-grid">
+          <span class="chip sel" data-val="Lunes" onclick="toggleChip(this)">Lun</span>
+          <span class="chip sel" data-val="Martes" onclick="toggleChip(this)">Mar</span>
+          <span class="chip sel" data-val="Miércoles" onclick="toggleChip(this)">Mié</span>
+          <span class="chip sel" data-val="Jueves" onclick="toggleChip(this)">Jue</span>
+          <span class="chip sel" data-val="Viernes" onclick="toggleChip(this)">Vie</span>
+          <span class="chip" data-val="Sábado" onclick="toggleChip(this)">Sáb</span>
+          <span class="chip" data-val="Domingo" onclick="toggleChip(this)">Dom</span>
+        </div>
+      </div>
+
+      <!-- PASO 4 — Prioridades -->
+      <div class="wizard-step" id="step4">
+        <div class="wstep-title">¿Qué es lo más importante? ✨</div>
+        <div class="wstep-desc">Ordena tus prioridades arrastrando o seleccionando las más importantes.</div>
+
+        <label class="w-label">Áreas prioritarias de limpieza y cuidado</label>
+        <div class="chip-grid" id="priorChips">
+          <span class="chip sel" data-val="cocina" onclick="toggleChip(this)">🍳 Cocina</span>
+          <span class="chip sel" data-val="limpieza" onclick="toggleChip(this)">🧹 Limpieza general</span>
+          <span class="chip" data-val="lavanderia" onclick="toggleChip(this)">👕 Lavandería</span>
+          <span class="chip" data-val="ninos" onclick="toggleChip(this)">🎒 Cuidado de niños</span>
+          <span class="chip" data-val="mascotas" onclick="toggleChip(this)">🐾 Mascotas</span>
+          <span class="chip" data-val="compras" onclick="toggleChip(this)">🛒 Mercado / Compras</span>
+          <span class="chip" data-val="orden" onclick="toggleChip(this)">📦 Organización</span>
+          <span class="chip" data-val="plantas" onclick="toggleChip(this)">🌿 Plantas</span>
+        </div>
+
+        <label class="w-label">Estilo de semana preferido</label>
+        <div class="chip-grid">
+          <span class="chip sel" data-grp="estilo" data-val="balanceada" onclick="toggleSingle(this,'estilo')">⚖️ Balanceada</span>
+          <span class="chip" data-grp="estilo" data-val="intensiva_inicio" onclick="toggleSingle(this,'estilo')">🚀 Intensa al inicio</span>
+          <span class="chip" data-grp="estilo" data-val="suave_inicio" onclick="toggleSingle(this,'estilo')">🌅 Suave al inicio</span>
+          <span class="chip" data-grp="estilo" data-val="fin_semana_libre" onclick="toggleSingle(this,'estilo')">🏖️ Fin de semana libre</span>
+        </div>
+
+        <label class="w-label">Notas especiales para My Nana (opcional)</label>
+        <textarea class="w-input" id="inNotas" rows="3" placeholder="Ej: Los jueves llegamos tarde, el lunes siempre hay ropa acumulada, la bebé necesita atención las mañanas..." style="resize:none;height:auto;"></textarea>
+      </div>
+
+    </div><!-- fin wizard-body -->
+
+    <div class="wizard-footer" id="wizardFooter">
+      <button class="btn-back" id="btnWizBack" onclick="wizardBack()" style="display:none;">← Atrás</button>
+      <button class="btn-next" id="btnWizNext" onclick="wizardNext()">Continuar →</button>
+    </div>
+
+  </div><!-- fin wizard-sheet -->
+</div><!-- fin wizardOverlay -->
+
+
+<!-- ═══════════════════════════════════════════
+     HEADER
+═══════════════════════════════════════════ -->
+<div class="app-header">
+  <div class="header-top">
+    <div class="header-logo">My <em>Nana</em></div>
+    <div class="header-nav">
+      <a href="/app.html" class="header-back">← Dashboard</a>
+    </div>
+  </div>
+  <div class="progreso-wrap">
+    <div class="progreso-fill" id="progresoFill" style="width:0%"></div>
+  </div>
+  <div class="progreso-label" id="progresoLabel">Planificador inteligente de tareas</div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     CONTENIDO PRINCIPAL
+═══════════════════════════════════════════ -->
+<div class="layout">
+
+  <!-- BANNER PERFIL DEL HOGAR -->
+  <div id="perfilBanner">
+    <div class="perfil-avatar" id="perfilAvatar">🏠</div>
+    <div class="perfil-info">
+      <div class="perfil-nombre" id="perfilNombre">Mi Hogar</div>
+      <div class="perfil-desc" id="perfilDesc">Perfil del hogar cargado</div>
+      <div class="perfil-chips" id="perfilChips"></div>
+    </div>
+    <button class="btn-editar-perfil" onclick="abrirWizard()">✏️ Editar</button>
+  </div>
+
+  <!-- SIN PERFIL -->
+  <div id="noperfilState" style="display:none;">
+    <div class="np-icon">✨</div>
+    <div class="np-title">My Nana aprende tu hogar</div>
+    <div class="np-sub">Cuéntame sobre tu familia, tu casa y tus horarios. En 2 minutos generaré un plan personalizado que de verdad se adapta a tu vida.</div>
+    <button class="np-btn" onclick="abrirWizard()">Configurar mi hogar →</button>
+  </div>
+
+  <!-- ÁREA PRINCIPAL (se muestra solo con perfil) -->
+  <div id="mainArea" style="display:none;">
+
+    <!-- BOTONES GENERACIÓN -->
+    <div class="gen-btns">
+      <button class="gen-btn" onclick="generarSemana('auto')" id="btnAuto">
+        <div class="gen-icon">✨</div>
+        <div class="gen-label">Auto-planificar</div>
+        <div class="gen-desc">Llena la semana automáticamente según tu hogar</div>
+      </button>
+      <button class="gen-btn" onclick="generarSemana('rapida')" id="btnRapida">
+        <div class="gen-icon">⚡</div>
+        <div class="gen-label">Semana ocupada</div>
+        <div class="gen-desc">Tareas simples y rápidas para semanas agitadas</div>
+      </button>
+      <button class="gen-btn" onclick="repetirSemana()" id="btnRepetir">
+        <div class="gen-icon">🔄</div>
+        <div class="gen-label">Repetir semana</div>
+        <div class="gen-desc">Copia el plan de la semana anterior</div>
+      </button>
+    </div>
+
+    <!-- GRID MAIN -->
+    <div class="grid-layout">
+
+      <!-- COLUMNA IZQUIERDA — calendario semanal -->
+      <div>
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <div class="panel-title" id="semanaTitle">Plan de la semana</div>
+              <div class="panel-sub" id="semanaRange">Generado con IA según tu hogar</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <div class="panel-badge" id="totalBadge">0 tareas</div>
+            </div>
+          </div>
+
+          <!-- insight card -->
+          <div id="insightCard" style="padding:12px 14px 0;display:none;">
+            <div class="insight-card">
+              <div class="insight-title">💡 My Nana dice</div>
+              <div class="insight-text" id="insightText"></div>
+            </div>
+          </div>
+
+          <!-- días selector -->
+          <div style="padding:12px 14px 0;">
+            <div class="dias-scroll" id="diasScroll"></div>
+          </div>
+
+          <!-- panel de cada día -->
+          <div style="padding:0 14px 14px;" id="diasContent">
+            <div class="empty-dia" id="emptyState">
+              <div class="empty-dia-icon">📋</div>
+              <div class="empty-dia-title">Aún sin plan semanal</div>
+              <div class="empty-dia-sub">Usa los botones de arriba para generar tareas personalizadas</div>
+            </div>
+            <div id="loadingState" style="display:none;">
+              <div class="loading-spinner">
+                <div class="spinner"></div>
+                <div class="spinner-text" id="spinnerText">My Nana está analizando tu hogar...<br>Esto toma unos segundos ✨</div>
+              </div>
+            </div>
+            <div id="tareasContent" style="display:none;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COLUMNA DERECHA — resumen + stats -->
+      <div>
+
+        <!-- Stats del plan -->
+        <div class="panel" id="statsPanel" style="display:none;margin-bottom:16px;">
+          <div class="panel-header">
+            <div class="panel-title">Resumen del plan</div>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-box">
+              <div class="stat-num" id="sTotalTareas">0</div>
+              <div class="stat-lbl">Tareas</div>
+            </div>
+            <div class="stat-box rosa">
+              <div class="stat-num" id="sPendientes">0</div>
+              <div class="stat-lbl">Pendientes</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-num" id="sHechas">0</div>
+              <div class="stat-lbl">Hechas</div>
+            </div>
+          </div>
+          <div class="cat-bars" id="catBars"></div>
+          <div class="prio-section" id="prioSection" style="display:none;">
+            <div class="prio-title">Tareas urgentes de hoy</div>
+            <div class="prio-list" id="prioList"></div>
+          </div>
+        </div>
+
+        <!-- Tips / información -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title" id="tipsTitle">Cómo funciona</div>
+          </div>
+          <div style="padding:16px 20px;display:flex;flex-direction:column;gap:12px;" id="tipsContent">
+            <div style="display:flex;gap:10px;align-items:flex-start;">
+              <div style="width:28px;height:28px;border-radius:50%;background:var(--g3);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--g);flex-shrink:0;">1</div>
+              <div><div style="font-size:13px;font-weight:500;color:var(--txt);margin-bottom:2px;">Configura tu hogar</div><div style="font-size:12px;color:var(--txt2);">Personas, espacios, mascotas y horarios.</div></div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start;">
+              <div style="width:28px;height:28px;border-radius:50%;background:var(--g3);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--g);flex-shrink:0;">2</div>
+              <div><div style="font-size:13px;font-weight:500;color:var(--txt);margin-bottom:2px;">Elige tu modo de semana</div><div style="font-size:12px;color:var(--txt2);">Auto, semana ocupada o copiar la anterior.</div></div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start;">
+              <div style="width:28px;height:28px;border-radius:50%;background:var(--g3);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--g);flex-shrink:0;">3</div>
+              <div><div style="font-size:13px;font-weight:500;color:var(--txt);margin-bottom:2px;">My Nana genera el plan</div><div style="font-size:12px;color:var(--txt2);">IA personalizada para tu hogar. No genérico.</div></div>
+            </div>
+            <div style="background:var(--b3);border-radius:8px;padding:10px 12px;">
+              <div style="font-size:12px;color:var(--b2);">💡 El plan se puede editar, eliminar tareas o moverlas entre días.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div><!-- fin mainArea -->
+
+</div><!-- fin layout -->
+
+<script>
+/* ═══════════════════════════════════════════
+   ESTADO GLOBAL
+═══════════════════════════════════════════ */
+let perfil = null;
+let semanaActual = {};  // { "Lunes": [tareas], ... }
+let semanaAnterior = {}; // copia de la última semana generada
+let diaActivo = '';
+let wizardPaso = 0;
+
+const DIAS = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+
+const contadores = { adultos:2, ninos:0, cuartos:3, banos:2, mascotas:1 };
+const chipsActivos = new Set();
+const singleSelects = {};   // { grp: valor }
+let mascotasSeleccionadas = new Set();
+
+/* ═══════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  const guardado = localStorage.getItem('mynana_perfil_hogar');
+  if (guardado) {
+    try { perfil = JSON.parse(guardado); mostrarConPerfil(); }
+    catch(e) { mostrarSinPerfil(); }
+  } else {
+    mostrarSinPerfil();
+  }
+  renderDias();
+  iniciarFechas();
+});
+
+function mostrarSinPerfil() {
+  document.getElementById('noperfilState').style.display = 'block';
+  document.getElementById('mainArea').style.display = 'none';
+  document.getElementById('perfilBanner').classList.remove('visible');
+}
+
+function mostrarConPerfil() {
+  document.getElementById('noperfilState').style.display = 'none';
+  document.getElementById('mainArea').style.display = 'block';
+  document.getElementById('perfilBanner').classList.add('visible');
+  actualizarBannerPerfil();
+}
+
+/* ═══════════════════════════════════════════
+   BANNER PERFIL
+═══════════════════════════════════════════ */
+function actualizarBannerPerfil() {
+  if (!perfil) return;
+  const nombre = perfil.nombreHogar || 'Mi Hogar';
+  document.getElementById('perfilNombre').textContent = nombre;
+  
+  const p = perfil;
+  const partes = [];
+  if (p.adultos) partes.push(`${p.adultos} adulto${p.adultos>1?'s':''}`);
+  if (p.ninos > 0) partes.push(`${p.ninos} niño${p.ninos>1?'s':''}`);
+  if (p.cuartos) partes.push(`${p.cuartos} cuartos`);
+  if (p.mascotas && p.mascotas > 0) partes.push(`🐾 ${p.mascotas} mascota${p.mascotas>1?'s':''}`);
+  document.getElementById('perfilDesc').textContent = partes.join(' · ') || 'Perfil del hogar';
+
+  const chips = [];
+  if (p.tipoResidencia) chips.push({ emoji: '🏠', label: p.tipoResidencia });
+  if (p.banos) chips.push({ emoji: '🚿', label: `${p.banos} baño${p.banos>1?'s':''}` });
+  if (p.hasBalcon) chips.push({ emoji: '🌿', label: 'Balcón' });
+  if (p.hayNana !== 'no') chips.push({ emoji: '👩‍🍳', label: 'Con nana' });
+  if (p.estilo) chips.push({ emoji: '📅', label: estiloLabel(p.estilo) });
+
+  document.getElementById('perfilChips').innerHTML = chips.map(c =>
+    `<span class="perfil-chip">${c.emoji} ${c.label}</span>`
+  ).join('');
+
+  // avatar emoji según tipo
+  const avt = p.mascotas > 0 ? '🏡' : (p.ninos > 0 ? '👨‍👩‍👧' : '🏠');
+  document.getElementById('perfilAvatar').textContent = avt;
+}
+
+function estiloLabel(e) {
+  const m = { balanceada:'Balanceada', intensiva_inicio:'Intensa inicio', suave_inicio:'Suave inicio', fin_semana_libre:'Fin semana libre' };
+  return m[e] || e;
+}
+
+/* ═══════════════════════════════════════════
+   WIZARD — NAVEGACIÓN
+═══════════════════════════════════════════ */
+function abrirWizard() {
+  wizardPaso = 0;
+  document.getElementById('wizardOverlay').classList.remove('oculto');
+  renderWizardStep();
+  // Pre-llenar con perfil existente si lo hay
+  if (perfil) precargarWizard();
+}
+
+function cerrarWizard() {
+  document.getElementById('wizardOverlay').classList.add('oculto');
+}
+
+function wizardNext() {
+  if (wizardPaso < 4) {
+    wizardPaso++;
+    renderWizardStep();
+  } else {
+    guardarPerfil();
+  }
+}
+
+function wizardBack() {
+  if (wizardPaso > 0) { wizardPaso--; renderWizardStep(); }
+}
+
+function renderWizardStep() {
+  document.querySelectorAll('.wizard-step').forEach((s,i) => {
+    s.classList.toggle('activo', i === wizardPaso);
+  });
+  // progress dots
+  for (let i = 0; i < 5; i++) {
+    const d = document.getElementById('ws'+i);
+    if (!d) continue;
+    d.className = 'wstep' + (i < wizardPaso ? ' hecho' : (i === wizardPaso ? ' activo' : ''));
+  }
+  document.getElementById('btnWizBack').style.display = wizardPaso === 0 ? 'none' : 'block';
+  document.getElementById('btnWizNext').textContent = wizardPaso === 4 ? '✨ Guardar y planificar' : 'Continuar →';
+
+  // mostrar control mascotas dinámicamente
+  if (wizardPaso === 2) actualizarPanelMascotas();
+  // mostrar edades niños
+  if (wizardPaso === 0) actualizarEdadesNinos();
+}
+
+function precargarWizard() {
+  if (!perfil) return;
+  if (perfil.adultos) { contadores.adultos = perfil.adultos; document.getElementById('vAdultos').textContent = perfil.adultos; }
+  if (perfil.ninos !== undefined) { contadores.ninos = perfil.ninos; document.getElementById('vNinos').textContent = perfil.ninos; }
+  if (perfil.cuartos) { contadores.cuartos = perfil.cuartos; document.getElementById('vCuartos').textContent = perfil.cuartos; }
+  if (perfil.banos) { contadores.banos = perfil.banos; document.getElementById('vBanos').textContent = perfil.banos; }
+  if (perfil.nombreHogar) document.getElementById('inNombreHogar').value = perfil.nombreHogar;
+  if (perfil.tipoResidencia) document.getElementById('inTipoRes').value = perfil.tipoResidencia;
+  if (perfil.notas) document.getElementById('inNotas').value = perfil.notas;
+  // horarios
+  if (perfil.horarios) {
+    const h = perfil.horarios;
+    if (h.desayuno) document.getElementById('hDesayuno').value = h.desayuno;
+    if (h.almuerzo) document.getElementById('hAlmuerzo').value = h.almuerzo;
+    if (h.merienda) document.getElementById('hMerienda').value = h.merienda;
+    if (h.cena) document.getElementById('hCena').value = h.cena;
+    if (h.nanaLlegada) document.getElementById('hNanaLlegada').value = h.nanaLlegada;
+    if (h.nanaSalida) document.getElementById('hNanaSalida').value = h.nanaSalida;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   WIZARD — CONTROLES
+═══════════════════════════════════════════ */
+function cambiarContador(key, delta) {
+  const min = key === 'adultos' ? 1 : 0;
+  contadores[key] = Math.max(min, (contadores[key] || 0) + delta);
+  const ids = { adultos:'vAdultos', ninos:'vNinos', cuartos:'vCuartos', banos:'vBanos', mascotas:'vMascotas' };
+  const el = document.getElementById(ids[key]);
+  if (el) el.textContent = contadores[key];
+  if (key === 'ninos') actualizarEdadesNinos();
+}
+
+function actualizarEdadesNinos() {
+  const show = contadores.ninos > 0;
+  document.getElementById('edadesNinos').style.display = show ? 'block' : 'none';
+}
+
+function toggleChip(el) {
+  el.classList.toggle('sel');
+  const v = el.dataset.val;
+  if (el.classList.contains('sel')) chipsActivos.add(v);
+  else chipsActivos.delete(v);
+  if (el.closest('#mascotaGrid') === null && el.closest('#mascotaGrid') !== null) actualizarPanelMascotas();
+}
+
+function toggleSingle(el, grp) {
+  document.querySelectorAll(`[data-grp="${grp}"]`).forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel');
+  singleSelects[grp] = el.dataset.val;
+}
+
+function toggleMascota(el) {
+  el.classList.toggle('sel');
+  const v = el.dataset.val;
+  if (el.classList.contains('sel')) mascotasSeleccionadas.add(v);
+  else mascotasSeleccionadas.delete(v);
+  actualizarPanelMascotas();
+}
+
+function actualizarPanelMascotas() {
+  const hasMascotas = mascotasSeleccionadas.size > 0;
+  document.getElementById('mascotaCtrl').style.display = hasMascotas ? 'block' : 'none';
+  document.getElementById('noMascotaMsg').style.display = hasMascotas ? 'none' : 'block';
+}
+
+/* ═══════════════════════════════════════════
+   GUARDAR PERFIL
+═══════════════════════════════════════════ */
+function guardarPerfil() {
+  // Recolectar chips de días de trabajo
+  const diasTrabajo = [];
+  document.querySelectorAll('#step3 .chip.sel[data-val]').forEach(c => {
+    if (DIAS.includes(c.dataset.val)) diasTrabajo.push(c.dataset.val);
+  });
+
+  // Recolectar prioridades
+  const prioridades = [];
+  document.querySelectorAll('#priorChips .chip.sel').forEach(c => prioridades.push(c.dataset.val));
+
+  // Recolectar edades niños
+  const edadesNinos = [];
+  document.querySelectorAll('#edadesChips .chip.sel').forEach(c => edadesNinos.push(c.dataset.val));
+
+  // Espacios extra
+  const espacios = [];
+  document.querySelectorAll('#step1 .chip.sel').forEach(c => { if(c.dataset.val) espacios.push(c.dataset.val); });
+
+  // Necesidades mascota
+  const necesidadesMascota = [];
+  document.querySelectorAll('#step2 .chip.sel').forEach(c => { if(c.dataset.val && !c.closest('#mascotaGrid')) necesidadesMascota.push(c.dataset.val); });
+
+  perfil = {
+    nombreHogar: document.getElementById('inNombreHogar').value || 'Mi Hogar',
+    adultos: contadores.adultos,
+    ninos: contadores.ninos,
+    edadesNinos,
+    hayNana: singleSelects['nana'] || 'si',
+    cuartos: contadores.cuartos,
+    banos: contadores.banos,
+    tipoResidencia: document.getElementById('inTipoRes').value,
+    espaciosExtra: espacios,
+    hasBalcon: espacios.includes('balcon'),
+    hasPatio: espacios.includes('patio'),
+    mascotas: mascotasSeleccionadas.size > 0 ? contadores.mascotas : 0,
+    tiposMascota: [...mascotasSeleccionadas],
+    necesidadesMascota,
+    horarios: {
+      desayuno: document.getElementById('hDesayuno').value,
+      almuerzo: document.getElementById('hAlmuerzo').value,
+      merienda: document.getElementById('hMerienda').value,
+      cena: document.getElementById('hCena').value,
+      nanaLlegada: document.getElementById('hNanaLlegada').value,
+      nanaSalida: document.getElementById('hNanaSalida').value,
+    },
+    diasTrabajo,
+    prioridades,
+    estilo: singleSelects['estilo'] || 'balanceada',
+    notas: document.getElementById('inNotas').value,
+    actualizadoEn: new Date().toISOString(),
+  };
+
+  localStorage.setItem('mynana_perfil_hogar', JSON.stringify(perfil));
+  cerrarWizard();
+  mostrarConPerfil();
+  showToast('✅ Perfil del hogar guardado · Genera tu primer plan');
+}
+
+/* ═══════════════════════════════════════════
+   FECHAS Y DÍAS
+═══════════════════════════════════════════ */
+function iniciarFechas() {
+  const hoy = new Date();
+  const lunes = getLunes(hoy);
+  const domingo = new Date(lunes);
+  domingo.setDate(lunes.getDate() + 6);
+  document.getElementById('semanaRange').textContent =
+    `${formatFecha(lunes)} al ${formatFecha(domingo)}`;
+  diaActivo = DIAS[hoy.getDay() === 0 ? 6 : hoy.getDay() - 1];
+}
+
+function getLunes(d) {
+  const r = new Date(d);
+  const day = r.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  r.setDate(r.getDate() + diff);
+  return r;
+}
+
+function formatFecha(d) {
+  return d.toLocaleDateString('es-PA', { day:'numeric', month:'short' });
+}
+
+function renderDias() {
+  const hoy = new Date();
+  const diahoy = DIAS[hoy.getDay() === 0 ? 6 : hoy.getDay() - 1];
+  const lunes = getLunes(hoy);
+  
+  const scroll = document.getElementById('diasScroll');
+  scroll.innerHTML = DIAS.map((dia, i) => {
+    const fecha = new Date(lunes);
+    fecha.setDate(lunes.getDate() + i);
+    const cnt = (semanaActual[dia] || []).length;
+    const esHoy = dia === diahoy;
+    const esActivo = dia === diaActivo;
+    return `<div class="dia-tab${esActivo?' activo':''}${esHoy&&!esActivo?' hoy':''}" onclick="seleccionarDia('${dia}',this)">
+      <div class="dia-letra">${dia.slice(0,3)}</div>
+      <div class="dia-num">${fecha.getDate()}</div>
+      ${cnt>0?`<div class="dia-dot"></div><div class="dia-count">${cnt} t</div>`:'<div style="height:9px;"></div>'}
+    </div>`;
+  }).join('');
+}
+
+function seleccionarDia(dia, el) {
+  diaActivo = dia;
+  document.querySelectorAll('.dia-tab').forEach(t => t.classList.remove('activo'));
+  el.classList.add('activo');
+  renderTareasDelDia();
+}
+
+/* ═══════════════════════════════════════════
+   RENDER TAREAS
+═══════════════════════════════════════════ */
+function renderTareasDelDia() {
+  const tareas = semanaActual[diaActivo] || [];
+  const cont = document.getElementById('tareasContent');
+  
+  if (!tareas.length) {
+    cont.innerHTML = `<div class="empty-dia">
+      <div class="empty-dia-icon">😴</div>
+      <div class="empty-dia-title">Sin tareas para ${diaActivo}</div>
+      <div class="empty-dia-sub">Día libre o no es día de trabajo</div>
+    </div>`;
+    return;
+  }
+
+  const urgentes = tareas.filter(t => t.prioridad === 'urgente' && t.estado !== 'hecha');
+  const prioSection = document.getElementById('prioSection');
+  if (urgentes.length > 0) {
+    prioSection.style.display = 'block';
+    document.getElementById('prioList').innerHTML = urgentes.slice(0,3).map(t =>
+      `<div class="prio-item">
+        <div class="prio-bullet" style="background:${t.prioridad==='urgente'?'#E05C5C':'var(--g)'}"></div>
+        <span>${t.emoji||'📋'} ${t.nombre} · <span style="opacity:.7">${t.hora||''}</span></span>
+      </div>`
+    ).join('');
+  } else { prioSection.style.display = 'none'; }
+
+  cont.innerHTML = tareas.map((t, idx) => {
+    const catColor = getCatColor(t.cat);
+    const hecha = t.estado === 'hecha';
+    return `<div class="tarea-card${hecha?' hecha':''}" id="tc-${diaActivo}-${idx}">
+      <div class="tarea-top">
+        <div class="tarea-emoji-wrap" style="background:${catColor.bg}">${t.emoji||catEmoji(t.cat)}</div>
+        <div class="tarea-info">
+          <div class="tarea-nombre${hecha?' hecha':''}">${t.nombre}</div>
+          <div class="tarea-meta">
+            <span class="cat-pill" style="background:${catColor.bg};color:${catColor.fg}">${t.cat||'General'}</span>
+            ${t.hora?`<span>⏰ ${t.hora}</span>`:''}
+            ${t.duracion?`<span>⏱ ${t.duracion}</span>`:''}
+            ${t.prioridad==='urgente'?`<span style="color:#E05C5C;font-weight:600;">🔴 Urgente</span>`:''}
+          </div>
+        </div>
+        <button class="tarea-check${hecha?' done':''}" onclick="toggleTarea('${diaActivo}',${idx})">
+          <span class="check-icon">✓</span>
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function getCatColor(cat) {
+  const map = {
+    'Cocina':     { bg:'#FEF3E2', fg:'#C17B1A' },
+    'Limpieza':   { bg:'#E8F5E9', fg:'#2E7D32' },
+    'Lavandería': { bg:'#E3F2FD', fg:'#1565C0' },
+    'Niños':      { bg:'#FCE4EC', fg:'#C2185B' },
+    'Mascotas':   { bg:'#FFF3E0', fg:'#E65100' },
+    'Mercado':    { bg:'#F3E5F5', fg:'#6A1B9A' },
+    'Plantas':    { bg:'#E8F5E9', fg:'#1B5E20' },
+    'Organización':{ bg:'#ECEFF1', fg:'#37474F' },
+  };
+  return map[cat] || { bg:'var(--g3)', fg:'var(--g)' };
+}
+
+function catEmoji(cat) {
+  const m = { Cocina:'🍳', Limpieza:'🧹', Lavandería:'👕', Niños:'🎒', Mascotas:'🐾', Mercado:'🛒', Plantas:'🌿', Organización:'📦' };
+  return m[cat] || '📋';
+}
+
+function toggleTarea(dia, idx) {
+  if (!semanaActual[dia] || !semanaActual[dia][idx]) return;
+  const t = semanaActual[dia][idx];
+  t.estado = t.estado === 'hecha' ? 'pendiente' : 'hecha';
+  renderTareasDelDia();
+  actualizarStats();
+}
+
+/* ═══════════════════════════════════════════
+   STATS
+═══════════════════════════════════════════ */
+function actualizarStats() {
+  const todasTareas = Object.values(semanaActual).flat();
+  const total = todasTareas.length;
+  const hechas = todasTareas.filter(t => t.estado === 'hecha').length;
+  const pend = total - hechas;
+
+  document.getElementById('sTotalTareas').textContent = total;
+  document.getElementById('sPendientes').textContent = pend;
+  document.getElementById('sHechas').textContent = hechas;
+  document.getElementById('totalBadge').textContent = `${total} tareas`;
+  document.getElementById('progresoFill').style.width = total ? Math.round(hechas/total*100)+'%' : '0%';
+  document.getElementById('progresoLabel').textContent = total ? `${hechas} de ${total} completadas · ${Math.round(hechas/total*100)}%` : 'Planificador inteligente de tareas';
+
+  // cat bars
+  const cats = {};
+  todasTareas.forEach(t => { cats[t.cat] = (cats[t.cat]||0)+1; });
+  document.getElementById('catBars').innerHTML = Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([cat,n]) => {
+    const hechasCat = todasTareas.filter(t => t.cat===cat && t.estado==='hecha').length;
+    const pct = Math.round(hechasCat/n*100);
+    return `<div class="cat-row">
+      <div class="cat-row-label">${catEmoji(cat)} ${cat}</div>
+      <div class="cat-bar-wrap"><div class="cat-bar-fill" style="width:${pct}%"></div></div>
+      <div class="cat-row-count">${hechasCat}/${n}</div>
+    </div>`;
+  }).join('') || '<div style="font-size:12px;color:var(--txt2);text-align:center;">Sin datos aún</div>';
+
+  document.getElementById('statsPanel').style.display = total > 0 ? 'block' : 'none';
+}
+
+/* ═══════════════════════════════════════════
+   GENERAR SEMANA (Claude API)
+═══════════════════════════════════════════ */
+async function generarSemana(modo) {
+  if (!perfil) { showToast('⚠️ Primero configura tu perfil del hogar'); abrirWizard(); return; }
+
+  // UI loading
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('tareasContent').style.display = 'none';
+  document.getElementById('loadingState').style.display = 'block';
+  document.getElementById('insightCard').style.display = 'none';
+  const msgs = {
+    auto: 'My Nana está analizando tu hogar...\nGenerando plan personalizado ✨',
+    rapida: 'Preparando una semana express...\nTareas simples y rápidas ⚡',
+  };
+  document.getElementById('spinnerText').innerHTML = (msgs[modo] || 'Generando...').replace('\n','<br>');
+
+  const prompt = buildPrompt(modo);
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 4000,
+        system: `Eres My Nana, el asistente de gestión del hogar más inteligente de Latinoamérica. Tu misión es generar planes semanales de tareas 100% personalizados según el perfil real de cada hogar panameño y latinoamericano. Respondes ÚNICAMENTE en JSON válido, sin texto extra, sin markdown.`,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await resp.json();
+    const raw = data.content?.map(c => c.text||'').join('');
+    const clean = raw.replace(/```json|```/g,'').trim();
+    const resultado = JSON.parse(clean);
+
+    // Cargar en semanaActual
+    semanaActual = {};
+    semanaAnterior = {};
+    DIAS.forEach(dia => {
+      const tareas = resultado[dia] || resultado[dia.toLowerCase()] || [];
+      semanaActual[dia] = tareas.map(t => ({ ...t, estado: 'pendiente', emoji: catEmoji(t.cat) }));
+      semanaAnterior[dia] = [...semanaActual[dia]];
+    });
+
+    // Insight
+    if (resultado.__insight) {
+      document.getElementById('insightText').textContent = resultado.__insight;
+      document.getElementById('insightCard').style.display = 'block';
+    }
+
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('tareasContent').style.display = 'block';
+    renderDias();
+    renderTareasDelDia();
+    actualizarStats();
+    showToast('✨ Plan generado para tu hogar');
+
+  } catch(e) {
+    console.error(e);
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('emptyState').style.display = 'block';
+    showToast('❌ Error generando plan. Intenta de nuevo.');
+  }
+}
+
+function repetirSemana() {
+  if (!Object.keys(semanaAnterior).length) {
+    showToast('⚠️ Primero genera un plan con ✨ Auto-planificar');
+    return;
+  }
+  semanaActual = {};
+  DIAS.forEach(dia => {
+    semanaActual[dia] = (semanaAnterior[dia]||[]).map(t => ({ ...t, estado: 'pendiente' }));
+  });
+  document.getElementById('tareasContent').style.display = 'block';
+  document.getElementById('emptyState').style.display = 'none';
+  renderDias();
+  renderTareasDelDia();
+  actualizarStats();
+  showToast('🔄 Semana anterior copiada');
+}
+
+/* ═══════════════════════════════════════════
+   CONSTRUIR PROMPT
+═══════════════════════════════════════════ */
+function buildPrompt(modo) {
+  const p = perfil;
+  const modoDesc = {
+    auto: 'Plan completo y detallado, bien distribuido, con tareas específicas para este hogar',
+    rapida: 'Solo tareas esenciales y rápidas (máx 2-3 por día), semana ligera para familia ocupada',
+  };
+
+  return `Genera un plan semanal de tareas personalizado para este hogar.
+
+PERFIL DEL HOGAR:
+- Nombre: ${p.nombreHogar}
+- Personas: ${p.adultos} adulto(s), ${p.ninos} niño(s)${p.edadesNinos?.length?` (edades: ${p.edadesNinos.join(', ')})`:''} 
+- Hay nana/empleada: ${p.hayNana !== 'no' ? 'Sí' : 'No'}
+- Casa: ${p.tipoResidencia}, ${p.cuartos} cuartos, ${p.banos} baños
+- Espacios extra: ${p.espaciosExtra?.join(', ') || 'ninguno'}
+- Mascotas: ${p.mascotas > 0 ? `${p.mascotas} ${p.tiposMascota?.join('/')||'mascota(s)'}` : 'No tiene'}
+${p.mascotas > 0 && p.necesidadesMascota?.length ? `- Necesidades mascota: ${p.necesidadesMascota.join(', ')}` : ''}
+- Horarios: desayuno ${p.horarios?.desayuno}, almuerzo ${p.horarios?.almuerzo}, cena ${p.horarios?.cena}
+- Nana: llega ${p.horarios?.nanaLlegada}, sale ${p.horarios?.nanaSalida}
+- Días de trabajo de la nana: ${p.diasTrabajo?.join(', ')||'Lunes a Viernes'}
+- Prioridades del hogar: ${p.prioridades?.join(', ')||'limpieza, cocina'}
+- Estilo de semana: ${p.estilo}
+${p.notas ? `- Notas especiales: ${p.notas}` : ''}
+
+MODO DE GENERACIÓN: ${modoDesc[modo] || modoDesc.auto}
+
+INSTRUCCIONES:
+1. Genera tareas ESPECÍFICAS a ESTE hogar. No genéricas.
+2. Programa tareas de cocina 30-60 min antes de cada comida.
+3. Si hay mascotas, incluye tareas de cuidado diarias.
+4. Si hay niños, adapta tareas de limpieza y organización.
+5. Distribuye la carga según el estilo solicitado.
+6. Solo incluye tareas en los días que trabaja la nana.
+7. Usa categorías: Cocina, Limpieza, Lavandería, Niños, Mascotas, Mercado, Plantas, Organización.
+8. Incluye duración estimada (ej: "45 min", "20 min").
+9. Marca como urgente solo 1-2 tareas por semana.
+10. Genera un insight corto y personal en __insight.
+
+FORMATO DE RESPUESTA (JSON puro, sin markdown):
+{
+  "Lunes": [
+    { "nombre": "Nombre específico de la tarea", "cat": "Cocina", "hora": "07:30", "duracion": "30 min", "prioridad": "normal", "nota": "detalle opcional" }
+  ],
+  "Martes": [...],
+  "Miércoles": [...],
+  "Jueves": [...],
+  "Viernes": [...],
+  "Sábado": [...],
+  "Domingo": [],
+  "__insight": "Mensaje personalizado de 1-2 oraciones para este hogar específico"
+}`;
+}
+
+/* ═══════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════ */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('visible');
+  setTimeout(() => t.classList.remove('visible'), 3000);
+}
+
+/* ── CHIP defaults pre-seleccionados ── */
+document.querySelectorAll('.chip.sel[data-grp]').forEach(c => {
+  singleSelects[c.dataset.grp] = c.dataset.val;
+});
+// Chips de días default (Lun-Vie)
+['Lunes','Martes','Miércoles','Jueves','Viernes'].forEach(d => chipsActivos.add(d));
+</script>
+</body>
+</html>t
