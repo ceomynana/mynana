@@ -809,6 +809,7 @@ const db = getFirestore(app);
 
 let tipoLogin = 'familia';
 let tipoReg = 'familia';
+let nanaTareasPendientes = []; // cache para audio síncrono
 
 // ── SISTEMA DE NOTIFICACIONES ──
 let notificaciones = [];
@@ -2242,6 +2243,9 @@ async function cargarTareasNana() {
         ? '🎉 ¡Excelente! Completaste todo el día'
         : `${hechas} de ${total} tareas completadas hoy`
       : 'No tienes tareas asignadas hoy';
+
+    // Cachear pendientes para audio síncrono (Safari requiere speak sin await)
+    nanaTareasPendientes = pendientes;
     document.getElementById('progPct').textContent = pct + '%';
 
     renderTarjetasNana(tareas, hogarId);
@@ -2387,65 +2391,42 @@ function formatHora12(hora24) {
 }
 
 // Audio mejorado
-window.leerTareasVoz = async () => {
+window.leerTareasVoz = () => {
   if (!window.speechSynthesis) { showToast('Tu teléfono no soporta el audio'); return; }
 
-  try {
-    const user = auth.currentUser;
-    if (!user) return;
-    const qHogar = query(collection(db, 'hogares'), where('participantes', 'array-contains', user.uid));
-    const snapHogar = await getDocs(qHogar);
-    if (snapHogar.empty) { showToast('Sin tareas para leer'); return; }
+  const btn = document.getElementById('audioBtn');
+  const nombre = document.getElementById('nanaNombre')?.textContent.replace('👋','').trim() || '';
+  const pendientes = nanaTareasPendientes;
 
-    const hogarId = snapHogar.docs[0].id;
-    const hoy = (() => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })();
-    const snapTareas = await getDocs(query(collection(db, 'hogares', hogarId, 'tareas')));
-    const pendientes = snapTareas.docs.map(d => d.data())
-      .filter(t => t.estado !== 'completa' && (t.fecha ? t.fecha === hoy : true));
+  const textoAudio = pendientes.length === 0
+    ? '¡Felicidades! Completaste todas las tareas de hoy.'
+    : `Hola ${nombre}. Tienes ${pendientes.length} tarea${pendientes.length > 1 ? 's' : ''} pendiente${pendientes.length > 1 ? 's' : ''} hoy. ` +
+      pendientes.map((t, i) => `Número ${i + 1}: ${t.nombre}.`).join(' ');
 
-    const btn = document.getElementById('audioBtn');
-    let textoAudio;
+  // Crear utterance ANTES de cancel — Safari requiere speak() síncrono al click
+  const u = new SpeechSynthesisUtterance(textoAudio);
+  u.lang = 'es'; u.rate = 0.85; u.pitch = 1;
 
-    if (!pendientes.length) {
-      textoAudio = '¡Felicidades! Completaste todas las tareas de hoy.';
-      showToast('🎉 ¡Todas las tareas están listas!');
-    } else {
-      const nombre = document.getElementById('nanaNombre')?.textContent.replace('👋','').trim() || '';
-      textoAudio = `Hola ${nombre}. Tienes ${pendientes.length} tareas pendientes hoy. ` +
-        pendientes.map((t,i) => `Número ${i+1}: ${t.nombre}.`).join(' ');
-      showToast('🔊 Leyendo tus tareas...');
-    }
+  u.onend = () => {
+    if (btn) { btn.innerHTML = '🔊 Escuchar mis tareas en voz alta'; btn.style.background = ''; btn.onclick = leerTareasVoz; }
+  };
 
-    function hablar() {
-      window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(textoAudio);
-      u.lang = 'es'; u.rate = 0.85; u.pitch = 1;
-      const voces = window.speechSynthesis.getVoices();
-      const vozES = voces.find(v => v.lang.startsWith('es'));
-      if (vozES) u.voice = vozES;
-      u.onend = () => {
-        if (btn) { btn.innerHTML = '🔊 Escuchar mis tareas en voz alta'; btn.style.background = ''; btn.onclick = leerTareasVoz; }
-      };
-      if (btn) {
-        btn.innerHTML = '⏹ Parar audio';
-        btn.style.background = 'var(--b)';
-        btn.onclick = () => { window.speechSynthesis.cancel(); btn.innerHTML = '🔊 Escuchar mis tareas en voz alta'; btn.style.background = ''; btn.onclick = leerTareasVoz; };
-      }
-      window.speechSynthesis.speak(u);
-    }
-
-    // getVoices() es async en Chrome — esperar si están vacías
-    const voces = window.speechSynthesis.getVoices();
-    if (voces.length > 0) {
-      hablar();
-    } else {
-      window.speechSynthesis.onvoiceschanged = () => { hablar(); };
-    }
-
-  } catch(e) {
-    console.error(e);
-    showToast('Error al leer tareas');
+  if (btn) {
+    btn.innerHTML = '⏹ Parar audio';
+    btn.style.background = 'var(--b)';
+    btn.onclick = () => { window.speechSynthesis.cancel(); btn.innerHTML = '🔊 Escuchar mis tareas en voz alta'; btn.style.background = ''; btn.onclick = leerTareasVoz; };
   }
+
+  window.speechSynthesis.cancel();
+  // setTimeout 0 para evitar el bug de cancel+speak en Safari
+  setTimeout(() => {
+    const voces = window.speechSynthesis.getVoices();
+    const vozES = voces.find(v => v.lang.startsWith('es'));
+    if (vozES) u.voice = vozES;
+    window.speechSynthesis.speak(u);
+  }, 0);
+
+  showToast(pendientes.length > 0 ? '🔊 Leyendo tus tareas...' : '🎉 ¡Todas las tareas listas!');
 };
 
 // ── NAVEGACIÓN ──
