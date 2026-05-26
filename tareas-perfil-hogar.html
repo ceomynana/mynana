@@ -1490,7 +1490,7 @@ window.generarSemana = async (modo) => {
       p.mascotas > 0 ? `Incluí ${p.mascotas} tarea${p.mascotas>1?'s':''} diaria${p.mascotas>1?'s':''} para tus mascotas — así nunca se olvidan.` : null,
       p.ninos > 0   ? `Las tareas de los niños están programadas cerca del almuerzo para que todo esté listo a tiempo.` : null,
       `El plan está ajustado para que la nana llegue a las ${p.horarios?.nanaLlegada||'08:00'} y todo quede listo antes de las comidas.`,
-      modo === 'rapida' ? `Semana ocupada: solo ${tareasMaxDia} tareas esenciales por día para no saturar.` : null,
+      modo === 'rapida' ? `Semana ocupada: solo lo esencial. Mascotas y niños siempre incluidos.` : null,
     ].filter(Boolean);
     const insight = insights[Math.floor(Math.random() * insights.length)];
     document.getElementById('insightText').textContent = insight;
