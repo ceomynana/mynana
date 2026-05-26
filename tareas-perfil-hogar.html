@@ -637,6 +637,7 @@ onAuthStateChanged(auth, async (user) => {
   await encontrarHogar();
   iniciarFechas();
   await cargarPerfilFirebase();
+  await cargarSemanaExistente();   // ← carga plan guardado al entrar
 });
 
 /* ── ENCONTRAR HOGAR (copia exacta de tareas.html) ── */
@@ -717,6 +718,75 @@ async function guardarSemanaFirebase() {
     await Promise.all(writes);
   } finally {
     document.getElementById('savingBanner').classList.remove('visible');
+  }
+}
+
+/* ── CARGAR SEMANA EXISTENTE DESDE FIREBASE ── */
+async function cargarSemanaExistente() {
+  if (!hogarId || !lunesDeSemana) return;
+  try {
+    const lunesStr    = getFechaStr(lunesDeSemana);
+    const domingoDate = new Date(lunesDeSemana);
+    domingoDate.setDate(lunesDeSemana.getDate() + 6);
+    const domingoStr  = getFechaStr(domingoDate);
+
+    // ► Solo un filtro para evitar índice compuesto en Firestore
+    //   Filtramos el otro rango en el cliente
+    const snap = await getDocs(
+      query(collection(db,'hogares',hogarId,'tareas'),
+        where('fecha','>=',lunesStr))
+    );
+
+    // Filtrar cliente-side el límite superior
+    const docs = snap.docs.filter(d => {
+      const f = d.data().fecha || '';
+      return f >= lunesStr && f <= domingoStr;
+    });
+
+    if (!docs.length) return;
+
+    // Reconstruir semanaActual desde Firebase
+    semanaActual = {};
+    DIAS.forEach(d => { semanaActual[d] = []; });
+    docs.forEach(d => {
+      const t   = { id: d.id, ...d.data() };
+      const dia = t.dia || DIAS[0];
+      if (semanaActual[dia]) semanaActual[dia].push(t);
+    });
+    // Ordenar cada día por hora
+    DIAS.forEach(d => {
+      semanaActual[d].sort((a,b) => (a.hora||'').localeCompare(b.hora||''));
+    });
+    semanaAnterior = {};
+    DIAS.forEach(d => { semanaAnterior[d] = [...semanaActual[d]]; });
+
+    // Mostrar plan cargado
+    document.getElementById('emptyState').style.display    = 'none';
+    document.getElementById('tareasContent').style.display = 'block';
+    renderDias();
+    renderTareasDelDia();
+    actualizarStats();
+    showToast('📋 Plan de la semana cargado');
+  } catch(e) {
+    console.error('Error cargando semana:', e);
+    // Mostrar el error real para debug
+    showToast('⚠️ Error cargando: ' + e.message.slice(0,60));
+  }
+}
+
+/* ── CARGAR MENÚ SEMANAL DESDE FIREBASE ── */
+async function cargarMenuSemanal() {
+  if (!hogarId || !lunesDeSemana) return {};
+  try {
+    const semanaId  = getFechaStr(lunesDeSemana);
+    // getDoc directo al documento del menú — no necesita índice
+    const menuDoc   = await getDoc(doc(db,'hogares',hogarId,'menus',semanaId));
+    if (menuDoc.exists()) return menuDoc.data();
+    // Si no hay menú de esta semana, intentar con semanaId sin hora
+    return {};
+  } catch(e) {
+    console.error('Error cargando menú:', e);
+    return {};
   }
 }
 
@@ -950,14 +1020,39 @@ function getCatColor(cat) {
 function renderTareasDelDia() {
   const tareas = semanaActual[diaActivo]||[];
   const cont = document.getElementById('tareasContent');
+
+  // Botón agregar tarea personalizada siempre visible
+  const addBtn = `<button onclick="mostrarFormAgregar()" style="width:100%;background:var(--g3);border:1.5px dashed var(--g4);border-radius:12px;padding:12px;font-size:13px;font-weight:500;color:var(--g);cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:10px;transition:all .2s;" onmouseover="this.style.background='var(--g4)'" onmouseout="this.style.background='var(--g3)'">+ Agregar tarea personalizada</button>
+  <div id="formAgregar" style="display:none;background:var(--cr);border:1.5px solid var(--g4);border-radius:12px;padding:14px;margin-bottom:10px;">
+    <div style="font-size:12px;font-weight:600;color:var(--txt);margin-bottom:10px;">Nueva tarea para ${diaActivo}</div>
+    <input type="text" id="nuevaTareaNombre" placeholder="Nombre de la tarea..." style="width:100%;border:1.5px solid var(--g4);border-radius:8px;padding:9px 12px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:8px;background:#fff;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+      <input type="time" id="nuevaTareaHora" value="10:00" style="border:1.5px solid var(--g4);border-radius:8px;padding:9px 12px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;background:#fff;">
+      <select id="nuevaTareaCat" style="border:1.5px solid var(--g4);border-radius:8px;padding:9px 12px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;background:#fff;appearance:none;">
+        <option value="🍳 Cocina">🍳 Cocina</option>
+        <option value="🧹 Limpieza">🧹 Limpieza</option>
+        <option value="👕 Lavandería">👕 Lavandería</option>
+        <option value="🎒 Niños">🎒 Niños</option>
+        <option value="🐾 Mascotas">🐾 Mascotas</option>
+        <option value="🛒 Mercado">🛒 Mercado</option>
+        <option value="📦 Otro">📦 Otro</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="agregarTareaPersonalizada()" style="flex:1;background:var(--g);color:#fff;border:none;border-radius:99px;padding:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">✓ Agregar</button>
+      <button onclick="document.getElementById('formAgregar').style.display='none'" style="background:var(--cr);color:var(--txt2);border:1.5px solid var(--g4);border-radius:99px;padding:10px 16px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;">Cancelar</button>
+    </div>
+  </div>`;
+
   if (!tareas.length) {
-    cont.innerHTML=`<div class="empty-dia"><div class="empty-dia-icon">😴</div><div class="empty-dia-title">Sin tareas para ${diaActivo}</div><div class="empty-dia-sub">Día libre o no es día de trabajo de la nana</div></div>`;
+    cont.innerHTML = addBtn + `<div class="empty-dia"><div class="empty-dia-icon">😴</div><div class="empty-dia-title">Sin tareas para ${diaActivo}</div><div class="empty-dia-sub">Día libre · Agrega tareas personalizadas arriba</div></div>`;
     return;
   }
-  cont.innerHTML = tareas.map((t,idx)=>{
-    const cc = getCatColor(t.cat);
-    const hecha = t.estado==='completa';
-    return `<div class="tarea-card${hecha?' opacity-60':''}">
+
+  cont.innerHTML = addBtn + tareas.map((t,idx)=>{
+    const cc    = getCatColor(t.cat);
+    const hecha = t.estado === 'completa' || t.estado === 'hecha';
+    return `<div class="tarea-card" style="${hecha?'opacity:.65':''}">
       <div class="tarea-top">
         <div class="tarea-emoji-wrap" style="background:${cc.bg}">${catEmoji(t.cat)}</div>
         <div class="tarea-info">
@@ -969,11 +1064,67 @@ function renderTareasDelDia() {
             ${t.prioridad==='urgente'?`<span style="color:#E05C5C;font-weight:600;">🔴 Urgente</span>`:''}
           </div>
         </div>
-        <button class="tarea-check${hecha?' done':''}" onclick="toggleTareaLocal('${diaActivo}',${idx})">${hecha?'✓':''}</button>
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+          <button class="tarea-check${hecha?' done':''}" onclick="toggleTareaLocal('${diaActivo}',${idx})" title="Marcar como hecha">${hecha?'✓':''}</button>
+          <button onclick="eliminarTareaLocal('${diaActivo}',${idx})" title="Eliminar" style="width:28px;height:28px;border-radius:50%;border:none;background:var(--b3);color:var(--b2);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;">×</button>
+        </div>
       </div>
     </div>`;
   }).join('');
 }
+
+window.mostrarFormAgregar = () => {
+  const f = document.getElementById('formAgregar');
+  f.style.display = f.style.display === 'none' ? 'block' : 'none';
+  if (f.style.display === 'block') document.getElementById('nuevaTareaNombre').focus();
+};
+
+window.agregarTareaPersonalizada = async () => {
+  const nombre = document.getElementById('nuevaTareaNombre').value.trim();
+  if (!nombre) { document.getElementById('nuevaTareaNombre').style.borderColor = '#e05c5c'; return; }
+  const hora = document.getElementById('nuevaTareaHora').value;
+  const cat  = document.getElementById('nuevaTareaCat').value;
+
+  const nueva = { nombre, cat, hora, duracion: '', prioridad: 'normal', estado: 'pendiente' };
+  if (!semanaActual[diaActivo]) semanaActual[diaActivo] = [];
+  semanaActual[diaActivo].push(nueva);
+  semanaActual[diaActivo].sort((a,b) => (a.hora||'').localeCompare(b.hora||''));
+
+  // Guardar en Firebase
+  if (hogarId && lunesDeSemana) {
+    const fechaStr = diaIndexToFecha(lunesDeSemana, DIAS.indexOf(diaActivo));
+    try {
+      await addDoc(collection(db,'hogares',hogarId,'tareas'), {
+        nombre, hora, cat, prioridad:'normal', estado:'pendiente',
+        fotoUrl:null, fecha:fechaStr, dia:diaActivo, duracion:'',
+        generadoPorIA:false, creadoPor:usuarioActual.uid,
+        creadoA:serverTimestamp(), completadaA:null,
+      });
+    } catch(e) { console.error(e); }
+  }
+
+  document.getElementById('nuevaTareaNombre').value = '';
+  document.getElementById('formAgregar').style.display = 'none';
+  renderTareasDelDia();
+  actualizarStats();
+  renderDias();
+  showToast('✅ Tarea agregada');
+};
+
+window.eliminarTareaLocal = async (dia, idx) => {
+  const t = semanaActual[dia]?.[idx];
+  if (!t) return;
+  semanaActual[dia].splice(idx, 1);
+
+  // Borrar de Firebase si tiene id
+  if (t.id && hogarId) {
+    try { await deleteDoc(doc(db,'hogares',hogarId,'tareas',t.id)); } catch(e) {}
+  }
+  renderTareasDelDia();
+  actualizarStats();
+  renderDias();
+  showToast('🗑 Tarea eliminada');
+};
 
 window.toggleTareaLocal = (dia,idx) => {
   if(!semanaActual[dia]||!semanaActual[dia][idx]) return;
@@ -1165,134 +1316,168 @@ window.generarSemana = async (modo) => {
   document.getElementById('insightCard').style.display   = 'none';
   document.getElementById('loadingState').style.display  = 'block';
   document.getElementById('spinnerText').innerHTML = modo === 'rapida'
-    ? 'Preparando semana express...<br>Tareas simples y rápidas ⚡'
-    : 'My Nana está analizando tu hogar...<br>Generando plan personalizado ✨';
+    ? 'Preparando semana express...<br>Mascotas y niños siempre incluidos ⚡'
+    : 'My Nana está analizando tu hogar...<br>Conectando con el menú semanal ✨';
 
-  // Simular tiempo de "generación" para mejor UX
-  await new Promise(r => setTimeout(r, 1200));
+  await new Promise(r => setTimeout(r, 900));
 
   try {
-    const p = perfilHogar;
-    const diasTrabajo = p.diasTrabajo || ['Lunes','Martes','Miércoles','Jueves','Viernes'];
-    const h = p.horarios || {};
-    const tareasMaxDia = modo === 'rapida' ? 3 : 6;
+    const p          = perfilHogar;
+    const diasTrabajo= p.diasTrabajo || ['Lunes','Martes','Miércoles','Jueves','Viernes'];
+    const h          = p.horarios || {};
+    // FIX: semana ocupada = 5 tareas máx (no 3), mascotas/niños siempre presentes
+    const esRapida   = modo === 'rapida';
+
+    // FIX 2: Cargar menú semanal para usar nombres reales de platos
+    const menuSemanal = await cargarMenuSemanal();
+    const TIEMPOS_MAP = { desayuno:'desayuno', almuerzo:'almuerzo', cena:'cena', merienda:'merienda' };
+
+    function getNombreComida(diaIdx, tiempo) {
+      const key = `dia_${diaIdx}`;
+      return menuSemanal[key]?.[tiempo]?.nombre || null;
+    }
 
     semanaActual = {};
 
-    DIAS.forEach(dia => {
+    DIAS.forEach((dia, diaIdx) => {
       if (!diasTrabajo.includes(dia)) { semanaActual[dia] = []; return; }
 
       const tareas = [];
 
-      // ── COCINA: antes de cada comida ──
-      if (!p.prioridades || p.prioridades.includes('cocina')) {
-        // Desayuno
-        tareas.push(getTareaConHora(
-          pick(TAREAS_DB.Cocina.desayuno), 'Cocina',
-          horaAntes(h.desayuno, 30), 'normal', '30 min'
-        ));
-        // Almuerzo
-        tareas.push(getTareaConHora(
-          pick(TAREAS_DB.Cocina.almuerzo), 'Cocina',
-          horaAntes(h.almuerzo, 60), 'normal', '45 min'
-        ));
-        // Cena (solo si no semana rápida)
-        if (modo !== 'rapida') {
-          tareas.push(getTareaConHora(
-            pick(TAREAS_DB.Cocina.cena), 'Cocina',
-            horaAntes(h.cena, 30), 'normal', '20 min'
-          ));
-        }
-      }
-
-      // ── LIMPIEZA según tamaño de casa ──
-      if (!p.prioridades || p.prioridades.includes('limpieza')) {
-        // Baños (según cantidad)
-        const tareasLimpieza = [];
-        if (p.banos >= 2) tareasLimpieza.push(...TAREAS_DB.Limpieza.banos);
-        tareasLimpieza.push(...TAREAS_DB.Limpieza.general);
-        if (p.cuartos >= 3) tareasLimpieza.push(...TAREAS_DB.Limpieza.cuartos);
-
-        const nLimpieza = modo === 'rapida' ? 1 : 2;
-        pickVarios(tareasLimpieza, nLimpieza).forEach(nombre => {
-          tareas.push(getTareaConHora(nombre, 'Limpieza', h.nanaLlegada || '08:00', 'normal', '40 min'));
-        });
-      }
-
-      // ── LAVANDERÍA (2-3 días por semana) ──
-      if (p.prioridades?.includes('lavanderia') || (!p.prioridades && ['Lunes','Miércoles','Viernes'].includes(dia))) {
-        if (['Lunes','Miércoles','Viernes'].includes(dia) && modo !== 'rapida') {
-          tareas.push(getTareaConHora(
-            pick(TAREAS_DB.Lavandería.general), 'Lavandería',
-            '09:00', 'normal', '45 min'
-          ));
-        }
-      }
-
-      // ── NIÑOS ──
-      if (p.ninos > 0 && (p.prioridades?.includes('ninos') || !p.prioridades)) {
-        const edades = p.edadesNinos || ['general'];
-        let poolNinos = [...TAREAS_DB.Niños.general];
-        if (edades.includes('bebe'))       poolNinos = [...poolNinos, ...TAREAS_DB.Niños.bebe];
-        if (edades.includes('infante'))    poolNinos = [...poolNinos, ...TAREAS_DB.Niños.infante];
-        if (edades.includes('escolar'))    poolNinos = [...poolNinos, ...TAREAS_DB.Niños.escolar];
-        if (edades.includes('adolescente'))poolNinos = [...poolNinos, ...TAREAS_DB.Niños.adolescente];
-
-        const nNinos = modo === 'rapida' ? 1 : 2;
-        pickVarios(poolNinos, nNinos).forEach(nombre => {
-          tareas.push(getTareaConHora(nombre, 'Niños', h.almuerzo || '12:00', 'normal', '20 min'));
-        });
-      }
-
-      // ── MASCOTAS ──
-      if (p.mascotas > 0 && (p.prioridades?.includes('mascotas') || !p.prioridades)) {
+      // ══ MASCOTAS: SIEMPRE, aunque sea semana ocupada (prioridad absoluta) ══
+      if (p.mascotas > 0) {
         const tipos = p.tiposMascota || ['general'];
-        let poolMasc = [...TAREAS_DB.Mascotas.general];
-        if (tipos.includes('perro')) poolMasc = [...poolMasc, ...TAREAS_DB.Mascotas.perro];
-        if (tipos.includes('gato'))  poolMasc = [...poolMasc, ...TAREAS_DB.Mascotas.gato];
-        if (tipos.includes('ave'))   poolMasc = [...poolMasc, ...TAREAS_DB.Mascotas.ave];
-
-        const nMasc = modo === 'rapida' ? 1 : 2;
-        pickVarios(poolMasc, nMasc).forEach(nombre => {
-          tareas.push(getTareaConHora(nombre, 'Mascotas', h.nanaLlegada || '08:00', 'normal', '15 min'));
-        });
+        // Perro: paseo mañana Y tarde SIEMPRE
+        if (tipos.includes('perro')) {
+          tareas.push(getTareaConHora('Pasear al perro — mañana', 'Mascotas',
+            horaAntes(h.desayuno, -15) || '07:30', 'urgente', '20 min'));
+          tareas.push(getTareaConHora('Darle agua y comida al perro', 'Mascotas',
+            h.nanaLlegada || '08:00', 'normal', '10 min'));
+          tareas.push(getTareaConHora('Pasear al perro — tarde', 'Mascotas',
+            horaAntes(h.cena, 60) || '17:00', 'normal', '20 min'));
+          if (!esRapida) {
+            tareas.push(getTareaConHora('Limpiar área del perro', 'Mascotas',
+              '10:00', 'normal', '15 min'));
+          }
+        }
+        if (tipos.includes('gato')) {
+          tareas.push(getTareaConHora('Alimentar y cambiar agua al gato', 'Mascotas',
+            h.nanaLlegada || '08:00', 'normal', '10 min'));
+          tareas.push(getTareaConHora('Limpiar caja de arena', 'Mascotas',
+            '10:00', 'normal', '15 min'));
+        }
+        if (tipos.includes('ave')) {
+          tareas.push(getTareaConHora('Alimentar y cambiar agua del ave', 'Mascotas',
+            h.nanaLlegada || '08:00', 'normal', '10 min'));
+          if (!esRapida) tareas.push(getTareaConHora('Limpiar jaula', 'Mascotas',
+            '10:00', 'normal', '20 min'));
+        }
+        if (!tipos.includes('perro') && !tipos.includes('gato') && !tipos.includes('ave')) {
+          tareas.push(getTareaConHora('Alimentar y revisar mascotas', 'Mascotas',
+            h.nanaLlegada || '08:00', 'normal', '15 min'));
+        }
       }
 
-      // ── MERCADO (lunes) ──
-      if (dia === 'Lunes' && (p.prioridades?.includes('compras') || !p.prioridades)) {
+      // ══ NIÑOS: SIEMPRE, aunque sea semana ocupada (prioridad absoluta) ══
+      if (p.ninos > 0) {
+        const edades = p.edadesNinos || ['general'];
+        if (edades.includes('bebe')) {
+          tareas.push(getTareaConHora('Preparar biberones y fórmula', 'Niños',
+            h.desayuno || '07:00', 'urgente', '20 min'));
+          tareas.push(getTareaConHora('Lavar y esterilizar biberones', 'Niños',
+            '10:00', 'normal', '20 min'));
+          if (!esRapida) tareas.push(getTareaConHora('Limpiar cuarto del bebé', 'Niños',
+            '11:00', 'normal', '30 min'));
+        }
+        if (edades.includes('infante') || edades.includes('escolar')) {
+          tareas.push(getTareaConHora('Preparar lonchera escolar', 'Niños',
+            horaAntes(h.desayuno, 20) || '06:40', 'urgente', '15 min'));
+          tareas.push(getTareaConHora('Preparar merienda de los niños', 'Niños',
+            horaAntes(h.merienda, 15) || '15:45', 'normal', '15 min'));
+          if (!esRapida) tareas.push(getTareaConHora('Ordenar cuarto de los niños', 'Niños',
+            '11:00', 'normal', '25 min'));
+        }
+        if (edades.includes('adolescente')) {
+          tareas.push(getTareaConHora('Preparar merienda para los jóvenes', 'Niños',
+            horaAntes(h.merienda, 15) || '15:45', 'normal', '10 min'));
+        }
+        if (!edades.length || edades.every(e => !['bebe','infante','escolar','adolescente'].includes(e))) {
+          tareas.push(getTareaConHora('Preparar merienda de los niños', 'Niños',
+            horaAntes(h.merienda, 15) || '15:45', 'normal', '15 min'));
+          if (!esRapida) tareas.push(getTareaConHora('Ordenar cuarto de los niños', 'Niños',
+            '11:00', 'normal', '25 min'));
+        }
+      }
+
+      // ══ COCINA: usa nombres del menú semanal si existe ══
+      if (!p.prioridades || p.prioridades.includes('cocina')) {
+        const platoDesayuno = getNombreComida(diaIdx, 'desayuno');
+        const platoAlmuerzo = getNombreComida(diaIdx, 'almuerzo');
+        const platoCena     = getNombreComida(diaIdx, 'cena');
+
         tareas.push(getTareaConHora(
-          pick(TAREAS_DB.Mercado.general), 'Mercado',
-          '10:00', 'urgente', '60 min'
+          platoDesayuno ? `Preparar: ${platoDesayuno}` : pick(TAREAS_DB.Cocina.desayuno),
+          'Cocina', horaAntes(h.desayuno, 30), 'normal', '30 min'
         ));
-      }
-
-      // ── PLANTAS (si hay balcón o patio) ──
-      if ((p.hasBalcon || p.hasPatio) && (p.prioridades?.includes('plantas') || !p.prioridades)) {
-        if (dia === 'Martes' || dia === 'Viernes') {
+        tareas.push(getTareaConHora(
+          platoAlmuerzo ? `Cocinar: ${platoAlmuerzo}` : pick(TAREAS_DB.Cocina.almuerzo),
+          'Cocina', horaAntes(h.almuerzo, 60), 'normal', '45 min'
+        ));
+        if (!esRapida) {
           tareas.push(getTareaConHora(
-            pick(TAREAS_DB.Plantas.general), 'Plantas',
-            '08:30', 'normal', '20 min'
+            platoCena ? `Preparar: ${platoCena}` : pick(TAREAS_DB.Cocina.cena),
+            'Cocina', horaAntes(h.cena, 30), 'normal', '20 min'
           ));
         }
       }
 
-      // ── ORGANIZACIÓN ──
-      if (!p.prioridades || p.prioridades.includes('orden')) {
-        if (dia === 'Viernes' && modo !== 'rapida') {
-          tareas.push(getTareaConHora(
-            pick(TAREAS_DB.Organización.general), 'Organización',
-            '15:00', 'normal', '30 min'
-          ));
+      // ══ LIMPIEZA: reducida en semana ocupada ══
+      if (!esRapida && (!p.prioridades || p.prioridades.includes('limpieza'))) {
+        const poolLimpieza = [];
+        if (p.banos >= 2) poolLimpieza.push(...TAREAS_DB.Limpieza.banos);
+        poolLimpieza.push(...TAREAS_DB.Limpieza.general);
+        if (p.cuartos >= 3) poolLimpieza.push(...TAREAS_DB.Limpieza.cuartos);
+        pickVarios(poolLimpieza, 2).forEach(nombre => {
+          tareas.push(getTareaConHora(nombre, 'Limpieza', h.nanaLlegada || '08:30', 'normal', '40 min'));
+        });
+      } else if (esRapida && (!p.prioridades || p.prioridades.includes('limpieza'))) {
+        // En semana ocupada: solo 1 limpieza esencial
+        tareas.push(getTareaConHora(pick(TAREAS_DB.Limpieza.banos), 'Limpieza',
+          h.nanaLlegada || '08:30', 'normal', '30 min'));
+      }
+
+      // ══ LAVANDERÍA: solo modo auto ══
+      if (!esRapida && ['Lunes','Miércoles','Viernes'].includes(dia)) {
+        if (!p.prioridades || p.prioridades.includes('lavanderia')) {
+          tareas.push(getTareaConHora(pick(TAREAS_DB.Lavandería.general), 'Lavandería',
+            '09:00', 'normal', '45 min'));
         }
       }
 
-      // Limitar al máximo por día y ordenar por hora
-      const tareasFiltradas = tareas
+      // ══ MERCADO: lunes siempre ══
+      if (dia === 'Lunes' && (!p.prioridades || p.prioridades.includes('compras'))) {
+        tareas.push(getTareaConHora(pick(TAREAS_DB.Mercado.general), 'Mercado',
+          '10:30', 'urgente', '60 min'));
+      }
+
+      // ══ PLANTAS: martes y viernes ══
+      if ((p.hasBalcon || p.hasPatio) && (dia === 'Martes' || dia === 'Viernes')) {
+        if (!p.prioridades || p.prioridades.includes('plantas')) {
+          tareas.push(getTareaConHora(pick(TAREAS_DB.Plantas.general), 'Plantas',
+            '08:15', 'normal', '20 min'));
+        }
+      }
+
+      // ══ ORGANIZACIÓN: viernes ══
+      if (!esRapida && dia === 'Viernes' && (!p.prioridades || p.prioridades.includes('orden'))) {
+        tareas.push(getTareaConHora(pick(TAREAS_DB.Organización.general), 'Organización',
+          '15:00', 'normal', '30 min'));
+      }
+
+      // Ordenar por hora
+      semanaActual[dia] = tareas
         .filter(t => t.nombre)
-        .slice(0, tareasMaxDia)
-        .sort((a, b) => (a.hora || '').localeCompare(b.hora || ''));
-
-      semanaActual[dia] = tareasFiltradas;
+        .sort((a,b) => (a.hora||'').localeCompare(b.hora||''));
     });
 
     // Guardar copia para "Repetir semana"
