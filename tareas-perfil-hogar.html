@@ -669,6 +669,57 @@ async function guardarPerfilFirebase(perfil) {
   await updateDoc(doc(db,'hogares',hogarId), { perfilHogar: perfil });
 }
 
+/* ── GUARDAR SEMANA EN FIRESTORE ── */
+async function guardarSemanaFirebase() {
+  if (!hogarId || !lunesDeSemana) return;
+  document.getElementById('savingBanner').classList.add('visible');
+  try {
+    const lunesStr   = getFechaStr(lunesDeSemana);
+    const domingoDate = new Date(lunesDeSemana);
+    domingoDate.setDate(lunesDeSemana.getDate() + 6);
+    const domingoStr = getFechaStr(domingoDate);
+
+    // Borrar tareas AI anteriores de esta semana
+    const existentes = await getDocs(
+      query(collection(db,'hogares',hogarId,'tareas'), where('generadoPorIA','==',true))
+    );
+    const batch = writeBatch(db);
+    let count = 0;
+    existentes.docs.forEach(d => {
+      const fecha = d.data().fecha || '';
+      if (fecha >= lunesStr && fecha <= domingoStr) { batch.delete(d.ref); count++; }
+    });
+    if (count > 0) await batch.commit();
+
+    // Escribir nuevas tareas
+    const writes = [];
+    DIAS.forEach((dia, diaIdx) => {
+      const tareas   = semanaActual[dia] || [];
+      const fechaStr = diaIndexToFecha(lunesDeSemana, diaIdx);
+      tareas.forEach(t => {
+        writes.push(addDoc(collection(db,'hogares',hogarId,'tareas'), {
+          nombre:        t.nombre,
+          hora:          t.hora || '08:00',
+          cat:           t.cat,
+          prioridad:     t.prioridad || 'normal',
+          estado:        'pendiente',
+          fotoUrl:       null,
+          fecha:         fechaStr,
+          dia:           dia,
+          duracion:      t.duracion || '',
+          generadoPorIA: true,
+          creadoPor:     usuarioActual.uid,
+          creadoA:       serverTimestamp(),
+          completadaA:   null,
+        }));
+      });
+    });
+    await Promise.all(writes);
+  } finally {
+    document.getElementById('savingBanner').classList.remove('visible');
+  }
+}
+
 /* ════════════════════════════════════════
    UI: CON / SIN PERFIL
 ════════════════════════════════════════ */
