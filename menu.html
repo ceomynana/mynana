@@ -1150,10 +1150,13 @@ function escucharMenu() {
   if (!hogarId) return;
   const semanaId = getSemanaId();
   if (unsubMenu) unsubMenu();
+  let initialLoad = true;
   unsubMenu = onSnapshot(doc(db, 'hogares', hogarId, 'menus', semanaId), (snap) => {
     menuData = snap.exists() ? (snap.data() || {}) : {};
     renderMenuDia();
     renderSemanaGrid();
+    // Saltar la carga inicial para no sobreescribir items ya marcados como comprados
+    if (initialLoad) { initialLoad = false; return; }
     generarListaMercado();
   });
 }
