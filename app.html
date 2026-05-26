@@ -2389,7 +2389,6 @@ function formatHora12(hora24) {
 // Audio mejorado
 window.leerTareasVoz = async () => {
   if (!window.speechSynthesis) { showToast('Tu teléfono no soporta el audio'); return; }
-  window.speechSynthesis.cancel();
 
   try {
     const user = auth.currentUser;
@@ -2405,39 +2404,47 @@ window.leerTareasVoz = async () => {
       .filter(t => t.estado !== 'completa' && (t.fecha ? t.fecha === hoy : true));
 
     const btn = document.getElementById('audioBtn');
+    let textoAudio;
 
     if (!pendientes.length) {
-      const u = new SpeechSynthesisUtterance('¡Felicidades! Completaste todas las tareas de hoy.');
-      u.lang = 'es'; u.rate = 0.85;
-      window.speechSynthesis.speak(u);
+      textoAudio = '¡Felicidades! Completaste todas las tareas de hoy.';
       showToast('🎉 ¡Todas las tareas están listas!');
-      return;
+    } else {
+      const nombre = document.getElementById('nanaNombre')?.textContent.replace('👋','').trim() || '';
+      textoAudio = `Hola ${nombre}. Tienes ${pendientes.length} tareas pendientes hoy. ` +
+        pendientes.map((t,i) => `Número ${i+1}: ${t.nombre}.`).join(' ');
+      showToast('🔊 Leyendo tus tareas...');
     }
 
-    const nombre = document.getElementById('nanaNombre')?.textContent.replace('👋','').trim() || '';
-    const texto = `Hola ${nombre}. Tienes ${pendientes.length} tareas pendientes hoy. ` +
-      pendientes.map((t,i) => `Número ${i+1}: ${t.nombre}, a las ${formatHora12(t.hora)}.`).join(' ');
+    function hablar() {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(textoAudio);
+      u.lang = 'es'; u.rate = 0.85; u.pitch = 1;
+      const voces = window.speechSynthesis.getVoices();
+      const vozES = voces.find(v => v.lang.startsWith('es'));
+      if (vozES) u.voice = vozES;
+      u.onend = () => {
+        if (btn) { btn.innerHTML = '🔊 Escuchar mis tareas en voz alta'; btn.style.background = ''; btn.onclick = leerTareasVoz; }
+      };
+      if (btn) {
+        btn.innerHTML = '⏹ Parar audio';
+        btn.style.background = 'var(--b)';
+        btn.onclick = () => { window.speechSynthesis.cancel(); btn.innerHTML = '🔊 Escuchar mis tareas en voz alta'; btn.style.background = ''; btn.onclick = leerTareasVoz; };
+      }
+      window.speechSynthesis.speak(u);
+    }
 
-    const u = new SpeechSynthesisUtterance(texto);
-    u.lang = 'es'; u.rate = 0.85; u.pitch = 1;
-
-    // Seleccionar voz en español si está disponible
+    // getVoices() es async en Chrome — esperar si están vacías
     const voces = window.speechSynthesis.getVoices();
-    const vozES = voces.find(v => v.lang.startsWith('es')) || null;
-    if (vozES) u.voice = vozES;
-
-    window.speechSynthesis.speak(u);
-
-    if (btn) {
-      btn.textContent = '⏹ Parar audio';
-      btn.style.background = 'var(--b)';
-      u.onend = () => { btn.textContent = '🔊 Escuchar mis tareas en voz alta'; btn.style.background = ''; btn.onclick = leerTareasVoz; };
-      btn.onclick = () => { window.speechSynthesis.cancel(); btn.textContent = '🔊 Escuchar mis tareas en voz alta'; btn.style.background = ''; btn.onclick = leerTareasVoz; };
+    if (voces.length > 0) {
+      hablar();
+    } else {
+      window.speechSynthesis.onvoiceschanged = () => { hablar(); };
     }
-    showToast('🔊 Leyendo tus tareas...');
+
   } catch(e) {
     console.error(e);
-    showToast('No se pudo leer las tareas');
+    showToast('Error al leer tareas');
   }
 };
 
