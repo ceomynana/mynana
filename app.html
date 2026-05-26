@@ -2244,8 +2244,8 @@ async function cargarTareasNana() {
         : `${hechas} de ${total} tareas completadas hoy`
       : 'No tienes tareas asignadas hoy';
 
-    // Cachear pendientes para audio síncrono (Safari requiere speak sin await)
-    nanaTareasPendientes = pendientes;
+    // Cachear pendientes para audio síncrono
+    nanaTareasPendientes = tareas.filter(t => t.estado !== 'completa');
     document.getElementById('progPct').textContent = pct + '%';
 
     renderTarjetasNana(tareas, hogarId);
