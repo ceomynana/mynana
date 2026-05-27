@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>My Nana — Videos</title>
+<title>My Nana — Ayudas para el Hogar</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Cormorant+Garamond:wght@500&display=swap" rel="stylesheet">
 <style>
 :root{--g:#1A6B52;--g2:#0F4A38;--g3:#F0F7F4;--g4:#E1F0EB;--b:#D4A5A5;--b2:#BF9090;--b3:#F7EFEF;--cr:#F9F5F0;--txt:#1A2E25;--txt2:#4A6358;--r:14px;}
@@ -154,7 +154,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
       <div style="font-size:13px;font-weight:600;color:var(--txt);margin-bottom:12px;">Pasos principales:</div>
       <div class="modal-pasos" id="modalPasos"></div>
       <button class="modal-visto-btn" id="btnVisto" onclick="marcarVisto()">✅ Marcar como visto</button>
-      <button class="modal-close" onclick="cerrarModal()">← Volver a los videos</button>
+      <button class="modal-close" onclick="cerrarModal()">← Volver a las ayudas</button>
     </div>
   </div>
 </div>
@@ -165,11 +165,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
 <!-- HEADER -->
 <div class="header">
   <div class="header-top">
-    <div class="header-logo">My <em>Nana</em> — Videos</div>
+    <div class="header-logo">My <em>Nana</em> — Ayudas para el Hogar</div>
     <a href="/app.html" class="header-back">← Inicio</a>
   </div>
   <div class="buscar-wrap">
-    <input class="buscar-input" id="buscarInput" placeholder="🔍  Buscar video..." oninput="buscarVideos(this.value)" />
+    <input class="buscar-input" id="buscarInput" placeholder="🔍  Buscar ayuda..." oninput="buscarVideos(this.value)" />
   </div>
   <div class="cats">
     <button class="cat-pill activa" onclick="filtrarCat('todos',this)">Todos</button>
