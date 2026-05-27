@@ -77,6 +77,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
 .btn-add-ing{background:var(--g3);border:1.5px dashed var(--g4);border-radius:99px;padding:4px 12px;font-size:12px;color:var(--g);cursor:pointer;font-family:'DM Sans',sans-serif;}
 .btn-add-ing:hover{background:var(--g4);}
 
+/* TIPO DE MENÚ CHIPS */
+.tipo-menu-chip{padding:6px 13px;border-radius:99px;border:1.5px solid var(--g4);background:#fff;font-size:12px;font-weight:500;color:var(--txt2);cursor:pointer;transition:all .18s;font-family:'DM Sans',sans-serif;}
+.tipo-menu-chip:hover{border-color:var(--g);color:var(--g);}
+.tipo-menu-chip.activo{background:var(--g);border-color:var(--g);color:#fff;}
+
 /* FORM PLATO */
 .form-plato{padding:12px 14px;background:#fff;border-top:1px solid var(--g4);display:none;}
 .form-plato.visible{display:block;}
@@ -321,6 +326,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
         <div class="panel-header">
           <div class="panel-title">Planificación rápida</div>
           <div class="panel-badge" id="badgeModo">Menú tradicional</div>
+        </div>
+        <!-- Selector tipo de menú -->
+        <div style="padding:10px 12px 4px;border-bottom:1px solid var(--g4);">
+          <div style="font-size:10px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Tipo de menú</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            <button class="tipo-menu-chip activo" id="chip_tradicional" onclick="cambiarTipoMenu('tradicional')">🍽️ Tradicional</button>
+            <button class="tipo-menu-chip" id="chip_saludable" onclick="cambiarTipoMenu('saludable')">🥗 Saludable</button>
+            <button class="tipo-menu-chip" id="chip_proteina" onclick="cambiarTipoMenu('proteina')">💪 Alto en proteína</button>
+            <button class="tipo-menu-chip" id="chip_chef" onclick="cambiarTipoMenu('chef')">👨‍🍳 Menú chef</button>
+            <button class="tipo-menu-chip" id="chip_rapido" onclick="cambiarTipoMenu('rapido')">⚡ Semana ocupada</button>
+            <button class="tipo-menu-chip" id="chip_economico" onclick="cambiarTipoMenu('economico')">💰 Económico</button>
+          </div>
         </div>
         <div class="modos-grid">
           <button class="modo-btn" onclick="autoPlanificar()">
@@ -742,7 +759,9 @@ const INGREDIENTES_EXTRA = {
 
 // Merge all ingredient dictionaries into one lookup
 function getIngredientesActuales(nombre) {
-  return INGREDIENTES_SALUDABLES[nombre] || INGREDIENTES_BASE[nombre] || INGREDIENTES_EXTRA[nombre] || null;
+  return INGREDIENTES_PROTEINA[nombre] || INGREDIENTES_CHEF[nombre] ||
+         INGREDIENTES_SALUDABLES[nombre] || INGREDIENTES_BASE[nombre] ||
+         INGREDIENTES_EXTRA[nombre] || null;
 }
 let usuarioActual = null;
 let perfilActual = null;
@@ -756,6 +775,231 @@ let unsubMenu = null;
 let unsubMercado = null;
 let modoSaludable = false;
 let modoEconomico = false;
+let modoActual = 'tradicional'; // nuevo sistema de 6 modos
+
+// ── SELECTOR DE TIPO DE MENÚ ──
+window.cambiarTipoMenu = (tipo) => {
+  modoActual = tipo;
+  // Sincronizar booleans legacy para compatibilidad con código existente
+  modoSaludable = (tipo === 'saludable');
+  modoEconomico = (tipo === 'economico');
+  // Actualizar chips UI
+  document.querySelectorAll('.tipo-menu-chip').forEach(c => c.classList.remove('activo'));
+  const chip = document.getElementById(`chip_${tipo}`);
+  if (chip) chip.classList.add('activo');
+  // Actualizar badge
+  const labels = {
+    tradicional:'Menú tradicional', saludable:'Modo saludable',
+    proteina:'Alto en proteína', chef:'Menú chef',
+    rapido:'Semana ocupada', economico:'Modo económico'
+  };
+  const badge = document.getElementById('badgeModo');
+  if (badge) badge.textContent = labels[tipo] || 'Menú tradicional';
+  renderMenuDia();
+  const toasts = {
+    tradicional:'🍽️ Menú panameño tradicional',
+    saludable:'🥗 Modo saludable activado',
+    proteina:'💪 Alto en proteína activado',
+    chef:'👨‍🍳 Menú chef activado',
+    rapido:'⚡ Semana ocupada activada',
+    economico:'💰 Modo económico activado'
+  };
+  showToast(toasts[tipo] || 'Modo actualizado');
+};
+
+function getPlatosSegunModo() {
+  const mapa = {
+    tradicional: PLATOS_SUGERIDOS,
+    saludable:   PLATOS_SALUDABLES,
+    proteina:    PLATOS_PROTEINA,
+    chef:        PLATOS_CHEF,
+    rapido:      PLATOS_RAPIDOS,
+    economico:   PLATOS_ECONOMICOS,
+  };
+  return mapa[modoActual] || PLATOS_SUGERIDOS;
+}
+
+const PLATOS_PROTEINA = {
+  desayuno: [
+    'Omelette de claras con espinaca y queso',
+    'Huevos revueltos con pechuga desmenuzada',
+    'Batido de proteína con avena y banano',
+    'Tostadas con atún y aguacate',
+    'Yogur griego con nueces y fresas',
+    'Huevos duros con jamón de pavo',
+    'Salmón ahumado con tostadas de centeno',
+    'Batido de leche con huevo y avena',
+    'Pechuga a la plancha con huevo frito',
+    'Tortillas de maíz con huevos perico y pollo',
+  ],
+  almuerzo: [
+    'Pechuga de pollo a la plancha con arroz integral',
+    'Corvina asada con ensalada de quinoa',
+    'Carne molida magra con vegetales salteados',
+    'Lomo de cerdo con camote asado',
+    'Salmón a la plancha con espárragos',
+    'Pollo horneado con brócoli al vapor',
+    'Atún sellado con ensalada verde',
+    'Tilapia al horno con arroz integral',
+    'Pargo entero a la plancha con patacones',
+    'Bistec magro con ensalada de garbanzos',
+    'Pollo en salsa de tomate natural con lentejas',
+    'Camarones salteados con arroz integral',
+  ],
+  merienda: [
+    'Yogur griego con granola sin azúcar',
+    'Queso cottage con frutas',
+    'Nueces y almendras (puñado)',
+    'Huevo duro con sal',
+    'Batido de proteína natural',
+    'Requesón con pepino',
+    'Atún con galletas integrales',
+    'Mantequilla de maní con manzana',
+  ],
+  cena: [
+    'Pechuga horneada con ensalada verde grande',
+    'Sopa de pollo con vegetales sin fideos',
+    'Tilapia al vapor con brócoli',
+    'Ensalada de atún con aguacate',
+    'Claras revueltas con vegetales',
+    'Pollo desmenuzado con ensalada de espinaca',
+    'Salmón al limón con ensalada',
+    'Caldo de res con vegetales',
+    'Pechuga en salsa de champiñones',
+  ],
+  snack: [
+    'Batido de proteína sin azúcar',
+    'Huevos duros x2',
+    'Queso blanco con pepino',
+    'Nueces mixtas (30g)',
+    'Yogur griego natural',
+    'Atún en lata directo',
+  ],
+};
+
+const PLATOS_CHEF = {
+  desayuno: [
+    'Eggs benedict con salmón ahumado',
+    'Crêpes de avena con frutos rojos y miel',
+    'Frittata de vegetales al horno',
+    'Shakshuka (huevos en salsa de tomate especiada)',
+    'Granola artesanal con yogur griego y kiwi',
+    'French toast con berries y maple',
+    'Bowl de açaí con granola y frutas tropicales',
+    'Panqueques de avena con plátano',
+    'Tostadas de aguacate con huevo pochado',
+    'Muffins de huevo con espinaca y queso',
+  ],
+  almuerzo: [
+    'Corvina en salsa de maracuyá con arroz negro',
+    'Pollo en salsa de vino blanco con papas gratinadas',
+    'Pargo relleno al horno con hierbas finas',
+    'Risotto de camarones con azafrán',
+    'Lomo de res en salsa de champiñones',
+    'Pato confitado con puré de camote',
+    'Pasta fresca con salsa de mar',
+    'Pulpo a la gallega con papas',
+    'Salmón en costra de almendras',
+    'Pollo marroquí con garbanzos y cúrcuma',
+    'Ceviche mixto elaborado con leche de tigre',
+    'Filete de res al chimichurri premium',
+  ],
+  merienda: [
+    'Macarons de frutas tropicales',
+    'Panna cotta con coulis de maracuyá',
+    'Brownie de chocolate amargo con nueces',
+    'Mini cheesecake de guayaba',
+    'Parfait de frutos rojos con yogur',
+    'Trufas de chocolate belga',
+    'Financier de almendras',
+  ],
+  cena: [
+    'Sopa de tomate asado con crutones artesanales',
+    'Branzino en papillote con vegetales',
+    'Ensalada niçoise clásica con atún fresco',
+    'Gazpacho andaluz con tostadas',
+    'Pasta con trufa y parmesano',
+    'Ravioles de ricotta con salsa de mantequilla y salvia',
+    'Pechuga rellena con queso de cabra y albahaca',
+    'Tostadas de setas con huevo pochado',
+    'Sopa de cebolla gratinada',
+    'Carpaccio de res con rúcula y parmesano',
+  ],
+  snack: [
+    'Crostini con tapenade de aceitunas',
+    'Bruschetta de tomate con albahaca fresca',
+    'Dip de hummus con crudités',
+    'Palomitas con mantequilla de trufa',
+    'Queso brie con mermelada de higos',
+    'Pinchos de caprese',
+  ],
+};
+
+const INGREDIENTES_PROTEINA = {
+  'Omelette de claras con espinaca y queso': ['6 claras de huevo','Espinaca fresca (1 taza)','Queso blanco (50g)','Sal','Pimienta','Aceite de oliva (1 cda)'],
+  'Huevos revueltos con pechuga desmenuzada': ['4 huevos','Pechuga de pollo cocida (150g)','Cebolla','Sal','Pimienta','Aceite (1 cda)'],
+  'Batido de proteína con avena y banano': ['Avena (1/2 taza)','Banano x1','Leche descremada (1 taza)','Miel (1 cda)'],
+  'Tostadas con atún y aguacate': ['Atún en agua (1 lata)','Aguacate x1','Pan integral x2','Limón','Sal'],
+  'Yogur griego con nueces y fresas': ['Yogur griego natural (200g)','Nueces (30g)','Fresas (100g)','Miel (1 cda)'],
+  'Huevos duros con jamón de pavo': ['4 huevos','Jamón de pavo (100g)','Sal','Mostaza'],
+  'Salmón ahumado con tostadas de centeno': ['Salmón ahumado (150g)','Pan de centeno x4','Queso crema light (50g)','Alcaparras','Limón'],
+  'Pechuga a la plancha con huevo frito': ['Pechuga de pollo (300g)','2 huevos','Ajo','Sal','Pimienta','Aceite (1 cda)'],
+  'Tortillas de maíz con huevos perico y pollo': ['Maíz molido (1 taza)','3 huevos','Pollo desmenuzado (150g)','Cebolla','Sal','Aceite'],
+  'Pechuga de pollo a la plancha con arroz integral': ['Pechuga de pollo (400g)','Arroz integral (1.5 tazas)','Ajo','Limón','Sal','Pimienta','Aceite de oliva'],
+  'Corvina asada con ensalada de quinoa': ['Corvina (4 filetes)','Quinoa (1 taza)','Tomate cherry','Pepino','Espinaca','Limón','Aceite de oliva','Sal'],
+  'Carne molida magra con vegetales salteados': ['Carne molida magra (500g)','Brócoli (200g)','Zanahoria (150g)','Pimiento rojo','Ajo','Salsa de soya','Aceite (1 cda)'],
+  'Lomo de cerdo con camote asado': ['Lomo de cerdo (600g)','Camote (400g)','Romero','Ajo','Aceite de oliva','Sal','Pimienta'],
+  'Salmón a la plancha con espárragos': ['Salmón (4 filetes)','Espárragos (300g)','Limón x2','Ajo','Aceite de oliva','Sal'],
+  'Pollo horneado con brócoli al vapor': ['Pollo entero (1.2kg)','Brócoli (400g)','Ajo','Limón x2','Romero','Sal','Pimienta'],
+  'Atún sellado con ensalada verde': ['Atún fresco (4 filetes)','Lechuga romana','Espinaca','Tomate cherry','Limón','Aceite de oliva','Sal','Sésamo'],
+  'Tilapia al horno con arroz integral': ['Tilapia (4 filetes)','Arroz integral (1.5 tazas)','Limón x2','Ajo','Sal','Aceite de oliva','Culantro'],
+  'Pargo entero a la plancha con patacones': ['Pargo (2 unidades)','Plátano verde x2','Ajo','Limón x2','Culantro','Sal','Aceite'],
+  'Bistec magro con ensalada de garbanzos': ['Bistec magro (600g)','Garbanzos cocidos (1 lata)','Tomate x2','Pepino','Cebolla morada','Limón','Aceite de oliva','Sal'],
+  'Pollo en salsa de tomate natural con lentejas': ['Pollo (800g)','Lentejas (1.5 tazas)','Tomate (4 unidades)','Cebolla','Ajo','Culantro','Sal'],
+  'Camarones salteados con arroz integral': ['Camarones (500g)','Arroz integral (1.5 tazas)','Ajo','Pimiento','Cebolla','Sal','Aceite de oliva','Culantro'],
+  'Pechuga horneada con ensalada verde grande': ['Pechuga (400g)','Lechuga','Espinaca','Tomate cherry','Pepino','Zanahoria','Limón','Aceite de oliva','Sal'],
+  'Sopa de pollo con vegetales sin fideos': ['Pollo (600g)','Zanahoria x3','Chayote x2','Apio x2','Cebolla','Ajo','Culantro','Sal','Agua'],
+  'Tilapia al vapor con brócoli': ['Tilapia (4 filetes)','Brócoli (400g)','Jengibre','Ajo','Salsa de soya','Aceite de sésamo','Limón'],
+  'Ensalada de atún con aguacate': ['Atún en agua (2 latas)','Aguacate x2','Lechuga','Tomate x2','Cebolla morada','Limón','Aceite de oliva','Sal'],
+  'Claras revueltas con vegetales': ['8 claras de huevo','Espinaca (1 taza)','Pimiento rojo','Cebolla','Tomate','Sal','Aceite (1 cda)'],
+  'Pollo desmenuzado con ensalada de espinaca': ['Pechuga cocida (400g)','Espinaca (3 tazas)','Tomate cherry','Cebolla morada','Aguacate x1','Limón','Aceite de oliva'],
+  'Caldo de res con vegetales': ['Huesos de res (800g)','Zanahoria x3','Apio x2','Chayote x2','Cebolla','Ajo','Culantro','Sal'],
+  'Pechuga en salsa de champiñones': ['Pechuga (400g)','Champiñones (300g)','Crema de leche light (100ml)','Ajo','Cebolla','Sal','Aceite de oliva'],
+  'Yogur griego con granola sin azúcar': ['Yogur griego (200g)','Granola sin azúcar (4 cdas)','Fresas (100g)','Banano x1','Miel (1 cda)'],
+  'Queso cottage con frutas': ['Queso cottage (200g)','Mango (1 unidad)','Fresas (100g)','Miel (1 cda)'],
+  'Nueces y almendras (puñado)': ['Nueces (30g)','Almendras (30g)'],
+  'Mantequilla de maní con manzana': ['Manzana x2','Mantequilla de maní natural (3 cdas)'],
+  'Atún con galletas integrales': ['Atún en agua (1 lata)','Galletas integrales x8','Limón','Sal','Pimienta'],
+  'Requesón con pepino': ['Requesón (150g)','Pepino x1','Sal','Pimienta','Cebollín'],
+  'Batido de proteína natural': ['Leche descremada (1 taza)','Banano x1','Avena (1/4 taza)','Cacao en polvo (1 cda)','Hielo'],
+};
+
+const INGREDIENTES_CHEF = {
+  'Eggs benedict con salmón ahumado': ['Salmón ahumado (200g)','4 huevos','4 muffins ingleses','Mantequilla (4 cdas)','Yemas x3','Limón x1','Sal','Pimienta','Estragón'],
+  'Crêpes de avena con frutos rojos y miel': ['Avena molida (1 taza)','2 huevos','Leche (1 taza)','Fresas (100g)','Arándanos (100g)','Miel de abeja (4 cdas)','Mantequilla'],
+  'Frittata de vegetales al horno': ['6 huevos','Pimiento rojo x1','Espinaca (1 taza)','Queso feta (100g)','Cebolla morada','Tomate cherry','Aceite de oliva','Sal','Hierbas provenzales'],
+  'Shakshuka (huevos en salsa de tomate especiada)': ['6 huevos','Tomate (4 unidades)','Pimiento rojo x2','Cebolla','Ajo (4 dientes)','Comino','Páprika','Culantro','Aceite de oliva','Sal'],
+  'French toast con berries y maple': ['Pan brioche x4','2 huevos','Leche (1/2 taza)','Vainilla','Fresas (200g)','Arándanos (100g)','Jarabe de maple (4 cdas)','Mantequilla','Azúcar impalpable'],
+  'Tostadas de aguacate con huevo pochado': ['Pan artesanal x4','Aguacate x2','4 huevos','Limón x1','Sal','Pimienta','Hojuelas de chile','Aceite de oliva','Vinagre blanco'],
+  'Granola artesanal con yogur griego y kiwi': ['Avena (2 tazas)','Miel (3 cdas)','Aceite de coco (2 cdas)','Nueces (50g)','Almendras (50g)','Coco rallado (3 cdas)','Yogur griego (200g)','Kiwi x2','Fresas (100g)'],
+  'Corvina en salsa de maracuyá con arroz negro': ['Corvina (4 filetes)','Maracuyá x6','Arroz negro (1.5 tazas)','Crema de leche (100ml)','Mantequilla (2 cdas)','Ajo','Sal','Pimienta','Culantro'],
+  'Pollo en salsa de vino blanco con papas gratinadas': ['Pollo (1.2kg)','Vino blanco (1 taza)','Papas (600g)','Crema de leche (200ml)','Queso gruyère (150g)','Ajo','Cebolla','Tomillo','Sal'],
+  'Pargo relleno al horno con hierbas finas': ['Pargo (1 unidad grande)','Limón x3','Ajo (6 dientes)','Culantro fresco','Tomillo','Romero','Aceite de oliva','Sal','Pimienta','Alcaparras'],
+  'Risotto de camarones con azafrán': ['Arroz arbóreo (1.5 tazas)','Camarones (400g)','Caldo de pescado (1L)','Vino blanco (1/2 taza)','Azafrán (1 pizca)','Queso parmesano (100g)','Mantequilla (3 cdas)','Cebolla','Ajo','Sal'],
+  'Lomo de res en salsa de champiñones': ['Lomo de res (800g)','Champiñones portobello (300g)','Crema de leche (200ml)','Vino tinto (1/2 taza)','Mantequilla (3 cdas)','Ajo','Chalotes (3 unidades)','Tomillo','Sal','Pimienta'],
+  'Salmón en costra de almendras': ['Salmón (4 filetes)','Almendras molidas (150g)','Mostaza Dijon (2 cdas)','Miel (1 cda)','Limón x2','Sal','Pimienta','Eneldo','Aceite de oliva'],
+  'Ceviche mixto elaborado con leche de tigre': ['Corvina (300g)','Camarones (200g)','Pulpo (200g)','Limón (12 unidades)','Cebolla morada','Ají chombo (1/2)','Culantro','Apio','Ajo','Sal','Pimienta','Leche evaporada (1/4 taza)'],
+  'Filete de res al chimichurri premium': ['Filete de res (800g)','Culantro (1 ramo)','Perejil (1 ramo)','Ajo (6 dientes)','Aceite de oliva extra virgen (1/2 taza)','Vinagre de vino tinto (3 cdas)','Ají chombo','Sal','Pimienta'],
+  'Sopa de tomate asado con crutones artesanales': ['Tomates maduros (1kg)','Cebolla x2','Ajo x6 dientes','Albahaca fresca (1 ramo)','Caldo de vegetales (500ml)','Crema de leche (100ml)','Pan artesanal (200g)','Aceite de oliva','Sal','Azúcar (1 pizca)'],
+  'Branzino en papillote con vegetales': ['Branzino o corvina (4 filetes)','Calabacín x2','Tomate cherry (200g)','Limón x2','Alcaparras','Aceitunas (50g)','Aceite de oliva','Tomillo','Sal','Pimienta','Papel de horno'],
+  'Ensalada niçoise clásica con atún fresco': ['Atún fresco (400g)','Huevos x4','Habichuelas tiernas (200g)','Papas pequeñas (300g)','Aceitunas negras (100g)','Anchoas (50g)','Tomate cherry','Lechuga romana','Limón','Aceite de oliva','Mostaza Dijon','Sal'],
+  'Pechuga rellena con queso de cabra y albahaca': ['Pechuga (4 unidades)','Queso de cabra (150g)','Albahaca fresca (1 ramo)','Tomate seco (50g)','Ajo','Aceite de oliva','Sal','Pimienta','Palillos de madera'],
+  'Ravioles de ricotta con salsa de mantequilla y salvia': ['Pasta fresca (400g)','Ricotta (300g)','Queso parmesano (100g)','Huevos x2','Harina (200g)','Mantequilla (100g)','Salvia fresca (1 ramo)','Sal','Nuez moscada'],
+  'Carpaccio de res con rúcula y parmesano': ['Lomo de res (400g)','Rúcula (2 tazas)','Queso parmesano (100g)','Alcaparras','Limón x2','Aceite de oliva extra virgen','Sal','Pimienta','Mostaza Dijon'],
+  'Bruschetta de tomate con albahaca fresca': ['Pan de campo x8 rebanadas','Tomates maduros x4','Albahaca fresca (1 ramo)','Ajo x2 dientes','Aceite de oliva (4 cdas)','Sal','Pimienta','Vinagre balsámico (1 cda)'],
+  'Dip de hummus con crudités': ['Garbanzos cocidos (2 latas)','Tahini (3 cdas)','Limón x2','Ajo x2 dientes','Aceite de oliva','Sal','Páprika','Zanahoria x4','Apio x4','Pepino x2'],
+  'Queso brie con mermelada de higos': ['Queso brie (250g)','Mermelada de higos (150g)','Nueces (50g)','Pan artesanal x8 rebanadas','Romero fresco'],
+};
 
 const PLATOS_RAPIDOS = {
   desayuno: ['Pan tostado con mantequilla y queso','Cereal con leche','Huevos revueltos rápidos','Avena instantánea','Fruta picada con queso'],
@@ -986,11 +1230,14 @@ function actualizarBadgePerfil() {
 }
 
 window.autoPlanificar = async () => {
-  // Elegir fuente según objetivos del perfil
-  let platos = PLATOS_SUGERIDOS;
-  if (perfilAlimentario.objetivos.includes('saludable') || modoSaludable) platos = PLATOS_SALUDABLES;
-  else if (perfilAlimentario.objetivos.includes('economico') || perfilAlimentario.presupuesto === 'bajo' || modoEconomico) platos = PLATOS_ECONOMICOS;
-  else if (perfilAlimentario.objetivos.includes('rapido')) platos = PLATOS_RAPIDOS;
+  // Elegir fuente según modoActual (6 modos) con fallback a perfil
+  let platos = getPlatosSegunModo();
+  // Fallback legacy por objetivos del perfil si no hay modo seleccionado
+  if (modoActual === 'tradicional') {
+    if (perfilAlimentario.objetivos.includes('saludable')) platos = PLATOS_SALUDABLES;
+    else if (perfilAlimentario.objetivos.includes('economico') || perfilAlimentario.presupuesto === 'bajo') platos = PLATOS_ECONOMICOS;
+    else if (perfilAlimentario.objetivos.includes('rapido')) platos = PLATOS_RAPIDOS;
+  }
 
   DIAS.forEach((_, i) => {
     if (!menuData[`dia_${i}`]) menuData[`dia_${i}`] = {};
@@ -1065,7 +1312,7 @@ window.cambiarModo = (saludable) => {
 };
 
 function getPlatosActuales() {
-  return modoSaludable ? PLATOS_SALUDABLES : PLATOS_SUGERIDOS;
+  return getPlatosSegunModo();
 }
 
 
@@ -1408,8 +1655,121 @@ function renderSemanaGrid() {
 }
 
 // ── LISTA MERCADO ──
+
+// Convierte cantidades técnicas a formatos naturales
+function humanizarCantidadMercado(nombreIngrediente, vecesEnSemana) {
+  const n = nombreIngrediente.toLowerCase();
+
+  // Detectar "x{N}" → cantidad en unidades
+  const matchX = nombreIngrediente.match(/[xX](\d+)/);
+  if (matchX) {
+    const total = parseInt(matchX[1]) * vecesEnSemana;
+    const base = nombreIngrediente.replace(/\s*[xX]\d+/, '').trim();
+    const bLow = base.toLowerCase();
+    if (bLow.includes('huevo')) {
+      if (total <= 6)  return `${total} huevos`;
+      if (total <= 12) return '1 docena de huevos';
+      return `${Math.ceil(total/12)} docenas de huevos`;
+    }
+    if (bLow.includes('tomate'))    return `${total} tomates`;
+    if (bLow.includes('limón') || bLow.includes('limon')) return `${total} limones`;
+    if (bLow.includes('plátano') || bLow.includes('platano')) return `${total} plátanos`;
+    if (bLow.includes('naranja'))   return `${total} naranjas`;
+    if (bLow.includes('manzana'))   return `${total} manzanas`;
+    if (bLow.includes('cebolla'))   return `${total} cebollas`;
+    if (bLow.includes('zanahoria')) return `${total} zanahorias`;
+    if (bLow.includes('ajo'))       return `${total > 3 ? '2 cabezas de ajo' : '1 cabeza de ajo'}`;
+    if (bLow.includes('banano') || bLow.includes('banana')) return `${total} bananos`;
+    if (bLow.includes('salchicha')) return `${Math.ceil(total/4)} paquetes de salchicha`;
+    if (bLow.includes('tortilla'))  return `${total} tortillas`;
+    return `${total} ${base}`;
+  }
+
+  // Detectar "(N kg)" → mostrar en kg total
+  const matchKg = nombreIngrediente.match(/\((\d+(?:\.\d+)?)\s*kg\)/);
+  if (matchKg) {
+    const totalKg = parseFloat(matchKg[1]) * vecesEnSemana;
+    const base = nombreIngrediente.replace(/\s*\(.*?kg\)/, '').trim();
+    const rounded = totalKg % 1 === 0 ? `${totalKg}` : totalKg.toFixed(1);
+    return `${rounded} kg de ${base.toLowerCase()}`;
+  }
+
+  // Detectar "(N g)" → convertir a kg si aplica
+  const matchG = nombreIngrediente.match(/\((\d+)\s*g\)/);
+  if (matchG) {
+    const totalG = parseInt(matchG[1]) * vecesEnSemana;
+    const base = nombreIngrediente.replace(/\s*\(\d+\s*g\)/, '').trim();
+    if (totalG >= 1000) return `${(totalG/1000).toFixed(1)} kg de ${base.toLowerCase()}`;
+    return `${totalG}g de ${base.toLowerCase()}`;
+  }
+
+  // Detectar "(N tazas)"
+  const matchTaza = nombreIngrediente.match(/\((\d+(?:\.\d+)?)\s*tazas?\)/i);
+  if (matchTaza) {
+    const total = parseFloat(matchTaza[1]) * vecesEnSemana;
+    const base = nombreIngrediente.replace(/\s*\(.*?tazas?\)/, '').trim();
+    const bLow = base.toLowerCase();
+    if (bLow.includes('arroz') || bLow.includes('avena') || bLow.includes('maíz') || bLow.includes('lenteja') || bLow.includes('frijol')) {
+      const bolsas = Math.ceil(total / 4);
+      return `${bolsas} ${bolsas === 1 ? 'bolsa' : 'bolsas'} de ${base.toLowerCase()}`;
+    }
+    return `${total} tazas de ${base.toLowerCase()}`;
+  }
+
+  // Detectar "(N ml)" o "(NL)"
+  const matchMl = nombreIngrediente.match(/\((\d+)\s*ml\)/);
+  if (matchMl) {
+    const totalMl = parseInt(matchMl[1]) * vecesEnSemana;
+    const base = nombreIngrediente.replace(/\s*\(\d+\s*ml\)/, '').trim();
+    if (totalMl >= 1000) return `${Math.ceil(totalMl/1000)} litro${totalMl >= 2000 ? 's' : ''} de ${base.toLowerCase()}`;
+    return `${totalMl}ml de ${base.toLowerCase()}`;
+  }
+
+  // Detectar "(N cdas)"
+  const matchCda = nombreIngrediente.match(/\((\d+(?:\.\d+)?)\s*cdas?\)/i);
+  if (matchCda) {
+    const total = parseFloat(matchCda[1]) * vecesEnSemana;
+    const base = nombreIngrediente.replace(/\s*\(.*?cdas?\)/, '').trim();
+    const bLow = base.toLowerCase();
+    if (bLow.includes('mantequilla')) {
+      return total <= 4 ? '1 barra de mantequilla' : `${Math.ceil(total/8)} barras de mantequilla`;
+    }
+    if (bLow.includes('aceite')) return `1 botella de aceite`;
+    if (total < 3) return `${base} (poca cantidad)`;
+    return `${base} (al gusto)`;
+  }
+
+  // Detectar "sal", "pimienta", condimentos genéricos
+  const condimentos = ['sal', 'pimienta', 'comino', 'orégano', 'canela', 'achiote', 'cúrcuma', 'vainilla', 'aceite'];
+  if (condimentos.some(c => n.includes(c))) {
+    return nombreIngrediente.replace(/\(.*?\)/, '').trim() + ' (al gusto)';
+  }
+
+  // Detectar "leche"
+  if (n.includes('leche')) {
+    const lts = vecesEnSemana;
+    return `${lts} litro${lts > 1 ? 's' : ''} de leche`;
+  }
+
+  // Detectar "queso"
+  if (n.includes('queso blanco')) return vecesEnSemana > 2 ? '1 bloque de queso blanco' : '1/2 bloque de queso blanco';
+  if (n.includes('queso')) return 'Queso al gusto';
+
+  // Detectar "pollo" sin cantidad
+  if (n.includes('pollo') && !matchKg) return `Pollo (${vecesEnSemana} uso${vecesEnSemana > 1 ? 's':''} esta semana)`;
+
+  // Fresas u otros frutas en paquete
+  if (n.includes('fresa')) return `${Math.ceil(vecesEnSemana/2)} paquete${vecesEnSemana > 2 ? 's' : ''} de fresas`;
+
+  // Default: limpiar texto y mostrar tal cual
+  return nombreIngrediente
+    .replace(/\(.*?\)/g, '').trim()  // quitar paréntesis técnicos
+    .replace(/\s+/g, ' ');
+}
+
 function generarListaMercado() {
-  const consolidado = {}; // nombre_base → { nombre, cant, tiempos, tieneAlergia }
+  // consolidado: key → { nombreBase, cantAccum, vecesEnSemana, dias, tieneAlergia }
+  const consolidado = {};
 
   DIAS.forEach((_, i) => {
     const diaMenu = menuData[`dia_${i}`] || {};
@@ -1420,41 +1780,48 @@ function generarListaMercado() {
       let ingredientes = plato.ingredientes || [];
       if (!ingredientes.length) ingredientes = getIngredientesActuales(plato.nombre) || [];
 
-      const personas = personasEnComida(t.id);
-
       ingredientes.forEach(ing => {
-        const scaled = escalarCantidad(ing, personas);
-        const key = ing.toLowerCase().replace(/\(.*?\)/g,'').trim().split(' ').slice(0,2).join(' ');
+        // Key limpio para deduplicar: primeras 2 palabras sin paréntesis
+        const key = ing.toLowerCase()
+          .replace(/\(.*?\)/g,'').replace(/[xX]\d+/g,'').trim()
+          .split(/\s+/).slice(0,2).join(' ');
+
+        if (!key) return;
 
         if (consolidado[key]) {
-          // Ya existe — marcar como "×varios días" si viene de otro día
           if (!consolidado[key].dias.includes(i)) {
             consolidado[key].dias.push(i);
-            consolidado[key].nombre = `${key} (×${consolidado[key].dias.length} usos)`;
           }
+          consolidado[key].vecesEnSemana++;
         } else {
           consolidado[key] = {
-            nombre: scaled,
+            ingOriginal: ing,
+            key,
             dias: [i],
+            vecesEnSemana: 1,
             origen: 'menu',
             comprado: false,
             tieneAlergia: ingredienteTieneAlergia(ing),
-            opcional: false,
           };
         }
       });
     });
   });
 
-  const nuevosItems = Object.values(consolidado);
+  // Convertir a items con nombres humanizados
+  const nuevosItems = Object.values(consolidado).map(c => ({
+    nombre: humanizarCantidadMercado(c.ingOriginal, c.vecesEnSemana),
+    origen: 'menu',
+    comprado: false,
+    tieneAlergia: c.tieneAlergia,
+    key: c.key,
+  }));
 
-  // Mantener manuales y estado de comprados
+  // Mantener estado de comprados y manuales
   const manuales = mercadoItems.filter(i => i.origen === 'manual');
   const autoItems = nuevosItems.map(ni => {
-    const key = ni.nombre.toLowerCase().split('(')[0].trim().split(' ').slice(0,2).join(' ');
-    const existente = mercadoItems.find(m =>
-      m.nombre.toLowerCase().split('(')[0].trim().split(' ').slice(0,2).join(' ') === key
-    );
+    const existente = mercadoItems.find(m => m.key === ni.key || 
+      m.nombre.toLowerCase().split('(')[0].trim().split(' ').slice(0,2).join(' ') === ni.key);
     return existente ? { ...ni, comprado: existente.comprado } : ni;
   });
 
