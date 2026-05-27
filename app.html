@@ -644,7 +644,7 @@ body.lang-es [data-en]{display:none !important;}
       <div class="dash-card" onclick="location.href='/videos.html'" style="cursor:pointer;">
         <div class="dash-card-header">
           <div class="dash-card-icon" style="background:var(--b3);">📹</div>
-          <div><div class="dash-card-title">Videos para tu nana</div><div class="dash-card-sub">12 videos disponibles</div></div>
+          <div><div class="dash-card-title">Ayudas rápidas del hogar</div><div class="dash-card-sub">12 videos disponibles</div></div>
         </div>
         <div class="dash-card-body">
           <div class="task-item"><span style="font-size:14px;">🍲</span><span class="task-name">Sancocho de gallina</span><span class="task-hora" style="color:var(--g);">Cocina</span></div>
@@ -668,7 +668,7 @@ body.lang-es [data-en]{display:none !important;}
     </div>
 
     <!-- Link para compartir con nana -->
-    <div style="background:var(--g);border-radius:var(--r);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:12px;">
+    <div id="seccionBuscarNana" style="background:var(--g);border-radius:var(--r);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:12px;">
       <div>
         <div style="font-size:13px;font-weight:500;color:#fff;margin-bottom:4px;">👩 ¿Buscas una nana?</div>
         <div style="font-size:12px;color:rgba(255,255,255,.6);">Encuentra personal doméstico de confianza</div>
@@ -2082,18 +2082,67 @@ async function verificarVinculacion() {
     }
   }
 
-  if (!tieneNana) {
+  // Mostrar/ocultar sección "¿Buscas una nana?" según si ya hay nana vinculada
+  const secBuscar = document.getElementById('seccionBuscarNana');
+  if (secBuscar) secBuscar.style.display = tieneNana ? 'none' : 'flex';
+
+  if (tieneNana) {
+    // Mostrar botón para desvincular la nana
+    const hogarId = snap.empty ? null : snap.docs[0].id;
+    mostrarBotonDesvincular(user.uid, hogarId, db, snap);
+  } else {
     // Limpiar códigos duplicados — dejar solo el más reciente
     const qCodigos = query(collection(db, 'codigos'), where('familiaUid', '==', user.uid), where('usado', '==', false));
     const snapCodigos = await getDocs(qCodigos);
     if (snapCodigos.docs.length > 1) {
-      // Eliminar todos excepto el primero
       for (let i = 1; i < snapCodigos.docs.length; i++) {
         await deleteDoc(snapCodigos.docs[i].ref);
       }
     }
     mostrarBannerVinculacion(user.uid, db);
   }
+}
+
+async function mostrarBotonDesvincular(userUid, hogarId, db, snap) {
+  if (document.getElementById('bannerDesvincular')) return;
+  if (!hogarId) return;
+
+  // Encontrar el UID de la nana vinculada
+  const hogar = snap.docs[0].data();
+  let nanaUid = null;
+  let nanaNombre = 'tu nana';
+  for (const uid of (hogar.participantes || [])) {
+    if (uid === userUid) continue;
+    try {
+      const p = await getDoc(doc(db, 'usuarios', uid));
+      if (p.exists() && p.data().tipo === 'nana') {
+        nanaUid = uid;
+        nanaNombre = p.data().nombre?.split(' ')[0] || 'tu nana';
+        break;
+      }
+    } catch(e) {}
+  }
+  if (!nanaUid) return;
+
+  const banner = document.createElement('div');
+  banner.id = 'bannerDesvincular';
+  banner.style.cssText = 'background:#fff;border-radius:14px;padding:16px 20px;margin:0 0 12px;border:1px solid var(--g4);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;';
+  banner.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="width:38px;height:38px;border-radius:50%;background:var(--g3);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">👩</div>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--txt);">${nanaNombre} está vinculada</div>
+        <div style="font-size:11px;color:var(--txt2);">Si la nana renuncia, puedes desvincularla</div>
+      </div>
+    </div>
+    <button onclick="desvinlularNana('${hogarId}','${nanaUid}')"
+      style="background:#FFF0F0;color:#C0392B;border:1.5px solid #FBBCBC;border-radius:99px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;">
+      🔓 Desvincular nana
+    </button>`;
+
+  // Insertar al inicio del dash-content de familia
+  const dashContent = document.querySelector('#screen-familia .dash-content');
+  if (dashContent) dashContent.insertBefore(banner, dashContent.firstChild);
 }
 
 async function mostrarBannerVinculacion(uid, db) {
@@ -2151,6 +2200,25 @@ async function mostrarBannerVinculacion(uid, db) {
     if (hero) hero.parentNode.insertBefore(banner, hero.nextSibling);
   }
 }
+
+window.desvinlularNana = async (hogarId, nanaUid) => {
+  const confirmar = confirm('¿Seguro que deseas desvincular a la nana de tu hogar? Ella perderá acceso al instante.');
+  if (!confirmar) return;
+  try {
+    const { doc, updateDoc, arrayRemove } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+    await updateDoc(doc(db, 'hogares', hogarId), {
+      participantes: arrayRemove(nanaUid)
+    });
+    showToast('✅ Nana desvinculada del hogar');
+    document.getElementById('bannerDesvincular')?.remove();
+    const secBuscar = document.getElementById('seccionBuscarNana');
+    if (secBuscar) secBuscar.style.display = 'flex';
+    setTimeout(() => location.reload(), 1800);
+  } catch(e) {
+    console.error(e);
+    showToast('❌ Error al desvincular: ' + e.message);
+  }
+};
 
 window.copiarCodigo = (codigo) => {
   navigator.clipboard.writeText(codigo).then(() => {
