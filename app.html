@@ -589,7 +589,7 @@ body.lang-es [data-en]{display:none !important;}
 <div class="screen" id="screen-familia">
 
   <nav class="dash-nav">
-    <div class="dash-logo">My <em>Nana</em></div>
+    <div class="dash-logo" id="dash-logo-tap" onclick="_adminTap()" style="cursor:default;user-select:none;">My <em>Nana</em></div>
     <div class="dash-user">
       <!-- Botón notificaciones -->
       <button class="notif-btn" onclick="toggleNotifPanel()" id="notifBtn" title="Notificaciones">
@@ -833,7 +833,7 @@ body.lang-es [data-en]{display:none !important;}
 <div class="screen" id="screen-nana">
 
   <nav class="dash-nav">
-    <div class="dash-logo">My <em>Nana</em></div>
+    <div class="dash-logo" id="dash-logo-tap" onclick="_adminTap()" style="cursor:default;user-select:none;">My <em>Nana</em></div>
     <div class="dash-user" style="gap:8px;">
       <button class="notif-btn" onclick="toggleNotifPanelNana()" id="nanaNotifBtn" title="Notificaciones">
         🔔
@@ -3767,6 +3767,27 @@ function mostrarInstruccionesReinstalar() {
   logEl.appendChild(box);
   logEl.scrollTop = logEl.scrollHeight;
 }
+
+// ══ ADMIN SECRET TAP — 5 taps en el logo → PWA Debug ══
+// Solo activo para rosiicasanova@gmail.com
+let _adminTapCount = 0;
+let _adminTapTimer = null;
+window._adminTap = () => {
+  const user = auth.currentUser;
+  if (!user || user.email !== 'rosiicasanova@gmail.com') return; // silencioso para otros
+  _adminTapCount++;
+  clearTimeout(_adminTapTimer);
+  _adminTapTimer = setTimeout(() => { _adminTapCount = 0; }, 2000); // reset si pasan 2s
+  if (_adminTapCount >= 5) {
+    _adminTapCount = 0;
+    clearTimeout(_adminTapTimer);
+    const panel = document.getElementById('pwa-debug-panel');
+    if (panel) {
+      panel.style.display = 'block';
+      if (typeof pwaDebugDiagnostico === 'function') pwaDebugDiagnostico();
+    }
+  }
+};
 
 // ══ Exponer Firebase al scope global para onclick handlers
 window.db = db;
