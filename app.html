@@ -378,6 +378,34 @@ body.lang-es [data-en]{display:none !important;}
 <!-- ════════ PWA: BANNER iOS + MODAL INSTALACIÓN ════════ -->
 
 <!-- Banner iOS install (oculto por defecto, JS lo muestra según contexto) -->
+<!-- ══ PWA DEBUG PANEL (visible solo con ?pwa-debug=1 en la URL) ══ -->
+<div id="pwa-debug-panel" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:2000;background:#0F4A38;overflow-y:auto;padding:20px;font-family:monospace;">
+  <div style="max-width:500px;margin:0 auto;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div style="color:#D4A5A5;font-size:16px;font-weight:bold;">🔧 My Nana — PWA Debug</div>
+      <button onclick="document.getElementById('pwa-debug-panel').style.display='none'" style="background:rgba(255,255,255,.1);border:none;color:#fff;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:monospace;">✕ Cerrar</button>
+    </div>
+
+    <!-- Estado actual -->
+    <div id="pwa-debug-estado" style="background:rgba(0,0,0,.3);border-radius:12px;padding:16px;margin-bottom:16px;"></div>
+
+    <!-- Botones de acción -->
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+      <button onclick="pwaDebugDiagnostico()" style="background:#1A6B52;color:#fff;border:none;border-radius:10px;padding:14px;font-size:14px;font-weight:bold;cursor:pointer;font-family:monospace;">🔍 Ejecutar diagnóstico completo</button>
+      <button onclick="pwaDebugSolicitar()" style="background:#D4A5A5;color:#0F4A38;border:none;border-radius:10px;padding:14px;font-size:14px;font-weight:bold;cursor:pointer;font-family:monospace;">🔔 Solicitar permiso notificaciones</button>
+      <button onclick="pwaDebugSuscribir()" style="background:#1A6B52;color:#fff;border:none;border-radius:10px;padding:14px;font-size:14px;font-weight:bold;cursor:pointer;font-family:monospace;">📡 Crear/verificar suscripción push</button>
+      <button onclick="pwaDebugEnviarPrueba()" style="background:#D4A5A5;color:#0F4A38;border:none;border-radius:10px;padding:14px;font-size:14px;font-weight:bold;cursor:pointer;font-family:monospace;">🚀 Enviar notificación de PRUEBA</button>
+      <button onclick="pwaDebugLimpiar()" style="background:rgba(255,255,255,.1);color:#fff;border:none;border-radius:10px;padding:14px;font-size:14px;cursor:pointer;font-family:monospace;">🗑 Limpiar localStorage PWA</button>
+    </div>
+
+    <!-- Log output -->
+    <div style="background:rgba(0,0,0,.5);border-radius:12px;padding:14px;">
+      <div style="color:#D4A5A5;font-size:11px;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em;">Log de diagnóstico</div>
+      <div id="pwa-debug-log" style="font-size:12px;line-height:1.8;color:#fff;white-space:pre-wrap;word-break:break-all;max-height:300px;overflow-y:auto;"></div>
+    </div>
+  </div>
+</div>
+
 <div id="pwa-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:999;padding:12px 16px 20px;background:#fff;border-top:1px solid var(--g4);box-shadow:0 -4px 24px rgba(0,0,0,.08);animation:slideUp .3s ease;">
   <style>
     @keyframes slideUp { from { transform:translateY(100%); opacity:0; } to { transform:translateY(0); opacity:1; } }
@@ -3389,6 +3417,264 @@ setTimeout(() => {
     if (el) observer.observe(el, { attributes: true, attributeFilter: ['style', 'class'] });
   });
 }, 500);
+
+// ── Activar panel debug si URL tiene ?pwa-debug=1 ──
+if (new URLSearchParams(location.search).get('pwa-debug') === '1') {
+  setTimeout(() => {
+    const panel = document.getElementById('pwa-debug-panel');
+    if (panel) {
+      panel.style.display = 'block';
+      pwaDebugDiagnostico();
+    }
+  }, 1500);
+}
+
+// ═══════════════════════════════════════════════════
+//  FUNCIONES DE DEBUG PWA
+// ═══════════════════════════════════════════════════
+
+function pwaLog(msg, tipo = 'info') {
+  const el = document.getElementById('pwa-debug-log');
+  if (!el) return;
+  const colores = { info: '#a8d8a8', error: '#ff8080', warn: '#ffd080', ok: '#80ff80' };
+  const color = colores[tipo] || '#fff';
+  const ts = new Date().toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const linea = document.createElement('div');
+  linea.style.color = color;
+  linea.textContent = `[${ts}] ${msg}`;
+  el.appendChild(linea);
+  el.scrollTop = el.scrollHeight;
+  console.log(`[PWA-DEBUG] ${msg}`);
+}
+
+function pwaEstadoHTML(items) {
+  const el = document.getElementById('pwa-debug-estado');
+  if (!el) return;
+  el.innerHTML = items.map(([label, valor, ok]) => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.05);">
+      <span style="color:rgba(255,255,255,.7);font-size:12px;">${label}</span>
+      <span style="color:${ok === true ? '#80ff80' : ok === false ? '#ff8080' : '#ffd080'};font-size:12px;font-weight:bold;">${valor}</span>
+    </div>`).join('');
+}
+
+window.pwaDebugDiagnostico = async () => {
+  const logEl = document.getElementById('pwa-debug-log');
+  if (logEl) logEl.innerHTML = '';
+  pwaLog('=== DIAGNÓSTICO COMPLETO ===', 'info');
+
+  const items = [];
+
+  // 1. iOS
+  const ios = esIOS();
+  items.push(['iOS device', ios ? 'SÍ ✓' : 'NO', ios]);
+  pwaLog(`iOS: ${ios}`, ios ? 'ok' : 'warn');
+
+  // 2. PWA / Standalone
+  const pwa = esPWAInstalada();
+  items.push(['Modo standalone (PWA)', pwa ? 'SÍ ✓' : 'NO ✗ — Abre desde ícono', pwa]);
+  pwaLog(`Standalone: ${pwa} | display-mode: ${window.matchMedia('(display-mode: standalone)').matches} | navigator.standalone: ${navigator.standalone}`, pwa ? 'ok' : 'error');
+  if (!pwa && ios) pwaLog('⚠️ CRÍTICO: En iPhone las notificaciones SOLO funcionan cuando la app se abre desde el ícono de pantalla de inicio, NO desde Safari.', 'error');
+
+  // 3. Notification API
+  const hasNotif = 'Notification' in window;
+  items.push(['API Notification', hasNotif ? 'disponible' : 'NO disponible', hasNotif]);
+  pwaLog(`Notification API: ${hasNotif}`, hasNotif ? 'ok' : 'error');
+  if (!hasNotif) pwaLog('❌ Este dispositivo/navegador no soporta notificaciones web.', 'error');
+
+  // 4. Permiso
+  const perm = hasNotif ? Notification.permission : 'no-api';
+  const permOk = perm === 'granted';
+  items.push(['Permiso notificaciones', perm.toUpperCase(), permOk]);
+  pwaLog(`Notification.permission: ${perm}`, permOk ? 'ok' : 'error');
+  if (perm === 'denied') pwaLog('❌ Permisos DENEGADOS. Ve a Ajustes → [tu app] → Notificaciones y actívalas manualmente.', 'error');
+  if (perm === 'default') pwaLog('⚠️ Permisos no solicitados aún. Toca "Solicitar permiso" abajo.', 'warn');
+
+  // 5. Service Worker
+  const hasSW = 'serviceWorker' in navigator;
+  items.push(['Service Worker API', hasSW ? 'soportado' : 'NO', hasSW]);
+  pwaLog(`ServiceWorker API: ${hasSW}`, hasSW ? 'ok' : 'error');
+
+  if (hasSW) {
+    try {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      pwaLog(`SWs registrados: ${regs.length}`, regs.length > 0 ? 'ok' : 'warn');
+      for (const r of regs) {
+        const estado = r.active ? 'ACTIVO' : r.installing ? 'INSTALANDO' : r.waiting ? 'ESPERANDO' : 'DESCONOCIDO';
+        pwaLog(`SW scope: ${r.scope} | estado: ${estado}`, r.active ? 'ok' : 'warn');
+        items.push(['SW scope', r.scope.replace('https://mynana.app',''), r.active]);
+        items.push(['SW estado', estado, r.active]);
+        if (r.active) {
+          // Ping al SW para confirmar que responde
+          const msgChannel = new MessageChannel();
+          const pongPromise = new Promise((res) => {
+            msgChannel.port1.onmessage = (e) => res(e.data);
+            setTimeout(() => res(null), 2000);
+          });
+          r.active.postMessage({ type: 'PING' }, [msgChannel.port2]);
+          const pong = await pongPromise;
+          if (pong?.type === 'PONG') {
+            pwaLog(`SW responde PONG ✓ versión: ${pong.version}`, 'ok');
+            items.push(['SW responde ping', pong.version, true]);
+          } else {
+            pwaLog('⚠️ SW no respondió al ping (puede ser SW viejo sin PING handler)', 'warn');
+            items.push(['SW responde ping', 'NO (SW viejo)', null]);
+          }
+        }
+      }
+      if (regs.length === 0) {
+        pwaLog('❌ NO hay service worker registrado. Recarga la app.', 'error');
+        items.push(['SW registrado', 'NO ✗', false]);
+      }
+    } catch(e) {
+      pwaLog(`❌ Error obteniendo SWs: ${e.message}`, 'error');
+    }
+
+    // 6. Push subscription
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      pwaLog('SW ready ✓', 'ok');
+      const sub = await reg.pushManager.getSubscription();
+      if (sub) {
+        pwaLog(`Push subscription EXISTE ✓`, 'ok');
+        pwaLog(`Endpoint: ${sub.endpoint.slice(0, 80)}...`, 'info');
+        pwaLog(`Keys: auth=${sub.toJSON().keys?.auth?.slice(0,10)}... p256dh=${sub.toJSON().keys?.p256dh?.slice(0,10)}...`, 'info');
+        items.push(['Push subscription', 'EXISTE ✓', true]);
+
+        // Verificar que está en Firestore
+        const user = auth.currentUser;
+        if (user) {
+          try {
+            const snap = await getDocs(collection(db, 'usuarios', user.uid, 'pushSubscriptions'));
+            pwaLog(`Suscripciones en Firestore: ${snap.docs.length}`, snap.docs.length > 0 ? 'ok' : 'warn');
+            items.push(['Suscripción en Firestore', snap.docs.length > 0 ? `${snap.docs.length} guardada(s) ✓` : 'NO guardada ✗', snap.docs.length > 0]);
+            snap.docs.forEach(d => pwaLog(`  - ${d.id}: activo=${d.data().active}, platform=${d.data().platform}`, 'info'));
+          } catch(e) {
+            pwaLog(`❌ Error leyendo Firestore: ${e.message}`, 'error');
+          }
+        } else {
+          pwaLog('⚠️ No hay usuario autenticado para verificar Firestore', 'warn');
+        }
+      } else {
+        pwaLog('❌ NO hay push subscription. Toca "Crear suscripción" abajo.', 'error');
+        items.push(['Push subscription', 'NO EXISTE ✗', false]);
+      }
+    } catch(e) {
+      pwaLog(`❌ Error verificando push: ${e.message}`, 'error');
+      items.push(['Push subscription', `ERROR: ${e.message.slice(0,30)}`, false]);
+    }
+  }
+
+  // 7. localStorage
+  const lsPush = localStorage.getItem('mynana_push_active');
+  const lsDismissed = localStorage.getItem('mynana_pwa_banner_dismissed');
+  pwaLog(`localStorage push_active: ${lsPush} | banner_dismissed: ${lsDismissed}`, 'info');
+  items.push(['localStorage push_active', lsPush || 'null', lsPush === '1']);
+
+  // 8. iOS versión
+  const iosVer = navigator.userAgent.match(/OS (\d+)_/);
+  if (iosVer) {
+    const ver = parseInt(iosVer[1]);
+    items.push(['iOS versión', `iOS ${ver}`, ver >= 17]);
+    pwaLog(`iOS ${ver} detectado. Web Push requiere iOS 16.4+. ${ver >= 17 ? '✓' : ver >= 16 ? '(puede funcionar)' : '❌ Demasiado antiguo'}`, ver >= 16 ? 'ok' : 'error');
+  }
+
+  pwaEstadoHTML(items);
+  pwaLog('=== FIN DIAGNÓSTICO ===', 'info');
+};
+
+window.pwaDebugSolicitar = async () => {
+  pwaLog('Solicitando permiso...', 'info');
+  if (!('Notification' in window)) {
+    pwaLog('❌ Notification API no disponible en este contexto', 'error');
+    return;
+  }
+  try {
+    const p = await Notification.requestPermission();
+    pwaLog(`Resultado: ${p}`, p === 'granted' ? 'ok' : 'error');
+    if (p === 'granted') {
+      localStorage.setItem('mynana_push_active', '1');
+      pwaLog('✓ Permiso concedido. Ahora toca "Crear suscripción"', 'ok');
+    }
+  } catch(e) {
+    pwaLog(`❌ Error: ${e.message}`, 'error');
+  }
+};
+
+window.pwaDebugSuscribir = async () => {
+  pwaLog('Creando/verificando suscripción push...', 'info');
+  try {
+    const reg = await swReadyConTimeout(10000);
+    pwaLog('SW ready ✓', 'ok');
+    const sub = await suscribirAPush(reg);
+    if (sub) {
+      pwaLog('Suscripción creada/verificada ✓', 'ok');
+      pwaLog(`Endpoint: ${sub.endpoint.slice(0, 80)}...`, 'info');
+      await guardarSuscripcionFirestore(sub);
+      pwaLog('Guardado en Firestore ✓', 'ok');
+    } else {
+      pwaLog('❌ suscribirAPush devolvió null. Verifica que tienes permisos y que el SW está activo.', 'error');
+    }
+  } catch(e) {
+    pwaLog(`❌ Error: ${e.message}`, 'error');
+  }
+};
+
+window.pwaDebugEnviarPrueba = async () => {
+  pwaLog('Enviando notificación de prueba...', 'info');
+  const user = auth.currentUser;
+  if (!user) {
+    pwaLog('❌ No hay usuario autenticado', 'error');
+    return;
+  }
+  try {
+    const snap = await getDocs(collection(db, 'usuarios', user.uid, 'pushSubscriptions'));
+    const subs = snap.docs.map(d => d.data()).filter(s => s.active && s.endpoint);
+    pwaLog(`Suscripciones encontradas: ${subs.length}`, subs.length > 0 ? 'ok' : 'error');
+    if (subs.length === 0) {
+      pwaLog('❌ No hay suscripciones activas. Ejecuta el diagnóstico y crea una suscripción primero.', 'error');
+      return;
+    }
+    for (const sub of subs) {
+      pwaLog(`Enviando a: ${sub.endpoint.slice(0, 60)}...`, 'info');
+      try {
+        const res = await fetch('/.netlify/functions/send-push', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            subscription: { endpoint: sub.endpoint, keys: sub.keys },
+            notification: {
+              title: '🏠 My Nana — Prueba',
+              body: '¡Las notificaciones funcionan correctamente!',
+              url: '/app.html',
+              tipo: 'general',
+              tag: 'mynana-test-' + Date.now(),
+            },
+          }),
+        });
+        const texto = await res.text();
+        if (res.ok) {
+          pwaLog(`✅ Push enviado (HTTP ${res.status}). Deberías recibir la notificación en segundos.`, 'ok');
+        } else {
+          pwaLog(`❌ Error HTTP ${res.status}: ${texto}`, 'error');
+          if (res.status === 410) pwaLog('Suscripción expirada. Vuelve a suscribirte.', 'warn');
+          if (res.status === 500) pwaLog('Error en Netlify Function. Revisa las VAPID keys en Netlify Environment Variables.', 'warn');
+        }
+      } catch(e) {
+        pwaLog(`❌ Error de red: ${e.message}`, 'error');
+        pwaLog('Verifica que la Netlify Function send-push esté desplegada correctamente.', 'warn');
+      }
+    }
+  } catch(e) {
+    pwaLog(`❌ Error: ${e.message}`, 'error');
+  }
+};
+
+window.pwaDebugLimpiar = () => {
+  localStorage.removeItem('mynana_push_active');
+  localStorage.removeItem('mynana_pwa_banner_dismissed');
+  pwaInicializado = false;
+  pwaLog('localStorage PWA limpiado. Recarga la app para ver el banner de nuevo.', 'ok');
+};
 
 // ══ Exponer Firebase al scope global para onclick handlers
 window.db = db;
