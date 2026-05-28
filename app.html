@@ -478,7 +478,6 @@ body.lang-es [data-en]{display:none !important;}
         <button class="dash-lang-btn" onclick="toggleLangDash()" id="dashLangBtn" style="margin-right:4px;">🇺🇸 EN</button>
         <div class="dash-avatar" id="famAvatar">F</div>
       <div class="dash-nombre" id="famNombre">Familia</div>
-      <button id="btnCambiarHogar" onclick="volverSeleccionHogar()" style="display:none;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);font-size:11px;padding:5px 12px;border-radius:99px;cursor:pointer;font-family:'DM Sans',sans-serif;margin-right:4px;">🔄 Cambiar hogar</button>
       <button class="dash-logout" onclick="cerrarSesion()">Salir</button>
     </div>
   </nav>
@@ -708,35 +707,6 @@ body.lang-es [data-en]{display:none !important;}
 </div>
 </div>
 
-<!-- ══ SCREEN: SELECCIÓN DE HOGAR (nana eventual multi-hogar) ══ -->
-<div class="screen" id="screen-seleccion-hogar">
-  <div style="min-height:100vh;background:linear-gradient(160deg,var(--g2) 0%,#1a5540 60%,#0a3328 100%);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:48px 20px 40px;">
-
-    <!-- Logo -->
-    <div style="margin-bottom:32px;text-align:center;">
-      <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:#fff;">My <span style="color:var(--b);">Nana</span></div>
-    </div>
-
-    <!-- Header -->
-    <div style="text-align:center;margin-bottom:28px;max-width:340px;">
-      <div style="width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.1);border:2px solid var(--b);display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 14px;">👩</div>
-      <div id="selHogarGreeting" style="font-family:'Cormorant Garamond',serif;font-size:24px;color:#fff;margin-bottom:6px;">Buenos días</div>
-      <div style="font-size:14px;color:rgba(255,255,255,.6);line-height:1.5;">¿Con cuál familia trabajarás hoy?<br>Selecciona el hogar para comenzar.</div>
-    </div>
-
-    <!-- Cards de hogares -->
-    <div id="hogaresListNana" style="width:100%;max-width:400px;display:flex;flex-direction:column;gap:12px;margin-bottom:24px;"></div>
-
-    <!-- Footer -->
-    <div style="font-size:11px;color:rgba(255,255,255,.35);text-align:center;margin-top:8px;">
-      Solo verás información del hogar que selecciones
-    </div>
-    <button onclick="cerrarSesion()" style="margin-top:20px;background:transparent;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.5);font-size:12px;padding:8px 20px;border-radius:99px;cursor:pointer;font-family:'DM Sans',sans-serif;">
-      Salir de la sesión
-    </button>
-  </div>
-</div>
-
 <!-- ══════════════════════ DASHBOARD NANA ══════════════════════ -->
 <div class="screen" id="screen-nana">
 
@@ -750,7 +720,6 @@ body.lang-es [data-en]{display:none !important;}
       <button class="dash-lang-btn" onclick="toggleLangDash()" id="nanaLangBtn" style="margin-right:4px;">🇺🇸 EN</button>
       <div class="dash-avatar" id="nanaAvatarCircle">N</div>
       <div class="dash-nombre" id="nanaNombre">Nana</div>
-      <button id="btnCambiarHogar" onclick="volverSeleccionHogar()" style="display:none;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);font-size:11px;padding:5px 12px;border-radius:99px;cursor:pointer;font-family:'DM Sans',sans-serif;margin-right:4px;">🔄 Cambiar hogar</button>
       <button class="dash-logout" onclick="cerrarSesion()">Salir</button>
     </div>
   </nav>
@@ -783,9 +752,6 @@ body.lang-es [data-en]{display:none !important;}
     <button class="notif-toast-close" onclick="cerrarNanaNotifToast()">✕</button>
   </div>
 
-  <div id="bannerHogarActivo" style="display:none;background:#E1F0EB;padding:8px 16px;text-align:center;font-size:12px;font-weight:500;color:#0F4A38;border-bottom:1px solid #c8e4d8;">
-    <span id="textHogarActivo">Trabajando con tu hogar</span>
-  </div>
   <div class="dash-hero" style="background:linear-gradient(135deg,var(--b2) 0%,var(--b) 100%);">
     <div class="dash-hero-greeting" id="nanaGreeting">Buenos días</div>
     <div class="dash-hero-name" id="nanaHeroNombre">Tu día</div>
@@ -1629,90 +1595,8 @@ window.registrarse = async () => {
   }
 };
 
-// ══ NANA EVENTUAL — SELECCIÓN DE HOGAR ══
-let activeHogarId = null;  // hogarId activo para nana eventual
-
-// Validar y restaurar hogar activo desde localStorage
-async function restaurarHogarActivo(userUid) {
-  const guardado = localStorage.getItem('mynana_active_hogar');
-  if (!guardado) return null;
-  // Validar que la nana sigue siendo participante de ese hogar
-  try {
-    const hogarSnap = await getDoc(doc(db, 'hogares', guardado));
-    if (hogarSnap.exists()) {
-      const parts = hogarSnap.data().participantes || [];
-      if (parts.includes(userUid)) return guardado;
-    }
-  } catch(e) {}
-  localStorage.removeItem('mynana_active_hogar');
-  return null;
-}
-
-// Mostrar pantalla de selección de hogar
-function mostrarSeleccionHogar(nombreNana, hogares) {
-  mostrarScreen('seleccion-hogar');
-  const hora = new Date().getHours();
-  const saludo = hora < 12 ? 'Buenos días' : hora < 18 ? 'Buenas tardes' : 'Buenas noches';
-  const nombre = nombreNana?.split(' ')[0] || 'Nana';
-  const el = document.getElementById('selHogarGreeting');
-  if (el) el.textContent = `${saludo}, ${nombre} 👋`;
-
-  const lista = document.getElementById('hogaresListNana');
-  if (!lista) return;
-  lista.innerHTML = hogares.map(h => `
-    <div onclick="seleccionarHogar('${h.id}')"
-      style="background:#fff;border-radius:16px;padding:16px 20px;cursor:pointer;border:2px solid transparent;transition:all .2s;display:flex;align-items:center;gap:14px;box-shadow:0 4px 16px rgba(0,0,0,.1);"
-      onmouseover="this.style.borderColor='var(--b)';this.style.transform='translateY(-2px)'"
-      onmouseout="this.style.borderColor='transparent';this.style.transform='translateY(0)'">
-      <div style="width:46px;height:46px;border-radius:50%;background:var(--g2);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;flex-shrink:0;border:2.5px solid var(--b);">
-        ${h.iniciales}
-      </div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:15px;font-weight:600;color:var(--txt);margin-bottom:2px;">${h.nombreFamilia}</div>
-        <div style="font-size:12px;color:var(--txt2);">${h.subtexto}</div>
-      </div>
-      <div style="font-size:20px;color:var(--g);">→</div>
-    </div>`).join('');
-}
-
-// Seleccionar hogar y entrar al dashboard
-window.seleccionarHogar = async (hogarId) => {
-  const user = auth.currentUser;
-  if (!user) return;
-  // Validar acceso
-  try {
-    const hogarSnap = await getDoc(doc(db, 'hogares', hogarId));
-    if (!hogarSnap.exists() || !hogarSnap.data().participantes?.includes(user.uid)) {
-      showToast('❌ No tienes acceso a ese hogar');
-      return;
-    }
-  } catch(e) { showToast('❌ Error validando hogar'); return; }
-
-  activeHogarId = hogarId;
-  localStorage.setItem('mynana_active_hogar', hogarId);
-
-  // Mostrar dashboard con hogar seleccionado
-  const perfil = await getDoc(doc(db, 'usuarios', user.uid));
-  if (perfil.exists()) {
-    const data = perfil.data();
-    _entrarDashboardNana(data);
-  }
-};
-
-// Volver a selección de hogar (botón "Cambiar hogar")
-window.volverSeleccionHogar = async () => {
-  activeHogarId = null;
-  localStorage.removeItem('mynana_active_hogar');
-  const user = auth.currentUser;
-  if (!user) return;
-  const perfil = await getDoc(doc(db, 'usuarios', user.uid));
-  if (perfil.exists()) mostrarNana(perfil.data());
-};
-
 // ── CERRAR SESIÓN ──
 window.cerrarSesion = async () => {
-  activeHogarId = null;
-  localStorage.removeItem('mynana_active_hogar');
   await signOut(auth);
   mostrarScreen('login');
   document.getElementById('loginBtn').textContent = 'Iniciar sesión →';
@@ -1782,7 +1666,11 @@ async function cargarDashboardFamilia() {
     // Stats flotantes — solo tareas de hoy
     const hoyStr = (() => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })();
     const snapTareasStats = await getDocs(query(collection(db, 'hogares', hogarId, 'tareas')));
-    const tareasStats = snapTareasStats.docs.map(d => d.data()).filter(t => t.fecha ? t.fecha === hoyStr : true);
+    const tareasStats = snapTareasStats.docs.map(d => d.data()).filter(t => {
+        if (t.fecha) return t.fecha === hoyStr;
+        if (t.creadoA?.seconds) return getFechaStr2(new Date(t.creadoA.seconds * 1000)) === hoyStr;
+        return false;
+      });
     document.getElementById('statTareas').textContent = tareasStats.length || '0';
 
     const snapConvStats = await getDocs(query(collection(db, 'conversaciones'), where('participantes', 'array-contains', user.uid)));
@@ -1813,7 +1701,11 @@ async function cargarEstadoDash(hogarId, uid) {
   const hoy = (() => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })();
   try {
     const snap = await getDocs(query(collection(db, 'hogares', hogarId, 'tareas')));
-    const tareas = snap.docs.map(d => d.data()).filter(t => t.fecha ? t.fecha === hoy : true);
+    const tareas = snap.docs.map(d => d.data()).filter(t => {
+        if (t.fecha) return t.fecha === hoy;
+        if (t.creadoA?.seconds) return getFechaStr2(new Date(t.creadoA.seconds * 1000)) === hoy;
+        return false;
+      });
     const hechas = tareas.filter(t => t.estado === 'completa').length;
     const total = tareas.length;
     const pct = total ? Math.round((hechas/total)*100) : 100;
@@ -1850,12 +1742,22 @@ async function cargarEstadoDash(hogarId, uid) {
   } catch(e) { console.error('cargarEstadoDash:', e); }
 }
 
+function getFechaStr2(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
 function cargarTareasDash(hogarId, uid) {
-  const hoyStr = (() => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })();
+  const hoyStr = getFechaStr2(new Date());
 
   onSnapshot(query(collection(db, 'hogares', hogarId, 'tareas')), (snap) => {
     const tareas = snap.docs.map(d => d.data())
-      .filter(t => t.fecha ? t.fecha === hoyStr : true)
+      .filter(t => {
+        // Filtro estricto: solo tareas de hoy
+        if (t.fecha) return t.fecha === hoyStr;
+        // Fallback para tareas legacy sin campo fecha
+        if (t.creadoA?.seconds) return getFechaStr2(new Date(t.creadoA.seconds * 1000)) === hoyStr;
+        return false; // Sin fecha → no mostrar
+      })
       .sort((a,b) => a.hora?.localeCompare(b.hora));
     const hechas = tareas.filter(t => t.estado === 'completa').length;
     const total = tareas.length;
@@ -2316,64 +2218,16 @@ window.ingresarCodigoNana = async () => {
   }
 };
 
-async function mostrarNana(data) {
-  const user = auth.currentUser;
-  if (!user) { mostrarScreen('login'); return; }
-
-  // Obtener todos los hogares activos (con familia) de esta nana
-  let hogaresActivos = [];
-  try {
-    const qHogar = query(collection(db, 'hogares'), where('participantes', 'array-contains', user.uid));
-    const snapHogar = await getDocs(qHogar);
-    for (const hogarDoc of snapHogar.docs) {
-      const hData = hogarDoc.data();
-      for (const uid of (hData.participantes || [])) {
-        if (uid === user.uid) continue;
-        try {
-          const p = await getDoc(doc(db, 'usuarios', uid));
-          if (p.exists() && p.data().tipo === 'familia') {
-            const nombreFam = p.data().nombre || 'Familia';
-            hogaresActivos.push({
-              id: hogarDoc.id,
-              nombreFamilia: nombreFam,
-              iniciales: nombreFam.split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase() || 'F',
-              subtexto: `${(hData.participantes||[]).length} personas · Activo`,
-            });
-            break;
-          }
-        } catch(e) {}
-      }
-    }
-  } catch(e) { console.error('mostrarNana error:', e); }
-
-  if (hogaresActivos.length > 1) {
-    // ── NANA EVENTUAL CON MÚLTIPLES HOGARES ──
-    // Intentar restaurar hogar previo desde localStorage
-    const guardado = await restaurarHogarActivo(user.uid);
-    if (guardado) {
-      activeHogarId = guardado;
-      _entrarDashboardNana(data);
-      return;
-    }
-    // Mostrar pantalla de selección
-    mostrarSeleccionHogar(data.nombre, hogaresActivos);
-  } else {
-    // ── NANA FIJA O EVENTUAL CON 1 SOLO HOGAR ──
-    // Mismo flujo de siempre — sin cambios
-    activeHogarId = hogaresActivos.length === 1 ? hogaresActivos[0].id : null;
-    if (activeHogarId) localStorage.setItem('mynana_active_hogar', activeHogarId);
-    _entrarDashboardNana(data);
-  }
-}
-
-// Entrar al dashboard de nana (fija o después de seleccionar hogar)
-function _entrarDashboardNana(data) {
+function mostrarNana(data) {
   mostrarScreen('nana');
 
   const nombre = data.nombre?.split(' ')[0] || 'Nana';
   document.getElementById('nanaNombre').textContent = nombre;
   const avatarNana = document.getElementById('nanaAvatarCircle');
   if (avatarNana) avatarNana.textContent = data.nombre?.[0]?.toUpperCase() || 'N';
+
+  // La tarjeta de vincular es visible por defecto en el HTML
+  // Se ocultará solo cuando la nana se vincule exitosamente
 
   const hora = new Date().getHours();
   const saludo = hora < 12 ? 'Buenos días' : hora < 18 ? 'Buenas tardes' : 'Buenas noches';
@@ -2382,23 +2236,21 @@ function _entrarDashboardNana(data) {
   const heroNombre = document.getElementById('nanaHeroNombre');
   if (heroNombre) heroNombre.textContent = 'Todo listo para tu día';
 
-  // Banner "Trabajando con Familia" — solo si eligió entre múltiples
-  // (se actualiza al cargar tareas cuando sabemos el nombre de la familia)
   setFechaHoy();
   cargarTareasNana();
 
+  // Iniciar notificaciones de nana
   setTimeout(async () => {
     try {
+      const auth = getAuth();
       const user = auth.currentUser;
       if (!user) return;
-      // Usar activeHogarId si está disponible, si no buscar el primero
-      let hogarId = activeHogarId;
-      if (!hogarId) {
-        const qHogar = query(collection(db, 'hogares'), where('participantes', 'array-contains', user.uid));
-        const snap = await getDocs(qHogar);
-        if (!snap.empty) hogarId = snap.docs[0].id;
+      const qHogar = query(collection(db, 'hogares'), where('participantes', 'array-contains', user.uid));
+      const snap = await getDocs(qHogar);
+      if (!snap.empty) {
+        const hogarId = snap.docs[0].id;
+        iniciarNotificacionesNana(user.uid, hogarId);
       }
-      if (hogarId) iniciarNotificacionesNana(user.uid, hogarId);
     } catch(e) { console.error(e); }
   }, 1000);
 }
@@ -2409,55 +2261,20 @@ async function cargarTareasNana() {
     const user = auth.currentUser;
     if (!user) return;
 
-    // ── Usar activeHogarId si está disponible (nana eventual) ──
-    let hogarId = activeHogarId;
+    // Buscar hogar
+    const qHogar = query(collection(db, 'hogares'), where('participantes', 'array-contains', user.uid));
+    const snapHogar = await getDocs(qHogar);
+    if (snapHogar.empty) { renderTareasNanaDemo(); return; }
+
+    // Verificar si hay una familia en el hogar
+    const hogarData = snapHogar.docs[0].data();
+    const participantes = hogarData.participantes || [];
     let tieneFamilia = false;
-
-    if (hogarId) {
-      // Hogar ya seleccionado — validar acceso y verificar familia
-      const hogarSnap = await getDoc(doc(db, 'hogares', hogarId));
-      if (!hogarSnap.exists() || !hogarSnap.data().participantes?.includes(user.uid)) {
-        // Hogar inválido — limpiar y reiniciar
-        activeHogarId = null;
-        localStorage.removeItem('mynana_active_hogar');
-        renderTareasNanaDemo();
-        return;
-      }
-      const hogarData = hogarSnap.data();
-      for (const uid of (hogarData.participantes || [])) {
-        if (uid === user.uid) continue;
-        const p = await getDoc(doc(db, 'usuarios', uid));
-        if (p.exists() && p.data().tipo === 'familia') {
-          tieneFamilia = true;
-          // Mostrar banner "Trabajando con"
-          const famNombre = p.data().nombre?.split(' ')[0] || 'la familia';
-          const banner = document.getElementById('bannerHogarActivo');
-          const txt = document.getElementById('textHogarActivo');
-          const btnCambiar = document.getElementById('btnCambiarHogar');
-          if (banner && txt) {
-            txt.textContent = `Trabajando hoy con ${famNombre} 🏠`;
-            banner.style.display = 'block';
-          }
-          // Mostrar botón "Cambiar hogar" solo si tiene múltiples
-          if (btnCambiar) btnCambiar.style.display = 'inline-block';
-          break;
-        }
-      }
-    } else {
-      // ── Nana fija — buscar primer hogar (comportamiento original) ──
-      const qHogar = query(collection(db, 'hogares'), where('participantes', 'array-contains', user.uid));
-      const snapHogar = await getDocs(qHogar);
-      if (snapHogar.empty) { renderTareasNanaDemo(); return; }
-
-      const hogarData = snapHogar.docs[0].data();
-      hogarId = snapHogar.docs[0].id;
-      const participantes = hogarData.participantes || [];
-      for (const uid of participantes) {
-        if (uid === user.uid) continue;
-        const perfilSnap = await getDoc(doc(db, 'usuarios', uid));
-        if (perfilSnap.exists() && perfilSnap.data().tipo === 'familia') {
-          tieneFamilia = true; break;
-        }
+    for (const uid of participantes) {
+      if (uid === user.uid) continue;
+      const perfilSnap = await getDoc(doc(db, 'usuarios', uid));
+      if (perfilSnap.exists() && perfilSnap.data().tipo === 'familia') {
+        tieneFamilia = true; break;
       }
     }
 
@@ -2466,12 +2283,18 @@ async function cargarTareasNana() {
     if (cardVincular) cardVincular.style.display = tieneFamilia ? 'none' : 'block';
 
     if (!tieneFamilia) { renderTareasNanaDemo(); return; }
+
+    const hogarId = snapHogar.docs[0].id;
     const hoyStr = (() => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })();
     const qTareas = query(collection(db, 'hogares', hogarId, 'tareas'));
     const snapTareas = await getDocs(qTareas);
 
     const tareas = snapTareas.docs.map(d => ({ id: d.id, ...d.data() }))
-      .filter(t => t.fecha ? t.fecha === hoyStr : true);
+      .filter(t => {
+        if (t.fecha) return t.fecha === hoyStr;
+        if (t.creadoA?.seconds) return getFechaStr2(new Date(t.creadoA.seconds * 1000)) === hoyStr;
+        return false;
+      });
     const hechas = tareas.filter(t => t.estado === 'completa').length;
     const total = tareas.length;
     const pct = total ? Math.round((hechas / total) * 100) : 0;
@@ -2542,7 +2365,7 @@ function renderTarjetasNana(tareas, hogarId) {
     <div class="dash-card" onclick="location.href='/videos.html'" style="cursor:pointer;">
       <div class="dash-card-header">
         <div class="dash-card-icon" style="background:var(--b3);">📹</div>
-        <div><div class="dash-card-title">Ayudas rápidas del hogar</div><div class="dash-card-sub">Videos y guías para el hogar</div></div>
+        <div><div class="dash-card-title">Aprende algo nuevo</div><div class="dash-card-sub">Videos de capacitación</div></div>
       </div>
       <div class="dash-card-body">
         <div class="task-item"><span style="font-size:14px;">🍲</span><span class="task-name">Sancocho de gallina</span><span class="task-hora" style="color:var(--g);">Cocina</span></div>
@@ -2601,7 +2424,7 @@ function renderTareasNanaDemo() {
     <div class="dash-card" onclick="location.href='/videos.html'" style="cursor:pointer;">
       <div class="dash-card-header">
         <div class="dash-card-icon" style="background:var(--b3);">📹</div>
-        <div><div class="dash-card-title">Ayudas rápidas</div><div class="dash-card-sub">Videos y guías del hogar</div></div>
+        <div><div class="dash-card-title">Aprender</div><div class="dash-card-sub">Videos de capacitacion</div></div>
       </div>
       <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Ver videos</div></div>
     </div>
@@ -2852,7 +2675,7 @@ window.enviarMensaje = ()=>{
 
 function renderVideos(c){
   c.innerHTML=`<div class="sec-titulo">Videos de entrenamiento</div>
-  <div style="background:var(--g3);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:var(--g);border:1px solid var(--g4);">🏠 Ayudas rápidas de expertos panameños</div>`+
+  <div style="background:var(--g3);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:var(--g);border:1px solid var(--g4);">📹 Aprende con estos videos de expertos panameños</div>`+
   VIDEOS.map(v=>`<div class="video-card" onclick="abrirVideo('${v.id}')">
     <div class="video-thumb" style="background:${v.bg};">
       <div style="font-size:28px;">${v.emoji}</div>
