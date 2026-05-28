@@ -6,7 +6,7 @@
 <title>My Nana Panama 🇵🇦 — Organiza tu hogar y personal doméstico</title>
 
 <!-- ── SEO BÁSICO ── -->
-<meta name="description" content="La primera app panameña para organizar tu personal doméstico. Tareas, chat, menú semanal, contratos digitales y nómina automática. Prueba 15 días gratis, sin tarjeta.">
+<meta name="description" content="La primera app panameña para organizar tu personal doméstico. Tareas, chat, menú semanal, contratos digitales y nómina automática. Prueba 15 días gratis con acceso completo.">
 <meta name="keywords" content="app nana panama, nana panama, personal doméstico panama, empleada doméstica panama, organizar hogar panama, app hogar panama, servicio doméstico panama, nana app, mynana">
 <meta name="author" content="My Nana Panama">
 <meta name="robots" content="index, follow">
@@ -762,6 +762,7 @@ section {
 
 /* ── PROFILES ── */
 .profiles-section { background: var(--cr); }
+@media(max-width:640px){.compare-grid{grid-template-columns:1fr!important;}}
 
 .profiles-grid {
   display: grid;
@@ -2839,7 +2840,7 @@ window.unirseConCodigo = async function() {
       <div class="hero-stats">
         <div class="hero-stat">
           <div class="hero-stat-n">15 días</div>
-          <div class="hero-stat-l"><span class="es">gratis, sin tarjeta</span><span class="en">free, no card</span></div>
+          <div class="hero-stat-l"><span class="es">gratis · acceso completo</span><span class="en">free · full access</span></div>
         </div>
         <div class="hero-stat">
           <div class="hero-stat-n">< 3 min</div>
@@ -3066,8 +3067,7 @@ window.unirseConCodigo = async function() {
         <button class="feat-tab" onclick="mostrarFeat('contrato',this)">📋 <span class="es">Contratos</span><span class="en">Contracts</span></button>
         <button class="feat-tab" onclick="mostrarFeat('nomina',this)">💰 <span class="es">Nómina</span><span class="en">Payroll</span></button>
         <button class="feat-tab" onclick="mostrarFeat('fotos',this)">📸 <span class="es">Fotos</span><span class="en">Photos</span></button>
-        <button class="feat-tab" onclick="mostrarFeat('ayudas',this)">🏠 <span class="es">Ayudas rápidas</span><span class="en">Quick guides</span></button>
-        <button class="feat-tab" onclick="mostrarFeat('planificador',this)">✨ <span class="es">Planificador IA</span><span class="en">AI Planner</span></button>
+        <button class="feat-tab" onclick="mostrarFeat('videos',this)">📹 Videos</button>
         <button class="feat-tab" onclick="mostrarFeat('buscador',this)">🔍 <span class="es">Buscador</span><span class="en">Search</span></button>
       </div>
 
@@ -3134,57 +3134,6 @@ window.unirseConCodigo = async function() {
         <div class="step-num">03</div>
         <div class="step-title"><span class="es">Tu hogar respira tranquilo</span><span class="en">Your home breathes easy</span></div>
         <div class="step-desc"><span class="es">Las tareas fluyen solas. El menú planificado. El chat activo. Tú sabes todo sin preguntar nada — desde donde estés.</span><span class="en">Tasks flow on their own. Menu planned. Chat active. You know everything without asking — from wherever you are.</span></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- PROFILES -->
-<section class="profiles-section" id="profiles">
-  <div class="section-inner">
-    <div class="reveal">
-      <div class="section-tag"><span class="es">Tipos de servicio</span><span class="en">Service types</span></div>
-      <h2 class="section-title"><span class="es">Adaptado a tu realidad</span><span class="en">Adapted to your reality</span></h2>
-      <p class="section-sub"><span class="es">My Nana funciona para nanas a tiempo completo y para personal que viene por días — cada una con su propia experiencia.</span><span class="en">My Nana works for full-time nanas and for staff who come by the day — each with their own tailored experience.</span></p>
-    </div>
-    <div class="profiles-grid">
-      <div class="profile-card reveal">
-        <div class="profile-header" style="background:var(--g2);color:#fff;">
-          <div class="profile-icon" style="background:rgba(255,255,255,.1);">👩‍👧</div>
-          <div class="profile-title">Nana Fija</div>
-          <div class="profile-sub"><span class="es">Tiempo completo · Interna o externa · Lunes a sábado</span><span class="en">Full-time · Live-in or live-out · Monday to Saturday</span></div>
-        </div>
-        <div class="profile-features">
-          <div class="profile-feat"><div class="profile-feat-dot" style="background:var(--g);"></div><span class="es">Tareas diarias y rutinas semanales</span><span class="en">Daily tasks and weekly routines</span></div>
-          <div class="profile-feat"><div class="profile-feat-dot" style="background:var(--g);"></div><span class="es">Menú semanal completo — 4 tiempos</span><span class="en">Full weekly menu — 4 meal times</span></div>
-          <div class="profile-feat"><div class="profile-feat-dot" style="background:var(--g);"></div><span class="es">Control de horario entrada y salida</span><span class="en">Clock-in and clock-out tracking</span></div>
-          <div class="profile-feat"><div class="profile-feat-dot" style="background:var(--g);"></div><span class="es">Registro de días libres y vacaciones</span><span class="en">Days off and vacation tracking</span></div>
-          <div class="profile-feat"><div class="profile-feat-dot" style="background:var(--g);"></div><span class="es">Nómina mensual con cálculo automático</span><span class="en">Monthly payroll with automatic calculation</span></div>
-          <div class="profile-feat"><div class="profile-feat-dot" style="background:var(--g);"></div><span class="es">Contrato digital según ley panameña</span><span class="en">Digital contract under Panamanian law</span></div>
-        </div>
-        <div class="profile-footer">
-          <div class="profile-plan" style="color:var(--g);"><span class="es">Plan Hogar Completo</span><span class="en">Full Home Plan</span></div>
-          <div class="profile-price" style="color:var(--g);">$9.99/<span class="es">mes</span><span class="en">mo</span></div>
-        </div>
-      </div>
-      <div class="profile-card reveal">
-        <div class="profile-header" style="background:var(--b);color:#fff;">
-          <div class="profile-icon" style="background:rgba(255,255,255,.15);">📅</div>
-          <div class="profile-title"><span class="es">Nana Eventual</span><span class="en">Occasional Nana</span></div>
-          <div class="profile-sub"><span class="es">Por días · 2 o 3 veces por semana · Flexible</span><span class="en">By the day · 2 or 3 times a week · Flexible</span></div>
-        </div>
-        <div class="profile-features">
-          <div class="profile-feat"><div class="profile-feat-dot" style="background:var(--b);"></div><span class="es">Tareas específicas por día de visita</span><span class="en">Specific tasks per visit day</span></div>
-          <div class="profile-feat"><div class="profile-feat-dot" style="background:var(--b);"></div><span class="es">Notificación automática la noche anterior</span><span class="en">Automatic notification the night before</span></div>
-          <div class="profile-feat"><div class="profile-feat-dot" style="background:var(--b);"></div><span class="es">Confirmación de asistencia desde la app</span><span class="en">Attendance confirmation from the app</span></div>
-          <div class="profile-feat"><div class="profile-feat-dot" style="background:var(--b);"></div><span class="es">Pago por días trabajados con registro</span><span class="en">Payment per day worked with log</span></div>
-          <div class="profile-feat"><div class="profile-feat-dot" style="background:var(--b);"></div><span class="es">Calificación después de cada visita</span><span class="en">Rating after each visit</span></div>
-          <div class="profile-feat"><div class="profile-feat-dot" style="background:var(--b);"></div><span class="es">Contrato eventual según ley panameña</span><span class="en">Occasional contract under Panamanian law</span></div>
-        </div>
-        <div class="profile-footer">
-          <div class="profile-plan" style="color:var(--b2);"><span class="es">Plan Hogar Flexible</span><span class="en">Flexible Home Plan</span></div>
-          <div class="profile-price" style="color:var(--b2);">$6.99/<span class="es">mes</span><span class="en">mo</span></div>
-        </div>
       </div>
     </div>
   </div>
@@ -3327,7 +3276,7 @@ window.unirseConCodigo = async function() {
           <li class="pricing-feat">✓ <span class="es">Tareas ilimitadas con fotos</span><span class="en">Unlimited tasks with photos</span></li>
           <li class="pricing-feat">✓ <span class="es">Menú semanal + lista del mercado</span><span class="en">Weekly menu + grocery list</span></li>
           <li class="pricing-feat">✓ <span class="es">Chat con fotos y audios</span><span class="en">Chat with photos and audio</span></li>
-          <li class="pricing-feat">✓ <span class="es">Ayudas rápidas del hogar</span><span class="en">Panamanian training videos</span></li>
+          <li class="pricing-feat">✓ <span class="es">Videos de entrenamiento panameños</span><span class="en">Panamanian training videos</span></li>
           <li class="pricing-feat">✓ <span class="es">Contrato digital · Ley panameña</span><span class="en">Digital contract · Panamanian law</span></li>
           <li class="pricing-feat">✓ <span class="es">Nómina + décimo tercer mes automático</span><span class="en">Payroll + automatic 13th-month bonus</span></li>
           <li class="pricing-feat">✓ <span class="es">MyNana Score verificado</span><span class="en">Verified MyNana Score</span></li>
@@ -3356,29 +3305,152 @@ window.unirseConCodigo = async function() {
 
     </div>
 
-    <!-- COMPARATIVA RÁPIDA -->
-    <div class="reveal" style="margin-top:40px;background:var(--cr);border-radius:16px;padding:24px;border:1px solid var(--g4);">
-      <div style="font-size:13px;font-weight:600;color:var(--txt);text-align:center;margin-bottom:16px;"><span class="es">¿Por qué vale la pena?</span><span class="en">Why is it worth it?</span></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-        <div>
-          <div style="font-size:12px;font-weight:600;color:var(--b2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em;"><span class="es">Antes de My Nana</span><span class="en">Before My Nana</span></div>
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;color:var(--txt2);">❌ <span class="es">Instrucciones por WhatsApp y se pierden</span><span class="en">WhatsApp instructions that get lost</span></div>
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;color:var(--txt2);">❌ <span class="es">Sin registro de tareas completadas</span><span class="en">No log of completed tasks</span></div>
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;color:var(--txt2);">❌ <span class="es">Contratos escritos a mano</span><span class="en">Hand-written contracts</span></div>
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;color:var(--txt2);">❌ <span class="es">Cálculo manual de décimos</span><span class="en">Manual bonus calculations</span></div>
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;color:var(--txt2);">❌ <span class="es">Sin historial de pagos</span><span class="en">No payment history</span></div>
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;color:var(--txt2);">❌ <span class="es">Cada nana maneja todo diferente</span><span class="en">Every nana does things differently</span></div>
+    <!-- COMPARATIVA REDISEÑADA — ¿Por qué vale la pena? -->
+    <div class="reveal" style="margin-top:56px;">
+
+      <!-- Encabezado de sección -->
+      <div style="text-align:center;margin-bottom:40px;">
+        <div style="display:inline-block;background:var(--b3);border:1px solid #ecc;border-radius:99px;padding:5px 16px;font-size:11px;font-weight:600;color:var(--b2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:14px;">
+          <span class="es">¿Por qué vale la pena?</span><span class="en">Why is it worth it?</span>
         </div>
-        <div>
-          <div style="font-size:12px;font-weight:600;color:var(--g);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em;"><span class="es">Con My Nana</span><span class="en">With My Nana</span></div>
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;color:var(--txt);">✅ <span class="es">Tareas claras y organizadas por hora</span><span class="en">Clear tasks organized by hour</span></div>
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;color:var(--txt);">✅ <span class="es">Fotos de evidencia en tiempo real</span><span class="en">Real-time photo evidence</span></div>
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;color:var(--txt);">✅ <span class="es">Contrato digital según ley panameña</span><span class="en">Digital contract under Panamanian law</span></div>
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;color:var(--txt);">✅ <span class="es">Nómina calculada automáticamente</span><span class="en">Automatically calculated payroll</span></div>
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;color:var(--txt);">✅ <span class="es">Historial completo de pagos</span><span class="en">Complete payment history</span></div>
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;color:var(--txt);">✅ <span class="es">Score verificado del personal</span><span class="en">Verified staff score</span></div>
+        <h3 style="font-family:Georgia,serif;font-size:clamp(22px,4vw,30px);font-weight:500;color:var(--txt);line-height:1.25;margin-bottom:10px;">
+          <span class="es">¿Te suena familiar?</span><span class="en">Does this sound familiar?</span>
+        </h3>
+        <p style="font-size:15px;color:var(--txt2);max-width:460px;margin:0 auto;line-height:1.6;">
+          <span class="es">Así se ve la vida antes. Así se siente con My Nana.</span>
+          <span class="en">This is what life looks like before. This is how it feels with My Nana.</span>
+        </p>
+      </div>
+
+      <!-- Grid comparativo -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;" class="compare-grid">
+
+        <!-- COLUMNA ANTES -->
+        <div style="background:#FFF8F8;border:1.5px solid #F5C6C6;border-radius:20px;overflow:hidden;">
+          <!-- Header antes -->
+          <div style="background:#B91C1C;padding:18px 20px;display:flex;align-items:center;gap:10px;">
+            <div style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">😰</div>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:#fff;letter-spacing:.01em;"><span class="es">Antes de My Nana</span><span class="en">Before My Nana</span></div>
+              <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:1px;"><span class="es">El hogar depende de que tú estés pendiente</span><span class="en">Your home depends on you being available</span></div>
+            </div>
+          </div>
+          <!-- Items antes -->
+          <div style="padding:18px 20px;display:flex;flex-direction:column;gap:10px;">
+
+            <div style="background:#fff;border:1px solid #FEE2E2;border-radius:12px;padding:13px 14px;display:flex;align-items:flex-start;gap:10px;">
+              <span style="font-size:18px;flex-shrink:0;margin-top:1px;">💬</span>
+              <div>
+                <div style="font-size:13px;font-weight:500;color:#7F1D1D;margin-bottom:2px;"><span class="es">Instrucciones por WhatsApp</span><span class="en">Instructions over WhatsApp</span></div>
+                <div style="font-size:11px;color:#9B6B6B;line-height:1.4;"><span class="es">Se pierden entre mensajes. La nana hace lo que recuerda.</span><span class="en">Lost in messages. She does what she remembers.</span></div>
+              </div>
+            </div>
+
+            <div style="background:#fff;border:1px solid #FEE2E2;border-radius:12px;padding:13px 14px;display:flex;align-items:flex-start;gap:10px;">
+              <span style="font-size:18px;flex-shrink:0;margin-top:1px;">🤷</span>
+              <div>
+                <div style="font-size:13px;font-weight:500;color:#7F1D1D;margin-bottom:2px;"><span class="es">¿Lo hizo o no lo hizo?</span><span class="en">Did she do it or not?</span></div>
+                <div style="font-size:11px;color:#9B6B6B;line-height:1.4;"><span class="es">No hay registro. Nunca sabes con certeza.</span><span class="en">No record. You never know for sure.</span></div>
+              </div>
+            </div>
+
+            <div style="background:#fff;border:1px solid #FEE2E2;border-radius:12px;padding:13px 14px;display:flex;align-items:flex-start;gap:10px;">
+              <span style="font-size:18px;flex-shrink:0;margin-top:1px;">🧮</span>
+              <div>
+                <div style="font-size:13px;font-weight:500;color:#7F1D1D;margin-bottom:2px;"><span class="es">Décimos calculados en Excel</span><span class="en">Bonuses calculated in Excel</span></div>
+                <div style="font-size:11px;color:#9B6B6B;line-height:1.4;"><span class="es">Cada mes diferente. Siempre con dudas.</span><span class="en">Different every month. Always uncertain.</span></div>
+              </div>
+            </div>
+
+            <div style="background:#fff;border:1px solid #FEE2E2;border-radius:12px;padding:13px 14px;display:flex;align-items:flex-start;gap:10px;">
+              <span style="font-size:18px;flex-shrink:0;margin-top:1px;">📝</span>
+              <div>
+                <div style="font-size:13px;font-weight:500;color:#7F1D1D;margin-bottom:2px;"><span class="es">Contratos escritos a mano</span><span class="en">Handwritten contracts</span></div>
+                <div style="font-size:11px;color:#9B6B6B;line-height:1.4;"><span class="es">Sin validez legal clara. Sin respaldo digital.</span><span class="en">No clear legal validity. No digital backup.</span></div>
+              </div>
+            </div>
+
+            <div style="background:#fff;border:1px solid #FEE2E2;border-radius:12px;padding:13px 14px;display:flex;align-items:flex-start;gap:10px;">
+              <span style="font-size:18px;flex-shrink:0;margin-top:1px;">🔁</span>
+              <div>
+                <div style="font-size:13px;font-weight:500;color:#7F1D1D;margin-bottom:2px;"><span class="es">Explicas lo mismo cada semana</span><span class="en">You explain the same things every week</span></div>
+                <div style="font-size:11px;color:#9B6B6B;line-height:1.4;"><span class="es">El menú, los cuartos, los horarios. Una y otra vez.</span><span class="en">The menu, the rooms, the schedule. Over and over.</span></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- COLUMNA CON MY NANA -->
+        <div style="background:#F0F7F4;border:1.5px solid var(--g4);border-radius:20px;overflow:hidden;">
+          <!-- Header con My Nana -->
+          <div style="background:var(--g2);padding:18px 20px;display:flex;align-items:center;gap:10px;">
+            <div style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">🏠</div>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:#fff;letter-spacing:.01em;"><span class="es">Con My Nana</span><span class="en">With My Nana</span></div>
+              <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:1px;"><span class="es">Tu hogar funciona solo — tú vives tu vida</span><span class="en">Your home runs itself — you live your life</span></div>
+            </div>
+          </div>
+          <!-- Items con -->
+          <div style="padding:18px 20px;display:flex;flex-direction:column;gap:10px;">
+
+            <div style="background:#fff;border:1px solid var(--g4);border-radius:12px;padding:13px 14px;display:flex;align-items:flex-start;gap:10px;">
+              <span style="font-size:18px;flex-shrink:0;margin-top:1px;">✅</span>
+              <div>
+                <div style="font-size:13px;font-weight:500;color:var(--g2);margin-bottom:2px;"><span class="es">Tareas con hora, foto y confirmación</span><span class="en">Tasks with time, photo and confirmation</span></div>
+                <div style="font-size:11px;color:var(--txt2);line-height:1.4;"><span class="es">La nana sabe qué hacer. Tú ves si se hizo.</span><span class="en">She knows what to do. You see if it's done.</span></div>
+              </div>
+            </div>
+
+            <div style="background:#fff;border:1px solid var(--g4);border-radius:12px;padding:13px 14px;display:flex;align-items:flex-start;gap:10px;">
+              <span style="font-size:18px;flex-shrink:0;margin-top:1px;">📸</span>
+              <div>
+                <div style="font-size:13px;font-weight:500;color:var(--g2);margin-bottom:2px;"><span class="es">Evidencia real en tiempo real</span><span class="en">Real evidence in real time</span></div>
+                <div style="font-size:11px;color:var(--txt2);line-height:1.4;"><span class="es">Foto al completar. Historial guardado. Tranquilidad.</span><span class="en">Photo on completion. History saved. Peace of mind.</span></div>
+              </div>
+            </div>
+
+            <div style="background:#fff;border:1px solid var(--g4);border-radius:12px;padding:13px 14px;display:flex;align-items:flex-start;gap:10px;">
+              <span style="font-size:18px;flex-shrink:0;margin-top:1px;">💚</span>
+              <div>
+                <div style="font-size:13px;font-weight:500;color:var(--g2);margin-bottom:2px;"><span class="es">Nómina automática y correcta</span><span class="en">Automatic and accurate payroll</span></div>
+                <div style="font-size:11px;color:var(--txt2);line-height:1.4;"><span class="es">Décimos, vacaciones y pagos — calculados solos.</span><span class="en">Bonuses, vacation and payments — calculated automatically.</span></div>
+              </div>
+            </div>
+
+            <div style="background:#fff;border:1px solid var(--g4);border-radius:12px;padding:13px 14px;display:flex;align-items:flex-start;gap:10px;">
+              <span style="font-size:18px;flex-shrink:0;margin-top:1px;">📋</span>
+              <div>
+                <div style="font-size:13px;font-weight:500;color:var(--g2);margin-bottom:2px;"><span class="es">Contrato digital según ley panameña</span><span class="en">Digital contract under Panamanian law</span></div>
+                <div style="font-size:11px;color:var(--txt2);line-height:1.4;"><span class="es">Firmado, respaldado y legalmente válido.</span><span class="en">Signed, backed up and legally valid.</span></div>
+              </div>
+            </div>
+
+            <div style="background:#fff;border:1px solid var(--g4);border-radius:12px;padding:13px 14px;display:flex;align-items:flex-start;gap:10px;">
+              <span style="font-size:18px;flex-shrink:0;margin-top:1px;">🧠</span>
+              <div>
+                <div style="font-size:13px;font-weight:500;color:var(--g2);margin-bottom:2px;"><span class="es">Cero carga mental extra</span><span class="en">Zero extra mental load</span></div>
+                <div style="font-size:11px;color:var(--txt2);line-height:1.4;"><span class="es">El sistema recuerda todo por ti. Tú solo vives.</span><span class="en">The system remembers everything. You just live.</span></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div><!-- fin compare-grid -->
+
+      <!-- Quote de cierre -->
+      <div style="margin-top:28px;background:linear-gradient(135deg,var(--g2) 0%,#1a5540 100%);border-radius:16px;padding:24px 28px;text-align:center;">
+        <div style="font-family:Georgia,serif;font-size:clamp(16px,3vw,20px);color:#fff;line-height:1.5;margin-bottom:10px;">
+          <span class="es">"Sí, literalmente así se siente mi casa."</span>
+          <span class="en">"Yes, that's literally what my house feels like."</span>
+        </div>
+        <div style="font-size:12px;color:rgba(255,255,255,.5);">
+          <span class="es">Miles de familias en Panamá ya lo sienten diferente.</span>
+          <span class="en">Thousands of families in Panama already feel the difference.</span>
         </div>
       </div>
+
     </div>
 
   </div>
@@ -5119,7 +5191,7 @@ const FEATS = {
     titulo_en: 'Daily tasks',
     desc: 'Tu nana ve sus tareas del día con horario claro. Sin llamadas, sin confusiones. Puede marcarlas como listas y subir foto de evidencia.',
     desc_en: 'Your nana sees her daily tasks with a clear schedule. No calls, no confusion. She can mark them done and upload photo evidence.',
-    puntos: ['Tareas con hora y descripción claras', 'Planificador semanal inteligente con IA', 'Foto de evidencia al completar', 'Barra de progreso en tiempo real'],
+    puntos: ['Tareas con hora y descripción', 'Botón de audio — le lee las tareas en voz alta', 'Foto de evidencia al completar', 'Barra de progreso en tiempo real'],
     puntos_en: ['Tasks with time and description', 'Audio button — reads tasks aloud', 'Photo evidence when completed', 'Real-time progress bar'],
     demo: () => {
       const esEN = idiomaActual === 'en';
@@ -5410,7 +5482,7 @@ const FEATS = {
     titulo_en: 'Work photos',
     desc: 'La nana sube una foto al completar cada tarea. Tú ves la evidencia en tiempo real desde donde estés — sin necesidad de preguntar.',
     desc_en: 'The nana uploads a photo when completing each task. You see the evidence in real time from wherever you are — no need to ask.',
-    puntos: ['Un toque para abrir la cámara', 'Foto vinculada a cada tarea completada', 'La familia ve galería de evidencias del día', 'También aparece en el chat del hogar'],
+    puntos: ['Un toque para abrir la cámara', 'Foto vinculada a cada tarea', 'La familia recibe notificación inmediata', 'Galería organizada por día y tarea'],
     puntos_en: ['One tap to open the camera', 'Photo linked to each task', 'Family gets an immediate notification', 'Gallery organized by day and task'],
     demo: () => {
       const esEN = idiomaActual === 'en';
@@ -5439,14 +5511,14 @@ const FEATS = {
       </div>`;
     }
   },
-  ayudas: {
-    emoji: '🏠',
-    titulo: 'Ayudas rápidas del hogar',
-    titulo_en: 'Quick home guides',
-    desc: 'Biblioteca de videos y guías grabados por expertos panameños. Cada tarea tiene su tutorial — desde cómo limpiar correctamente hasta cómo cocinar el sancocho perfecto.',
-    desc_en: 'Video library and guides recorded by Panamanian experts. Every task has its tutorial — from proper cleaning to cooking the perfect sancocho.',
-    puntos: ['Videos de cocina panameña con recetas reales', 'Tutoriales de limpieza paso a paso', 'Guías de lavandería y planchado', 'Vinculados directamente a cada tarea del día'],
-    puntos_en: ['Panamanian cooking videos with real recipes', 'Step-by-step cleaning tutorials', 'Laundry and ironing guides', 'Linked directly to each daily task'],
+  videos: {
+    emoji: '📹',
+    titulo: 'Videos de entrenamiento',
+    titulo_en: 'Training videos',
+    desc: 'Biblioteca de videos grabados por expertos panameños. Cada tarea tiene su video tutorial — desde cómo limpiar hasta cómo cocinar el sancocho perfecto.',
+    desc_en: 'Video library recorded by Panamanian experts. Every task has its tutorial video — from cleaning to cooking the perfect sancocho.',
+    puntos: ['Videos de cocina panameña con recetas reales', 'Tutoriales de limpieza paso a paso', 'Videos de lavandería y planchado', 'Vinculados directamente a cada tarea del día'],
+    puntos_en: ['Panamanian cooking videos with real recipes', 'Step-by-step cleaning tutorials', 'Laundry and ironing videos', 'Linked directly to each daily task'],
     demo: () => {
       const esEN = idiomaActual === 'en';
       const cats = esEN ? ['Cooking','Cleaning','Laundry','Kids'] : ['Cocina','Limpieza','Lavandería','Niños'];
@@ -5480,60 +5552,6 @@ const FEATS = {
               <div style="font-size:10px;color:#bbb;">${d} · ${cat}</div>
             </div>
           </div>`).join('')}
-      </div>`;
-    }
-  },
-  planificador: {
-    emoji: '✨',
-    titulo: 'Planificador inteligente',
-    titulo_en: 'AI weekly planner',
-    desc: 'My Nana aprende tu hogar: cuántos son, si hay niños, mascotas, horarios de comida — y genera un plan semanal personalizado. No genérico, tuyo.',
-    desc_en: 'My Nana learns your home: how many people, kids, pets, meal times — and generates a personalized weekly plan. Not generic, yours.',
-    puntos: ['Perfil del hogar: personas, cuartos, mascotas', 'Plan semanal generado en segundos', 'Tareas coordinadas con tu menú semanal', 'Tres modos: normal, semana ocupada o repetir'],
-    puntos_en: ['Home profile: people, rooms, pets', 'Weekly plan generated in seconds', 'Tasks coordinated with your weekly menu', 'Three modes: normal, busy week, or repeat'],
-    demo: () => {
-      const esEN = idiomaActual === 'en';
-      const dias = esEN ? ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] : ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
-      const tareas = esEN ? [
-        ['🍳','Prepare breakfast (Eggs & toast)','7:30 am','Cooking','normal'],
-        ['🐶','Walk the dog — morning','7:15 am','Pets','urgent'],
-        ['🧹','Deep clean bathrooms','8:00 am','Cleaning','normal'],
-        ['🍲','Cook lunch — Chicken rice','11:30 am','Cooking','normal'],
-        ['🐶','Walk the dog — evening','6:00 pm','Pets','normal'],
-      ] : [
-        ['🍳','Preparar desayuno (Huevos y tostadas)','7:30 am','Cocina','normal'],
-        ['🐶','Pasear al perro — mañana','7:15 am','Mascotas','urgente'],
-        ['🧹','Limpiar baños a fondo','8:00 am','Limpieza','normal'],
-        ['🍲','Cocinar almuerzo — Arroz con pollo','11:30 am','Cocina','normal'],
-        ['🐶','Pasear al perro — tarde','6:00 pm','Mascotas','normal'],
-      ];
-      const catColors = {Cocina:'#FEF3E2',Mascotas:'#FFF3E0',Limpieza:'#E8F5E9',Lavandería:'#E3F2FD','Cooking':'#FEF3E2','Pets':'#FFF3E0','Cleaning':'#E8F5E9'};
-      return `
-      <div style="background:linear-gradient(135deg,var(--g2),#1a5540);padding:12px 16px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-          <div style="font-family:Georgia,serif;font-size:15px;color:#fff;">${esEN ? 'AI Weekly Plan' : 'Plan semanal IA'}</div>
-          <div style="background:var(--b);color:#fff;font-size:10px;padding:3px 10px;border-radius:99px;font-weight:600;">✨ ${esEN ? 'Generated' : 'Generado'}</div>
-        </div>
-        <div style="background:rgba(255,255,255,.12);border-radius:8px;padding:6px 10px;font-size:10px;color:rgba(255,255,255,.7);">
-          🏠 ${esEN ? '2 adults · 1 dog · 3 rooms · Apt.' : '2 adultos · 1 perro · 3 cuartos · Apto.'}
-        </div>
-        <div style="display:flex;gap:4px;margin-top:8px;">
-          ${dias.map((d,i)=>`<div style="flex:1;height:26px;border-radius:6px;background:${i===1?'var(--b)':'rgba(255,255,255,.15)'};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:#fff;">${d}</div>`).join('')}
-        </div>
-      </div>
-      <div style="padding:10px;display:flex;flex-direction:column;gap:6px;">
-        ${tareas.map(([e,t,h,cat,prio])=>`
-          <div style="background:#fff;border-radius:10px;border:1px solid ${prio==='urgente'||prio==='urgent'?'#FBBCBC':'var(--g4)'};display:flex;align-items:center;gap:8px;padding:8px 10px;">
-            <div style="width:30px;height:30px;border-radius:8px;background:${catColors[cat]||'var(--g3)'};display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;">${e}</div>
-            <div style="flex:1;min-width:0;">
-              <div style="font-size:11px;font-weight:500;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t}</div>
-              <div style="font-size:9px;color:#bbb;margin-top:1px;">⏰ ${h} · ${cat}${prio==='urgente'||prio==='urgent'?' · 🔴':''}</div>
-            </div>
-            <div style="width:20px;height:20px;border-radius:50%;border:1.5px solid var(--g4);flex-shrink:0;"></div>
-          </div>`).join('')}
-        <div style="background:linear-gradient(135deg,var(--g3),#FFF8EE);border-radius:10px;padding:10px;text-align:center;border:1px solid var(--g4);">
-          <div style="font-size:11px;font-weight:600;color:var(--g);">✨ ${esEN ? 'Generate plan for this week →' : 'Generar plan de esta semana →'}</div>
-        </div>
       </div>`;
     }
   },
