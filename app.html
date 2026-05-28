@@ -3051,12 +3051,15 @@ async function procesarCodigoFamiliar(codigo, nuevoUid) {
 
 const VAPID_PUBLIC_KEY = 'BFAdLN5LcWCs0mR_KDyJthqJb9cdDpBEu9rUIY8dUgudF5wyahX4_TOKkbEPnmWssc7jgBQzs7Hwx1bUIZxnIFM';
 
-// ── Helpers de detección ──
+// ─────────────────────────────────────────────
+//  PWA — Helpers de detección
+// ─────────────────────────────────────────────
 function esIOS() {
   return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 }
 function esPWAInstalada() {
-  return window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  return window.matchMedia('(display-mode: standalone)').matches
+      || navigator.standalone === true;
 }
 function notificacionesActivas() {
   return typeof Notification !== 'undefined' && Notification.permission === 'granted';
@@ -3064,24 +3067,34 @@ function notificacionesActivas() {
 function bannerDescartado() {
   const ts = localStorage.getItem('mynana_pwa_banner_dismissed');
   if (!ts) return false;
-  // No volver a mostrar por 7 días
   return (Date.now() - parseInt(ts)) < 7 * 24 * 60 * 60 * 1000;
 }
 
-// ── Registrar Service Worker ──
+// ─────────────────────────────────────────────
+//  Service Worker — con updateViaCache: 'none'
+// ─────────────────────────────────────────────
 async function registrarSW() {
-  if (!('serviceWorker' in navigator)) return null;
+  if (!('serviceWorker' in navigator)) {
+    console.warn('[PWA] Service Workers no soportados en este navegador');
+    return null;
+  }
   try {
-    const reg = await navigator.serviceWorker.register('/service-worker.js', { scope: '/' });
-    console.log('[PWA] Service worker registrado:', reg.scope);
+    const reg = await navigator.serviceWorker.register('/service-worker.js', {
+      scope: '/',
+      updateViaCache: 'none',  // Siempre verificar versión nueva
+    });
+    console.log('[PWA] ✅ Service worker registrado. Scope:', reg.scope);
+    console.log('[PWA] Estado SW:', reg.active ? 'activo' : reg.installing ? 'instalando' : 'esperando');
     return reg;
   } catch(e) {
-    console.warn('[PWA] Error registrando SW:', e);
+    console.error('[PWA] ❌ Error registrando SW:', e.message);
     return null;
   }
 }
 
-// ── Suscribir a Push ──
+// ─────────────────────────────────────────────
+//  Push — Suscripción con timeout
+// ─────────────────────────────────────────────
 function urlBase64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
@@ -3089,107 +3102,175 @@ function urlBase64ToUint8Array(base64String) {
   return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
 }
 
+// Esperar SW ready con timeout para no bloquearse en iOS
+function swReadyConTimeout(ms = 10000) {
+  return Promise.race([
+    navigator.serviceWorker.ready,
+    new Promise((_, reject) => setTimeout(() => reject(new Error('SW ready timeout')), ms)),
+  ]);
+}
+
 async function suscribirAPush(registration) {
   try {
+    // Verificar si ya tiene suscripción activa
     const existing = await registration.pushManager.getSubscription();
-    if (existing) return existing;
+    if (existing) {
+      console.log('[PWA] ✅ Ya existe suscripción push');
+      return existing;
+    }
+    // Crear nueva suscripción
     const subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
     });
+    console.log('[PWA] ✅ Nueva suscripción push creada:', subscription.endpoint.slice(0, 60) + '...');
     return subscription;
   } catch(e) {
-    console.warn('[PWA] Error suscribiendo a push:', e);
+    console.error('[PWA] ❌ Error suscribiendo a push:', e.message);
     return null;
   }
 }
 
-// ── Guardar suscripción en Firestore ──
+// ─────────────────────────────────────────────
+//  Guardar suscripción en Firestore
+// ─────────────────────────────────────────────
 async function guardarSuscripcionFirestore(subscription) {
   const user = auth.currentUser;
-  if (!user || !subscription) return;
+  if (!user) { console.warn('[PWA] No hay usuario autenticado'); return; }
+  if (!subscription) { console.warn('[PWA] Suscripción nula'); return; }
   try {
     const subData = subscription.toJSON();
-    const docRef = doc(db, 'usuarios', user.uid, 'pushSubscriptions', btoa(subData.endpoint).slice(0, 40));
+    // Usar hash simple del endpoint como ID del doc
+    const docId = subData.endpoint.split('/').pop().slice(-40).replace(/[^a-zA-Z0-9]/g, '_');
+    const docRef = doc(db, 'usuarios', user.uid, 'pushSubscriptions', docId);
     await setDoc(docRef, {
-      endpoint: subData.endpoint,
-      keys: subData.keys,
-      platform: esIOS() ? 'ios' : (/Android/.test(navigator.userAgent) ? 'android' : 'desktop'),
+      endpoint:  subData.endpoint,
+      keys:      subData.keys,
+      platform:  esIOS() ? 'ios' : (/Android/.test(navigator.userAgent) ? 'android' : 'desktop'),
       createdAt: serverTimestamp(),
-      active: true,
+      updatedAt: serverTimestamp(),
+      active:    true,
+      userAgent: navigator.userAgent.slice(0, 100),
     }, { merge: true });
     localStorage.setItem('mynana_push_active', '1');
-    console.log('[PWA] Suscripción guardada en Firestore');
+    console.log('[PWA] ✅ Suscripción guardada en Firestore para usuario:', user.uid);
   } catch(e) {
-    console.warn('[PWA] Error guardando suscripción:', e);
+    console.error('[PWA] ❌ Error guardando suscripción:', e.message);
   }
 }
 
-// ── Solicitar permiso y activar notificaciones ──
+// ─────────────────────────────────────────────
+//  Solicitar permiso — con manejo robusto
+// ─────────────────────────────────────────────
 window.solicitarPermisoNotificaciones = async () => {
+  console.log('[PWA] Solicitando permiso de notificaciones...');
+
   if (!('Notification' in window)) {
-    showToast('Tu navegador no soporta notificaciones');
+    showToast('Este navegador no soporta notificaciones');
+    cerrarModalPWA();
     return;
   }
-  const permission = await Notification.requestPermission();
+
+  let permission;
+  try {
+    permission = await Notification.requestPermission();
+  } catch(e) {
+    console.error('[PWA] Error al pedir permiso:', e);
+    showToast('Error al solicitar permisos. Intenta de nuevo.');
+    return;
+  }
+
+  console.log('[PWA] Permiso resultado:', permission);
+
   if (permission === 'granted') {
-    const reg = await navigator.serviceWorker.ready;
-    const sub = await suscribirAPush(reg);
-    if (sub) {
-      await guardarSuscripcionFirestore(sub);
-      cerrarModalPWA();
-      ocultarBannerPWA();
-      showToast('🔔 Notificaciones activadas correctamente');
-    }
-  } else if (permission === 'denied') {
-    showToast('Notificaciones bloqueadas. Actívalas en ajustes del navegador.');
+    // ── CRÍTICO: Ocultar banner/modal INMEDIATAMENTE ──
     cerrarModalPWA();
+    ocultarBannerPWA();
+    localStorage.setItem('mynana_push_active', '1');  // Guardar ANTES de suscribir
+    showToast('🔔 Notificaciones activadas');
+
+    // Suscribir al push en background (no bloquear UI)
+    setTimeout(async () => {
+      try {
+        console.log('[PWA] Esperando SW ready...');
+        const reg = await swReadyConTimeout(10000);
+        console.log('[PWA] SW ready. Suscribiendo...');
+        const sub = await suscribirAPush(reg);
+        if (sub) {
+          await guardarSuscripcionFirestore(sub);
+          console.log('[PWA] ✅ Todo listo. Notificaciones completamente activadas.');
+        } else {
+          console.warn('[PWA] Suscripción push falló (puede ser normal en algunos dispositivos)');
+        }
+      } catch(e) {
+        console.error('[PWA] Error en suscripción post-permiso:', e.message);
+        // No mostrar error al usuario — el permiso YA fue concedido
+      }
+    }, 500);
+
+  } else if (permission === 'denied') {
+    cerrarModalPWA();
+    ocultarBannerPWA();
+    localStorage.setItem('mynana_pwa_banner_dismissed', Date.now().toString());
+    showToast('Notificaciones bloqueadas. Puedes activarlas en Ajustes → Safari → Notificaciones.');
+  } else {
+    // dismissed — usuario cerró sin elegir
+    console.log('[PWA] Permiso descartado por el usuario');
   }
 };
 
-// ── Función helper para enviar notificación (llamar desde otros módulos) ──
+// ─────────────────────────────────────────────
+//  Enviar notificación push desde la app
+// ─────────────────────────────────────────────
 window.enviarNotificacionPush = async ({ titulo, cuerpo, url = '/app.html', tipo = 'general', tag = 'mynana' }) => {
   const user = auth.currentUser;
-  if (!user) return;
-  if (!notificacionesActivas()) return;
+  if (!user || !notificacionesActivas()) return;
   try {
-    // Obtener suscripciones del usuario
-    const { getDocs: _getDocs, collection: _col } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-    const snap = await _getDocs(_col(db, 'usuarios', user.uid, 'pushSubscriptions'));
-    const subs = snap.docs.map(d => d.data()).filter(s => s.active);
+    // Usar getDocs/collection ya importados en este módulo
+    const snap = await getDocs(collection(db, 'usuarios', user.uid, 'pushSubscriptions'));
+    const subs = snap.docs.map(d => d.data()).filter(s => s.active && s.endpoint && s.keys);
+    console.log('[PWA] Enviando push a', subs.length, 'suscripción(es)');
     for (const sub of subs) {
       try {
-        await fetch('/.netlify/functions/send-push', {
-          method: 'POST',
+        const res = await fetch('/.netlify/functions/send-push', {
+          method:  'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             subscription: { endpoint: sub.endpoint, keys: sub.keys },
             notification: { title: titulo, body: cuerpo, url, tipo, tag },
           }),
         });
-      } catch(e) { console.warn('[PWA] Error enviando push:', e); }
+        if (res.status === 410) {
+          // Suscripción expirada — marcar como inactiva
+          const docId = sub.endpoint.split('/').pop().slice(-40).replace(/[^a-zA-Z0-9]/g, '_');
+          await updateDoc(doc(db, 'usuarios', user.uid, 'pushSubscriptions', docId), { active: false });
+          console.warn('[PWA] Suscripción expirada, marcada inactiva');
+        }
+      } catch(e) { console.warn('[PWA] Error enviando push individual:', e.message); }
     }
-  } catch(e) { console.warn('[PWA] Error en enviarNotificacionPush:', e); }
+  } catch(e) { console.error('[PWA] Error en enviarNotificacionPush:', e.message); }
 };
 
-// ── Banner / Modal UI ──
+// ─────────────────────────────────────────────
+//  Banner / Modal UI
+// ─────────────────────────────────────────────
 window.abrirModalPWA = () => {
   const modal = document.getElementById('pwa-modal');
   if (!modal) return;
-  const stepsIOS = document.getElementById('pwa-modal-steps-ios');
+  const stepsIOS   = document.getElementById('pwa-modal-steps-ios');
   const stepsNotif = document.getElementById('pwa-modal-steps-notif');
-  const title = document.getElementById('pwa-modal-title');
+  const title      = document.getElementById('pwa-modal-title');
 
-  if (esPWAInstalada() && !notificacionesActivas()) {
-    // PWA instalada pero sin notificaciones → mostrar paso de activar
-    if (stepsIOS) stepsIOS.style.display = 'none';
+  if (esPWAInstalada()) {
+    // Instalada → mostrar activar notificaciones
+    if (stepsIOS)   stepsIOS.style.display   = 'none';
     if (stepsNotif) stepsNotif.style.display = 'flex';
-    if (title) title.textContent = 'Activar notificaciones';
+    if (title)      title.textContent        = 'Activar notificaciones';
   } else {
-    // No instalada → mostrar pasos de instalación
-    if (stepsIOS) stepsIOS.style.display = 'flex';
+    // No instalada → mostrar pasos de instalación iOS
+    if (stepsIOS)   stepsIOS.style.display   = 'flex';
     if (stepsNotif) stepsNotif.style.display = 'none';
-    if (title) title.textContent = 'Agregar a pantalla de inicio';
+    if (title)      title.textContent        = 'Agregar a pantalla de inicio';
   }
   modal.style.display = 'flex';
 };
@@ -3210,60 +3291,81 @@ function ocultarBannerPWA() {
 }
 
 function mostrarBannerPWA(tipo) {
+  // No mostrar si ya tiene notificaciones activas
+  if (notificacionesActivas()) return;
+  if (localStorage.getItem('mynana_push_active') === '1') return;
+
   const banner = document.getElementById('pwa-banner');
-  const title = document.getElementById('pwa-banner-title');
-  const sub = document.getElementById('pwa-banner-sub');
-  const btn = document.getElementById('pwa-banner-btn');
+  const title  = document.getElementById('pwa-banner-title');
+  const sub    = document.getElementById('pwa-banner-sub');
+  const btn    = document.getElementById('pwa-banner-btn');
   if (!banner) return;
 
   if (tipo === 'instalar') {
     if (title) title.textContent = '🔔 Recibe recordatorios importantes';
-    if (sub) sub.textContent = 'Agrega My Nana a tu pantalla de inicio para activar notificaciones.';
-    if (btn) btn.textContent = 'Ver cómo';
+    if (sub)   sub.textContent   = 'Agrega My Nana a tu pantalla de inicio para activar notificaciones.';
+    if (btn) { btn.textContent = 'Ver cómo'; btn.onclick = () => abrirModalPWA(); }
   } else if (tipo === 'activar') {
     if (title) title.textContent = '🔔 Activa las notificaciones';
-    if (sub) sub.textContent = 'My Nana ya está instalada. Activa notificaciones para estar siempre al día.';
-    if (btn) btn.textContent = 'Activar ahora';
-    if (btn) btn.onclick = () => solicitarPermisoNotificaciones();
+    if (sub)   sub.textContent   = 'My Nana ya está instalada. Toca para activar.';
+    if (btn) { btn.textContent = 'Activar ahora'; btn.onclick = () => solicitarPermisoNotificaciones(); }
   }
   banner.style.display = 'block';
+  console.log('[PWA] Banner mostrado:', tipo);
 }
 
-// ── Lógica principal de PWA — se ejecuta cuando el usuario entra al dashboard ──
+// ─────────────────────────────────────────────
+//  Lógica principal
+// ─────────────────────────────────────────────
 let pwaInicializado = false;
+
 async function iniciarPWA() {
   if (pwaInicializado) return;
   pwaInicializado = true;
+  console.log('[PWA] iniciarPWA() — esPWA:', esPWAInstalada(), '| notifActivas:', notificacionesActivas());
 
-  // 1. Registrar SW siempre (necesario para que funcione offline y push)
+  // Registrar SW siempre
   const swReg = await registrarSW();
 
-  // 2. Si las notificaciones ya están activas y hay SW, suscribir silenciosamente
-  if (swReg && notificacionesActivas()) {
-    const sub = await suscribirAPush(swReg);
-    if (sub) await guardarSuscripcionFirestore(sub);
-    return; // Todo en orden, no mostrar nada
+  // Si ya tiene permiso y SW → suscribir silenciosamente y salir
+  if (notificacionesActivas() && swReg) {
+    console.log('[PWA] Notificaciones ya activas. Suscribiendo silenciosamente...');
+    try {
+      const reg = await swReadyConTimeout(8000);
+      const sub = await suscribirAPush(reg);
+      if (sub) await guardarSuscripcionFirestore(sub);
+    } catch(e) { console.warn('[PWA] Suscripción silenciosa falló:', e.message); }
+    return;
   }
 
-  // 3. Detectar contexto y decidir si mostrar banner
-  // Solo en iOS (otros sistemas manejan install prompt diferente)
-  if (!esIOS()) return;
+  // Si ya guardó estado de push activo → no mostrar banner
+  if (localStorage.getItem('mynana_push_active') === '1') {
+    console.log('[PWA] Push activo en localStorage. No mostrar banner.');
+    return;
+  }
 
-  // No mostrar si el usuario descartó recientemente
-  if (bannerDescartado()) return;
+  // Solo en iOS
+  if (!esIOS()) {
+    console.log('[PWA] No es iOS. Banner solo para iPhone.');
+    return;
+  }
 
-  // Esperar 30 segundos antes de mostrar banner (dar tiempo de usar la app)
+  // Si descartó recientemente → no mostrar
+  if (bannerDescartado()) {
+    console.log('[PWA] Banner descartado recientemente. No mostrar.');
+    return;
+  }
+
+  // Esperar 10 segundos (reducido de 30 para mejor UX + debug más rápido)
+  console.log('[PWA] Esperando 10s para mostrar banner...');
   setTimeout(() => {
+    if (notificacionesActivas() || localStorage.getItem('mynana_push_active') === '1') return;
     if (esPWAInstalada()) {
-      // App instalada pero sin notificaciones
-      if (!notificacionesActivas()) {
-        mostrarBannerPWA('activar');
-      }
+      mostrarBannerPWA('activar');
     } else {
-      // App no instalada
       mostrarBannerPWA('instalar');
     }
-  }, 30 * 1000);
+  }, 10 * 1000);
 }
 
 // ── Cerrar modal al click fuera ──
@@ -3271,13 +3373,8 @@ document.getElementById('pwa-modal')?.addEventListener('click', function(e) {
   if (e.target === this) cerrarModalPWA();
 });
 
-// ── Iniciar PWA cuando el usuario entra al dashboard ──
-// Se llama desde mostrarFamilia() y mostrarNana() — ver parche abajo
-const _origMostrarFamilia = window.mostrarFamilia;
-const _origMostrarNana = window.mostrarNana;
-// Parche no intrusivo: iniciar PWA cuando llegan al dashboard
+// ── Trigger: cuando el usuario llega al dashboard ──
 setTimeout(() => {
-  // Escuchar cuando se muestre el dashboard (screen-familia o screen-nana)
   const observer = new MutationObserver(mutations => {
     for (const m of mutations) {
       if (m.target.id === 'screen-familia' || m.target.id === 'screen-nana') {
