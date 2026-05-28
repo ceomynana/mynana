@@ -1,0 +1,55 @@
+{
+  "name": "My Nana",
+  "short_name": "My Nana",
+  "description": "La primera plataforma panameña para gestionar tu hogar con elegancia.",
+  "start_url": "/app.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0F4A38",
+  "theme_color": "#0F4A38",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "/mynana-icon-casa.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/mynana-icon-casa-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/mynana-icon-casa-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/og-image.png",
+      "sizes": "1200x630",
+      "type": "image/png",
+      "label": "My Nana Dashboard"
+    }
+  ],
+  "categories": ["productivity", "lifestyle"],
+  "shortcuts": [
+    {
+      "name": "Mis tareas",
+      "short_name": "Tareas",
+      "url": "/tareas.html",
+      "icons": [{ "src": "/mynana-icon-casa-512.png", "sizes": "512x512" }]
+    },
+    {
+      "name": "Menú semanal",
+      "short_name": "Menú",
+      "url": "/menu.html",
+      "icons": [{ "src": "/mynana-icon-casa-512.png", "sizes": "512x512" }]
+    }
+  ]
+}
