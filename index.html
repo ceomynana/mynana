@@ -1768,53 +1768,49 @@ footer {
 }
 
 /* ── PRÓXIMAMENTE ── */
-.pronto-section { background: var(--cr); }
+.pronto-section { background: var(--g2); padding: 100px 0; }
 .pronto-grid {
   display: grid;
-  grid-template-columns: repeat(3,1fr);
-  gap: 20px;
-  margin-top: 60px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 52px;
 }
 .pronto-card {
-  background: #fff;
-  border-radius: var(--radius);
+  background: rgba(255,255,255,.06);
+  border-radius: 20px;
   padding: 28px 24px;
-  border: 1px solid var(--g4);
+  border: 1px solid rgba(255,255,255,.10);
   position: relative;
   overflow: hidden;
-  transition: var(--transition);
+  transition: all .25s ease;
 }
 .pronto-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow);
+  background: rgba(255,255,255,.10);
+  border-color: rgba(212,165,165,.35);
+  transform: translateY(-3px);
 }
+.pronto-card.wide { grid-column: span 2; }
 .pronto-badge {
-  position: absolute;
-  top: 16px;
-  right: 16px;
+  display: inline-flex;
+  align-items: center;
   font-size: 10px;
   font-weight: 600;
-  letter-spacing: .06em;
+  letter-spacing: .08em;
   text-transform: uppercase;
   padding: 4px 10px;
   border-radius: 99px;
+  margin-bottom: 20px;
 }
-.pronto-icon {
-  font-size: 32px;
-  margin-bottom: 16px;
-}
+.pronto-icon { font-size: 28px; margin-bottom: 14px; display: block; }
 .pronto-title {
   font-family: var(--font-display);
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 500;
-  color: var(--txt);
+  color: #fff;
   margin-bottom: 8px;
+  line-height: 1.25;
 }
-.pronto-desc {
-  font-size: 13px;
-  color: var(--txt2);
-  line-height: 1.7;
-}
+.pronto-desc { font-size: 13px; color: rgba(255,255,255,.55); line-height: 1.7; }
 
 /* ── BUSCADOR NANAS ── */
 .buscador-section { background: var(--white); }
@@ -3401,99 +3397,6 @@ window.unirseConCodigo = async function() {
   </div>
 </section>
 
-<!-- ACCESO NANA BANNER -->
-<section style="background:var(--g);padding:48px 40px;">
-  <div class="section-inner">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;" class="reveal">
-      <div>
-        <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--b);margin-bottom:12px;"><span class="es">Para el personal doméstico</span><span class="en">For household staff</span></div>
-        <h2 style="font-family:Georgia,serif;font-size:32px;font-weight:500;color:#fff;line-height:1.2;margin-bottom:12px;"><span class="es">¿Eres nana?<br>Aquí está tu plataforma.</span><span class="en">Are you a nana?<br>Here is your platform.</span></h2>
-        <p style="font-size:15px;color:rgba(255,255,255,.65);line-height:1.7;margin-bottom:24px;"><span class="es">Tu familia te compartirá este link por WhatsApp. Desde ahí podrás ver tus tareas del día, el menú, chatear con la familia y ver videos de entrenamiento.</span><span class="en">Your family will share this link via WhatsApp. From there you can see your daily tasks, the menu, chat with the family and watch training videos.</span></p>
-        <div style="background:rgba(255,255,255,.08);border-radius:12px;padding:14px 16px;margin-bottom:16px;border:1px solid rgba(255,255,255,.12);">
-          <div style="font-size:10px;color:rgba(255,255,255,.4);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;"><span class="es">Tu link de acceso</span><span class="en">Your access link</span></div>
-          <div style="font-size:14px;color:var(--b);font-weight:500;margin-bottom:10px;">mynana.app/nana.html</div>
-          <div style="display:flex;gap:8px;">
-            <a href="https://mynana.app/nana.html" target="_blank" style="flex:1;background:var(--b);color:#fff;font-size:13px;font-weight:500;padding:11px;border-radius:99px;text-decoration:none;text-align:center;"><span class="es">Abrir mi plataforma →</span><span class="en">Open my platform →</span></a>
-            <a href="https://wa.me/?text=Hola%2C%20aquí%20está%20tu%20plataforma%20de%20My%20Nana%3A%20https%3A%2F%2Fmynana.app%2Fnana.html" target="_blank" style="background:#25D366;color:#fff;font-size:13px;font-weight:500;padding:11px 16px;border-radius:99px;text-decoration:none;text-align:center;white-space:nowrap;"><span class="es">💬 Compartir</span><span class="en">💬 Share</span></a>
-          </div>
-        </div>
-      </div>
-      <!-- PREVIEW CELULAR -->
-      <div style="background:rgba(255,255,255,.05);border-radius:20px;padding:20px;border:1px solid rgba(255,255,255,.1);">
-        <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:12px;text-align:center;text-transform:uppercase;letter-spacing:.04em;"><span class="es">Vista previa de la plataforma</span><span class="en">Platform preview</span></div>
-        <div style="background:#fff;border-radius:14px;overflow:hidden;max-width:260px;margin:0 auto;">
-          <!-- Header -->
-          <div style="background:#0F4A38;padding:12px 14px;">
-            <div style="font-size:10px;color:rgba(255,255,255,.5);">Buenos días</div>
-            <div style="font-size:16px;font-weight:500;color:#fff;margin:2px 0;">Maria 👋</div>
-            <div style="background:rgba(255,255,255,.15);border-radius:99px;height:4px;margin-top:8px;overflow:hidden;">
-              <div style="width:35%;height:100%;background:#D4A5A5;border-radius:99px;"></div>
-            </div>
-            <div style="font-size:9px;color:rgba(255,255,255,.4);margin-top:3px;text-align:right;"><span class="es">2 de 6 listas</span><span class="en">2 of 6 done</span></div>
-          </div>
-          <!-- Tareas -->
-          <div style="padding:10px;display:flex;flex-direction:column;gap:6px;background:#F9F5F0;">
-            <div style="background:#fff;border-radius:10px;padding:8px 10px;display:flex;align-items:center;gap:8px;border:1px solid #E1F0EB;">
-              <div style="width:28px;height:28px;border-radius:8px;background:#F0F7F4;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">🍳</div>
-              <div style="flex:1;">
-                <div style="font-size:10px;font-weight:500;color:#bbb;text-decoration:line-through;">Preparar desayuno</div>
-                <div style="font-size:9px;color:#bbb;">7:00 am</div>
-              </div>
-              <div style="width:18px;height:18px;border-radius:50%;background:#1A6B52;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
-                <svg width="8" height="7" viewBox="0 0 8 7" fill="none"><polyline points="1,3 3,6 7,1" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>
-              </div>
-            </div>
-            <div style="background:#fff;border-radius:10px;padding:8px 10px;display:flex;align-items:center;gap:8px;border:1px solid #E1F0EB;">
-              <div style="width:28px;height:28px;border-radius:8px;background:#F0F7F4;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">🧹</div>
-              <div style="flex:1;">
-                <div style="font-size:10px;font-weight:500;color:#bbb;text-decoration:line-through;">Barrer sala</div>
-                <div style="font-size:9px;color:#bbb;">9:00 am</div>
-              </div>
-              <div style="width:18px;height:18px;border-radius:50%;background:#1A6B52;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
-                <svg width="8" height="7" viewBox="0 0 8 7" fill="none"><polyline points="1,3 3,6 7,1" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>
-              </div>
-            </div>
-            <div style="background:#fff;border-radius:10px;padding:8px 10px;display:flex;align-items:center;gap:8px;border:1px solid #E1F0EB;">
-              <div style="width:28px;height:28px;border-radius:8px;background:#F0F7F4;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">👕</div>
-              <div style="flex:1;">
-                <div style="font-size:10px;font-weight:500;color:#1A2E25;">Lavandería</div>
-                <div style="font-size:9px;color:#bbb;">10:00 am</div>
-              </div>
-              <div style="width:18px;height:18px;border-radius:50%;border:1.5px solid #E1F0EB;flex-shrink:0;"></div>
-            </div>
-            <div style="background:#fff;border-radius:10px;padding:8px 10px;display:flex;align-items:center;gap:8px;border:1px solid #E1F0EB;">
-              <div style="width:28px;height:28px;border-radius:8px;background:#F0F7F4;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">🍲</div>
-              <div style="flex:1;">
-                <div style="font-size:10px;font-weight:500;color:#1A2E25;">Sancocho de gallina</div>
-                <div style="font-size:9px;color:#bbb;">12:30 pm</div>
-              </div>
-              <div style="width:18px;height:18px;border-radius:50%;border:1.5px solid #E1F0EB;flex-shrink:0;"></div>
-            </div>
-          </div>
-          <!-- Tabs -->
-          <div style="display:flex;background:#fff;border-top:1px solid #E1F0EB;padding:6px 0;">
-            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">
-              <div style="font-size:14px;">✅</div>
-              <div style="font-size:8px;color:#1A6B52;font-weight:600;">Tareas</div>
-            </div>
-            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">
-              <div style="font-size:14px;">🍽️</div>
-              <div style="font-size:8px;color:#bbb;">Menú</div>
-            </div>
-            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">
-              <div style="font-size:14px;">💬</div>
-              <div style="font-size:8px;color:#bbb;">Chat</div>
-            </div>
-            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">
-              <div style="font-size:14px;">📹</div>
-              <div style="font-size:8px;color:#bbb;">Videos</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
 
 <!-- GUÍA RÁPIDA -->
 <section id="guia" style="background:#F0F4F8;padding:100px 40px;">
@@ -3957,93 +3860,132 @@ window.unirseConCodigo = async function() {
   </div>
 </section>
 
-<!-- SOY NANA -->
+<!-- PARA LA NANA — bloque unificado -->
 <section id="soy-nana" style="background:var(--b3);padding:100px 40px;">
   <div class="section-inner">
-    <div class="reveal" style="display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;">
+    <div class="reveal" style="display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center;">
 
       <!-- TEXTO -->
       <div>
         <div class="section-tag" style="color:var(--b2);"><span class="es">Para el personal doméstico</span><span class="en">For household staff</span></div>
-        <h2 class="section-title"><span class="es">¿Eres nana?<br>My Nana también<br><em style="font-style:italic;color:var(--b2);">es tuya.</em></span><span class="en">Are you a nana?<br>My Nana is yours<br><em style="font-style:italic;color:var(--b2);">too.</em></span></h2>
-        <p class="section-sub" style="margin-bottom:32px;"><span class="es">Una herramienta que te ayuda a organizarte, que reconoce tu trabajo y que te hace el día más fácil — no más complicado.</span><span class="en">A tool that helps you stay organized, recognizes your work, and makes your day easier — not harder.</span></p>
-        <div style="display:flex;flex-direction:column;gap:16px;margin-bottom:36px;">
+        <h2 class="section-title" style="margin-bottom:14px;">
+          <span class="es">Para la nana,<br><em style="font-style:normal;color:var(--b2);">también es más fácil.</em></span>
+          <span class="en">For the nana,<br><em style="font-style:normal;color:var(--b2);">it's easier too.</em></span>
+        </h2>
+        <p class="section-sub" style="margin-bottom:36px;">
+          <span class="es">My Nana organiza tu día, aclara las tareas y reconoce tu trabajo para que todo fluya mejor en el hogar.</span>
+          <span class="en">My Nana organizes your day, clarifies tasks and recognizes your work so everything flows better at home.</span>
+        </p>
+
+        <!-- 3 beneficios -->
+        <div style="display:flex;flex-direction:column;gap:20px;margin-bottom:40px;">
+
           <div style="display:flex;gap:14px;align-items:flex-start;">
-            <div style="width:40px;height:40px;border-radius:10px;background:var(--b);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">📋</div>
+            <div style="width:42px;height:42px;border-radius:12px;background:var(--b);display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;">☀️</div>
             <div>
-              <div style="font-size:14px;font-weight:600;color:var(--txt);margin-bottom:3px;"><span class="es">Tu día organizado desde la mañana</span><span class="en">Your day organized from the start</span></div>
-              <div style="font-size:13px;color:var(--txt2);line-height:1.6;"><span class="es">Sabes exactamente qué hacer, a qué hora y cómo. Sin confusión, sin olvidos.</span><span class="en">You know exactly what to do, when, and how. No confusion, no forgetting.</span></div>
+              <div style="font-size:14px;font-weight:600;color:var(--txt);margin-bottom:4px;">
+                <span class="es">Tu día claro desde la mañana</span>
+                <span class="en">Your day clear from the morning</span>
+              </div>
+              <div style="font-size:13px;color:var(--txt2);line-height:1.6;">
+                <span class="es">Sabes qué hacer, a qué hora y con qué instrucciones.</span>
+                <span class="en">You know what to do, when, and with what instructions.</span>
+              </div>
             </div>
           </div>
+
           <div style="display:flex;gap:14px;align-items:flex-start;">
-            <div style="width:40px;height:40px;border-radius:10px;background:var(--b);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🌟</div>
+            <div style="width:42px;height:42px;border-radius:12px;background:var(--b);display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;">💬</div>
             <div>
-              <div style="font-size:14px;font-weight:600;color:var(--txt);margin-bottom:3px;"><span class="es">Tu trayectoria profesional crece</span><span class="en">Your professional path grows</span></div>
-              <div style="font-size:13px;color:var(--txt2);line-height:1.6;"><span class="es">Cada semana bien trabajada se refleja en tu historial. Las familias ven tu consistencia y confianza.</span><span class="en">Every week well worked reflects in your record. Families see your consistency and trustworthiness.</span></div>
+              <div style="font-size:14px;font-weight:600;color:var(--txt);margin-bottom:4px;">
+                <span class="es">Menos confusión, menos malentendidos</span>
+                <span class="en">Less confusion, fewer misunderstandings</span>
+              </div>
+              <div style="font-size:13px;color:var(--txt2);line-height:1.6;">
+                <span class="es">Las tareas, menús y mensajes quedan organizados en un solo lugar.</span>
+                <span class="en">Tasks, menus and messages stay organized in one place.</span>
+              </div>
             </div>
           </div>
+
           <div style="display:flex;gap:14px;align-items:flex-start;">
-            <div style="width:40px;height:40px;border-radius:10px;background:var(--b);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">💬</div>
+            <div style="width:42px;height:42px;border-radius:12px;background:var(--b);display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;">🌟</div>
             <div>
-              <div style="font-size:14px;font-weight:600;color:var(--txt);margin-bottom:3px;"><span class="es">Tu voz también cuenta</span><span class="en">Your voice matters too</span></div>
-              <div style="font-size:13px;color:var(--txt2);line-height:1.6;"><span class="es">Puedes dejar observaciones, avisos y sugerencias a la familia. La comunicación es de doble vía.</span><span class="en">You can leave notes, alerts and suggestions to the family. Communication goes both ways.</span></div>
+              <div style="font-size:14px;font-weight:600;color:var(--txt);margin-bottom:4px;">
+                <span class="es">Tu trabajo queda reconocido</span>
+                <span class="en">Your work gets recognized</span>
+              </div>
+              <div style="font-size:13px;color:var(--txt2);line-height:1.6;">
+                <span class="es">Tu historial muestra tu constancia, confianza y buen desempeño.</span>
+                <span class="en">Your record shows your consistency, trustworthiness and good performance.</span>
+              </div>
             </div>
           </div>
-        </div>
-        <button onclick="openModalNana()" style="background:var(--b);color:#fff;font-family:var(--font-body);font-size:15px;font-weight:500;padding:15px 32px;border-radius:99px;border:none;cursor:pointer;transition:all .3s;display:inline-flex;align-items:center;gap:8px;" onmouseover="this.style.background='var(--b2)';this.style.transform='translateY(-2px)'" onmouseout="this.style.background='var(--b)';this.style.transform='translateY(0)'">
-          <span class="es">Registrarme como nana →</span><span class="en">Register as a nana →</span>
-        </button>
-      </div>
 
-      <!-- TARJETAS NANAS -->
-      <div style="display:flex;flex-direction:column;gap:12px;">
-        <div style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--b2);margin-bottom:4px;"><span class="es">Nanas registradas recientemente</span><span class="en">Recently registered nanas</span></div>
-
-        <div style="background:#fff;border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:14px;box-shadow:0 4px 16px rgba(212,165,165,.15);">
-          <div style="width:48px;height:48px;border-radius:50%;background:var(--g);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:16px;font-weight:600;color:#fff;border:2px solid var(--b);flex-shrink:0;">MR</div>
-          <div style="flex:1;">
-            <div style="font-size:14px;font-weight:600;color:var(--txt);">Maria Rodriguez</div>
-            <div style="font-size:12px;color:var(--txt2);"><span class="es">Nana · Cocinera · 5 años exp.</span><span class="en">Nana · Cook · 5 yrs exp.</span></div>
-          </div>
-          <div style="text-align:center;">
-            <div style="font-size:20px;font-weight:600;color:var(--g);font-family:var(--font-display);">4.8</div>
-            <div style="font-size:11px;color:#FAC775;">★★★★★</div>
-            <div style="font-size:10px;color:var(--txt2);"><span class="es">Confianza</span><span class="en">Trust</span></div>
-          </div>
         </div>
 
-        <div style="background:#fff;border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:14px;box-shadow:0 4px 16px rgba(212,165,165,.15);">
-          <div style="width:48px;height:48px;border-radius:50%;background:var(--b);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:16px;font-weight:600;color:#fff;border:2px solid var(--g);flex-shrink:0;">CL</div>
-          <div style="flex:1;">
-            <div style="font-size:14px;font-weight:600;color:var(--txt);">Carmen López</div>
-            <div style="font-size:12px;color:var(--txt2);"><span class="es">Nana · Cuidado de niños · 3 años exp.</span><span class="en">Nana · Childcare · 3 yrs exp.</span></div>
+        <!-- Acceso a la plataforma -->
+        <div style="background:#fff;border-radius:14px;padding:16px 18px;border:1px solid rgba(212,165,165,.3);display:inline-block;width:100%;max-width:380px;">
+          <div style="font-size:10px;color:var(--b2);text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-bottom:6px;">
+            <span class="es">Tu plataforma</span><span class="en">Your platform</span>
           </div>
-          <div style="text-align:center;">
-            <div style="font-size:20px;font-weight:600;color:var(--g);font-family:var(--font-display);">4.6</div>
-            <div style="font-size:11px;color:#FAC775;">★★★★☆</div>
-            <div style="font-size:10px;color:var(--txt2);"><span class="es">Confianza</span><span class="en">Trust</span></div>
+          <div style="font-size:13px;color:var(--txt2);margin-bottom:12px;">mynana.app/nana.html</div>
+          <div style="display:flex;gap:8px;">
+            <a href="https://mynana.app/nana.html" target="_blank"
+               style="flex:1;background:var(--b);color:#fff;font-size:13px;font-weight:500;padding:11px;border-radius:99px;text-decoration:none;text-align:center;transition:background .2s;"
+               onmouseover="this.style.background='var(--b2)'" onmouseout="this.style.background='var(--b)'">
+              <span class="es">Abrir mi plataforma →</span><span class="en">Open my platform →</span>
+            </a>
+            <a href="https://wa.me/?text=Hola%2C%20aquí%20está%20tu%20plataforma%20de%20My%20Nana%3A%20https%3A%2F%2Fmynana.app%2Fnana.html" target="_blank"
+               style="background:#25D366;color:#fff;font-size:13px;font-weight:500;padding:11px 14px;border-radius:99px;text-decoration:none;text-align:center;white-space:nowrap;">
+              💬 <span class="es">Compartir</span><span class="en">Share</span>
+            </a>
           </div>
-        </div>
-
-        <div style="background:#fff;border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:14px;box-shadow:0 4px 16px rgba(212,165,165,.15);">
-          <div style="width:48px;height:48px;border-radius:50%;background:var(--g2);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:16px;font-weight:600;color:#fff;border:2px solid var(--b);flex-shrink:0;">AG</div>
-          <div style="flex:1;">
-            <div style="font-size:14px;font-weight:600;color:var(--txt);">Ana González</div>
-            <div style="font-size:12px;color:var(--txt2);"><span class="es">Nana · Limpieza · 7 años exp.</span><span class="en">Nana · Cleaning · 7 yrs exp.</span></div>
-          </div>
-          <div style="text-align:center;">
-            <div style="font-size:20px;font-weight:600;color:var(--g);font-family:var(--font-display);">4.9</div>
-            <div style="font-size:11px;color:#FAC775;">★★★★★</div>
-            <div style="font-size:10px;color:var(--txt2);"><span class="es">Confianza</span><span class="en">Trust</span></div>
-          </div>
-        </div>
-
-        <div style="background:var(--g3);border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:10px;">
-          <div style="font-size:20px;">🔒</div>
-          <div style="font-size:12px;color:var(--txt2);line-height:1.5;"><span class="es">Los datos completos (cédula, correo y teléfono) solo son visibles para familias verificadas con cuenta activa.</span><span class="en">Full details (ID, email and phone) are only visible to verified families with an active account.</span></div>
         </div>
       </div>
 
+      <!-- VISUAL DERECHO — testimonio + stat -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+
+        <!-- Quote emocional -->
+        <div style="background:#fff;border-radius:20px;padding:28px;box-shadow:0 4px 24px rgba(212,165,165,.15);border:1px solid rgba(212,165,165,.15);">
+          <div style="font-size:28px;margin-bottom:14px;">💛</div>
+          <p style="font-family:Georgia,serif;font-size:18px;font-weight:500;color:var(--txt);line-height:1.5;margin-bottom:14px;">
+            <span class="es">"Antes me olvidaba de cosas. Ahora tengo todo claro desde que llego."</span>
+            <span class="en">"Before I forgot things. Now everything is clear from the moment I arrive."</span>
+          </p>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:36px;height:36px;border-radius:50%;background:var(--b);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#fff;">MR</div>
+            <div>
+              <div style="font-size:13px;font-weight:600;color:var(--txt);">Maria R.</div>
+              <div style="font-size:11px;color:var(--txt2);"><span class="es">Nana · 5 años de experiencia</span><span class="en">Nana · 5 years experience</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats fila -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div style="background:#fff;border-radius:14px;padding:20px;text-align:center;border:1px solid rgba(212,165,165,.15);box-shadow:0 2px 12px rgba(212,165,165,.1);">
+            <div style="font-family:Georgia,serif;font-size:32px;font-weight:500;color:var(--b2);">4.8</div>
+            <div style="font-size:11px;color:#FAC775;margin:2px 0;">★★★★★</div>
+            <div style="font-size:11px;color:var(--txt2);"><span class="es">Score promedio</span><span class="en">Average score</span></div>
+          </div>
+          <div style="background:#fff;border-radius:14px;padding:20px;text-align:center;border:1px solid rgba(212,165,165,.15);box-shadow:0 2px 12px rgba(212,165,165,.1);">
+            <div style="font-family:Georgia,serif;font-size:32px;font-weight:500;color:var(--g);">100%</div>
+            <div style="font-size:11px;color:var(--txt2);margin-top:6px;"><span class="es">Desde el celular</span><span class="en">From your phone</span></div>
+          </div>
+        </div>
+
+        <!-- Privacy note -->
+        <div style="background:var(--g3);border-radius:12px;padding:12px 16px;display:flex;align-items:flex-start;gap:10px;">
+          <div style="font-size:18px;flex-shrink:0;">🔒</div>
+          <div style="font-size:12px;color:var(--txt2);line-height:1.5;">
+            <span class="es">Tus datos solo son visibles para la familia con la que trabajas. Tú controlas tu perfil.</span>
+            <span class="en">Your data is only visible to the family you work with. You control your profile.</span>
+          </div>
+        </div>
+
+      </div>
     </div>
   </div>
 </section>
@@ -4439,70 +4381,93 @@ window.unirseConCodigo = async function() {
 <!-- PRÓXIMAMENTE -->
 <section class="pronto-section">
   <div class="section-inner">
-    <div class="reveal" style="text-align:center;max-width:500px;margin:0 auto;">
-      <div class="section-tag"><span class="es">Próximamente</span><span class="en">Coming soon</span></div>
-      <h2 class="section-title"><span class="es">Lo que viene en My Nana</span><span class="en">What's coming in My Nana</span></h2>
-      <p class="section-sub" style="max-width:100%;"><span class="es">Estamos trabajando en nuevas funciones para hacer tu hogar aún más inteligente.</span><span class="en">We're working on new features to make your home even smarter.</span></p>
+
+    <div class="reveal" style="text-align:center;max-width:520px;margin:0 auto;">
+      <div style="display:inline-block;background:rgba(212,165,165,.15);border:1px solid rgba(212,165,165,.3);border-radius:99px;padding:5px 16px;font-size:11px;font-weight:600;color:var(--b);letter-spacing:.08em;text-transform:uppercase;margin-bottom:16px;">
+        <span class="es">Próximamente</span><span class="en">Coming soon</span>
+      </div>
+      <h2 style="font-family:var(--font-display);font-size:clamp(26px,4vw,36px);font-weight:500;color:#fff;line-height:1.2;margin-bottom:12px;">
+        <span class="es">El hogar del futuro,<br><em style="color:var(--b);font-style:normal;">ya en camino.</em></span>
+        <span class="en">The home of the future,<br><em style="color:var(--b);font-style:normal;">already on its way.</em></span>
+      </h2>
+      <p style="font-size:15px;color:rgba(255,255,255,.5);line-height:1.6;max-width:400px;margin:0 auto;">
+        <span class="es">Cada función que viene fue pedida por familias reales. Nada genérico.</span>
+        <span class="en">Every upcoming feature was requested by real families. Nothing generic.</span>
+      </p>
     </div>
-    <div class="pronto-grid">
-      <div class="pronto-card reveal">
-        <div class="pronto-badge" style="background:var(--g3);color:var(--g);">Fase 2</div>
-        <div class="pronto-icon">📱</div>
-        <div class="pronto-title"><span class="es">App móvil nativa</span><span class="en">Native mobile app</span></div>
-        <div class="pronto-desc"><span class="es">My Nana en iOS y Android con notificaciones push en tiempo real. La misma experiencia, optimizada para cada plataforma.</span><span class="en">My Nana on iOS and Android with real-time push notifications. The same experience, optimized for each platform.</span></div>
+
+    <div class="pronto-grid reveal">
+
+      <!-- Memoria inteligente — full width -->
+      <div class="pronto-card" style="grid-column:1/-1;display:flex;gap:32px;align-items:center;flex-wrap:wrap;">
+        <div style="flex:1;min-width:220px;">
+          <div class="pronto-badge" style="background:rgba(212,165,165,.2);color:var(--b);">
+            ✦ <span class="es">Visión</span><span class="en">Vision</span>
+          </div>
+          <span class="pronto-icon">🧠</span>
+          <div class="pronto-title">
+            <span class="es">Memoria inteligente del hogar</span>
+            <span class="en">Smart home memory</span>
+          </div>
+          <div class="pronto-desc" style="max-width:480px;">
+            <span class="es">My Nana aprende rutinas, preferencias y hábitos para anticiparse automáticamente a las necesidades de tu hogar. Sin que tengas que repetir nada.</span>
+            <span class="en">My Nana learns routines, preferences and habits to automatically anticipate your home's needs. Without you having to repeat anything.</span>
+          </div>
+        </div>
+        <div style="flex-shrink:0;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(212,165,165,.18),rgba(212,165,165,.04));display:flex;align-items:center;justify-content:center;font-size:52px;">🧠</div>
       </div>
-      <div class="pronto-card reveal">
-        <div class="pronto-badge" style="background:var(--b3);color:var(--b2);">Fase 2</div>
-        <div class="pronto-icon">🌿</div>
-        <div class="pronto-title"><span class="es">Choferes y jardineros</span><span class="en">Drivers and gardeners</span></div>
-        <div class="pronto-desc"><span class="es">Expandimos la plataforma a todo el personal del hogar — choferes, jardineros y personal de mantenimiento con su propio módulo.</span><span class="en">We're expanding the platform to all household staff — drivers, gardeners and maintenance personnel with their own module.</span></div>
+
+      <!-- App móvil nativa -->
+      <div class="pronto-card">
+        <div class="pronto-badge" style="background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);">
+          <span class="es">Fase 2</span><span class="en">Phase 2</span>
+        </div>
+        <span class="pronto-icon">📱</span>
+        <div class="pronto-title">
+          <span class="es">App móvil nativa</span>
+          <span class="en">Native mobile app</span>
+        </div>
+        <div class="pronto-desc">
+          <span class="es">iOS y Android con notificaciones push en tiempo real. La misma experiencia premium, optimizada para tu celular.</span>
+          <span class="en">iOS and Android with real-time push notifications. The same premium experience, optimized for your phone.</span>
+        </div>
       </div>
-      <div class="pronto-card reveal">
-        <div class="pronto-badge" style="background:var(--g3);color:var(--g);">Fase 3</div>
-        <div class="pronto-icon">💳</div>
-        <div class="pronto-title"><span class="es">Pagos integrados</span><span class="en">Integrated payments</span></div>
-        <div class="pronto-desc"><span class="es">Paga el salario de tu nana directamente desde la app. Historial de pagos, recibos digitales y cálculo automático de beneficios.</span><span class="en">Pay your nana's salary directly from the app. Payment history, digital receipts and automatic benefit calculations.</span></div>
+
+      <!-- Todo el personal del hogar -->
+      <div class="pronto-card">
+        <div class="pronto-badge" style="background:rgba(212,165,165,.15);color:var(--b);">
+          <span class="es">Fase 2</span><span class="en">Phase 2</span>
+        </div>
+        <span class="pronto-icon">🌿</span>
+        <div class="pronto-title">
+          <span class="es">Todo el personal del hogar</span>
+          <span class="en">All household staff</span>
+        </div>
+        <div class="pronto-desc">
+          <span class="es">My Nana se expande para ayudarte a coordinar choferes, jardineros, personal de mantenimiento y otros apoyos del hogar desde un solo lugar.</span>
+          <span class="en">My Nana expands to help you coordinate drivers, gardeners, maintenance staff and other household support from one place.</span>
+        </div>
       </div>
-      <div class="pronto-card reveal">
-        <div class="pronto-badge" style="background:var(--b3);color:var(--b2);">Fase 3</div>
-        <div class="pronto-icon">🌎</div>
-        <div class="pronto-title"><span class="es">Expansión regional</span><span class="en">Regional expansion</span></div>
-        <div class="pronto-desc"><span class="es">My Nana llega a Costa Rica, Colombia, México y más países de Latinoamérica. La misma confianza, en más hogares.</span><span class="en">My Nana comes to Costa Rica, Colombia, Mexico and more Latin American countries. The same trust, in more homes.</span></div>
+
+      <!-- Expansión regional -->
+      <div class="pronto-card">
+        <div class="pronto-badge" style="background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);">
+          <span class="es">Fase 3</span><span class="en">Phase 3</span>
+        </div>
+        <span class="pronto-icon">🌎</span>
+        <div class="pronto-title">
+          <span class="es">Expansión regional</span>
+          <span class="en">Regional expansion</span>
+        </div>
+        <div class="pronto-desc">
+          <span class="es">My Nana llega a Costa Rica, Colombia, México y más países de Latinoamérica. La misma confianza, en más hogares.</span>
+          <span class="en">My Nana comes to Costa Rica, Colombia, Mexico and more Latin American countries. The same trust, in more homes.</span>
+        </div>
       </div>
-      <div class="pronto-card reveal">
-        <div class="pronto-badge" style="background:var(--g3);color:var(--g);">Fase 3</div>
-        <div class="pronto-icon">🤖</div>
-        <div class="pronto-title"><span class="es">Asistente IA del hogar</span><span class="en">Home AI assistant</span></div>
-        <div class="pronto-desc"><span class="es">Un asistente inteligente que sugiere menús según lo que hay en la nevera, optimiza las tareas y predice las necesidades del hogar.</span><span class="en">A smart assistant that suggests menus based on what's in the fridge, optimizes tasks and predicts home needs.</span></div>
-      </div>
-      <div class="pronto-card reveal">
-        <div class="pronto-badge" style="background:var(--b3);color:var(--b2);">Fase 3</div>
-        <div class="pronto-icon">🏆</div>
-        <div class="pronto-title"><span class="es">Certificación My Nana</span><span class="en">My Nana Certification</span></div>
-        <div class="pronto-desc"><span class="es">Las nanas con score 4.8+ pueden obtener la certificación oficial My Nana — un sello que aumenta su valor y confianza en el mercado.</span><span class="en">Nanas with a 4.8+ score can earn the official My Nana certification — a badge that increases their value and trust in the market.</span></div>
-      </div>
-    </div>
-    <div class="reveal" style="text-align:center;margin-top:40px;padding:28px;background:var(--g3);border-radius:var(--radius);border:1px solid var(--g4);">
-      <div style="font-size:20px;margin-bottom:8px;">🚀</div>
-      <div style="font-family:var(--font-display);font-size:22px;font-weight:500;color:var(--txt);margin-bottom:8px;"><span class="es">¿Quieres acceso anticipado?</span><span class="en">Want early access?</span></div>
-      <div style="font-size:14px;color:var(--txt2);margin-bottom:16px;"><span class="es">Regístrate hoy y sé el primero en probar cada nueva función.</span><span class="en">Sign up today and be the first to try every new feature.</span></div>
-      <button onclick="openModal()" style="background:var(--g);color:#fff;font-family:var(--font-body);font-size:14px;font-weight:500;padding:13px 32px;border-radius:99px;border:none;cursor:pointer;transition:all .3s;" onmouseover="this.style.background='var(--g2)'" onmouseout="this.style.background='var(--g)'"><span class="es">Registrarme ahora →</span><span class="en">Sign me up →</span></button>
+
     </div>
   </div>
 </section>
-
-<!-- CTA -->
-<section class="cta-section">
-  <div class="cta-inner">
-    <h2 class="cta-title reveal"><span class="es">¿Lista para organizar<br><em>tu hogar?</em></span><span class="en">Ready to organize<br><em>your home?</em></span></h2>
-    <p class="cta-sub reveal"><span class="es">Únete a las familias panameñas que ya confían en My Nana. 15 días gratis — el cobro inicia el día 16.</span><span class="en">Join the Panamanian families who already trust My Nana. 15 days free — billing starts on day 16.</span></p>
-    <div class="reveal" style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-      <a href="#" class="btn-primary"><span class="es">Empezar gratis →</span><span class="en">Start free →</span></a>
-      <a href="#features" class="btn-outline"><span class="es">Ver todas las funciones</span><span class="en">See all features</span></a>
-    </div>
-  </div>
-</section>
-
 <!-- FOOTER -->
 <footer>
   <div class="footer-inner">
