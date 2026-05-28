@@ -3139,14 +3139,21 @@ function swReadyConTimeout(ms = 10000) {
 }
 
 async function suscribirAPush(registration) {
+  // Guard crítico: pushManager solo existe en modo standalone en iOS
+  if (!registration) {
+    console.error('[PWA] ❌ registration es null/undefined');
+    return null;
+  }
+  if (!registration.pushManager) {
+    console.error('[PWA] ❌ pushManager no disponible. Causa probable: la app NO está abierta en modo standalone (desde el ícono de pantalla de inicio), o iOS < 16.4.');
+    return null;
+  }
   try {
-    // Verificar si ya tiene suscripción activa
     const existing = await registration.pushManager.getSubscription();
     if (existing) {
       console.log('[PWA] ✅ Ya existe suscripción push');
       return existing;
     }
-    // Crear nueva suscripción
     const subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
@@ -3192,9 +3199,17 @@ async function guardarSuscripcionFirestore(subscription) {
 // ─────────────────────────────────────────────
 window.solicitarPermisoNotificaciones = async () => {
   console.log('[PWA] Solicitando permiso de notificaciones...');
+  console.log('[PWA] standalone:', esPWAInstalada(), '| navigator.standalone:', navigator.standalone, '| display-mode:', window.matchMedia('(display-mode: standalone)').matches);
 
   if (!('Notification' in window)) {
     showToast('Este navegador no soporta notificaciones');
+    cerrarModalPWA();
+    return;
+  }
+
+  if (!esPWAInstalada() && esIOS()) {
+    console.warn('[PWA] No estás en modo standalone. Las notificaciones no funcionarán.');
+    showToast('Abre My Nana desde el ícono de pantalla de inicio para activar notificaciones');
     cerrarModalPWA();
     return;
   }
@@ -3469,11 +3484,28 @@ window.pwaDebugDiagnostico = async () => {
   items.push(['iOS device', ios ? 'SÍ ✓' : 'NO', ios]);
   pwaLog(`iOS: ${ios}`, ios ? 'ok' : 'warn');
 
-  // 2. PWA / Standalone
-  const pwa = esPWAInstalada();
-  items.push(['Modo standalone (PWA)', pwa ? 'SÍ ✓' : 'NO ✗ — Abre desde ícono', pwa]);
-  pwaLog(`Standalone: ${pwa} | display-mode: ${window.matchMedia('(display-mode: standalone)').matches} | navigator.standalone: ${navigator.standalone}`, pwa ? 'ok' : 'error');
-  if (!pwa && ios) pwaLog('⚠️ CRÍTICO: En iPhone las notificaciones SOLO funcionan cuando la app se abre desde el ícono de pantalla de inicio, NO desde Safari.', 'error');
+  // 2. PWA / Standalone — detección detallada
+  const mediaStandalone = window.matchMedia('(display-mode: standalone)').matches;
+  const navStandalone   = navigator.standalone === true;
+  const pwa = mediaStandalone || navStandalone;
+
+  pwaLog(`display-mode standalone: ${mediaStandalone}`, mediaStandalone ? 'ok' : 'warn');
+  pwaLog(`navigator.standalone: ${navStandalone}`, navStandalone ? 'ok' : 'warn');
+  pwaLog(`esPWAInstalada() → ${pwa}`, pwa ? 'ok' : 'error');
+
+  items.push(['display-mode standalone', mediaStandalone ? 'SÍ ✓' : 'NO ✗', mediaStandalone]);
+  items.push(['navigator.standalone', navStandalone ? 'SÍ ✓' : 'NO ✗', navStandalone]);
+  items.push(['Modo PWA activo', pwa ? 'SÍ ✓' : 'NO ✗ — CRÍTICO', pwa]);
+
+  if (!pwa && ios) {
+    pwaLog('❌ CRÍTICO: Estás en Safari, NO en la PWA instalada.', 'error');
+    pwaLog('   PushManager NO está disponible desde Safari.', 'error');
+    pwaLog('   Debes abrir My Nana ÚNICAMENTE desde el ícono de la pantalla de inicio.', 'error');
+    pwaLog('   Si ya tienes el ícono y aún dice NO, significa que el ícono es una versión vieja.', 'warn');
+    pwaLog('   Solución: elimina el ícono y vuelve a instalarlo desde Safari.', 'warn');
+  } else if (pwa) {
+    pwaLog('✅ Estás correctamente en modo standalone (PWA).', 'ok');
+  }
 
   // 3. Notification API
   const hasNotif = 'Notification' in window;
@@ -3533,6 +3565,21 @@ window.pwaDebugDiagnostico = async () => {
     try {
       const reg = await navigator.serviceWorker.ready;
       pwaLog('SW ready ✓', 'ok');
+
+      // Guard crítico para iOS
+      if (!reg.pushManager) {
+        pwaLog('❌ pushManager NO disponible en este contexto.', 'error');
+        pwaLog('   Esto ocurre en iOS cuando la app NO está abierta en modo standalone.', 'error');
+        pwaLog('   PushManager solo existe cuando My Nana se abre desde el ícono instalado en la pantalla de inicio.', 'warn');
+        items.push(['PushManager', 'NO DISPONIBLE ✗', false]);
+        items.push(['Solución', 'REINSTALAR el ícono ↓', null]);
+        pwaEstadoHTML(items);
+        mostrarInstruccionesReinstalar();
+        return;
+      }
+      pwaLog('PushManager disponible ✓', 'ok');
+      items.push(['PushManager', 'disponible ✓', true]);
+
       const sub = await reg.pushManager.getSubscription();
       if (sub) {
         pwaLog(`Push subscription EXISTE ✓`, 'ok');
@@ -3602,17 +3649,37 @@ window.pwaDebugSolicitar = async () => {
 
 window.pwaDebugSuscribir = async () => {
   pwaLog('Creando/verificando suscripción push...', 'info');
+
+  if (!esPWAInstalada()) {
+    pwaLog('❌ No estás en modo standalone. Ejecuta el diagnóstico y sigue las instrucciones de reinstalación.', 'error');
+    mostrarInstruccionesReinstalar();
+    return;
+  }
+
+  if (!notificacionesActivas()) {
+    pwaLog('⚠️ Permiso no concedido aún. Toca "Solicitar permiso" primero.', 'warn');
+    return;
+  }
+
   try {
     const reg = await swReadyConTimeout(10000);
     pwaLog('SW ready ✓', 'ok');
+
+    if (!reg.pushManager) {
+      pwaLog('❌ pushManager no disponible. Aunque el SW está activo, iOS requiere modo standalone real.', 'error');
+      pwaLog('Solución: Elimina el ícono, vuelve a agregar a pantalla de inicio y abre desde ahí.', 'warn');
+      mostrarInstruccionesReinstalar();
+      return;
+    }
+
     const sub = await suscribirAPush(reg);
     if (sub) {
-      pwaLog('Suscripción creada/verificada ✓', 'ok');
+      pwaLog('✅ Suscripción creada/verificada', 'ok');
       pwaLog(`Endpoint: ${sub.endpoint.slice(0, 80)}...`, 'info');
       await guardarSuscripcionFirestore(sub);
-      pwaLog('Guardado en Firestore ✓', 'ok');
+      pwaLog('✅ Guardado en Firestore', 'ok');
     } else {
-      pwaLog('❌ suscribirAPush devolvió null. Verifica que tienes permisos y que el SW está activo.', 'error');
+      pwaLog('❌ No se pudo crear suscripción. Verifica permisos y que el SW esté activo.', 'error');
     }
   } catch(e) {
     pwaLog(`❌ Error: ${e.message}`, 'error');
@@ -3675,6 +3742,31 @@ window.pwaDebugLimpiar = () => {
   pwaInicializado = false;
   pwaLog('localStorage PWA limpiado. Recarga la app para ver el banner de nuevo.', 'ok');
 };
+
+// ── Mostrar instrucciones de reinstalación ──
+function mostrarInstruccionesReinstalar() {
+  const logEl = document.getElementById('pwa-debug-log');
+  if (!logEl) return;
+
+  const box = document.createElement('div');
+  box.style.cssText = 'background:#D4A5A5;color:#0F4A38;border-radius:10px;padding:14px;margin-top:10px;';
+  box.innerHTML = `
+    <div style="font-weight:bold;margin-bottom:8px;font-size:13px;">⚠️ DEBES REINSTALAR EL ÍCONO</div>
+    <div style="font-size:12px;line-height:1.7;">
+      El ícono instalado es una versión antigua que no reconoce el service worker actualizado.<br><br>
+      <b>Pasos:</b><br>
+      1. Mantén presionado el ícono de My Nana en tu pantalla de inicio<br>
+      2. Toca <b>"Eliminar de pantalla de inicio"</b><br>
+      3. Abre <b>Safari</b> y ve a <b>mynana.app</b><br>
+      4. Toca el botón <b>Compartir ⬆️</b> en la barra inferior<br>
+      5. Toca <b>"Agregar a pantalla de inicio"</b><br>
+      6. Toca <b>Agregar</b><br>
+      7. Abre My Nana desde el nuevo ícono<br>
+      8. Ve a <b>mynana.app/app.html?pwa-debug=1</b> y ejecuta el diagnóstico de nuevo
+    </div>`;
+  logEl.appendChild(box);
+  logEl.scrollTop = logEl.scrollHeight;
+}
 
 // ══ Exponer Firebase al scope global para onclick handlers
 window.db = db;
