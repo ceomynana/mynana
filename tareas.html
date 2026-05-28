@@ -584,9 +584,12 @@ function renderEvidencias(esNana) {
   const conFoto = todasTareas.filter(t => t.fotoUrl && t.estado === 'completa');
   const el = document.getElementById(esNana ? 'evidenciasNana' : 'evidenciasFam');
   if (!el) return;
+
   if (!conFoto.length) { el.style.display = 'none'; return; }
+
   el.style.display = 'block';
 
+  // Vista familia: galería de fotos con banner destacado
   if (!esNana) {
     el.innerHTML = `
       <div style="background:#fff;border-radius:16px;border:2px solid var(--g4);overflow:hidden;margin-top:16px;box-shadow:0 2px 12px rgba(26,107,82,.08);">
@@ -594,55 +597,71 @@ function renderEvidencias(esNana) {
           <div style="display:flex;align-items:center;gap:10px;">
             <span style="font-size:22px;">📸</span>
             <div>
-              <div style="font-size:14px;font-weight:600;color:#fff;">Fotos de evidencia del día</div>
-              <div style="font-size:11px;color:rgba(255,255,255,.65);">${conFoto.length} foto${conFoto.length>1?'s':''} subida${conFoto.length>1?'s':''} por la nana</div>
+              <div style="font-size:14px;font-weight:600;color:#fff;">Evidencias de hoy</div>
+              <div style="font-size:11px;color:rgba(255,255,255,.6);">${conFoto.length} foto${conFoto.length>1?'s':''} subida${conFoto.length>1?'s':''} por la nana</div>
             </div>
           </div>
           <span style="background:var(--b);color:#fff;font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;">${conFoto.length} nueva${conFoto.length>1?'s':''}</span>
         </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;padding:14px;">
           ${conFoto.map(t => `
-            <div style="border-radius:12px;overflow:hidden;border:1.5px solid var(--g4);cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.06);" onclick="window.open('${t.fotoUrl}','_blank')">
+            <div style="border-radius:12px;overflow:hidden;border:1.5px solid var(--g4);cursor:pointer;transition:transform .2s;box-shadow:0 2px 8px rgba(0,0,0,.06);"
+                 onclick="window.open('${t.fotoUrl}','_blank')"
+                 onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
               <div style="position:relative;">
-                <img src="${t.fotoUrl}" style="width:100%;height:110px;object-fit:cover;display:block;"/>
-                <div style="position:absolute;top:6px;right:6px;background:rgba(26,107,82,.85);border-radius:99px;padding:2px 7px;font-size:10px;color:#fff;font-weight:500;">✅ Lista</div>
+                <img src="${t.fotoUrl}" style="width:100%;height:110px;object-fit:cover;display:block;"
+                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+                <div style="display:none;width:100%;height:110px;background:var(--g3);align-items:center;justify-content:center;font-size:32px;">📷</div>
+                <div style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,.5);border-radius:99px;padding:2px 7px;font-size:10px;color:#fff;">✅ Lista</div>
               </div>
-              <div style="padding:8px 10px;">
-                <div style="font-size:11px;font-weight:500;color:var(--txt);margin-bottom:2px;">${t.nombre}</div>
-                <div style="font-size:10px;color:var(--txt2);">🕐 ${t.completadaA||'hoy'} · Toca para ampliar</div>
+              <div style="padding:8px 10px;background:#fff;">
+                <div style="font-size:11px;font-weight:500;color:var(--txt);margin-bottom:2px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${t.nombre}</div>
+                <div style="font-size:10px;color:var(--txt2);">🕐 ${t.completadaA||''} · Toca para ver</div>
               </div>
             </div>`).join('')}
         </div>
-        <div style="padding:8px 14px;border-top:1px solid var(--g4);font-size:11px;color:var(--txt2);text-align:center;">
-          💬 También visibles en el chat del hogar
+        <div style="padding:10px 14px;border-top:1px solid var(--g4);font-size:11px;color:var(--txt2);text-align:center;">
+          💬 Las fotos también están disponibles en el chat del hogar
         </div>
       </div>`;
-  } else {
-    el.innerHTML = `
-      <div style="background:var(--g3);border-radius:12px;border:1px solid var(--g4);overflow:hidden;margin-top:12px;">
-        <div style="padding:10px 14px;border-bottom:1px solid var(--g4);display:flex;align-items:center;gap:8px;">
-          <span style="font-size:16px;">📸</span>
-          <span style="font-size:13px;font-weight:600;color:var(--txt);">Mis fotos de hoy (${conFoto.length})</span>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;padding:10px;">
-          ${conFoto.map(t => `
-            <div style="border-radius:8px;overflow:hidden;border:1px solid var(--g4);cursor:pointer;" onclick="window.open('${t.fotoUrl}','_blank')">
-              <img src="${t.fotoUrl}" style="width:100%;height:80px;object-fit:cover;display:block;"/>
-              <div style="padding:4px 6px;font-size:10px;color:var(--txt2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.nombre}</div>
-            </div>`).join('')}
-        </div>
-      </div>`;
+    return;
   }
+
+  // Vista nana: galería simple — sus propias fotos
+  el.innerHTML = `
+    <div style="background:var(--g3);border-radius:12px;border:1px solid var(--g4);overflow:hidden;margin-top:12px;">
+      <div style="padding:10px 14px;border-bottom:1px solid var(--g4);display:flex;align-items:center;gap:8px;">
+        <span style="font-size:16px;">📸</span>
+        <span style="font-size:13px;font-weight:600;color:var(--txt);">Mis evidencias de hoy (${conFoto.length})</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;padding:10px;">
+        ${conFoto.map(t => `
+          <div style="border-radius:8px;overflow:hidden;border:1px solid var(--g4);cursor:pointer;" onclick="window.open('${t.fotoUrl}','_blank')">
+            <img src="${t.fotoUrl}" style="width:100%;height:80px;object-fit:cover;display:block;"
+                 onerror="this.src='';this.parentElement.innerHTML='<div style=height:80px;background:var(--g4);display:flex;align-items:center;justify-content:center;font-size:24px>📷</div>'"/>
+            <div style="padding:4px 6px;font-size:10px;color:var(--txt2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.nombre}</div>
+          </div>`).join('')}
+      </div>
+    </div>`;
 }
 
+// ── HELPER: obtener fecha de una tarea (campo fecha o fallback a creadoA) ──
+function getFechaFromTask(t) {
+  if (t.fecha) return t.fecha;
+  // Fallback para tareas legacy sin campo fecha: usar creadoA (Firestore Timestamp)
+  if (t.creadoA) {
+    const ts = t.creadoA.seconds
+      ? new Date(t.creadoA.seconds * 1000)
+      : (typeof t.creadoA.toDate === 'function' ? t.creadoA.toDate() : null);
+    if (ts) return getFechaStr(ts);
+  }
+  return null; // Sin fecha determinable → excluir
+}
 
 // ── RENDER TAREAS ──
 function renderTareas() {
-  // Tareas del día seleccionado (sin fecha = legacy, mostrar solo hoy)
-  const hoyStr = getFechaStr(new Date());
-  todasTareas = todasTareasCache.filter(t =>
-    t.fecha ? t.fecha === fechaSeleccionada : fechaSeleccionada === hoyStr
-  );
+  // Filtro estricto por fecha seleccionada — no mezclar días
+  todasTareas = todasTareasCache.filter(t => getFechaFromTask(t) === fechaSeleccionada);
   const lista = filtrarTareas();
   const esNana = perfilActual.tipo === 'nana';
   const contenedor = document.getElementById(esNana ? 'listaNana' : 'listaFamilia');
@@ -823,19 +842,19 @@ window.abrirModalFoto = (id) => {
   document.getElementById('modalFoto').classList.remove('oculto');
 };
 
-window.cerrarModalFoto = (resetId = true) => {
+window.cerrarModalFoto = () => {
   document.getElementById('modalFoto').classList.add('oculto');
-  if (resetId) tareaFotoId = null;
+  tareaFotoId = null;
 };
 
 window.dispararCamara = () => {
-  cerrarModalFoto(false); // preserva tareaFotoId
-  setTimeout(() => document.getElementById('cameraInput').click(), 100);
+  cerrarModalFoto();
+  document.getElementById('cameraInput').click();
 };
 
 window.dispararGaleria = () => {
-  cerrarModalFoto(false); // preserva tareaFotoId
-  setTimeout(() => document.getElementById('galeriaInput').click(), 100);
+  cerrarModalFoto();
+  document.getElementById('galeriaInput').click();
 };
 
 // ── ENVIAR AL CHAT DEL HOGAR ──
@@ -885,8 +904,8 @@ window.procesarFoto = async (input) => {
     formData.append('upload_preset', PRESET);
     formData.append('folder', 'mynana_tareas');
     const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/image/upload`, { method:'POST', body:formData });
+    if (!res.ok) throw new Error('Cloudinary error ' + res.status);
     const data = await res.json();
-    if (!res.ok || data.error) throw new Error(data.error?.message || 'Cloudinary error ' + res.status);
     const url = data.secure_url;
     if (!url) throw new Error('Sin URL de Cloudinary');
 
