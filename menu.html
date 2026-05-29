@@ -1229,6 +1229,31 @@ function actualizarBadgePerfil() {
     : `${total} persona${total !== 1 ? 's' : ''} · ${perfilAlimentario.objetivos.length} preferencias`;
 }
 
+
+// ── Push notification helper — seguro, no bloquea ──
+async function _pushAParticipantes(hogarId, excludeUid, { titulo, cuerpo, url, tipo }) {
+  try {
+    const hogarSnap = await getDoc(doc(db, 'hogares', hogarId));
+    if (!hogarSnap.exists()) return;
+    const participantes = hogarSnap.data().participantes || [];
+    for (const uid of participantes) {
+      if (uid === excludeUid) continue;
+      const subsSnap = await getDocs(collection(db, 'usuarios', uid, 'pushSubscriptions'));
+      for (const subDoc of subsSnap.docs) {
+        const s = subDoc.data();
+        if (!s.active || !s.endpoint || !s.keys) continue;
+        fetch('/.netlify/functions/send-push', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            subscription: { endpoint: s.endpoint, keys: s.keys },
+            notification: { title: titulo, body: cuerpo, url: url || '/menu.html', tipo, tag: tipo }
+          })
+        }).catch(e => console.warn('[Push]', e.message));
+      }
+    }
+  } catch(e) { console.warn('[Push]', e.message); }
+}
 window.autoPlanificar = async () => {
   // Elegir fuente según modoActual (6 modos) con fallback a perfil
   let platos = getPlatosSegunModo();
@@ -1253,6 +1278,15 @@ window.autoPlanificar = async () => {
   });
   await guardarMenu();
   showToast('✨ Semana planificada según tu perfil');
+  // Push a los otros participantes del hogar
+  if (hogarId && usuarioActual) {
+    _pushAParticipantes(hogarId, usuarioActual.uid, {
+      titulo: '🍽️ Menú semanal listo',
+      cuerpo: 'Tu menú de la semana ya está planificado.',
+      url: '/menu.html',
+      tipo: 'menu-semanal',
+    });
+  }
 };
 
 window.modoSemanaOcupada = async () => {
@@ -1269,6 +1303,14 @@ window.modoSemanaOcupada = async () => {
   });
   await guardarMenu();
   showToast('⚡ Semana ocupada configurada');
+  if (hogarId && usuarioActual) {
+    _pushAParticipantes(hogarId, usuarioActual.uid, {
+      titulo: '⚡ Menú semanal listo',
+      cuerpo: 'Semana con comidas rápidas configurada.',
+      url: '/menu.html',
+      tipo: 'menu-semanal',
+    });
+  }
 };
 
 window.copiarSemanaAnterior = async () => {
@@ -1285,6 +1327,14 @@ window.copiarSemanaAnterior = async () => {
     menuData = { ...semanaAnt };
     await guardarMenu();
     showToast('🔄 Semana anterior copiada');
+    if (hogarId && usuarioActual) {
+      _pushAParticipantes(hogarId, usuarioActual.uid, {
+        titulo: '🔄 Menú semanal actualizado',
+        cuerpo: 'Se copió el menú de la semana anterior.',
+        url: '/menu.html',
+        tipo: 'menu-semanal',
+      });
+    }
   } catch(e) { showToast('Error al copiar'); console.error(e); }
 };
 
