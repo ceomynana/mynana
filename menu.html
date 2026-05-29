@@ -1230,7 +1230,10 @@ function actualizarBadgePerfil() {
 }
 
 
-// ── Push notification helper — seguro, no bloquea ──
+// ── Push notification helper — con cooldown anti-spam ──
+const _pushCooldowns = {};
+const _PUSH_COOLDOWN_MS = 30 * 1000;
+
 async function _pushAParticipantes(hogarId, excludeUid, { titulo, cuerpo, url, tipo }) {
   try {
     const hogarSnap = await getDoc(doc(db, 'hogares', hogarId));
@@ -1238,19 +1241,24 @@ async function _pushAParticipantes(hogarId, excludeUid, { titulo, cuerpo, url, t
     const participantes = hogarSnap.data().participantes || [];
     for (const uid of participantes) {
       if (uid === excludeUid) continue;
-      const subsSnap = await getDocs(collection(db, 'usuarios', uid, 'pushSubscriptions'));
-      for (const subDoc of subsSnap.docs) {
-        const s = subDoc.data();
-        if (!s.active || !s.endpoint || !s.keys) continue;
-        fetch('/.netlify/functions/send-push', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            subscription: { endpoint: s.endpoint, keys: s.keys },
-            notification: { title: titulo, body: cuerpo, url: url || '/menu.html', tipo, tag: tipo }
-          })
-        }).catch(e => console.warn('[Push]', e.message));
-      }
+      const cooldownKey = `${uid}_${tipo}`;
+      const lastSent = _pushCooldowns[cooldownKey] || 0;
+      if (Date.now() - lastSent < _PUSH_COOLDOWN_MS) continue;
+      _pushCooldowns[cooldownKey] = Date.now();
+      const subsSnap = await getDocs(
+        query(collection(db, 'usuarios', uid, 'pushSubscriptions'), where('active', '==', true))
+      );
+      if (subsSnap.empty) continue;
+      const s = subsSnap.docs[0].data(); // Solo primera sub — no multiplicar calls
+      if (!s.endpoint || !s.keys) continue;
+      fetch('/.netlify/functions/send-push', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subscription: { endpoint: s.endpoint, keys: s.keys },
+          notification: { title: titulo, body: cuerpo, url: url || '/menu.html', tipo, tag: tipo }
+        })
+      }).catch(e => console.warn('[Push]', e.message));
     }
   } catch(e) { console.warn('[Push]', e.message); }
 }
