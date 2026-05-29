@@ -1121,6 +1121,9 @@ function agregarNotificacion(notif) {
 
 function actualizarBadge() {
   const noLeidas = notificaciones.filter(n => !n.leida).length;
+  // Actualizar estado global y sincronizar App Badge
+  _unreadCounts.notifs = noLeidas;
+  _syncAppBadge();
   const badge = document.getElementById('notifBadge');
   const sub = document.getElementById('notifPanelSub');
   if (!badge) return;
@@ -1180,8 +1183,10 @@ window.irANotif = (idx) => {
 window.marcarTodasLeidas = () => {
   notificaciones.forEach(n => {
     n.leida = true;
-    persistirNotifLeida(FAM_LEIDAS_KEY, n.id);  // persiste cada una
+    persistirNotifLeida(FAM_LEIDAS_KEY, n.id);
   });
+  _unreadCounts.notifs = 0;  // limpiar inmediatamente
+  _syncAppBadge();           // actualizar badge del ícono
   actualizarBadge();
   renderNotifPanel();
   showToast('✓ Todas las notificaciones marcadas como leídas');
@@ -1439,8 +1444,10 @@ window.irANotifNana = (idx) => {
 window.marcarTodasLeidasNana = () => {
   nanaNotifs.forEach(n => {
     n.leida = true;
-    persistirNotifLeida(NANA_LEIDAS_KEY, n.id);  // persiste cada una
+    persistirNotifLeida(NANA_LEIDAS_KEY, n.id);
   });
+  _unreadCounts.notifs = 0;
+  _syncAppBadge();
   actualizarBadgeNana();
   renderNotifPanelNana();
 };
@@ -1865,10 +1872,9 @@ async function cargarDashboardFamilia() {
     // Guardar hogarId para badge recalculation en visibilitychange
     if (hogarId) localStorage.setItem('mynana_badge_hogar', hogarId);
 
-    // Limpiar badge inmediatamente, luego recalcular con datos reales
+    // Badge = campana. Limpiar al abrir dashboard — onSnapshot actualizará si hay pendientes
+    _unreadCounts.notifs = 0;
     if (_badgeSupported) { try { await navigator.clearAppBadge(); } catch(e) {} }
-    const badgeCount = await calculateBadgeCount(user.uid, hogarId);
-    if (badgeCount > 0) updateAppBadge(badgeCount);
 
   } catch(e) {
     console.error('Error dashboard:', e);
@@ -2043,10 +2049,12 @@ function cargarChatDash(uid, hogarId) {
       const conv = convDoc.data();
       const noLeidos = conv.noLeidos || 0;
 
+      // Actualizar estado global de badge para mensajes
+
       // Si el usuario está viendo el dashboard activamente, marcar mensajes como leídos
       if (noLeidos > 0 && document.visibilityState === 'visible') {
         updateDoc(doc(db, 'conversaciones', convDoc.id), { noLeidos: 0 })
-          .then(() => setTimeout(() => refreshAppBadge && refreshAppBadge(), 600))
+          .catch(() => {})
           .catch(() => {});
       }
 
@@ -3179,38 +3187,25 @@ window.clearAppBadge = async () => {
 
 // Calcular badge según datos reales:
 // mensajes no leídos + tareas urgentes pendientes de hoy/pasadas
-window.calculateBadgeCount = async (uid, hogarId) => {
-  if (!uid || !hogarId) return 0;
-  let count = 0;
-  try {
-    // 1. Mensajes no leídos en conversaciones del usuario
-    const convSnap = await getDocs(
-      query(collection(db, 'conversaciones'), where('participantes', 'array-contains', uid))
-    );
-    convSnap.forEach(d => {
-      const noLeidos = d.data().noLeidos || 0;
-      if (noLeidos > 0) count += noLeidos;
-    });
+// ── Badge = campana únicamente (sin doble conteo de chat) ──
+window._unreadCounts = { notifs: 0 };
 
-    // 2. Tareas urgentes pendientes (hoy o pasadas)
-    const hoy = getFechaStr2(new Date());
-    const tareasSnap = await getDocs(
-      query(collection(db, 'hogares', hogarId, 'tareas'),
-            where('estado', '==', 'pendiente'),
-            where('prioridad', '==', 'urgente'))
-    );
-    tareasSnap.forEach(d => {
-      const t = d.data();
-      const fecha = t.fecha || null;
-      // Incluir si es de hoy o anterior (vencida)
-      if (!fecha || fecha <= hoy) count += 1;
-    });
-
-    console.log('[Badge] Count calculado:', count, '(msgs + tareas urgentes)');
-  } catch(e) {
-    console.warn('[Badge] calculateBadgeCount error:', e.message);
+window._syncAppBadge = () => {
+  if (!_badgeSupported) return;
+  const total = _unreadCounts.notifs;
+  console.log('[Badge] _syncAppBadge → total:', total, '(fuente: campana)');
+  if (total > 0) {
+    navigator.setAppBadge(total).catch(() => {});
+  } else {
+    navigator.clearAppBadge().catch(() => {});
   }
-  return count;
+};
+
+// Badge = solo campana (sin doble conteo de mensajes)
+window.calculateBadgeCount = async (uid, hogarId) => {
+  const total = _unreadCounts.notifs;
+  console.log('[Badge] calculateBadgeCount →', total, '(campana únicamente)');
+  return total;
 };
 
 const VAPID_PUBLIC_KEY = 'BFAdLN5LcWCs0mR_KDyJthqJb9cdDpBEu9rUIY8dUgudF5wyahX4_TOKkbEPnmWssc7jgBQzs7Hwx1bUIZxnIFM';
@@ -3655,37 +3650,9 @@ document.getElementById('pwa-modal')?.addEventListener('click', function(e) {
 });
 
 // ── refreshAppBadge: limpiar inmediatamente y recalcular ──
-window.refreshAppBadge = async () => {
-  // 1. Limpiar INMEDIATAMENTE sin esperar el cálculo
-  if (_badgeSupported) {
-    try { await navigator.clearAppBadge(); } catch(e) {}
-  }
-
-  // 2. Esperar a que auth esté listo (max 3 segundos)
-  let user = auth.currentUser;
-  if (!user) {
-    await new Promise(resolve => {
-      const unsub = auth.onAuthStateChanged(u => {
-        unsub();
-        user = u;
-        resolve();
-      });
-      setTimeout(resolve, 3000);
-    });
-  }
-
-  if (!user) { console.log('[Badge] Sin usuario — badge limpiado'); return; }
-
-  const hId = localStorage.getItem('mynana_badge_hogar');
-  if (!hId) { console.log('[Badge] Sin hogarId — badge limpiado'); return; }
-
-  // 3. Recalcular y poner el número real
-  const count = await calculateBadgeCount(user.uid, hId);
-  console.log('[Badge] refreshAppBadge → count:', count);
-  if (count > 0) {
-    try { await navigator.setAppBadge(count); } catch(e) {}
-  }
-  // Si count === 0, ya está limpio del paso 1
+window.refreshAppBadge = () => {
+  // Usar estado en memoria — inmediato, sin queries Firestore
+  _syncAppBadge();
 };
 
 // ── Recalcular badge cuando el usuario vuelve a la app ──
@@ -4132,12 +4099,20 @@ window.pwaDebugBadgeDetalle = async () => {
     pwaLog(`TOTAL tareas urgentes vencidas: ${totalUrgentes}`, totalUrgentes > 0 ? 'warn' : 'ok');
   } catch(e) { pwaLog(`❌ Error tareas: ${e.message}`, 'error'); }
 
-  // ── Resumen ──
-  const total = totalMsgs + totalUrgentes;
-  pwaLog('--- RESUMEN ---', 'info');
-  pwaLog(`unreadMessages = ${totalMsgs}`, totalMsgs > 0 ? 'warn' : 'ok');
-  pwaLog(`urgentTasks    = ${totalUrgentes}`, totalUrgentes > 0 ? 'warn' : 'ok');
-  pwaLog(`badgeCount     = ${total}`, total > 0 ? 'warn' : 'ok');
+  // ── Estado en memoria ──
+  pwaLog('--- ESTADO EN MEMORIA ---', 'info');
+  pwaLog(`_unreadCounts.notifs (campana) = ${window._unreadCounts?.notifs ?? 'no iniciado'}`,
+    (window._unreadCounts?.notifs||0) > 0 ? 'warn' : 'ok');
+  pwaLog('Nota: badge = SOLO campana. Mensajes de chat NO se suman por separado (evita doble conteo).', 'info');
+  const memTotal = (window._unreadCounts?.notifs||0);
+  pwaLog(`badgeCount (en memoria)         = ${memTotal}`, memTotal > 0 ? 'warn' : 'ok');
+
+  // ── Firestore (solo para diagnóstico) ──
+  pwaLog('--- FIRESTORE noLeidos (solo diagnóstico) ---', 'info');
+  pwaLog(`noLeidos en conversaciones = ${totalMsgs}`, totalMsgs > 0 ? 'warn' : 'ok');
+  pwaLog(`Fórmula final: campana(${window._unreadCounts?.notifs??0}) = ${memTotal}`, memTotal > 0 ? 'warn' : 'ok');
+  pwaLog('Badge correcto cuando campana = 0 → badge debe ser 0', memTotal === 0 ? 'ok' : 'warn');
+  pwaLog('NOTA: Tareas urgentes ya NO cuentan para el badge.', 'ok');
   pwaLog('=== FIN DIAGNÓSTICO ===', 'info');
 };
 
