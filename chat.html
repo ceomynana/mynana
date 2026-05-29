@@ -443,6 +443,31 @@ function renderMsgs(msgs) {
   wrap.innerHTML=html; wrap.scrollTop=wrap.scrollHeight;
 }
 
+
+// ── Push notification helper — seguro, no bloquea ──
+async function _pushAParticipantes(hogarId, excludeUid, { titulo, cuerpo, url, tipo }) {
+  try {
+    const hogarSnap = await getDoc(doc(db, 'hogares', hogarId));
+    if (!hogarSnap.exists()) return;
+    const participantes = hogarSnap.data().participantes || [];
+    for (const uid of participantes) {
+      if (uid === excludeUid) continue;
+      const subsSnap = await getDocs(collection(db, 'usuarios', uid, 'pushSubscriptions'));
+      for (const subDoc of subsSnap.docs) {
+        const s = subDoc.data();
+        if (!s.active || !s.endpoint || !s.keys) continue;
+        fetch('/.netlify/functions/send-push', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            subscription: { endpoint: s.endpoint, keys: s.keys },
+            notification: { title: titulo, body: cuerpo, url: url || '/chat.html', tipo, tag: tipo }
+          })
+        }).catch(e => console.warn('[Push]', e.message));
+      }
+    }
+  } catch(e) { console.warn('[Push]', e.message); }
+}
 window.enviar = async () => {
   const inp=document.getElementById('inputMsg'), txt=inp.value.trim();
   if (!txt||!chatId) return;
@@ -456,6 +481,13 @@ window.enviar = async () => {
   }
   await addDoc(collection(db,'conversaciones',chatId,'mensajes'),md);
   await updateDoc(doc(db,'conversaciones',chatId),{ultimoMensaje:txt,ultimaHora:serverTimestamp(),noLeidos:1});
+  // Push al otro participante
+  if (hogarId && me) _pushAParticipantes(hogarId, me.uid, {
+    titulo: `💬 ${perfil?.nombre?.split(' ')[0] || 'My Nana'}`,
+    cuerpo: txt.slice(0, 80),
+    url: '/chat.html',
+    tipo: 'mensaje',
+  });
 };
 
 window.subirArchivo = async inp => {
@@ -469,6 +501,12 @@ window.subirArchivo = async inp => {
     if (chatId==='demo') { msgsDemo.push({...md,id:`df-${Date.now()}`,timestamp:{toDate:()=>new Date()}}); renderMsgs(msgsDemo); showToast('📸 ¡Enviada!'); return; }
     await addDoc(collection(db,'conversaciones',chatId,'mensajes'),md);
     await updateDoc(doc(db,'conversaciones',chatId),{ultimoMensaje:'📷 Foto',ultimaHora:serverTimestamp(),noLeidos:1});
+    if (hogarId && me) _pushAParticipantes(hogarId, me.uid, {
+      titulo: `📸 ${perfil?.nombre?.split(' ')[0] || 'My Nana'}`,
+      cuerpo: 'Envió una foto',
+      url: '/chat.html',
+      tipo: 'mensaje',
+    });
     showToast('📸 ¡Foto enviada!');
   } catch(e) { showToast('❌ Error al subir'); }
   inp.value='';
@@ -509,7 +547,16 @@ async function enviarAudio(blob,dur) {
     }
     const md={tipo:'audio',audioUrl:url,duracion:dur,remitenteUid:me.uid,remitenteNombre:perfil.nombre,timestamp:serverTimestamp(),leido:false};
     if (chatId==='demo') { msgsDemo.push({...md,id:`da-${Date.now()}`,timestamp:{toDate:()=>new Date()}}); renderMsgs(msgsDemo); }
-    else { await addDoc(collection(db,'conversaciones',chatId,'mensajes'),md); await updateDoc(doc(db,'conversaciones',chatId),{ultimoMensaje:'🎙️ Audio',ultimaHora:serverTimestamp(),noLeidos:1}); }
+    else {
+      await addDoc(collection(db,'conversaciones',chatId,'mensajes'),md);
+      await updateDoc(doc(db,'conversaciones',chatId),{ultimoMensaje:'🎙️ Audio',ultimaHora:serverTimestamp(),noLeidos:1});
+      if (hogarId && me) _pushAParticipantes(hogarId, me.uid, {
+        titulo: `🎙️ ${perfil?.nombre?.split(' ')[0] || 'My Nana'}`,
+        cuerpo: 'Envió un audio',
+        url: '/chat.html',
+        tipo: 'mensaje',
+      });
+    }
     showToast('🎙️ ¡Audio enviado!');
   } catch(e) { showToast('❌ Error'); }
 }
@@ -602,6 +649,12 @@ window.enviarTarea = async () => {
   }
 
   await addDoc(collection(db, 'conversaciones', chatId, 'mensajes'), md);
+  if (hogarId && me) _pushAParticipantes(hogarId, me.uid, {
+    titulo: `📋 ${perfil?.nombre?.split(' ')[0] || 'My Nana'}`,
+    cuerpo: `Nueva tarea: ${md.tarea?.nombre || 'Tarea asignada'}`,
+    url: '/chat.html',
+    tipo: 'nueva-tarea',
+  });
   await updateDoc(doc(db, 'conversaciones', chatId), {
     ultimoMensaje: `📋 ${tarea.nombre}`,
     ultimaHora:    serverTimestamp(),
