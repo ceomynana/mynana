@@ -3498,33 +3498,32 @@ window.solicitarPermisoNotificaciones = async () => {
 // ─────────────────────────────────────────────
 //  Enviar notificación push desde la app
 // ─────────────────────────────────────────────
+const _selfPushCooldowns = {};
 window.enviarNotificacionPush = async ({ titulo, cuerpo, url = '/app.html', tipo = 'general', tag = 'mynana' }) => {
   const user = auth.currentUser;
   if (!user || !notificacionesActivas()) return;
+  // Cooldown — no enviar el mismo tipo más de 1 vez / 30s
+  const ck = `self_${tipo}`;
+  if (Date.now() - (_selfPushCooldowns[ck] || 0) < 30000) return;
+  _selfPushCooldowns[ck] = Date.now();
   try {
-    // Usar getDocs/collection ya importados en este módulo
+    // Solo la primera suscripción activa — evitar multiplicar calls
     const snap = await getDocs(collection(db, 'usuarios', user.uid, 'pushSubscriptions'));
-    const subs = snap.docs.map(d => d.data()).filter(s => s.active && s.endpoint && s.keys);
-    console.log('[PWA] Enviando push a', subs.length, 'suscripción(es)');
-    for (const sub of subs) {
-      try {
-        const res = await fetch('/.netlify/functions/send-push', {
-          method:  'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            subscription: { endpoint: sub.endpoint, keys: sub.keys },
-            notification: { title: titulo, body: cuerpo, url, tipo, tag },
-          }),
-        });
-        if (res.status === 410) {
-          // Suscripción expirada — marcar como inactiva
-          const docId = sub.endpoint.split('/').pop().slice(-40).replace(/[^a-zA-Z0-9]/g, '_');
-          await updateDoc(doc(db, 'usuarios', user.uid, 'pushSubscriptions', docId), { active: false });
-          console.warn('[PWA] Suscripción expirada, marcada inactiva');
-        }
-      } catch(e) { console.warn('[PWA] Error enviando push individual:', e.message); }
+    const sub = snap.docs.map(d => d.data()).find(s => s.active && s.endpoint && s.keys);
+    if (!sub) return;
+    const res = await fetch('/.netlify/functions/send-push', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        subscription: { endpoint: sub.endpoint, keys: sub.keys },
+        notification: { title: titulo, body: cuerpo, url, tipo, tag },
+      }),
+    });
+    if (res.status === 410) {
+      const docId = sub.endpoint.split('/').pop().slice(-40).replace(/[^a-zA-Z0-9]/g, '_');
+      await updateDoc(doc(db, 'usuarios', user.uid, 'pushSubscriptions', docId), { active: false });
     }
-  } catch(e) { console.error('[PWA] Error en enviarNotificacionPush:', e.message); }
+  } catch(e) { console.warn('[PWA] enviarNotificacionPush:', e.message); }
 };
 
 // ─────────────────────────────────────────────
