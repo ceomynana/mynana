@@ -11,19 +11,19 @@
   "lang": "es",
   "icons": [
     {
-      "src": "/mynana-icon-casa.svg",
+      "src": "/mynana-icon-casa-v2.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"
     },
     {
-      "src": "/mynana-icon-casa-512.png",
+      "src": "/mynana-icon-casa-v2.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/mynana-icon-casa-1024.png",
+      "src": "/mynana-icon-casa-v2-1024.png",
       "sizes": "1024x1024",
       "type": "image/png",
       "purpose": "any"
@@ -43,13 +43,13 @@
       "name": "Mis tareas",
       "short_name": "Tareas",
       "url": "/tareas.html",
-      "icons": [{ "src": "/mynana-icon-casa-512.png", "sizes": "512x512" }]
+      "icons": [{ "src": "/mynana-icon-casa-v2.png", "sizes": "512x512" }]
     },
     {
       "name": "Menú semanal",
       "short_name": "Menú",
       "url": "/menu.html",
-      "icons": [{ "src": "/mynana-icon-casa-512.png", "sizes": "512x512" }]
+      "icons": [{ "src": "/mynana-icon-casa-v2.png", "sizes": "512x512" }]
     }
   ]
 }
