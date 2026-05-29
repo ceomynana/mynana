@@ -1307,6 +1307,31 @@ function pickVarios(arr, n) {
 /* ════════════════════════════════════════
    GENERAR SEMANA (sin API, igual que menú)
 ════════════════════════════════════════ */
+
+// ── Push notification helper — seguro, no bloquea ──
+async function _pushAParticipantes(hogarId, excludeUid, { titulo, cuerpo, url, tipo }) {
+  try {
+    const hogarSnap = await getDoc(doc(db, 'hogares', hogarId));
+    if (!hogarSnap.exists()) return;
+    const participantes = hogarSnap.data().participantes || [];
+    for (const uid of participantes) {
+      if (uid === excludeUid) continue;
+      const subsSnap = await getDocs(collection(db, 'usuarios', uid, 'pushSubscriptions'));
+      for (const subDoc of subsSnap.docs) {
+        const s = subDoc.data();
+        if (!s.active || !s.endpoint || !s.keys) continue;
+        fetch('/.netlify/functions/send-push', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            subscription: { endpoint: s.endpoint, keys: s.keys },
+            notification: { title: titulo, body: cuerpo, url: url || '/tareas.html', tipo, tag: tipo }
+          })
+        }).catch(e => console.warn('[Push]', e.message));
+      }
+    }
+  } catch(e) { console.warn('[Push]', e.message); }
+}
 window.generarSemana = async (modo) => {
   if (!perfilHogar) { showToast('⚠️ Primero configura tu perfil del hogar'); abrirWizard(); return; }
 
@@ -1505,6 +1530,16 @@ window.generarSemana = async (modo) => {
     renderTareasDelDia();
     actualizarStats();
     showToast(modo === 'rapida' ? '⚡ Semana express lista' : '✨ Plan personalizado generado');
+
+    // Push a los otros participantes (nana recibe "tienes tareas nuevas")
+    if (hogarId && usuarioActual) {
+      _pushAParticipantes(hogarId, usuarioActual.uid, {
+        titulo: '📋 Plan semanal generado',
+        cuerpo: modo === 'rapida' ? 'Tu plan express de la semana está listo.' : 'Tu plan personalizado de la semana está listo.',
+        url: '/tareas.html',
+        tipo: 'nueva-tarea',
+      });
+    }
 
   } catch(e) {
     console.error(e);
