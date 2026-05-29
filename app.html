@@ -416,6 +416,15 @@ body.lang-es [data-en]{display:none !important;}
         <button onclick="pwaDebugClearBadge()" style="background:rgba(255,255,255,.1);color:#fff;border:none;border-radius:8px;padding:10px 6px;font-size:12px;cursor:pointer;font-family:monospace;">✕ Limpiar</button>
       </div>
     </div>
+
+    <!-- Subscriptions audit -->
+    <div style="background:rgba(0,0,0,.3);border-radius:10px;padding:12px;margin-bottom:12px;">
+      <div style="color:#D4A5A5;font-size:11px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">🔍 Auditoría de Subscriptions</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <button onclick="pwaAuditSubs()" style="background:#1A6B52;color:#fff;border:none;border-radius:8px;padding:10px;font-size:12px;font-weight:bold;cursor:pointer;font-family:monospace;">🔍 Ver todas mis subscriptions</button>
+        <button onclick="pwaCleanupSubs()" style="background:#D4A5A5;color:#0F4A38;border:none;border-radius:8px;padding:10px;font-size:12px;font-weight:bold;cursor:pointer;font-family:monospace;">🧹 Limpiar duplicados (dejar solo 1)</button>
+      </div>
+    </div>
     </div>
 
     <!-- Reglas Firestore sugeridas -->
@@ -4045,6 +4054,106 @@ window.pwaDebugLimpiar = () => {
   localStorage.removeItem('mynana_pwa_banner_dismissed');
   pwaInicializado = false;
   pwaLog('localStorage PWA limpiado. Recarga la app para ver el banner de nuevo.', 'ok');
+};
+
+// ── Auditar subscriptions del usuario actual ──
+window.pwaAuditSubs = async () => {
+  const logEl = document.getElementById('pwa-debug-log');
+  if (logEl) logEl.innerHTML = '';
+  const user = auth.currentUser;
+  if (!user) { pwaLog('❌ Sin usuario autenticado', 'error'); return; }
+
+  pwaLog(`=== AUDITORÍA SUBSCRIPTIONS — ${user.email} ===`, 'info');
+  let total = 0;
+
+  // Ruta 1: usuarios/{uid}/pushSubscriptions
+  try {
+    const snap1 = await getDocs(collection(db, 'usuarios', user.uid, 'pushSubscriptions'));
+    pwaLog(`Ruta 1 — usuarios/${user.uid}/pushSubscriptions: ${snap1.docs.length} docs`, 'info');
+    snap1.docs.forEach((d, i) => {
+      const s = d.data();
+      pwaLog(`  [${i+1}] ID: ${d.id.slice(0,20)}... | active: ${s.active} | platform: ${s.platform || '?'} | creado: ${s.createdAt?.toDate?.()?.toLocaleDateString?.() || 'desconocido'}`,
+        s.active ? 'warn' : 'ok');
+      pwaLog(`       endpoint: ${(s.endpoint||'').slice(0,60)}...`, 'info');
+      total++;
+    });
+  } catch(e) { pwaLog(`❌ Error ruta 1: ${e.message}`, 'error'); }
+
+  // Ruta 2: pushSubscriptions/{uid_*} (fallback)
+  try {
+    const snap2 = await getDocs(collection(db, 'pushSubscriptions'));
+    const mias = snap2.docs.filter(d => d.id.startsWith(user.uid));
+    pwaLog(`Ruta 2 — pushSubscriptions raíz (las tuyas): ${mias.length} docs`, 'info');
+    mias.forEach((d, i) => {
+      const s = d.data();
+      pwaLog(`  [${i+1}] ID: ${d.id.slice(0,30)}... | active: ${s.active} | platform: ${s.platform || '?'}`,
+        s.active ? 'warn' : 'ok');
+      total++;
+    });
+  } catch(e) { pwaLog(`ℹ️  Ruta 2 no accesible (normal): ${e.message}`, 'info'); }
+
+  pwaLog(`TOTAL subscriptions encontradas: ${total}`, total > 1 ? 'warn' : 'ok');
+  if (total > 1) pwaLog('⚠️  Hay duplicados. Toca "Limpiar duplicados" para dejar solo 1.', 'warn');
+  else pwaLog('✅ Sin duplicados.', 'ok');
+};
+
+// ── Limpiar subscriptions — dejar solo la más reciente activa ──
+window.pwaCleanupSubs = async () => {
+  const user = auth.currentUser;
+  if (!user) { pwaLog('❌ Sin usuario autenticado', 'error'); return; }
+
+  const confirmar = confirm(`¿Limpiar subscriptions duplicadas de ${user.email}?
+Se conservará solo la más reciente. Las demás quedarán inactivas.`);
+  if (!confirmar) return;
+
+  pwaLog(`=== LIMPIEZA SUBSCRIPTIONS — ${user.email} ===`, 'info');
+
+  try {
+    // Ruta 1
+    const snap1 = await getDocs(collection(db, 'usuarios', user.uid, 'pushSubscriptions'));
+    const activasR1 = snap1.docs.filter(d => d.data().active !== false);
+
+    if (activasR1.length > 1) {
+      // Ordenar por createdAt — mantener la más reciente
+      activasR1.sort((a, b) => {
+        const ta = a.data().updatedAt?.seconds || a.data().createdAt?.seconds || 0;
+        const tb = b.data().updatedAt?.seconds || b.data().createdAt?.seconds || 0;
+        return tb - ta; // más reciente primero
+      });
+
+      pwaLog(`Ruta 1: ${activasR1.length} activas → conservando la más reciente, desactivando ${activasR1.length - 1}`, 'warn');
+
+      // Desactivar todas menos la primera (más reciente)
+      for (let i = 1; i < activasR1.length; i++) {
+        await updateDoc(doc(db, 'usuarios', user.uid, 'pushSubscriptions', activasR1[i].id), { active: false });
+        pwaLog(`  Desactivada: ${activasR1[i].id.slice(0,25)}...`, 'ok');
+      }
+      pwaLog(`  Conservada: ${activasR1[0].id.slice(0,25)}...`, 'ok');
+    } else {
+      pwaLog(`Ruta 1: ${activasR1.length} activa(s) — sin duplicados`, 'ok');
+    }
+
+    // Ruta 2 — desactivar todas (son de fallback, ya no se usan)
+    try {
+      const snap2 = await getDocs(collection(db, 'pushSubscriptions'));
+      const miasR2 = snap2.docs.filter(d => d.id.startsWith(user.uid) && d.data().active !== false);
+      if (miasR2.length > 0) {
+        pwaLog(`Ruta 2 (fallback): desactivando ${miasR2.length} subscription(s) obsoleta(s)...`, 'warn');
+        for (const d of miasR2) {
+          await updateDoc(doc(db, 'pushSubscriptions', d.id), { active: false });
+          pwaLog(`  Desactivada: ${d.id.slice(0,30)}...`, 'ok');
+        }
+      } else {
+        pwaLog('Ruta 2: sin subscriptions activas — OK', 'ok');
+      }
+    } catch(e) { pwaLog(`ℹ️  Ruta 2 no accesible: ${e.message}`, 'info'); }
+
+    pwaLog('✅ Limpieza completa. Ahora cada push se enviará UNA sola vez.', 'ok');
+    pwaLog('Ejecuta "Ver todas mis subscriptions" para verificar.', 'info');
+
+  } catch(e) {
+    pwaLog(`❌ Error durante limpieza: ${e.message}`, 'error');
+  }
 };
 
 window.pwaDebugBadgeDetalle = async () => {
