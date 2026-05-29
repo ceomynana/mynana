@@ -409,6 +409,7 @@ body.lang-es [data-en]{display:none !important;}
     <div style="background:rgba(0,0,0,.3);border-radius:10px;padding:12px;margin-bottom:12px;">
       <div style="color:#D4A5A5;font-size:11px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">🔴 App Badge API</div>
       <div id="badge-api-status" style="font-size:11px;color:#a8d8a8;margin-bottom:10px;">Verificando...</div>
+      <button onclick="pwaDebugBadgeDetalle()" style="background:#D4A5A5;color:#0F4A38;border:none;border-radius:8px;padding:10px;font-size:12px;font-weight:bold;cursor:pointer;font-family:monospace;width:100%;margin-bottom:8px;">🔍 Diagnóstico badge detallado</button>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
         <button onclick="pwaDebugBadge(1)" style="background:#1A6B52;color:#fff;border:none;border-radius:8px;padding:10px 6px;font-size:12px;cursor:pointer;font-family:monospace;">🔴 Badge 1</button>
         <button onclick="pwaDebugBadge(5)" style="background:#1A6B52;color:#fff;border:none;border-radius:8px;padding:10px 6px;font-size:12px;cursor:pointer;font-family:monospace;">🔴 Badge 5</button>
@@ -4078,6 +4079,66 @@ window.pwaDebugLimpiar = () => {
   localStorage.removeItem('mynana_pwa_banner_dismissed');
   pwaInicializado = false;
   pwaLog('localStorage PWA limpiado. Recarga la app para ver el banner de nuevo.', 'ok');
+};
+
+window.pwaDebugBadgeDetalle = async () => {
+  pwaLog('=== DIAGNÓSTICO BADGE ===', 'info');
+  const user = auth.currentUser;
+  if (!user) { pwaLog('❌ Sin usuario autenticado', 'error'); return; }
+  const hId = localStorage.getItem('mynana_badge_hogar');
+  if (!hId) { pwaLog('❌ Sin hogarId en localStorage', 'error'); return; }
+
+  pwaLog(`Usuario: ${user.email}`, 'info');
+  pwaLog(`HogarId: ${hId}`, 'info');
+
+  let totalMsgs = 0, totalUrgentes = 0;
+
+  // ── 1. Conversaciones / mensajes no leídos ──
+  pwaLog('--- Conversaciones ---', 'info');
+  try {
+    const convSnap = await getDocs(
+      query(collection(db, 'conversaciones'), where('participantes', 'array-contains', user.uid))
+    );
+    pwaLog(`Conversaciones encontradas: ${convSnap.docs.length}`, 'info');
+    convSnap.forEach(d => {
+      const data = d.data();
+      const noLeidos = data.noLeidos || 0;
+      pwaLog(`  conv ${d.id.slice(0,12)}... → noLeidos: ${noLeidos} | ultimoMensaje: "${(data.ultimoMensaje||'').slice(0,30)}"`,
+        noLeidos > 0 ? 'warn' : 'ok');
+      totalMsgs += noLeidos;
+    });
+    pwaLog(`TOTAL mensajes no leídos: ${totalMsgs}`, totalMsgs > 0 ? 'warn' : 'ok');
+  } catch(e) { pwaLog(`❌ Error conversaciones: ${e.message}`, 'error'); }
+
+  // ── 2. Tareas urgentes pendientes ──
+  pwaLog('--- Tareas urgentes ---', 'info');
+  try {
+    const hoy = getFechaStr2(new Date());
+    pwaLog(`Fecha hoy: ${hoy}`, 'info');
+    const tareasSnap = await getDocs(
+      query(collection(db, 'hogares', hId, 'tareas'),
+            where('estado', '==', 'pendiente'),
+            where('prioridad', '==', 'urgente'))
+    );
+    pwaLog(`Tareas urgentes+pendientes encontradas: ${tareasSnap.docs.length}`, 'info');
+    tareasSnap.forEach(d => {
+      const t = d.data();
+      const fecha = t.fecha || null;
+      const cuenta = !fecha || fecha <= hoy;
+      pwaLog(`  tarea: "${(t.nombre||'sin nombre').slice(0,30)}" | fecha: ${fecha||'sin fecha'} | ¿cuenta?: ${cuenta}`,
+        cuenta ? 'warn' : 'ok');
+      if (cuenta) totalUrgentes++;
+    });
+    pwaLog(`TOTAL tareas urgentes vencidas: ${totalUrgentes}`, totalUrgentes > 0 ? 'warn' : 'ok');
+  } catch(e) { pwaLog(`❌ Error tareas: ${e.message}`, 'error'); }
+
+  // ── Resumen ──
+  const total = totalMsgs + totalUrgentes;
+  pwaLog('--- RESUMEN ---', 'info');
+  pwaLog(`unreadMessages = ${totalMsgs}`, totalMsgs > 0 ? 'warn' : 'ok');
+  pwaLog(`urgentTasks    = ${totalUrgentes}`, totalUrgentes > 0 ? 'warn' : 'ok');
+  pwaLog(`badgeCount     = ${total}`, total > 0 ? 'warn' : 'ok');
+  pwaLog('=== FIN DIAGNÓSTICO ===', 'info');
 };
 
 window.pwaDebugBadge = async (n) => {
