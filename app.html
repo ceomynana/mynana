@@ -398,6 +398,33 @@ body.lang-es [data-en]{display:none !important;}
       <button onclick="pwaDebugLimpiar()" style="background:rgba(255,255,255,.1);color:#fff;border:none;border-radius:10px;padding:14px;font-size:14px;cursor:pointer;font-family:monospace;">🗑 Limpiar localStorage PWA</button>
     </div>
 
+    <!-- Reglas Firestore sugeridas -->
+    <details style="background:rgba(0,0,0,.3);border-radius:10px;padding:12px;margin-bottom:12px;">
+      <summary style="color:#D4A5A5;font-size:12px;cursor:pointer;">📋 Reglas de Firestore requeridas (toca para ver)</summary>
+      <pre style="color:#a8d8a8;font-size:10px;margin-top:10px;white-space:pre-wrap;line-height:1.5;">rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Regla existente para usuarios
+    match /usuarios/{userId} {
+      allow read, write: if request.auth.uid == userId;
+
+      // ← AGREGAR ESTO para push subscriptions
+      match /pushSubscriptions/{subId} {
+        allow read, write: if request.auth.uid == userId;
+      }
+    }
+
+    // Ruta alternativa (fallback)
+    match /pushSubscriptions/{docId} {
+      allow read, write: if request.auth != null
+        && docId.matches(request.auth.uid + '.*');
+    }
+  }
+}</pre>
+      <div style="color:#ffd080;font-size:10px;margin-top:8px;">Ve a Firebase Console → Firestore → Reglas → Editar → Publicar</div>
+    </details>
+
     <!-- Log output -->
     <div style="background:rgba(0,0,0,.5);border-radius:12px;padding:14px;">
       <div style="color:#D4A5A5;font-size:11px;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em;">Log de diagnóstico</div>
@@ -3124,10 +3151,23 @@ async function registrarSW() {
 //  Push — Suscripción con timeout
 // ─────────────────────────────────────────────
 function urlBase64ToUint8Array(base64String) {
-  const padding = '='.repeat((4 - base64String.length % 4) % 4);
-  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-  const rawData = window.atob(base64);
-  return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
+  // Implementación estándar recomendada para iOS — loop explícito
+  try {
+    const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding)
+      .replace(/-/g, '+')
+      .replace(/_/g, '/');
+    const rawData = atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; i++) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    console.log('[PWA] VAPID key convertida, longitud:', outputArray.length);
+    return outputArray;
+  } catch(e) {
+    console.error('[PWA] ❌ Error convirtiendo VAPID key:', e.message);
+    throw e;
+  }
 }
 
 // Esperar SW ready con timeout para no bloquearse en iOS
@@ -3139,58 +3179,147 @@ function swReadyConTimeout(ms = 10000) {
 }
 
 async function suscribirAPush(registration) {
-  // Guard crítico: pushManager solo existe en modo standalone en iOS
   if (!registration) {
     console.error('[PWA] ❌ registration es null/undefined');
     return null;
   }
   if (!registration.pushManager) {
-    console.error('[PWA] ❌ pushManager no disponible. Causa probable: la app NO está abierta en modo standalone (desde el ícono de pantalla de inicio), o iOS < 16.4.');
+    console.error('[PWA] ❌ pushManager no disponible');
     return null;
   }
+
+  // Paso 1: verificar suscripción existente
+  let existing = null;
   try {
-    const existing = await registration.pushManager.getSubscription();
-    if (existing) {
-      console.log('[PWA] ✅ Ya existe suscripción push');
-      return existing;
-    }
+    existing = await registration.pushManager.getSubscription();
+  } catch(e) {
+    console.error('[PWA] Error en getSubscription():', e.name, e.message);
+  }
+
+  if (existing) {
+    console.log('[PWA] ✅ Suscripción existente encontrada:', existing.endpoint.slice(0, 60));
+    return existing;
+  }
+
+  // Paso 2: crear nueva suscripción — log detallado para iOS
+  console.log('[PWA] Convirtiendo VAPID key...');
+  let vapidKey;
+  try {
+    vapidKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
+    console.log('[PWA] VAPID key OK, bytes:', vapidKey.length);
+  } catch(e) {
+    console.error('[PWA] ❌ VAPID key inválida:', e.message);
+    return null;
+  }
+
+  console.log('[PWA] Llamando pushManager.subscribe()...');
+  try {
     const subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+      applicationServerKey: vapidKey,
     });
-    console.log('[PWA] ✅ Nueva suscripción push creada:', subscription.endpoint.slice(0, 60) + '...');
+    console.log('[PWA] ✅ Suscripción creada. Endpoint:', subscription.endpoint.slice(0, 80));
     return subscription;
   } catch(e) {
-    console.error('[PWA] ❌ Error suscribiendo a push:', e.message);
+    // Log completo del error para iOS debugging
+    console.error('[PWA] ❌ subscribe() falló');
+    console.error('[PWA]   nombre:', e.name);
+    console.error('[PWA]   mensaje:', e.message);
+    console.error('[PWA]   stack:', e.stack);
+    // Errores comunes en iOS:
+    if (e.name === 'NotAllowedError') console.error('[PWA]   → Permiso denegado o no concedido desde PWA standalone');
+    if (e.name === 'AbortError')      console.error('[PWA]   → VAPID key incorrecta o problema con el servidor push');
+    if (e.name === 'InvalidStateError') console.error('[PWA]   → SW no activo o scope incorrecto');
     return null;
   }
 }
 
 // ─────────────────────────────────────────────
 //  Guardar suscripción en Firestore
+//  logFn: función opcional para mostrar en panel debug
 // ─────────────────────────────────────────────
-async function guardarSuscripcionFirestore(subscription) {
+async function guardarSuscripcionFirestore(subscription, logFn) {
+  const log = (msg, tipo) => {
+    console.log('[PWA]', msg);
+    if (logFn) logFn(msg, tipo);
+  };
+
   const user = auth.currentUser;
-  if (!user) { console.warn('[PWA] No hay usuario autenticado'); return; }
-  if (!subscription) { console.warn('[PWA] Suscripción nula'); return; }
+  if (!user) {
+    log('❌ No hay usuario autenticado (auth.currentUser es null)', 'error');
+    return false;
+  }
+  if (!subscription) {
+    log('❌ subscription es null', 'error');
+    return false;
+  }
+
+  let subData;
   try {
-    const subData = subscription.toJSON();
-    // Usar hash simple del endpoint como ID del doc
-    const docId = subData.endpoint.split('/').pop().slice(-40).replace(/[^a-zA-Z0-9]/g, '_');
-    const docRef = doc(db, 'usuarios', user.uid, 'pushSubscriptions', docId);
-    await setDoc(docRef, {
-      endpoint:  subData.endpoint,
-      keys:      subData.keys,
-      platform:  esIOS() ? 'ios' : (/Android/.test(navigator.userAgent) ? 'android' : 'desktop'),
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-      active:    true,
-      userAgent: navigator.userAgent.slice(0, 100),
-    }, { merge: true });
-    localStorage.setItem('mynana_push_active', '1');
-    console.log('[PWA] ✅ Suscripción guardada en Firestore para usuario:', user.uid);
+    subData = subscription.toJSON();
   } catch(e) {
-    console.error('[PWA] ❌ Error guardando suscripción:', e.message);
+    log(`❌ subscription.toJSON() falló: ${e.message}`, 'error');
+    return false;
+  }
+
+  if (!subData.endpoint || !subData.keys?.auth || !subData.keys?.p256dh) {
+    log(`❌ Datos de suscripción incompletos: endpoint=${!!subData.endpoint} auth=${!!subData.keys?.auth} p256dh=${!!subData.keys?.p256dh}`, 'error');
+    return false;
+  }
+
+  // Generar docId limpio desde el endpoint
+  const docId = 'sub_' + subData.endpoint.split('/').pop().slice(-32).replace(/[^a-zA-Z0-9]/g, '');
+
+  // Ruta Firestore — subcollection del usuario
+  const path = `usuarios/${user.uid}/pushSubscriptions/${docId}`;
+  log(`Guardando en Firestore: ${path}`, 'info');
+
+  const payload = {
+    endpoint:   subData.endpoint,
+    auth:       subData.keys.auth,
+    p256dh:     subData.keys.p256dh,
+    keys:       subData.keys,
+    userId:     user.uid,
+    userEmail:  user.email || '',
+    device:     'iPhone / iOS PWA',
+    platform:   'ios',
+    active:     true,
+    createdAt:  serverTimestamp(),
+    updatedAt:  serverTimestamp(),
+    userAgent:  navigator.userAgent.slice(0, 120),
+  };
+
+  // Intento 1: ruta subcollection usuarios/{uid}/pushSubscriptions/{docId}
+  try {
+    const docRef = doc(db, 'usuarios', user.uid, 'pushSubscriptions', docId);
+    await setDoc(docRef, payload, { merge: true });
+    localStorage.setItem('mynana_push_active', '1');
+    log(`✅ Guardado en subcollection usuarios/${user.uid}/pushSubscriptions/${docId}`, 'ok');
+    return true;
+  } catch(e) {
+    log(`❌ Intento 1 falló — código: ${e.code || 'sin código'} | nombre: ${e.name} | mensaje: ${e.message}`, 'error');
+    if (e.code === 'permission-denied') {
+      log('   → Reglas de Firestore no permiten escritura en esta ruta.', 'warn');
+      log('   → Ve a Firestore → Reglas y agrega la regla indicada en el panel.', 'warn');
+    }
+  }
+
+  // Intento 2: ruta raíz pushSubscriptions/{uid_docId} (fallback)
+  const fallbackPath = `pushSubscriptions/${user.uid}_${docId}`;
+  log(`Intentando ruta alternativa: ${fallbackPath}`, 'warn');
+  try {
+    const docRef2 = doc(db, 'pushSubscriptions', `${user.uid}_${docId}`);
+    await setDoc(docRef2, payload, { merge: true });
+    localStorage.setItem('mynana_push_active', '1');
+    log(`✅ Guardado en ruta alternativa: pushSubscriptions/${user.uid}_${docId}`, 'ok');
+    return true;
+  } catch(e) {
+    log(`❌ Intento 2 también falló — código: ${e.code || 'sin código'} | ${e.message}`, 'error');
+    if (e.code === 'permission-denied') {
+      log('   → Ambas rutas bloqueadas por reglas de Firestore.', 'error');
+      log('   → ACCIÓN REQUERIDA: actualiza las reglas en Firebase Console.', 'warn');
+    }
+    return false;
   }
 }
 
@@ -3672,17 +3801,76 @@ window.pwaDebugSuscribir = async () => {
       return;
     }
 
-    const sub = await suscribirAPush(reg);
+    // Intentar suscripción con manejo de error explícito
+    pwaLog('Verificando suscripción existente...', 'info');
+    let existing = null;
+    try {
+      existing = await reg.pushManager.getSubscription();
+      pwaLog(`getSubscription() → ${existing ? 'EXISTE' : 'null'}`, existing ? 'ok' : 'info');
+    } catch(e) {
+      pwaLog(`❌ getSubscription() error: ${e.name} — ${e.message}`, 'error');
+    }
+
+    if (existing) {
+      pwaLog('✅ Suscripción existente, guardando en Firestore...', 'ok');
+      pwaLog(`Endpoint: ${existing.endpoint.slice(0, 70)}...`, 'info');
+      const guardadoExist = await guardarSuscripcionFirestore(existing, pwaLog);
+      if (guardadoExist) {
+        pwaLog('✅ Guardado. Ahora toca "Enviar notificación de prueba".', 'ok');
+      }
+      return;
+    }
+
+    // Convertir VAPID key
+    pwaLog('Convirtiendo VAPID key...', 'info');
+    let vapidKey;
+    try {
+      vapidKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
+      pwaLog(`VAPID key OK (${vapidKey.length} bytes)`, 'ok');
+    } catch(e) {
+      pwaLog(`❌ VAPID key error: ${e.message}`, 'error');
+      return;
+    }
+
+    // Crear suscripción
+    pwaLog('Llamando pushManager.subscribe()...', 'info');
+    let sub = null;
+    try {
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: vapidKey,
+      });
+    } catch(e) {
+      pwaLog(`❌ subscribe() falló: ${e.name}`, 'error');
+      pwaLog(`   Mensaje: ${e.message}`, 'error');
+      if (e.name === 'NotAllowedError') {
+        pwaLog('   → El permiso fue denegado o no se pidió desde la PWA instalada.', 'warn');
+        pwaLog('   Solución: toca "Solicitar permiso" y acepta cuando aparezca el diálogo del sistema.', 'warn');
+      }
+      if (e.name === 'AbortError') {
+        pwaLog('   → Problema con la VAPID key o el servidor push de Apple.', 'warn');
+        pwaLog('   Verifica que VAPID_PUBLIC_KEY en el código coincide con VAPID_PUBLIC_KEY en Netlify.', 'warn');
+      }
+      if (e.name === 'InvalidStateError') {
+        pwaLog('   → Service worker no está en estado activo. Recarga la PWA.', 'warn');
+      }
+      return;
+    }
+
     if (sub) {
-      pwaLog('✅ Suscripción creada/verificada', 'ok');
-      pwaLog(`Endpoint: ${sub.endpoint.slice(0, 80)}...`, 'info');
-      await guardarSuscripcionFirestore(sub);
-      pwaLog('✅ Guardado en Firestore', 'ok');
+      pwaLog('✅ Suscripción push creada correctamente', 'ok');
+      pwaLog(`Endpoint: ${sub.endpoint.slice(0, 70)}...`, 'info');
+      const subJson = sub.toJSON();
+      pwaLog(`Keys: auth=${subJson.keys?.auth?.slice(0,10)}... p256dh=${subJson.keys?.p256dh?.slice(0,10)}...`, 'info');
+      const guardado = await guardarSuscripcionFirestore(sub, pwaLog);
+      if (guardado) {
+        pwaLog('✅ Guardado en Firestore. Ahora toca "Enviar notificación de prueba".', 'ok');
+      }
     } else {
-      pwaLog('❌ No se pudo crear suscripción. Verifica permisos y que el SW esté activo.', 'error');
+      pwaLog('❌ subscribe() devolvió null sin error. Informa este resultado.', 'error');
     }
   } catch(e) {
-    pwaLog(`❌ Error: ${e.message}`, 'error');
+    pwaLog(`❌ Error inesperado: ${e.name} — ${e.message}`, 'error');
   }
 };
 
