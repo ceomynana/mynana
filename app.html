@@ -398,6 +398,18 @@ body.lang-es [data-en]{display:none !important;}
       <button onclick="pwaDebugLimpiar()" style="background:rgba(255,255,255,.1);color:#fff;border:none;border-radius:10px;padding:14px;font-size:14px;cursor:pointer;font-family:monospace;">🗑 Limpiar localStorage PWA</button>
     </div>
 
+    <!-- Badge API -->
+    <div style="background:rgba(0,0,0,.3);border-radius:10px;padding:12px;margin-bottom:12px;">
+      <div style="color:#D4A5A5;font-size:11px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">🔴 App Badge API</div>
+      <div id="badge-api-status" style="font-size:11px;color:#a8d8a8;margin-bottom:10px;">Verificando...</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+        <button onclick="pwaDebugBadge(1)" style="background:#1A6B52;color:#fff;border:none;border-radius:8px;padding:10px 6px;font-size:12px;cursor:pointer;font-family:monospace;">🔴 Badge 1</button>
+        <button onclick="pwaDebugBadge(5)" style="background:#1A6B52;color:#fff;border:none;border-radius:8px;padding:10px 6px;font-size:12px;cursor:pointer;font-family:monospace;">🔴 Badge 5</button>
+        <button onclick="pwaDebugClearBadge()" style="background:rgba(255,255,255,.1);color:#fff;border:none;border-radius:8px;padding:10px 6px;font-size:12px;cursor:pointer;font-family:monospace;">✕ Limpiar</button>
+      </div>
+    </div>
+    </div>
+
     <!-- Reglas Firestore sugeridas -->
     <details style="background:rgba(0,0,0,.3);border-radius:10px;padding:12px;margin-bottom:12px;">
       <summary style="color:#D4A5A5;font-size:12px;cursor:pointer;">📋 Reglas de Firestore requeridas (toca para ver)</summary>
@@ -1841,6 +1853,14 @@ async function cargarDashboardFamilia() {
       cargarMercadoDash(hogarId),
       cargarNominaDash(hogarId),
     ]);
+
+    // Guardar hogarId para badge recalculation en visibilitychange
+    if (hogarId) localStorage.setItem('mynana_badge_hogar', hogarId);
+
+    // Actualizar App Badge al abrir el dashboard
+    const badgeCount = await calculateBadgeCount(user.uid, hogarId);
+    updateAppBadge(badgeCount);
+
   } catch(e) {
     console.error('Error dashboard:', e);
   }
@@ -3104,6 +3124,79 @@ async function procesarCodigoFamiliar(codigo, nuevoUid) {
 // PWA — Service Worker + Push Notifications + Banner iOS
 // ══════════════════════════════════════════════════════
 
+// ═══════════════════════════════════════════════════
+//  APP BADGE API — globo rojo sobre el ícono de la PWA
+// ═══════════════════════════════════════════════════
+
+const _badgeSupported = 'setAppBadge' in navigator;
+console.log('[Badge] API soportada:', _badgeSupported);
+
+// Establecer badge con número
+window.updateAppBadge = async (count) => {
+  if (!_badgeSupported) {
+    console.log('[Badge] API no disponible en este dispositivo');
+    return;
+  }
+  try {
+    if (count > 0) {
+      await navigator.setAppBadge(count);
+      console.log('[Badge] ✅ Badge establecido:', count);
+    } else {
+      await navigator.clearAppBadge();
+      console.log('[Badge] ✅ Badge limpiado');
+    }
+  } catch(e) {
+    console.warn('[Badge] Error:', e.message);
+  }
+};
+
+// Limpiar badge
+window.clearAppBadge = async () => {
+  if (!_badgeSupported) return;
+  try {
+    await navigator.clearAppBadge();
+    console.log('[Badge] ✅ Badge limpiado');
+  } catch(e) {
+    console.warn('[Badge] clearAppBadge error:', e.message);
+  }
+};
+
+// Calcular badge según datos reales:
+// mensajes no leídos + tareas urgentes pendientes de hoy/pasadas
+window.calculateBadgeCount = async (uid, hogarId) => {
+  if (!uid || !hogarId) return 0;
+  let count = 0;
+  try {
+    // 1. Mensajes no leídos en conversaciones del usuario
+    const convSnap = await getDocs(
+      query(collection(db, 'conversaciones'), where('participantes', 'array-contains', uid))
+    );
+    convSnap.forEach(d => {
+      const noLeidos = d.data().noLeidos || 0;
+      if (noLeidos > 0) count += noLeidos;
+    });
+
+    // 2. Tareas urgentes pendientes (hoy o pasadas)
+    const hoy = getFechaStr2(new Date());
+    const tareasSnap = await getDocs(
+      query(collection(db, 'hogares', hogarId, 'tareas'),
+            where('estado', '==', 'pendiente'),
+            where('prioridad', '==', 'urgente'))
+    );
+    tareasSnap.forEach(d => {
+      const t = d.data();
+      const fecha = t.fecha || null;
+      // Incluir si es de hoy o anterior (vencida)
+      if (!fecha || fecha <= hoy) count += 1;
+    });
+
+    console.log('[Badge] Count calculado:', count, '(msgs + tareas urgentes)');
+  } catch(e) {
+    console.warn('[Badge] calculateBadgeCount error:', e.message);
+  }
+  return count;
+};
+
 const VAPID_PUBLIC_KEY = 'BFAdLN5LcWCs0mR_KDyJthqJb9cdDpBEu9rUIY8dUgudF5wyahX4_TOKkbEPnmWssc7jgBQzs7Hwx1bUIZxnIFM';
 
 // ─────────────────────────────────────────────
@@ -3545,6 +3638,19 @@ document.getElementById('pwa-modal')?.addEventListener('click', function(e) {
   if (e.target === this) cerrarModalPWA();
 });
 
+// ── Recalcular badge cuando el usuario vuelve a la app ──
+document.addEventListener('visibilitychange', async () => {
+  if (document.visibilityState === 'visible') {
+    const user = auth.currentUser;
+    // Obtener hogarId del localStorage o del contexto
+    const hId = localStorage.getItem('mynana_badge_hogar');
+    if (user && hId) {
+      const count = await calculateBadgeCount(user.uid, hId);
+      updateAppBadge(count);
+    }
+  }
+});
+
 // ── Trigger: cuando el usuario llega al dashboard ──
 setTimeout(() => {
   const observer = new MutationObserver(mutations => {
@@ -3930,6 +4036,47 @@ window.pwaDebugLimpiar = () => {
   pwaInicializado = false;
   pwaLog('localStorage PWA limpiado. Recarga la app para ver el banner de nuevo.', 'ok');
 };
+
+window.pwaDebugBadge = async (n) => {
+  pwaLog(`Probando badge con valor ${n}...`, 'info');
+  if (!('setAppBadge' in navigator)) {
+    pwaLog('❌ Badging API no disponible en este dispositivo/navegador.', 'error');
+    pwaLog('   Requiere: Chrome 81+, Edge 81+, o iOS 16.4+ en modo standalone.', 'warn');
+    return;
+  }
+  try {
+    await navigator.setAppBadge(n);
+    pwaLog(`✅ Badge establecido: ${n} — mira el ícono de My Nana en tu pantalla de inicio.`, 'ok');
+  } catch(e) {
+    pwaLog(`❌ Error: ${e.name} — ${e.message}`, 'error');
+  }
+};
+
+window.pwaDebugClearBadge = async () => {
+  if (!('clearAppBadge' in navigator)) {
+    pwaLog('❌ Badging API no disponible.', 'error');
+    return;
+  }
+  try {
+    await navigator.clearAppBadge();
+    pwaLog('✅ Badge limpiado.', 'ok');
+  } catch(e) {
+    pwaLog(`❌ Error: ${e.message}`, 'error');
+  }
+};
+
+// Mostrar estado Badge API en el panel al abrirlo
+setTimeout(() => {
+  const el = document.getElementById('badge-api-status');
+  if (!el) return;
+  if ('setAppBadge' in navigator) {
+    el.textContent = '✅ Badging API disponible en este dispositivo';
+    el.style.color = '#80ff80';
+  } else {
+    el.textContent = '❌ Badging API NO disponible (requiere PWA standalone en iOS 16.4+ o Chrome/Edge en Android)';
+    el.style.color = '#ff8080';
+  }
+}, 1600); // Justo después de que se muestre el panel
 
 // ── Mostrar instrucciones de reinstalación ──
 function mostrarInstruccionesReinstalar() {
