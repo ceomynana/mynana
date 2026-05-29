@@ -97,7 +97,13 @@ self.addEventListener('push', event => {
 
   event.waitUntil(
     self.registration.showNotification(title, options)
-      .then(() => console.log('[SW] Notificación mostrada correctamente'))
+      .then(() => {
+        console.log('[SW] Notificación mostrada correctamente');
+        // Intentar incrementar badge (si el dispositivo lo soporta)
+        if ('setAppBadge' in self.navigator) {
+          self.navigator.setAppBadge(1).catch(() => {});
+        }
+      })
       .catch(err => console.error('[SW] Error mostrando notificación:', err))
   );
 });
