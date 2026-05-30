@@ -1378,7 +1378,7 @@ window.crearEvento = async () => {
       titulo: `${cfg.emoji} Nuevo evento del hogar`,
       cuerpo: `${titulo} · ${formatHora(hora)}`,
       url: '/tareas.html',
-      tipo: 'nueva-tarea',
+      tipo: 'evento-creado',
     });
 
     cerrarModalEvento();
@@ -1424,7 +1424,7 @@ window.cambiarEstadoEvento = async (eventoId, nuevoEstado) => {
       titulo: `${cfg.emoji} Evento ${accion}`,
       cuerpo: evento?.titulo || 'Evento del hogar',
       url: '/tareas.html',
-      tipo: nuevoEstado === 'completado' ? 'tarea-completada' : 'general',
+      tipo: nuevoEstado === 'completado' ? 'evento-completado' : 'evento-cancelado',
     });
     showToast(nuevoEstado === 'completado' ? '✅ Evento completado' : '✕ Evento cancelado');
   } catch(e) {
