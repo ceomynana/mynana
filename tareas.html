@@ -47,6 +47,31 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
 .panel-sub{font-size:11px;color:rgba(255,255,255,.55);margin-top:2px;}
 .panel-badge{background:var(--b);color:#fff;font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;}
 
+/* ── EVENTOS DEL HOGAR ── */
+.eventos-section{margin-top:16px;}
+.eventos-header{display:flex;align-items:center;justify-content:space-between;padding:10px 0 6px;}
+.eventos-title{font-size:12px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.04em;}
+.evento-item{display:flex;align-items:flex-start;gap:10px;padding:10px;background:var(--b3);border-radius:10px;border:1px solid rgba(212,165,165,.3);margin-bottom:6px;}
+.evento-icon{width:32px;height:32px;border-radius:8px;background:var(--b);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.evento-info{flex:1;min-width:0;}
+.evento-titulo{font-size:13px;font-weight:500;color:var(--txt);}
+.evento-meta{font-size:11px;color:var(--txt2);margin-top:2px;}
+.evento-estado{font-size:10px;font-weight:600;padding:2px 8px;border-radius:99px;flex-shrink:0;align-self:flex-start;margin-top:2px;}
+.evento-estado.pendiente{background:#FEF3C7;color:#92400E;}
+.evento-estado.completado{background:var(--g3);color:var(--g);}
+.evento-estado.cancelado{background:#F3F4F6;color:#9CA3AF;text-decoration:line-through;}
+.btn-evento{font-size:12px;font-weight:500;color:var(--b2);background:none;border:1px solid var(--b);border-radius:99px;padding:4px 10px;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:4px;}
+.btn-evento:hover{background:var(--b3);}
+/* Modal evento */
+.modal-evento{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.45);align-items:flex-end;justify-content:center;backdrop-filter:blur(3px);}
+.modal-evento.visible{display:flex;}
+.modal-evento-box{background:#fff;border-radius:20px 20px 0 0;padding:24px 20px 36px;width:100%;max-width:480px;animation:slideUp .3s ease;}
+.modal-evento-title{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--txt);margin-bottom:18px;}
+.tipo-evento-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:16px;}
+.tipo-evento-btn{background:var(--cr);border:1.5px solid var(--g4);border-radius:10px;padding:8px 4px;text-align:center;cursor:pointer;font-size:11px;color:var(--txt2);font-family:'DM Sans',sans-serif;transition:all .2s;}
+.tipo-evento-btn:hover,.tipo-evento-btn.sel{background:var(--g);border-color:var(--g);color:#fff;}
+.tipo-evento-emoji{font-size:20px;display:block;margin-bottom:3px;}
+
 /* ── FORM CREAR TAREA (solo familia) ── */
 .form-tarea{padding:16px 20px;border-bottom:1px solid var(--g4);background:var(--g3);}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
@@ -283,6 +308,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
           <button class="btn-crear" id="btnCrear" onclick="crearTarea()">
             + Agregar tarea
           </button>
+          <button onclick="abrirModalEvento()" style="width:100%;margin-top:6px;background:none;border:1.5px solid var(--b);color:var(--b2);border-radius:99px;padding:9px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">
+            📅 Agregar evento del hogar
+          </button>
         </div>
 
         <!-- Navegación semanal familia -->
@@ -310,6 +338,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
             <div class="empty-title">Sin tareas aún</div>
             <div class="empty-sub">Crea la primera tarea del día</div>
           </div>
+        </div>
+
+        <!-- Eventos del hogar para el día seleccionado -->
+        <div class="eventos-section" id="eventosDia" style="display:none;">
+          <div class="eventos-header">
+            <span class="eventos-title">📅 Eventos del hogar</span>
+          </div>
+          <div id="eventosLista"></div>
         </div>
 
         <!-- Evidencias del día - siempre visible si hay fotos -->
@@ -452,6 +488,7 @@ async function encontrarHogar() {
     hogarId = snap.docs[0].id;
     iniciarPaneles();
     escucharTareas();
+  escucharEventos();
     return;
   }
 
@@ -537,9 +574,8 @@ function getLunesDeSemana(d) {
 
 let fechaSeleccionada = getFechaStr(new Date());
 let todasTareasCache = [];
-let semanaOffset = 0; // 0=esta semana, -1=anterior, 1=siguiente
+let semanaOffset = 0;
 
-// ── Calcular lunes de la semana con offset ──
 function getLunesConOffset(offset) {
   const hoy = new Date();
   const lunes = getLunesDeSemana(hoy);
@@ -547,19 +583,16 @@ function getLunesConOffset(offset) {
   return lunes;
 }
 
-// ── Label legible de la semana ──
 function getSemanaLabel(offset) {
   if (offset === 0) return 'Esta semana';
   if (offset === 1) return 'Próxima semana';
   if (offset === -1) return 'Semana anterior';
   const lunes = getLunesConOffset(offset);
-  const domingo = new Date(lunes);
-  domingo.setDate(lunes.getDate() + 6);
+  const domingo = new Date(lunes); domingo.setDate(lunes.getDate() + 6);
   const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
   return `${lunes.getDate()} - ${domingo.getDate()} ${meses[domingo.getMonth()]}`;
 }
 
-// ── Actualizar labels de navegación ──
 function actualizarSemanaNav() {
   const label = getSemanaLabel(semanaOffset);
   ['semanaNavLabelFam','semanaNavLabelNana'].forEach(id => {
@@ -570,17 +603,16 @@ function actualizarSemanaNav() {
   });
 }
 
-// ── Navegar entre semanas ──
 window.navegarSemana = (delta) => {
   semanaOffset += delta;
   const lunes = getLunesConOffset(semanaOffset);
-  // Al cambiar semana, seleccionar el lunes de esa semana por defecto
   fechaSeleccionada = getFechaStr(lunes);
   renderDiaSelector();
   actualizarSemanaNav();
   renderTareas();
   actualizarProgreso();
   actualizarStats();
+  renderEventosDia();
 };
 
 // ── SELECTOR DE DÍAS ──
@@ -605,7 +637,6 @@ function renderDiaSelector() {
       <span class="dia-num">${d.getDate()}</span>
     </div>`;
   }).join('');
-
   actualizarSemanaNav();
 }
 
@@ -620,6 +651,7 @@ window.seleccionarDia = (fecha, el) => {
   renderTareas();
   actualizarProgreso();
   actualizarStats();
+  renderEventosDia();
 };
 
 function escucharTareas() {
@@ -1197,6 +1229,215 @@ window.irAlVideo = (cat) => {
   location.href = `/videos.html?cat=${encodeURIComponent(catVideo)}`;
 };
 
+// ══════════════════════════════════════════════════════
+//  EVENTOS DEL HOGAR
+// ══════════════════════════════════════════════════════
+
+const EVENTO_TIPOS = {
+  tecnico:      { emoji:'🔧', label:'Técnico' },
+  fumigacion:   { emoji:'🪲', label:'Fumigación' },
+  mantenimiento:{ emoji:'🏗️', label:'Mantenimiento' },
+  veterinario:  { emoji:'🐾', label:'Veterinario' },
+  delivery:     { emoji:'📦', label:'Delivery' },
+  cita:         { emoji:'🏥', label:'Cita médica' },
+  visita:       { emoji:'👨‍👩‍👧', label:'Visita familiar' },
+  otro:         { emoji:'📌', label:'Evento' },
+};
+
+let tipoEventoSel = 'tecnico';
+let eventosCache  = [];   // todos los eventos del hogar
+let unsubEventos  = null;
+
+// ── Escuchar eventos en tiempo real ──
+function escucharEventos() {
+  if (!hogarId) return;
+  if (unsubEventos) unsubEventos();
+  const q = query(
+    collection(db, 'hogares', hogarId, 'eventos'),
+    orderBy('fecha', 'asc'), orderBy('hora', 'asc')
+  );
+  unsubEventos = onSnapshot(q, snap => {
+    eventosCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderEventosDia();
+  });
+}
+
+// ── Renderizar eventos del día seleccionado ──
+function renderEventosDia() {
+  const sec  = document.getElementById('eventosDia');
+  const list = document.getElementById('eventosLista');
+  if (!sec || !list) return;
+
+  const delDia = eventosCache.filter(e => e.fecha === fechaSeleccionada && e.estado !== 'cancelado');
+  if (!delDia.length) { sec.style.display = 'none'; return; }
+
+  sec.style.display = 'block';
+  list.innerHTML = delDia.map(e => {
+    const cfg   = EVENTO_TIPOS[e.tipo] || EVENTO_TIPOS.otro;
+    const hora  = formatHora(e.hora);
+    const esFam = perfilActual?.tipo === 'familia';
+    return `
+      <div class="evento-item">
+        <div class="evento-icon">${cfg.emoji}</div>
+        <div class="evento-info">
+          <div class="evento-titulo">${e.titulo}</div>
+          <div class="evento-meta">${hora}${e.proveedor ? ' · ' + e.proveedor : ''}${e.notas ? ' · ' + e.notas : ''}</div>
+          ${esFam && e.estado === 'pendiente' ? `
+            <div style="display:flex;gap:6px;margin-top:6px;">
+              <button class="btn-evento" onclick="cambiarEstadoEvento('${e.id}','completado')">✅ Completado</button>
+              <button class="btn-evento" onclick="cambiarEstadoEvento('${e.id}','cancelado')" style="color:#9CA3AF;border-color:#E5E7EB;">✕ Cancelar</button>
+            </div>` : ''}
+        </div>
+        <span class="evento-estado ${e.estado}">${e.estado}</span>
+      </div>`;
+  }).join('');
+}
+
+// ── Modal — abrir / cerrar / tipo ──
+window.abrirModalEvento = () => {
+  // Prefill fecha con día seleccionado
+  const fi = document.getElementById('evFecha');
+  if (fi) fi.value = fechaSeleccionada;
+  // Llenar select de asignados
+  _llenarAsignadosEvento();
+  document.getElementById('modalEvento').classList.add('visible');
+};
+
+window.cerrarModalEvento = () => {
+  document.getElementById('modalEvento').classList.remove('visible');
+  // Limpiar
+  ['evTitulo','evHora','evProveedor','evNotas'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  tipoEventoSel = 'tecnico';
+  document.querySelectorAll('.tipo-evento-btn').forEach(b => {
+    b.classList.toggle('sel', b.dataset.tipo === 'tecnico');
+  });
+};
+
+window.selTipoEvento = (btn) => {
+  tipoEventoSel = btn.dataset.tipo;
+  document.querySelectorAll('.tipo-evento-btn').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+};
+
+async function _llenarAsignadosEvento() {
+  const sel = document.getElementById('evAsignado');
+  if (!sel || !hogarId) return;
+  sel.innerHTML = '<option value="">— Todos —</option>';
+  try {
+    const hSnap = await getDoc(doc(db, 'hogares', hogarId));
+    const parts = hSnap.data()?.participantes || [];
+    for (const uid of parts) {
+      const p = await getDoc(doc(db, 'usuarios', uid));
+      if (p.exists()) {
+        const opt = document.createElement('option');
+        opt.value = uid;
+        opt.textContent = p.data().nombre || uid;
+        sel.appendChild(opt);
+      }
+    }
+  } catch(e) { console.warn('llenarAsignados:', e); }
+}
+
+// ── Crear evento ──
+window.crearEvento = async () => {
+  const titulo = document.getElementById('evTitulo')?.value.trim();
+  const fecha  = document.getElementById('evFecha')?.value;
+  const hora   = document.getElementById('evHora')?.value;
+  if (!titulo) { showToast('⚠️ Escribe un título para el evento'); return; }
+  if (!fecha)  { showToast('⚠️ Selecciona una fecha'); return; }
+  if (!hora)   { showToast('⚠️ Selecciona una hora'); return; }
+
+  const btn = document.querySelector('#modalEvento button[onclick="crearEvento()"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
+
+  try {
+    const eventoData = {
+      tipo:                 tipoEventoSel,
+      titulo,
+      fecha,
+      hora,
+      proveedor:            document.getElementById('evProveedor')?.value.trim() || '',
+      notas:                document.getElementById('evNotas')?.value.trim() || '',
+      asignadoA:            document.getElementById('evAsignado')?.value || null,
+      estado:               'pendiente',
+      creadoPor:            usuarioActual.uid,
+      creadoA:              serverTimestamp(),
+      // Preparación para recordatorios futuros (sin scheduler aún)
+      recordatorioEnviado:    false,
+      recordatorio24hEnviado: false,
+    };
+
+    await addDoc(collection(db, 'hogares', hogarId, 'eventos'), eventoData);
+
+    // Notificación push — mismo sistema que tareas
+    const cfg = EVENTO_TIPOS[tipoEventoSel] || EVENTO_TIPOS.otro;
+    _pushAParticipantes(hogarId, usuarioActual.uid, {
+      titulo: `${cfg.emoji} Nuevo evento del hogar`,
+      cuerpo: `${titulo} · ${formatHora(hora)}`,
+      url: '/tareas.html',
+      tipo: 'nueva-tarea',
+    });
+
+    cerrarModalEvento();
+    // Navegar al día del evento si es distinto al seleccionado
+    if (fecha !== fechaSeleccionada) {
+      // Calcular offset de semana para ese día
+      const hoy = new Date();
+      const lunesHoy = getLunesDeSemana(hoy);
+      const lunesEvento = getLunesDeSemana(new Date(fecha + 'T12:00:00'));
+      const diffMs = lunesEvento - lunesHoy;
+      const diffSemanas = Math.round(diffMs / (7 * 24 * 60 * 60 * 1000));
+      if (diffSemanas !== semanaOffset) {
+        semanaOffset = diffSemanas;
+        renderDiaSelector();
+        actualizarSemanaNav();
+      }
+      fechaSeleccionada = fecha;
+      renderTareas();
+      actualizarProgreso();
+      actualizarStats();
+    }
+    showToast(`📅 Evento "${titulo}" guardado`);
+  } catch(e) {
+    console.error('crearEvento:', e);
+    showToast('❌ Error al guardar el evento');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '📅 Guardar evento'; }
+  }
+};
+
+// ── Cambiar estado de evento ──
+window.cambiarEstadoEvento = async (eventoId, nuevoEstado) => {
+  try {
+    await updateDoc(doc(db, 'hogares', hogarId, 'eventos', eventoId), {
+      estado: nuevoEstado,
+      [`${nuevoEstado}A`]: serverTimestamp(),
+    });
+    const evento = eventosCache.find(e => e.id === eventoId);
+    const cfg = evento ? (EVENTO_TIPOS[evento.tipo] || EVENTO_TIPOS.otro) : EVENTO_TIPOS.otro;
+    const accion = nuevoEstado === 'completado' ? '✅ completado' : '✕ cancelado';
+    // Notificación push — mismo sistema que tareas
+    _pushAParticipantes(hogarId, usuarioActual.uid, {
+      titulo: `${cfg.emoji} Evento ${accion}`,
+      cuerpo: evento?.titulo || 'Evento del hogar',
+      url: '/tareas.html',
+      tipo: nuevoEstado === 'completado' ? 'tarea-completada' : 'general',
+    });
+    showToast(nuevoEstado === 'completado' ? '✅ Evento completado' : '✕ Evento cancelado');
+  } catch(e) {
+    console.error('cambiarEstadoEvento:', e);
+    showToast('❌ Error al actualizar el evento');
+  }
+};
+
+// Cerrar modal al click fuera
+document.getElementById('modalEvento')?.addEventListener('click', e => {
+  if (e.target === document.getElementById('modalEvento')) cerrarModalEvento();
+});
+
 window.showToast = (msg) => {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -1214,5 +1455,66 @@ document.getElementById('modalFoto')?.addEventListener('click', e => {
   if (e.target === document.getElementById('modalFoto')) window.cerrarModalFoto();
 });
 </script>
+
+<!-- MODAL CREAR EVENTO DEL HOGAR -->
+<div class="modal-evento" id="modalEvento">
+  <div class="modal-evento-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div class="modal-evento-title">Nuevo evento del hogar</div>
+      <button onclick="cerrarModalEvento()" style="background:var(--g3);border:none;border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer;">✕</button>
+    </div>
+
+    <!-- Tipo -->
+    <div style="font-size:12px;font-weight:600;color:var(--txt2);margin-bottom:8px;">Tipo de evento</div>
+    <div class="tipo-evento-grid" id="tipoEventoGrid">
+      <button class="tipo-evento-btn sel" data-tipo="tecnico" onclick="selTipoEvento(this)"><span class="tipo-evento-emoji">🔧</span>Técnico</button>
+      <button class="tipo-evento-btn" data-tipo="fumigacion" onclick="selTipoEvento(this)"><span class="tipo-evento-emoji">🪲</span>Fumigación</button>
+      <button class="tipo-evento-btn" data-tipo="mantenimiento" onclick="selTipoEvento(this)"><span class="tipo-evento-emoji">🏗️</span>Mantenim.</button>
+      <button class="tipo-evento-btn" data-tipo="veterinario" onclick="selTipoEvento(this)"><span class="tipo-evento-emoji">🐾</span>Veterinario</button>
+      <button class="tipo-evento-btn" data-tipo="delivery" onclick="selTipoEvento(this)"><span class="tipo-evento-emoji">📦</span>Delivery</button>
+      <button class="tipo-evento-btn" data-tipo="cita" onclick="selTipoEvento(this)"><span class="tipo-evento-emoji">🏥</span>Cita médica</button>
+      <button class="tipo-evento-btn" data-tipo="visita" onclick="selTipoEvento(this)"><span class="tipo-evento-emoji">👨‍👩‍👧</span>Visita</button>
+      <button class="tipo-evento-btn" data-tipo="otro" onclick="selTipoEvento(this)"><span class="tipo-evento-emoji">📌</span>Otro</button>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+      <div>
+        <label class="form-label">Título *</label>
+        <input id="evTitulo" class="form-input" placeholder="Ej: Técnico A/C" style="font-size:13px;padding:9px 12px;">
+      </div>
+      <div>
+        <label class="form-label">Hora *</label>
+        <input id="evHora" type="time" class="form-input" style="font-size:13px;padding:9px 12px;">
+      </div>
+    </div>
+
+    <div style="margin-bottom:10px;">
+      <label class="form-label">Fecha *</label>
+      <input id="evFecha" type="date" class="form-input" style="font-size:13px;padding:9px 12px;">
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+      <div>
+        <label class="form-label">Proveedor / Empresa <span style="color:#bbb;">(opcional)</span></label>
+        <input id="evProveedor" class="form-input" placeholder="Ej: Frío Express" style="font-size:13px;padding:9px 12px;">
+      </div>
+      <div>
+        <label class="form-label">Asignado a <span style="color:#bbb;">(opcional)</span></label>
+        <select id="evAsignado" class="form-select" style="font-size:13px;padding:9px 12px;">
+          <option value="">— Todos —</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="margin-bottom:16px;">
+      <label class="form-label">Notas <span style="color:#bbb;">(opcional)</span></label>
+      <textarea id="evNotas" class="form-input" rows="2" placeholder="Instrucciones, teléfono, etc." style="font-size:13px;padding:9px 12px;resize:none;"></textarea>
+    </div>
+
+    <button onclick="crearEvento()" style="width:100%;background:var(--g);color:#fff;border:none;border-radius:99px;padding:13px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">
+      📅 Guardar evento
+    </button>
+  </div>
+</div>
 </body>
 </html>
