@@ -3474,22 +3474,16 @@ window.solicitarPermisoNotificaciones = async () => {
     localStorage.setItem('mynana_push_active', '1');  // Guardar ANTES de suscribir
     showToast('🔔 Notificaciones activadas');
 
-    // Suscribir al push en background (no bloquear UI)
+    // Crear suscripción fresca en background (garantiza VAPID keys actuales)
     setTimeout(async () => {
       try {
-        console.log('[PWA] Esperando SW ready...');
         const reg = await swReadyConTimeout(10000);
-        console.log('[PWA] SW ready. Suscribiendo...');
-        const sub = await suscribirAPush(reg);
-        if (sub) {
-          await guardarSuscripcionFirestore(sub);
-          console.log('[PWA] ✅ Todo listo. Notificaciones completamente activadas.');
-        } else {
-          console.warn('[PWA] Suscripción push falló (puede ser normal en algunos dispositivos)');
+        if (reg?.pushManager) {
+          await _forzarNuevaSuscripcion(reg, null); // silencioso — sin log
+          console.log('[PWA] ✅ Suscripción activada con VAPID keys actuales.');
         }
       } catch(e) {
-        console.error('[PWA] Error en suscripción post-permiso:', e.message);
-        // No mostrar error al usuario — el permiso YA fue concedido
+        console.warn('[PWA] Suscripción post-permiso:', e.message);
       }
     }, 500);
 
@@ -3901,98 +3895,98 @@ window.pwaDebugSolicitar = async () => {
   }
 };
 
+// ── Helper: desactivar todas las subs en Firestore y crear nueva ──
+async function _forzarNuevaSuscripcion(reg, logFn) {
+  const log = (m, t) => { console.log('[PWA]', m); if (logFn) logFn(m, t); };
+  const user = auth.currentUser;
+
+  // 1. Desactivar TODAS las suscripciones en Firestore (son incompatibles con nuevas VAPID)
+  if (user) {
+    try {
+      const snap = await getDocs(collection(db, 'usuarios', user.uid, 'pushSubscriptions'));
+      if (snap.docs.length > 0) {
+        log(`Desactivando ${snap.docs.length} suscripción(es) antigua(s) en Firestore...`, 'warn');
+        for (const d of snap.docs) {
+          await updateDoc(doc(db, 'usuarios', user.uid, 'pushSubscriptions', d.id), { active: false });
+        }
+        log('Suscripciones antiguas desactivadas ✓', 'ok');
+      }
+    } catch(e) { log(`⚠️ Error limpiando Firestore: ${e.message}`, 'warn'); }
+  }
+
+  // 2. Cancelar suscripción actual del browser
+  try {
+    const existing = await reg.pushManager.getSubscription();
+    if (existing) {
+      log('Cancelando suscripción antigua del browser...', 'warn');
+      await existing.unsubscribe();
+      log('Suscripción browser cancelada ✓', 'ok');
+    }
+  } catch(e) { log(`⚠️ Error cancelando sub browser: ${e.message}`, 'warn'); }
+
+  // 3. Crear nueva suscripción con VAPID keys actuales
+  log('Creando nueva suscripción con VAPID keys actuales...', 'info');
+  let vapidKey;
+  try {
+    vapidKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
+    log(`VAPID key OK (${vapidKey.length} bytes)`, 'ok');
+  } catch(e) {
+    log(`❌ VAPID key inválida: ${e.message}`, 'error');
+    return null;
+  }
+
+  let sub = null;
+  try {
+    sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: vapidKey,
+    });
+    log(`✅ Nueva suscripción creada. Endpoint: ${sub.endpoint.slice(0, 70)}...`, 'ok');
+  } catch(e) {
+    log(`❌ subscribe() falló: ${e.name} — ${e.message}`, 'error');
+    if (e.name === 'NotAllowedError') log('→ Permiso denegado. Toca "Solicitar permiso" primero.', 'warn');
+    if (e.name === 'AbortError')     log('→ VAPID key incompatible con el servidor de Apple.', 'warn');
+    return null;
+  }
+
+  // 4. Guardar nueva suscripción en Firestore
+  if (sub && user) {
+    const ok = await guardarSuscripcionFirestore(sub, logFn);
+    if (ok) log('✅ Nueva suscripción guardada en Firestore.', 'ok');
+  }
+
+  localStorage.setItem('mynana_push_active', '1');
+  return sub;
+}
+
 window.pwaDebugSuscribir = async () => {
-  pwaLog('Creando/verificando suscripción push...', 'info');
+  pwaLog('=== CREAR/RENOVAR SUSCRIPCIÓN PUSH ===', 'info');
 
   if (!esPWAInstalada()) {
-    pwaLog('❌ No estás en modo standalone. Ejecuta el diagnóstico y sigue las instrucciones de reinstalación.', 'error');
+    pwaLog('❌ No estás en modo standalone.', 'error');
     mostrarInstruccionesReinstalar();
     return;
   }
 
   if (!notificacionesActivas()) {
-    pwaLog('⚠️ Permiso no concedido aún. Toca "Solicitar permiso" primero.', 'warn');
+    pwaLog('⚠️ Permiso no concedido. Toca "Solicitar permiso" primero.', 'warn');
     return;
   }
 
   try {
     const reg = await swReadyConTimeout(10000);
     pwaLog('SW ready ✓', 'ok');
-
     if (!reg.pushManager) {
-      pwaLog('❌ pushManager no disponible. Aunque el SW está activo, iOS requiere modo standalone real.', 'error');
-      pwaLog('Solución: Elimina el ícono, vuelve a agregar a pantalla de inicio y abre desde ahí.', 'warn');
+      pwaLog('❌ pushManager no disponible. Reinstala el ícono.', 'error');
       mostrarInstruccionesReinstalar();
       return;
     }
 
-    // Intentar suscripción con manejo de error explícito
-    pwaLog('Verificando suscripción existente...', 'info');
-    let existing = null;
-    try {
-      existing = await reg.pushManager.getSubscription();
-      pwaLog(`getSubscription() → ${existing ? 'EXISTE' : 'null'}`, existing ? 'ok' : 'info');
-    } catch(e) {
-      pwaLog(`❌ getSubscription() error: ${e.name} — ${e.message}`, 'error');
-    }
-
-    if (existing) {
-      pwaLog('✅ Suscripción existente, guardando en Firestore...', 'ok');
-      pwaLog(`Endpoint: ${existing.endpoint.slice(0, 70)}...`, 'info');
-      const guardadoExist = await guardarSuscripcionFirestore(existing, pwaLog);
-      if (guardadoExist) {
-        pwaLog('✅ Guardado. Ahora toca "Enviar notificación de prueba".', 'ok');
-      }
-      return;
-    }
-
-    // Convertir VAPID key
-    pwaLog('Convirtiendo VAPID key...', 'info');
-    let vapidKey;
-    try {
-      vapidKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
-      pwaLog(`VAPID key OK (${vapidKey.length} bytes)`, 'ok');
-    } catch(e) {
-      pwaLog(`❌ VAPID key error: ${e.message}`, 'error');
-      return;
-    }
-
-    // Crear suscripción
-    pwaLog('Llamando pushManager.subscribe()...', 'info');
-    let sub = null;
-    try {
-      sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: vapidKey,
-      });
-    } catch(e) {
-      pwaLog(`❌ subscribe() falló: ${e.name}`, 'error');
-      pwaLog(`   Mensaje: ${e.message}`, 'error');
-      if (e.name === 'NotAllowedError') {
-        pwaLog('   → El permiso fue denegado o no se pidió desde la PWA instalada.', 'warn');
-        pwaLog('   Solución: toca "Solicitar permiso" y acepta cuando aparezca el diálogo del sistema.', 'warn');
-      }
-      if (e.name === 'AbortError') {
-        pwaLog('   → Problema con la VAPID key o el servidor push de Apple.', 'warn');
-        pwaLog('   Verifica que VAPID_PUBLIC_KEY en el código coincide con VAPID_PUBLIC_KEY en Netlify.', 'warn');
-      }
-      if (e.name === 'InvalidStateError') {
-        pwaLog('   → Service worker no está en estado activo. Recarga la PWA.', 'warn');
-      }
-      return;
-    }
-
+    // Siempre forzar nueva suscripción — garantiza compatibilidad con VAPID keys actuales
+    pwaLog('Forzando nueva suscripción (garantiza compatibilidad con VAPID keys actuales)...', 'info');
+    const sub = await _forzarNuevaSuscripcion(reg, pwaLog);
     if (sub) {
-      pwaLog('✅ Suscripción push creada correctamente', 'ok');
-      pwaLog(`Endpoint: ${sub.endpoint.slice(0, 70)}...`, 'info');
-      const subJson = sub.toJSON();
-      pwaLog(`Keys: auth=${subJson.keys?.auth?.slice(0,10)}... p256dh=${subJson.keys?.p256dh?.slice(0,10)}...`, 'info');
-      const guardado = await guardarSuscripcionFirestore(sub, pwaLog);
-      if (guardado) {
-        pwaLog('✅ Guardado en Firestore. Ahora toca "Enviar notificación de prueba".', 'ok');
-      }
-    } else {
-      pwaLog('❌ subscribe() devolvió null sin error. Informa este resultado.', 'error');
+      pwaLog('✅ Listo. Toca "Enviar notificación de PRUEBA" para verificar.', 'ok');
     }
   } catch(e) {
     pwaLog(`❌ Error inesperado: ${e.name} — ${e.message}`, 'error');
@@ -4014,35 +4008,50 @@ window.pwaDebugEnviarPrueba = async () => {
       pwaLog('❌ No hay suscripciones activas. Ejecuta el diagnóstico y crea una suscripción primero.', 'error');
       return;
     }
-    for (const sub of subs) {
-      pwaLog(`Enviando a: ${sub.endpoint.slice(0, 60)}...`, 'info');
-      try {
-        const res = await fetch('/.netlify/functions/send-push', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            subscription: { endpoint: sub.endpoint, keys: sub.keys },
-            notification: {
-              title: '🏠 My Nana — Prueba',
-              body: '¡Las notificaciones funcionan correctamente!',
-              url: '/app.html',
-              tipo: 'general',
-              tag: 'mynana-test-' + Date.now(),
-            },
-          }),
-        });
-        const texto = await res.text();
-        if (res.ok) {
-          pwaLog(`✅ Push enviado (HTTP ${res.status}). Deberías recibir la notificación en segundos.`, 'ok');
-        } else {
-          pwaLog(`❌ Error HTTP ${res.status}: ${texto}`, 'error');
-          if (res.status === 410) pwaLog('Suscripción expirada. Vuelve a suscribirte.', 'warn');
-          if (res.status === 500) pwaLog('Error en Netlify Function. Revisa las VAPID keys en Netlify Environment Variables.', 'warn');
+    // Usar solo la primera subscription activa
+    const sub = subs[0];
+    pwaLog(`Enviando a: ${sub.endpoint.slice(0, 60)}...`, 'info');
+    try {
+      const res = await fetch('/.netlify/functions/send-push', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subscription: { endpoint: sub.endpoint, keys: sub.keys },
+          notification: {
+            title: '🏠 My Nana — Prueba',
+            body: '¡Las notificaciones funcionan correctamente!',
+            url: '/app.html',
+            tipo: 'general',
+            tag: 'mynana-test-' + Date.now(),
+          },
+        }),
+      });
+
+      const texto = await res.text();
+      if (res.ok) {
+        pwaLog(`✅ Push enviado correctamente. Deberías recibirlo en segundos.`, 'ok');
+      } else if (res.status === 410) {
+        pwaLog('⚠️ Suscripción antigua — incompatible con VAPID keys actuales.', 'warn');
+        pwaLog('→ Re-suscribiendo automáticamente...', 'info');
+        const reg = await swReadyConTimeout(8000);
+        if (reg?.pushManager) {
+          await _forzarNuevaSuscripcion(reg, pwaLog);
+          pwaLog('✅ Re-suscripción completa. Toca "Enviar PRUEBA" de nuevo.', 'ok');
         }
-      } catch(e) {
-        pwaLog(`❌ Error de red: ${e.message}`, 'error');
-        pwaLog('Verifica que la Netlify Function send-push esté desplegada correctamente.', 'warn');
+      } else if (res.status === 500) {
+        let errMsg = '';
+        try { errMsg = JSON.parse(texto)?.error || texto; } catch { errMsg = texto; }
+        pwaLog(`⚠️ Error 500 del servidor: ${errMsg}`, 'error');
+        pwaLog('→ Causa probable: suscripción creada con VAPID keys anteriores.', 'warn');
+        pwaLog('→ Solución: toca "Crear/verificar suscripción push" para renovarla.', 'warn');
+        pwaLog('→ Si persiste, verifica que VAPID_PUBLIC_KEY en app.html coincide con la variable en Netlify.', 'warn');
+        pwaLog(`VAPID_PUBLIC_KEY en app: ${VAPID_PUBLIC_KEY.slice(0, 30)}...`, 'info');
+      } else {
+        pwaLog(`❌ Error HTTP ${res.status}: ${texto}`, 'error');
       }
+    } catch(e) {
+      pwaLog(`❌ Error de red: ${e.message}`, 'error');
+      pwaLog('Verifica que la Netlify Function send-push esté desplegada.', 'warn');
     }
   } catch(e) {
     pwaLog(`❌ Error: ${e.message}`, 'error');
