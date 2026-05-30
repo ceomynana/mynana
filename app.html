@@ -739,6 +739,17 @@ service cloud.firestore {
         </div>
       </div>
 
+      <!-- Próximos Eventos del Hogar -->
+      <div class="dash-card" onclick="location.href='/tareas.html'" style="cursor:pointer;">
+        <div class="dash-card-header">
+          <div class="dash-card-icon" style="background:#FEF3C7;">📅</div>
+          <div><div class="dash-card-title">Próximos eventos</div><div class="dash-card-sub" id="subEventosFam">Cargando...</div></div>
+        </div>
+        <div class="dash-card-body" id="bodyEventosFam">
+          <div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Sin eventos próximos</div>
+        </div>
+      </div>
+
       <!-- Planificador Inteligente ✨ -->
       <div class="dash-card" onclick="location.href='/tareas-perfil-hogar.html'" style="cursor:pointer;border:2px solid var(--g4);position:relative;overflow:visible;">
         <!-- Badge NUEVO -->
@@ -1870,6 +1881,7 @@ async function cargarDashboardFamilia() {
     // Cargar todo en paralelo
     await Promise.all([
       cargarEstadoDash(hogarId, user.uid),
+      cargarEventosDash(hogarId),
       cargarTareasDash(hogarId, user.uid),
       cargarMenuDash(hogarId),
       cargarChatDash(user.uid, hogarId),
@@ -1888,6 +1900,53 @@ async function cargarDashboardFamilia() {
   } catch(e) {
     console.error('Error dashboard:', e);
   }
+}
+
+async function cargarEventosDash(hogarId) {
+  try {
+    const hoy  = new Date();
+    const en7d = new Date(hoy); en7d.setDate(hoy.getDate() + 7);
+    const hoyStr = getFechaStr2(hoy);
+    const en7Str = getFechaStr2(en7d);
+
+    const snap = await getDocs(
+      query(collection(db, 'hogares', hogarId, 'eventos'),
+            where('fecha', '>=', hoyStr),
+            where('fecha', '<=', en7Str),
+            orderBy('fecha','asc'), orderBy('hora','asc'))
+    );
+
+    const TIPOS = {
+      tecnico:'🔧', fumigacion:'🪲', mantenimiento:'🏗️',
+      veterinario:'🐾', delivery:'📦', cita:'🏥', visita:'👨‍👩‍👧', otro:'📌',
+    };
+
+    const eventos = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .filter(e => e.estado !== 'cancelado').slice(0, 3);
+
+    const sub  = document.getElementById('subEventosFam');
+    const body = document.getElementById('bodyEventosFam');
+    if (!sub || !body) return;
+
+    if (!eventos.length) {
+      sub.textContent  = 'Sin eventos próximos';
+      body.innerHTML   = '<div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Nada agendado esta semana</div>';
+      return;
+    }
+
+    sub.textContent = `${eventos.length} evento${eventos.length > 1 ? 's' : ''} próximo${eventos.length > 1 ? 's' : ''}`;
+    body.innerHTML  = eventos.map(e => {
+      const emoji = TIPOS[e.tipo] || '📌';
+      const esFelcha = e.fecha === hoyStr ? 'Hoy' : e.fecha === getFechaStr2(new Date(hoy.getTime() + 86400000)) ? 'Mañana' : e.fecha;
+      return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--g4);">
+        <span style="font-size:18px;">${emoji}</span>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:500;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${e.titulo}</div>
+          <div style="font-size:11px;color:var(--txt2);">${esFelcha} · ${e.hora || ''}</div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) { console.warn('cargarEventosDash:', e); }
 }
 
 async function cargarEstadoDash(hogarId, uid) {
