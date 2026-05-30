@@ -30,10 +30,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
 .header-nav{display:flex;align-items:center;gap:8px;}
 .header-back{background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.7);font-size:13px;padding:7px 14px;border-radius:99px;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;}
 .semana-label{font-size:12px;color:rgba(255,255,255,.5);}
+.compra-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(212,165,165,.2);border:1px solid rgba(212,165,165,.35);border-radius:99px;padding:3px 10px;font-size:11px;color:var(--b);margin-top:4px;}
+.frec-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+.frec-chip{background:var(--cr);border:1.5px solid var(--g4);border-radius:99px;padding:5px 12px;font-size:12px;font-weight:500;color:var(--txt2);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .18s;}
+.frec-chip.sel{background:var(--g);border-color:var(--g);color:#fff;}
+.mercado-sec-hdr{font-size:12px;font-weight:700;color:var(--g2);text-transform:uppercase;letter-spacing:.05em;padding:8px 10px 4px;display:flex;align-items:center;gap:6px;margin-top:4px;}
+.mercado-sec-hdr.frescos{color:#7C3AED;}
+.frec-nota{font-size:10px;background:#FEF3C7;color:#92400E;padding:1px 6px;border-radius:4px;margin-left:4px;}
 .semana-nav-wrap{display:flex;align-items:center;justify-content:space-between;padding:0 16px 4px;}
 .semana-nav-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:99px;padding:4px 12px;font-size:11px;font-weight:500;color:rgba(255,255,255,.7);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
 .semana-nav-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
-.semana-nav-btn:disabled{opacity:.35;cursor:default;}
 
 /* DIAS SELECTOR */
 .dias-wrap{background:var(--g2);padding:0 16px 14px;overflow-x:auto;-ms-overflow-style:none;scrollbar-width:none;}
@@ -296,6 +302,29 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
       </div>
     </div>
 
+    <!-- Frecuencia de compra -->
+    <div class="perfil-seccion">
+      <div class="perfil-label">🛒 Frecuencia de compra</div>
+      <div class="frec-chips">
+        <button class="frec-chip sel" id="frec_semanal"   onclick="selFrecuencia('semanal')">Semanal</button>
+        <button class="frec-chip"     id="frec_quincenal" onclick="selFrecuencia('quincenal')">Quincenal</button>
+        <button class="frec-chip"     id="frec_mensual"   onclick="selFrecuencia('mensual')">Mensual</button>
+      </div>
+      <div style="margin-top:10px;">
+        <div class="perfil-label" style="margin-bottom:4px;">📅 Día habitual de compra</div>
+        <select id="diaCompraSelect" class="form-input" style="font-size:13px;padding:8px 10px;">
+          <option value="0">Lunes</option>
+          <option value="1">Martes</option>
+          <option value="2">Miércoles</option>
+          <option value="3">Jueves</option>
+          <option value="4">Viernes</option>
+          <option value="5">Sábado</option>
+          <option value="6">Domingo</option>
+        </select>
+      </div>
+      <div id="proximaCompraPrev" style="margin-top:8px;font-size:12px;color:var(--txt2);"></div>
+    </div>
+
     <button onclick="guardarPerfil()" style="width:100%;background:var(--g);color:#fff;border:none;border-radius:99px;padding:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;margin-top:4px;">
       Guardar perfil del hogar ✓
     </button>
@@ -315,6 +344,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
       <button class="semana-nav-btn" onclick="navegarSemanaMenu(-1)" id="btnSemanaAnt">← Anterior</button>
       <div class="semana-label" id="semanaLabel"></div>
       <button class="semana-nav-btn" onclick="navegarSemanaMenu(1)" id="btnSemanaSig">Siguiente →</button>
+    </div>
+    <div id="proximaCompraBadge" style="padding:0 16px 6px;display:none;">
+      <span class="compra-badge" id="proximaCompraLabel">🛒 Calculando...</span>
     </div>
   </div>
   <!-- SELECTOR DE DÍAS -->
@@ -1043,6 +1075,114 @@ function categorizarIngrediente(nombre) {
   return 'Otros';
 }
 
+// ══════════════════════════════════════════════════════
+//  FRECUENCIA DE COMPRA
+// ══════════════════════════════════════════════════════
+
+// Palabras clave para clasificar ingredientes frescos vs despensa
+const FRESCOS_KW = [
+  'pollo','carne','res','cerdo','pescado','mariscos','camarón','atún fresco',
+  'leche','queso','yogur','crema','mantequilla','huevo',
+  'tomate','limón','naranja','manzana','fresa','uva','mango','piña',
+  'banano','plátano','aguacate','melón','papaya','pera','coco',
+  'cebolla','ajo','papa','yuca','zanahoria','lechuga','espinaca',
+  'brócoli','pepino','apio','chayote','elote','champiñón','pimentón',
+  'culantro','cilantro','perejil','albahaca','hierba','tomillo','romero',
+  'pan','tortilla','galleta','baguette',
+];
+const DESPENSA_KW = [
+  'arroz','pasta','fideo','lenteja','frijol','garbanzo','avena','maíz',
+  'aceite','vinagre','sal','pimienta','comino','orégano','cúrcuma','achiote',
+  'azúcar','harina','maicena','canela','vainilla','bicarbonato',
+  'atún enlatado','sardina','enlatado','conserva','leche evaporada','leche en polvo',
+  'salsa de tomate','salsa','mayonesa','kétchup','mostaza','soya',
+  'café','té','chocolate en polvo','gelatina','puré de tomate',
+  'jabón','detergente','papel higiénico','limpiador','suavizante','esponja',
+];
+
+function clasificarIngrediente(ing) {
+  const n = ing.toLowerCase();
+  if (FRESCOS_KW.some(k => n.includes(k))) return 'fresco';
+  if (DESPENSA_KW.some(k => n.includes(k))) return 'despensa';
+  return 'fresco'; // default conservador: tratar como fresco
+}
+
+function calcularFactor(frecuencia, categoria) {
+  if (frecuencia === 'semanal') return 1;
+  if (frecuencia === 'quincenal') return categoria === 'despensa' ? 2 : 1;
+  if (frecuencia === 'mensual')   return categoria === 'despensa' ? 4 : 1;
+  return 1;
+}
+
+function calcularNota(frecuencia, categoria) {
+  if (frecuencia === 'quincenal' && categoria === 'fresco') return '(reponer semana 2)';
+  if (frecuencia === 'mensual'   && categoria === 'fresco') return '(reponer semanalmente)';
+  return '';
+}
+
+// Calcular próxima fecha de compra según frecuencia y día habitual
+function calcularProximaCompra(frecuencia, diaCompra) {
+  const hoy = new Date();
+  const diaHoy = hoy.getDay() === 0 ? 6 : hoy.getDay() - 1; // 0=lunes
+  let diasHasta = (diaCompra - diaHoy + 7) % 7;
+  if (diasHasta === 0) diasHasta = 7; // hoy ya pasó este ciclo
+  // Quincenal: si el día es esta semana, ir a la siguiente
+  if (frecuencia === 'quincenal') diasHasta += (diasHasta <= 7 ? 7 : 0);
+  // Mensual: ir 3 semanas adelante desde el próximo día de compra
+  if (frecuencia === 'mensual') diasHasta += 21;
+  const prox = new Date(hoy);
+  prox.setDate(hoy.getDate() + diasHasta);
+  return prox.toISOString().split('T')[0];
+}
+
+function formatFechaCompra(fechaStr) {
+  if (!fechaStr) return '';
+  const d = new Date(fechaStr + 'T12:00:00');
+  const dias = ['lun','mar','mié','jue','vie','sáb','dom'];
+  const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  const diaIdx = d.getDay() === 0 ? 6 : d.getDay() - 1;
+  return `${dias[diaIdx]} ${d.getDate()} de ${meses[d.getMonth()]}`;
+}
+
+function actualizarProximaCompraBadge() {
+  const badge = document.getElementById('proximaCompraBadge');
+  const label = document.getElementById('proximaCompraLabel');
+  if (!badge || !label) return;
+  const f = perfilAlimentario.frecuenciaCompra || 'semanal';
+  const d = perfilAlimentario.diaCompra ?? 1;
+  const proxima = calcularProximaCompra(f, d);
+  const freq = { semanal:'Semanal', quincenal:'Quincenal', mensual:'Mensual' }[f] || '';
+  label.textContent = `🛒 ${freq} · próxima: ${formatFechaCompra(proxima)}`;
+  badge.style.display = 'block';
+}
+
+// UI helpers para el modal de perfil
+window.selFrecuencia = (frec) => {
+  perfilAlimentario.frecuenciaCompra = frec;
+  document.querySelectorAll('.frec-chip').forEach(c => c.classList.remove('sel'));
+  const el = document.getElementById(`frec_${frec}`);
+  if (el) el.classList.add('sel');
+  // Preview próxima compra en modal
+  const prev = document.getElementById('proximaCompraPrev');
+  if (prev) {
+    const dia = parseInt(document.getElementById('diaCompraSelect')?.value ?? 1);
+    const prox = calcularProximaCompra(frec, dia);
+    prev.textContent = `Próxima compra: ${formatFechaCompra(prox)}`;
+  }
+};
+
+function sincronizarUIFrecuencia() {
+  const f = perfilAlimentario.frecuenciaCompra || 'semanal';
+  const d = perfilAlimentario.diaCompra ?? 1;
+  document.querySelectorAll('.frec-chip').forEach(c => c.classList.remove('sel'));
+  const el = document.getElementById(`frec_${f}`);
+  if (el) el.classList.add('sel');
+  const sel = document.getElementById('diaCompraSelect');
+  if (sel) sel.value = String(d);
+  const prev = document.getElementById('proximaCompraPrev');
+  if (prev) prev.textContent = `Próxima compra: ${formatFechaCompra(calcularProximaCompra(f, d))}`;
+}
+
 // ── ALERGENOS: ingredientes asociados a cada alergia ──
 const ALERGENOS_MAP = {
   mariscos: ['camarones','mariscos','calamar','pulpo','langosta','cangrejo','jaiba'],
@@ -1059,6 +1199,10 @@ let perfilAlimentario = {
   desayunaCasa: true, almuerzan: true, cenan: true,
   alergias: [], alergiasPersonalizadas: [],
   objetivos: ['panameno'], presupuesto: 'medio',
+  // Frecuencia de compra — default semanal (compatible con hogares existentes)
+  frecuenciaCompra: 'semanal',
+  diaCompra: 1,         // martes por defecto
+  proximaCompra: null,
 };
 
 // ── PERFIL: helpers ──
@@ -1106,9 +1250,18 @@ function escalarCantidad(ingStr, personas) {
 window.abrirPerfil = () => {
   renderContadores();
   sincronizarChipsFromPerfil();
+  sincronizarUIFrecuencia();
   document.getElementById('perfilModal').classList.remove('oculto');
 };
 window.cerrarPerfil = () => document.getElementById('perfilModal').classList.add('oculto');
+
+// Preview próxima compra al cambiar día en el select
+document.getElementById('diaCompraSelect')?.addEventListener('change', function() {
+  const f = perfilAlimentario.frecuenciaCompra || 'semanal';
+  const prox = calcularProximaCompra(f, parseInt(this.value));
+  const prev = document.getElementById('proximaCompraPrev');
+  if (prev) prev.textContent = `Próxima compra: ${formatFechaCompra(prox)}`;
+});
 
 function renderContadores() {
   const campos = [
@@ -1206,13 +1359,21 @@ function sincronizarChipsFromPerfil() {
 
 window.guardarPerfil = async () => {
   try {
+    // Recoger frecuencia y día del modal
+    const diaCompra = parseInt(document.getElementById('diaCompraSelect')?.value ?? 1);
+    const frecuencia = perfilAlimentario.frecuenciaCompra || 'semanal';
+    perfilAlimentario.diaCompra    = diaCompra;
+    perfilAlimentario.proximaCompra = calcularProximaCompra(frecuencia, diaCompra);
+
     await setDoc(doc(db, 'hogares', hogarId, 'configuracion', 'alimentaria'), {
       ...perfilAlimentario, actualizadoA: serverTimestamp()
     });
     actualizarBadgePerfil();
+    actualizarProximaCompraBadge();
     cerrarPerfil();
     showToast('✅ Perfil del hogar guardado');
-    renderMenuDia(); // re-render to show allergy warnings
+    renderMenuDia();
+    generarListaMercado(); // recalcular lista con nueva frecuencia
   } catch(e) { showToast('Error al guardar'); console.error(e); }
 };
 
@@ -1224,6 +1385,7 @@ async function cargarPerfilAlimentario() {
     }
   } catch(e) {}
   actualizarBadgePerfil();
+  actualizarProximaCompraBadge();
 }
 
 function actualizarBadgePerfil() {
@@ -1434,24 +1596,20 @@ function diaSemanaActual() {
 }
 
 function renderSemanaLabel() {
-  const lunes = getLunesMenu(semanaOffset);
+  const hoy = new Date();
+  const lunes = new Date(hoy);
+  lunes.setDate(hoy.getDate() - diaSemanaActual());
   const domingo = new Date(lunes);
   domingo.setDate(lunes.getDate() + 6);
   const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-  let label;
-  if (semanaOffset === 0) label = `Esta semana · ${lunes.getDate()} - ${domingo.getDate()} ${meses[domingo.getMonth()]}`;
-  else if (semanaOffset === 1) label = `Próxima semana · ${lunes.getDate()} - ${domingo.getDate()} ${meses[domingo.getMonth()]}`;
-  else if (semanaOffset === -1) label = `Semana anterior · ${lunes.getDate()} - ${domingo.getDate()} ${meses[domingo.getMonth()]}`;
-  else label = `${lunes.getDate()} - ${domingo.getDate()} ${meses[domingo.getMonth()]}`;
-  document.getElementById('semanaLabel').textContent = label;
+  document.getElementById('semanaLabel').textContent = `Semana del ${lunes.getDate()} al ${domingo.getDate()} de ${meses[domingo.getMonth()]}`;
 }
 
 function renderDias() {
   const hoyIdx = diaSemanaActual();
-  const esEstaSemana = semanaOffset === 0;
   document.getElementById('diasRow').innerHTML = DIAS.map((d, i) => `
-    <button class="dia-pill ${i === diaSeleccionado ? 'activo' : ''} ${esEstaSemana && i === hoyIdx ? 'hoy' : ''}" onclick="seleccionarDia(${i})">
-      ${DIAS_CORTO[i]}${esEstaSemana && i === hoyIdx ? ' · Hoy' : ''}
+    <button class="dia-pill ${i === diaSeleccionado ? 'activo' : ''} ${i === hoyIdx ? 'hoy' : ''}" onclick="seleccionarDia(${i})">
+      ${DIAS_CORTO[i]}${i === hoyIdx ? ' · Hoy' : ''}
     </button>`).join('');
 }
 
@@ -1488,32 +1646,12 @@ function escucharMercado() {
   });
 }
 
-let semanaOffset = 0; // 0=esta semana, -1=anterior, 1=siguiente
-
-function getLunesMenu(offset = 0) {
+function getSemanaId() {
   const hoy = new Date();
   const lunes = new Date(hoy);
-  lunes.setDate(hoy.getDate() - diaSemanaActual() + offset * 7);
-  lunes.setHours(0,0,0,0);
-  return lunes;
-}
-
-function getSemanaId() {
-  const lunes = getLunesMenu(semanaOffset);
+  lunes.setDate(hoy.getDate() - diaSemanaActual());
   return `${lunes.getFullYear()}-W${String(Math.ceil(lunes.getDate() / 7)).padStart(2,'0')}`;
 }
-
-window.navegarSemanaMenu = (delta) => {
-  semanaOffset += delta;
-  renderSemanaLabel();
-  renderDias();
-  seleccionarDia(0); // Ir al lunes de la nueva semana
-  // Re-escuchar Firestore con la nueva semanaId
-  if (unsubMenu) unsubMenu();
-  if (unsubMercado) unsubMercado();
-  escucharMenu();
-  escucharMercado();
-};
 
 async function guardarMenu() {
   const semanaId = getSemanaId();
@@ -1898,14 +2036,22 @@ function generarListaMercado() {
     });
   });
 
-  // Convertir a items con nombres humanizados
-  const nuevosItems = Object.values(consolidado).map(c => ({
-    nombre: humanizarCantidadMercado(c.ingOriginal, c.vecesEnSemana),
-    origen: 'menu',
-    comprado: false,
-    tieneAlergia: c.tieneAlergia,
-    key: c.key,
-  }));
+  // Convertir a items con nombres humanizados + factor frecuencia
+  const frecuencia = perfilAlimentario.frecuenciaCompra || 'semanal';
+  const nuevosItems = Object.values(consolidado).map(c => {
+    const cat    = clasificarIngrediente(c.ingOriginal);
+    const factor = calcularFactor(frecuencia, cat);
+    const nota   = calcularNota(frecuencia, cat);
+    return {
+      nombre: humanizarCantidadMercado(c.ingOriginal, c.vecesEnSemana * factor),
+      origen: 'menu',
+      comprado: false,
+      tieneAlergia: c.tieneAlergia,
+      key: c.key,
+      categoria: cat,   // 'fresco' | 'despensa'
+      nota,             // texto de reposición o ''
+    };
+  });
 
   // Mantener estado de comprados y manuales
   const manuales = mercadoItems.filter(i => i.origen === 'manual');
@@ -1957,16 +2103,53 @@ function renderMercado() {
   const ORDEN_CATS = ['Proteínas','Vegetales','Tubérculos','Granos','Lácteos','Otros'];
   const catEmojis = {'Proteínas':'🥩','Vegetales':'🥦','Tubérculos':'🍠','Granos':'🌾','Lácteos':'🥛','Otros':'🛍️'};
 
-  lista.innerHTML = ORDEN_CATS.filter(c => grupos[c]?.length).map(cat => `
-    <div class="mercado-cat-hdr">${catEmojis[cat]} ${cat} (${grupos[cat].length})</div>
-    ${grupos[cat].map(({item, idx, dup}) => `
-      <div class="mercado-item ${dup ? 'mercado-duplicado' : ''}" onclick="toggleMercadoItem(${idx})">
-        <div class="mercado-check ${item.comprado ? 'comprado' : ''}">
-          ${item.comprado ? '<svg width="10" height="8" viewBox="0 0 10 8" fill="none"><polyline points="1,4 3,7 9,1" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>' : ''}
-        </div>
-        <span class="mercado-nombre">${item.nombre}${item.tieneAlergia ? ' <span style="font-size:10px;background:#FEE2E2;color:#991B1B;padding:1px 5px;border-radius:4px;">⚠️ Alergia</span>' : ''}${dup ? '<span class="dup-badge">×varios</span>' : ''}</span>
-      </div>`).join('')}
-  `).join('') + (comprados.length ? `
+  const frecuencia = perfilAlimentario.frecuenciaCompra || 'semanal';
+  const esMensual  = frecuencia === 'mensual';
+  const esQuincenal = frecuencia === 'quincenal';
+
+  // Para mensual: separar despensa y frescos antes de agrupar por categoría
+  function renderItemRow(item, idx, dup) {
+    const nota = item.nota ? `<span class="frec-nota">${item.nota}</span>` : '';
+    return `<div class="mercado-item ${dup ? 'mercado-duplicado' : ''}" onclick="toggleMercadoItem(${idx})">
+      <div class="mercado-check ${item.comprado ? 'comprado' : ''}">
+        ${item.comprado ? '<svg width="10" height="8" viewBox="0 0 10 8" fill="none"><polyline points="1,4 3,7 9,1" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>' : ''}
+      </div>
+      <span class="mercado-nombre">${item.nombre}${nota}${item.tieneAlergia ? ' <span style="font-size:10px;background:#FEE2E2;color:#991B1B;padding:1px 5px;border-radius:4px;">⚠️ Alergia</span>' : ''}${dup ? '<span class="dup-badge">×varios</span>' : ''}</span>
+    </div>`;
+  }
+
+  let htmlItems = '';
+
+  if (esMensual) {
+    // Dos secciones separadas: Despensa mensual y Frescos semanales
+    const despensa = pendientes.filter(i => i.categoria === 'despensa');
+    const frescos  = pendientes.filter(i => i.categoria !== 'despensa');
+
+    if (despensa.length) {
+      htmlItems += `<div class="mercado-sec-hdr">🛒 Despensa mensual (${despensa.length})</div>`;
+      despensa.forEach(item => {
+        const idx = mercadoItems.indexOf(item);
+        const key = item.nombre.toLowerCase().split('(')[0].trim();
+        htmlItems += renderItemRow(item, idx, (nombreCount[key] || 0) > 1);
+      });
+    }
+    if (frescos.length) {
+      htmlItems += `<div class="mercado-sec-hdr frescos">🥬 Frescos semanales (${frescos.length})<span style="font-size:10px;font-weight:400;color:#7C3AED;margin-left:6px;">· Reponer cada semana</span></div>`;
+      frescos.forEach(item => {
+        const idx = mercadoItems.indexOf(item);
+        const key = item.nombre.toLowerCase().split('(')[0].trim();
+        htmlItems += renderItemRow(item, idx, (nombreCount[key] || 0) > 1);
+      });
+    }
+  } else {
+    // Lista única (semanal y quincenal) — agrupada por categoría de supermercado
+    htmlItems = ORDEN_CATS.filter(c => grupos[c]?.length).map(cat => `
+      <div class="mercado-cat-hdr">${catEmojis[cat]} ${cat} (${grupos[cat].length})</div>
+      ${grupos[cat].map(({item, idx, dup}) => renderItemRow(item, idx, dup)).join('')}
+    `).join('');
+  }
+
+  lista.innerHTML = htmlItems + (comprados.length ? `
     <div style="font-size:10px;color:var(--txt2);font-weight:600;text-transform:uppercase;letter-spacing:.04em;padding:10px 10px 6px;border-top:1px solid var(--g4);">
       ✓ Comprados (${comprados.length})
     </div>
