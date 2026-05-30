@@ -1097,20 +1097,37 @@ const DESPENSA_KW = [
   'atún enlatado','sardina','enlatado','conserva','leche evaporada','leche en polvo',
   'salsa de tomate','salsa','mayonesa','kétchup','mostaza','soya',
   'café','té','chocolate en polvo','gelatina','puré de tomate',
-  'jabón','detergente','papel higiénico','limpiador','suavizante','esponja',
+];
+
+// Limpieza y hogar — tercera categoría mensual
+const LIMPIEZA_KW = [
+  'papel higiénico','papel higienico','toalla de papel','toallas de papel','servilleta',
+  'detergente','suavizante','suavitel','ariel','tide','fab ','foca ',
+  'jabón de platos','jabon de platos','jabón líquido','jabon liquido',
+  'jabón de manos','jabon de manos','jabón antibacterial',
+  'bolsa de basura','bolsas de basura','bolsa basura',
+  'cloro','lejía','lejia','desinfectante','limpiador','limpiavidrios',
+  'esponja','estropajo','escoba','trapeador','fregona','bayeta',
+  'papel aluminio','papel film','papel para hornear',
+  'toalla desechable','pañuelo desechable',
 ];
 
 function clasificarIngrediente(ing) {
   const n = ing.toLowerCase();
+  // Limpieza primero — evitar que "jabón" caiga en frescos por error
+  if (LIMPIEZA_KW.some(k => n.includes(k))) return 'limpieza';
   if (FRESCOS_KW.some(k => n.includes(k))) return 'fresco';
   if (DESPENSA_KW.some(k => n.includes(k))) return 'despensa';
-  return 'fresco'; // default conservador: tratar como fresco
+  return 'fresco'; // default conservador
 }
 
 function calcularFactor(frecuencia, categoria) {
   if (frecuencia === 'semanal') return 1;
-  if (frecuencia === 'quincenal') return categoria === 'despensa' ? 2 : 1;
-  if (frecuencia === 'mensual')   return categoria === 'despensa' ? 4 : 1;
+  // Frescos siempre ×1 — no acumular perecederos
+  if (categoria === 'fresco') return 1;
+  // Despensa y limpieza: multiplicar según frecuencia
+  if (frecuencia === 'quincenal') return 2;
+  if (frecuencia === 'mensual')   return 4;
   return 1;
 }
 
@@ -2123,7 +2140,8 @@ function renderMercado() {
   if (esMensual) {
     // Dos secciones separadas: Despensa mensual y Frescos semanales
     const despensa = pendientes.filter(i => i.categoria === 'despensa');
-    const frescos  = pendientes.filter(i => i.categoria !== 'despensa');
+    const frescos  = pendientes.filter(i => i.categoria === 'fresco');
+    // limpieza se filtra por separado más abajo
 
     if (despensa.length) {
       htmlItems += `<div class="mercado-sec-hdr">🛒 Despensa mensual (${despensa.length})</div>`;
@@ -2136,6 +2154,16 @@ function renderMercado() {
     if (frescos.length) {
       htmlItems += `<div class="mercado-sec-hdr frescos">🥬 Frescos semanales (${frescos.length})<span style="font-size:10px;font-weight:400;color:#7C3AED;margin-left:6px;">· Reponer cada semana</span></div>`;
       frescos.forEach(item => {
+        const idx = mercadoItems.indexOf(item);
+        const key = item.nombre.toLowerCase().split('(')[0].trim();
+        htmlItems += renderItemRow(item, idx, (nombreCount[key] || 0) > 1);
+      });
+    }
+
+    const limpieza = pendientes.filter(i => i.categoria === 'limpieza');
+    if (limpieza.length) {
+      htmlItems += `<div class="mercado-sec-hdr" style="color:#0369A1;">🧽 Limpieza y hogar (${limpieza.length})</div>`;
+      limpieza.forEach(item => {
         const idx = mercadoItems.indexOf(item);
         const key = item.nombre.toLowerCase().split('(')[0].trim();
         htmlItems += renderItemRow(item, idx, (nombreCount[key] || 0) > 1);
