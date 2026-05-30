@@ -170,6 +170,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
 .dia-pill.activo .dia-letra,.dia-pill.activo .dia-num{color:#fff;}
 .dia-pill .dia-num{font-size:15px;font-weight:600;color:var(--txt);}
 .dia-pill.hoy .dia-num{color:var(--g);}
+.semana-nav{display:flex;align-items:center;justify-content:space-between;padding:10px 16px 0;}
+.semana-nav-btn{background:none;border:1px solid var(--g4);border-radius:99px;padding:5px 12px;font-size:12px;font-weight:500;color:var(--txt2);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.semana-nav-btn:hover{border-color:var(--g);color:var(--g);}
+.semana-nav-label{font-size:12px;font-weight:600;color:var(--txt2);}
+.semana-nav-label.semana-actual{color:var(--g);}
 .filtros{display:flex;gap:6px;overflow-x:auto;padding:12px 12px 0;-ms-overflow-style:none;scrollbar-width:none;}
 .filtros::-webkit-scrollbar{display:none;}
 .filtro{flex-shrink:0;padding:5px 12px;border-radius:99px;border:1.5px solid var(--g4);background:#fff;font-size:12px;font-weight:500;color:var(--txt2);cursor:pointer;font-family:'DM Sans',sans-serif;}
@@ -280,6 +285,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
           </button>
         </div>
 
+        <!-- Navegación semanal familia -->
+        <div class="semana-nav" id="semanaNavFam">
+          <button class="semana-nav-btn" onclick="navegarSemana(-1)">← Anterior</button>
+          <span class="semana-nav-label" id="semanaNavLabelFam"></span>
+          <button class="semana-nav-btn" onclick="navegarSemana(1)">Siguiente →</button>
+        </div>
         <!-- Selector de día -->
         <div class="dia-selector" id="diaSelectorFam"></div>
 
@@ -317,6 +328,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
           <div class="panel-badge" id="badgeNana">0 tareas</div>
         </div>
 
+        <!-- Navegación semanal nana -->
+        <div class="semana-nav" id="semanaNavNana">
+          <button class="semana-nav-btn" onclick="navegarSemana(-1)">← Anterior</button>
+          <span class="semana-nav-label" id="semanaNavLabelNana"></span>
+          <button class="semana-nav-btn" onclick="navegarSemana(1)">Siguiente →</button>
+        </div>
         <!-- Selector de día -->
         <div class="dia-selector" id="diaSelectorNana"></div>
 
@@ -520,11 +537,56 @@ function getLunesDeSemana(d) {
 
 let fechaSeleccionada = getFechaStr(new Date());
 let todasTareasCache = [];
+let semanaOffset = 0; // 0=esta semana, -1=anterior, 1=siguiente
+
+// ── Calcular lunes de la semana con offset ──
+function getLunesConOffset(offset) {
+  const hoy = new Date();
+  const lunes = getLunesDeSemana(hoy);
+  lunes.setDate(lunes.getDate() + offset * 7);
+  return lunes;
+}
+
+// ── Label legible de la semana ──
+function getSemanaLabel(offset) {
+  if (offset === 0) return 'Esta semana';
+  if (offset === 1) return 'Próxima semana';
+  if (offset === -1) return 'Semana anterior';
+  const lunes = getLunesConOffset(offset);
+  const domingo = new Date(lunes);
+  domingo.setDate(lunes.getDate() + 6);
+  const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  return `${lunes.getDate()} - ${domingo.getDate()} ${meses[domingo.getMonth()]}`;
+}
+
+// ── Actualizar labels de navegación ──
+function actualizarSemanaNav() {
+  const label = getSemanaLabel(semanaOffset);
+  ['semanaNavLabelFam','semanaNavLabelNana'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = label;
+    el.className = 'semana-nav-label' + (semanaOffset === 0 ? ' semana-actual' : '');
+  });
+}
+
+// ── Navegar entre semanas ──
+window.navegarSemana = (delta) => {
+  semanaOffset += delta;
+  const lunes = getLunesConOffset(semanaOffset);
+  // Al cambiar semana, seleccionar el lunes de esa semana por defecto
+  fechaSeleccionada = getFechaStr(lunes);
+  renderDiaSelector();
+  actualizarSemanaNav();
+  renderTareas();
+  actualizarProgreso();
+  actualizarStats();
+};
 
 // ── SELECTOR DE DÍAS ──
 function renderDiaSelector() {
   const hoy = new Date();
-  const lunes = getLunesDeSemana(hoy);
+  const lunes = getLunesConOffset(semanaOffset);
   const dias = ['Lu','Ma','Mi','Ju','Vi','Sa','Do'];
   const hoyStr = getFechaStr(hoy);
   const esNana = perfilActual?.tipo === 'nana';
@@ -543,6 +605,8 @@ function renderDiaSelector() {
       <span class="dia-num">${d.getDate()}</span>
     </div>`;
   }).join('');
+
+  actualizarSemanaNav();
 }
 
 window.seleccionarDia = (fecha, el) => {
