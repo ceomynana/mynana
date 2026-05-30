@@ -30,6 +30,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
 .header-nav{display:flex;align-items:center;gap:8px;}
 .header-back{background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.7);font-size:13px;padding:7px 14px;border-radius:99px;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;}
 .semana-label{font-size:12px;color:rgba(255,255,255,.5);}
+.semana-nav-wrap{display:flex;align-items:center;justify-content:space-between;padding:0 16px 4px;}
+.semana-nav-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:99px;padding:4px 12px;font-size:11px;font-weight:500;color:rgba(255,255,255,.7);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.semana-nav-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+.semana-nav-btn:disabled{opacity:.35;cursor:default;}
 
 /* DIAS SELECTOR */
 .dias-wrap{background:var(--g2);padding:0 16px 14px;overflow-x:auto;-ms-overflow-style:none;scrollbar-width:none;}
@@ -307,7 +311,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
         <a href="/app.html" class="header-back">← Dashboard</a>
       </div>
     </div>
-    <div class="semana-label" id="semanaLabel"></div>
+    <div class="semana-nav-wrap">
+      <button class="semana-nav-btn" onclick="navegarSemanaMenu(-1)" id="btnSemanaAnt">← Anterior</button>
+      <div class="semana-label" id="semanaLabel"></div>
+      <button class="semana-nav-btn" onclick="navegarSemanaMenu(1)" id="btnSemanaSig">Siguiente →</button>
+    </div>
   </div>
   <!-- SELECTOR DE DÍAS -->
   <div class="dias-wrap">
@@ -1426,20 +1434,24 @@ function diaSemanaActual() {
 }
 
 function renderSemanaLabel() {
-  const hoy = new Date();
-  const lunes = new Date(hoy);
-  lunes.setDate(hoy.getDate() - diaSemanaActual());
+  const lunes = getLunesMenu(semanaOffset);
   const domingo = new Date(lunes);
   domingo.setDate(lunes.getDate() + 6);
   const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-  document.getElementById('semanaLabel').textContent = `Semana del ${lunes.getDate()} al ${domingo.getDate()} de ${meses[domingo.getMonth()]}`;
+  let label;
+  if (semanaOffset === 0) label = `Esta semana · ${lunes.getDate()} - ${domingo.getDate()} ${meses[domingo.getMonth()]}`;
+  else if (semanaOffset === 1) label = `Próxima semana · ${lunes.getDate()} - ${domingo.getDate()} ${meses[domingo.getMonth()]}`;
+  else if (semanaOffset === -1) label = `Semana anterior · ${lunes.getDate()} - ${domingo.getDate()} ${meses[domingo.getMonth()]}`;
+  else label = `${lunes.getDate()} - ${domingo.getDate()} ${meses[domingo.getMonth()]}`;
+  document.getElementById('semanaLabel').textContent = label;
 }
 
 function renderDias() {
   const hoyIdx = diaSemanaActual();
+  const esEstaSemana = semanaOffset === 0;
   document.getElementById('diasRow').innerHTML = DIAS.map((d, i) => `
-    <button class="dia-pill ${i === diaSeleccionado ? 'activo' : ''} ${i === hoyIdx ? 'hoy' : ''}" onclick="seleccionarDia(${i})">
-      ${DIAS_CORTO[i]}${i === hoyIdx ? ' · Hoy' : ''}
+    <button class="dia-pill ${i === diaSeleccionado ? 'activo' : ''} ${esEstaSemana && i === hoyIdx ? 'hoy' : ''}" onclick="seleccionarDia(${i})">
+      ${DIAS_CORTO[i]}${esEstaSemana && i === hoyIdx ? ' · Hoy' : ''}
     </button>`).join('');
 }
 
@@ -1476,12 +1488,32 @@ function escucharMercado() {
   });
 }
 
-function getSemanaId() {
+let semanaOffset = 0; // 0=esta semana, -1=anterior, 1=siguiente
+
+function getLunesMenu(offset = 0) {
   const hoy = new Date();
   const lunes = new Date(hoy);
-  lunes.setDate(hoy.getDate() - diaSemanaActual());
+  lunes.setDate(hoy.getDate() - diaSemanaActual() + offset * 7);
+  lunes.setHours(0,0,0,0);
+  return lunes;
+}
+
+function getSemanaId() {
+  const lunes = getLunesMenu(semanaOffset);
   return `${lunes.getFullYear()}-W${String(Math.ceil(lunes.getDate() / 7)).padStart(2,'0')}`;
 }
+
+window.navegarSemanaMenu = (delta) => {
+  semanaOffset += delta;
+  renderSemanaLabel();
+  renderDias();
+  seleccionarDia(0); // Ir al lunes de la nueva semana
+  // Re-escuchar Firestore con la nueva semanaId
+  if (unsubMenu) unsubMenu();
+  if (unsubMercado) unsubMercado();
+  escucharMenu();
+  escucharMercado();
+};
 
 async function guardarMenu() {
   const semanaId = getSemanaId();
