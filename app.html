@@ -739,14 +739,14 @@ service cloud.firestore {
         </div>
       </div>
 
-      <!-- Próximos Eventos del Hogar -->
-      <div class="dash-card" onclick="location.href='/tareas.html'" style="cursor:pointer;">
+      <!-- Centro de Planificación del Hogar -->
+      <div class="dash-card">
         <div class="dash-card-header">
           <div class="dash-card-icon" style="background:#FEF3C7;">📅</div>
-          <div><div class="dash-card-title">Próximos eventos</div><div class="dash-card-sub" id="subEventosFam">Cargando...</div></div>
+          <div><div class="dash-card-title">Planificación del hogar</div><div class="dash-card-sub" id="subEventosFam">Cargando...</div></div>
         </div>
-        <div class="dash-card-body" id="bodyEventosFam">
-          <div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Sin eventos próximos</div>
+        <div class="dash-card-body" id="bodyEventosFam" style="padding:0;">
+          <div style="text-align:center;padding:16px;color:#bbb;font-size:13px;">Nada próximo</div>
         </div>
       </div>
 
@@ -1902,50 +1902,169 @@ async function cargarDashboardFamilia() {
   }
 }
 
+// ── Helper: fecha relativa legible ──
+function fechaRelativa(fechaStr) {
+  const hoy   = new Date(); hoy.setHours(0,0,0,0);
+  const fecha = new Date(fechaStr + 'T00:00:00');
+  const diff  = Math.round((fecha - hoy) / 86400000);
+  if (diff === 0) return 'Hoy';
+  if (diff === 1) return 'Mañana';
+  if (diff <= 6)  return `En ${diff} días`;
+  const dias = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+  return `Próximo ${dias[fecha.getDay()]}`;
+}
+
+// ── Helper: ¿aplica rutina a fecha? (inline para app.html) ──
+function _rutinaAplicaFecha(rut, fecha) {
+  if (!rut.activa) return false;
+  if (fecha < (rut.fechaInicio || '')) return false;
+  if (rut.fechaFin && fecha > rut.fechaFin) return false;
+  const d = new Date(fecha + 'T12:00:00');
+  const ds = d.getDay() === 0 ? 6 : d.getDay() - 1;
+  if (rut.frecuencia === 'diaria') return true;
+  if (rut.frecuencia === 'semanal') return (rut.diasSemana || []).includes(ds);
+  if (rut.frecuencia === 'quincenal') {
+    if (!(rut.diasSemana || []).includes(ds)) return false;
+    const lunesI = new Date(rut.fechaInicio + 'T12:00:00');
+    lunesI.setDate(lunesI.getDate() - (lunesI.getDay() === 0 ? 6 : lunesI.getDay() - 1));
+    const lunesF = new Date(d);
+    lunesF.setDate(d.getDate() - ds);
+    return Math.round((lunesF - lunesI) / (7 * 86400000)) % 2 === 0;
+  }
+  if (rut.frecuencia === 'mensual') return d.getDate() === (rut.diaDelMes || 1);
+  return false;
+}
+
 async function cargarEventosDash(hogarId) {
+  const sub  = document.getElementById('subEventosFam');
+  const body = document.getElementById('bodyEventosFam');
+  if (!sub || !body) return;
+
   try {
-    const hoy  = new Date();
-    const en7d = new Date(hoy); en7d.setDate(hoy.getDate() + 7);
+    const hoy   = new Date(); hoy.setHours(0,0,0,0);
+    const en14d = new Date(hoy); en14d.setDate(hoy.getDate() + 14);
     const hoyStr = getFechaStr2(hoy);
-    const en7Str = getFechaStr2(en7d);
+    const en14Str = getFechaStr2(en14d);
 
-    const snap = await getDocs(
-      query(collection(db, 'hogares', hogarId, 'eventos'),
-            where('fecha', '>=', hoyStr),
-            where('fecha', '<=', en7Str),
-            orderBy('fecha','asc'), orderBy('hora','asc'))
-    );
+    // Generar array de fechas de la ventana
+    const fechasVentana = Array.from({ length: 15 }, (_, i) => {
+      const d = new Date(hoy); d.setDate(hoy.getDate() + i);
+      return getFechaStr2(d);
+    });
 
-    const TIPOS = {
+    // Consultas en paralelo
+    const TIPOS_EMOJI = {
       tecnico:'🔧', fumigacion:'🪲', mantenimiento:'🏗️',
       veterinario:'🐾', delivery:'📦', cita:'🏥', visita:'👨‍👩‍👧', otro:'📌',
     };
 
-    const eventos = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-      .filter(e => e.estado !== 'cancelado').slice(0, 3);
+    const [snapEv, snapRut, snapConf] = await Promise.all([
+      getDocs(query(collection(db, 'hogares', hogarId, 'eventos'),
+        where('fecha', '>=', hoyStr), where('fecha', '<=', en14Str),
+        orderBy('fecha','asc'), orderBy('hora','asc'))),
+      getDocs(collection(db, 'hogares', hogarId, 'tareasRecurrentes')),
+      getDoc(doc(db, 'hogares', hogarId, 'configuracion', 'alimentaria')),
+    ]);
 
-    const sub  = document.getElementById('subEventosFam');
-    const body = document.getElementById('bodyEventosFam');
-    if (!sub || !body) return;
+    // ── Eventos puntuales ──
+    const eventos = snapEv.docs
+      .map(d => ({ ...d.data(), _id: d.id }))
+      .filter(e => e.estado !== 'cancelado')
+      .map(e => ({
+        key: `ev_${e._id}`, tipo: 'evento',
+        emoji: TIPOS_EMOJI[e.tipo] || '📌',
+        label: e.titulo,
+        fecha: e.fecha, hora: e.hora || '00:00',
+        url: '/tareas.html',
+      }));
 
-    if (!eventos.length) {
-      sub.textContent  = 'Sin eventos próximos';
-      body.innerHTML   = '<div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Nada agendado esta semana</div>';
+    // ── Rutinas: solo primera ocurrencia en ventana, sin repetir diarias ──
+    const rutinas = [];
+    const vistasRut = new Set();
+    for (const d of snapRut.docs) {
+      const r = { id: d.id, ...d.data() };
+      if (!r.activa) continue;
+      // Diarias: solo mostrar si ocurre hoy o mañana (evitar spam)
+      const maxDias = r.frecuencia === 'diaria' ? 2 : 14;
+      const fechasLimitadas = fechasVentana.slice(0, maxDias + 1);
+      for (const f of fechasLimitadas) {
+        if (_rutinaAplicaFecha(r, f) && !vistasRut.has(r.id)) {
+          rutinas.push({
+            key: `rut_${r.id}_${f}`, tipo: 'rutina',
+            emoji: '🔄', label: r.nombre,
+            fecha: f, hora: r.hora || '00:00',
+            url: '/tareas.html',
+          });
+          vistasRut.add(r.id); // solo primera ocurrencia por rutina
+          break;
+        }
+      }
+    }
+
+    // ── Próxima compra ──
+    const compras = [];
+    if (snapConf.exists()) {
+      const conf = snapConf.data();
+      const prox = conf.proximaCompra;
+      if (prox && prox >= hoyStr && prox <= en14Str) {
+        const frecLabel = { semanal:'Semanal', quincenal:'Quincenal', mensual:'Mensual' }[conf.frecuenciaCompra] || '';
+        compras.push({
+          key: 'compra_prox', tipo: 'compra',
+          emoji: '🛒', label: `Mercado ${frecLabel}`.trim(),
+          fecha: prox, hora: '00:00',
+          url: '/menu.html',
+        });
+      }
+    }
+
+    // ── Consolidar, ordenar, limitar a 5 ──
+    const todos = [...eventos, ...rutinas, ...compras]
+      .sort((a, b) => (a.fecha + a.hora) > (b.fecha + b.hora) ? 1 : -1)
+      .slice(0, 5);
+
+    if (!todos.length) {
+      sub.textContent = 'Sin planificación próxima';
+      body.innerHTML  = '<div style="text-align:center;padding:16px;color:#bbb;font-size:13px;">Nada agendado esta semana 🌿</div>';
       return;
     }
 
-    sub.textContent = `${eventos.length} evento${eventos.length > 1 ? 's' : ''} próximo${eventos.length > 1 ? 's' : ''}`;
-    body.innerHTML  = eventos.map(e => {
-      const emoji = TIPOS[e.tipo] || '📌';
-      const esFelcha = e.fecha === hoyStr ? 'Hoy' : e.fecha === getFechaStr2(new Date(hoy.getTime() + 86400000)) ? 'Mañana' : e.fecha;
-      return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--g4);">
-        <span style="font-size:18px;">${emoji}</span>
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:13px;font-weight:500;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${e.titulo}</div>
-          <div style="font-size:11px;color:var(--txt2);">${esFelcha} · ${e.hora || ''}</div>
-        </div>
+    // ── Agrupar por tipo para render ──
+    const grupos = { evento: [], rutina: [], compra: [] };
+    todos.forEach(i => grupos[i.tipo].push(i));
+
+    const GRUPO_CFG = {
+      evento:  { label: 'Eventos del hogar', bg: '#FEF9EC', border: '#FEF3C7', color: '#92400E' },
+      rutina:  { label: 'Rutinas',           bg: '#F0F7F4', border: 'var(--g4)', color: 'var(--g)' },
+      compra:  { label: 'Compras',           bg: '#F0F7F4', border: 'var(--g4)', color: 'var(--g)' },
+    };
+
+    let html = '';
+    for (const tipo of ['evento', 'rutina', 'compra']) {
+      const items = grupos[tipo];
+      if (!items.length) continue;
+      const cfg = GRUPO_CFG[tipo];
+      html += `<div style="padding:6px 12px 2px;">
+        <div style="font-size:10px;font-weight:700;color:${cfg.color};text-transform:uppercase;letter-spacing:.05em;">${cfg.label}</div>
       </div>`;
-    }).join('');
+      items.forEach(item => {
+        const fechaLabel = fechaRelativa(item.fecha);
+        const horaLabel  = item.hora && item.hora !== '00:00' ? ` · ${item.hora}` : '';
+        html += `
+          <div onclick="location.href='${item.url}'" style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:${cfg.bg};border-left:3px solid ${cfg.border};margin:3px 8px;border-radius:8px;cursor:pointer;transition:opacity .15s;" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">
+            <span style="font-size:17px;flex-shrink:0;">${item.emoji}</span>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:13px;font-weight:500;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${item.label}</div>
+              <div style="font-size:11px;color:var(--txt2);margin-top:1px;">${fechaLabel}${horaLabel}</div>
+            </div>
+            <span style="font-size:11px;color:#bbb;flex-shrink:0;">→</span>
+          </div>`;
+      });
+    }
+
+    const total = todos.length;
+    sub.textContent = `${total} próximo${total > 1 ? 's' : ''}`;
+    body.innerHTML  = html + '<div style="height:6px;"></div>';
+
   } catch(e) { console.warn('cargarEventosDash:', e); }
 }
 
