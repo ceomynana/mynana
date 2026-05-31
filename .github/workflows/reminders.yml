@@ -1,0 +1,36 @@
+name: My Nana — Recordatorios automáticos
+
+on:
+  schedule:
+    # Cada hora en punto (UTC). Panamá = UTC-5.
+    # Ej: 13:00 UTC = 8:00 AM Panamá
+    - cron: '0 * * * *'
+  # Permite ejecución manual desde GitHub Actions UI para probar
+  workflow_dispatch:
+
+jobs:
+  check-reminders:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run reminder check
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          VAPID_PUBLIC_KEY:          ${{ secrets.VAPID_PUBLIC_KEY }}
+          VAPID_PRIVATE_KEY:         ${{ secrets.VAPID_PRIVATE_KEY }}
+          VAPID_EMAIL:               ${{ secrets.VAPID_EMAIL }}
+          TZ: America/Panama
+        run: node scripts/check-reminders.js
