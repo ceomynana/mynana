@@ -47,6 +47,31 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
 .panel-sub{font-size:11px;color:rgba(255,255,255,.55);margin-top:2px;}
 .panel-badge{background:var(--b);color:#fff;font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;}
 
+/* ── RUTINAS DEL HOGAR ── */
+.btn-rutinas{width:100%;margin-top:6px;background:none;border:1.5px solid var(--g);color:var(--g);border-radius:99px;padding:9px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s;}
+.btn-rutinas:hover{background:var(--g3);}
+.rutina-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--g4);}
+.rutina-item.inactiva{opacity:.5;}
+.rutina-icono{font-size:18px;flex-shrink:0;}
+.rutina-info{flex:1;min-width:0;}
+.rutina-nombre{font-size:13px;font-weight:500;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rutina-meta{font-size:11px;color:var(--txt2);margin-top:2px;}
+.rutina-acciones{display:flex;gap:6px;flex-shrink:0;}
+.btn-r{background:none;border:1px solid var(--g4);border-radius:6px;padding:4px 8px;font-size:11px;font-weight:500;color:var(--txt2);cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;}
+.btn-r:hover{border-color:var(--g);color:var(--g);}
+.btn-r.danger:hover{border-color:#e05c5c;color:#e05c5c;}
+.tarea-recurrente-badge{display:inline-flex;align-items:center;background:var(--g3);color:var(--g);font-size:10px;font-weight:600;padding:1px 6px;border-radius:4px;margin-left:4px;}
+/* Modal rutinas */
+.modal-rutinas{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.45);align-items:flex-end;justify-content:center;backdrop-filter:blur(3px);}
+.modal-rutinas.visible{display:flex;}
+.modal-rutinas-box{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;animation:slideUp .3s ease;}
+.rutinas-tabs{display:flex;border-bottom:1px solid var(--g4);}
+.rutinas-tab{flex:1;padding:12px;text-align:center;font-size:13px;font-weight:500;color:var(--txt2);cursor:pointer;border:none;background:none;font-family:'DM Sans',sans-serif;}
+.rutinas-tab.activo{color:var(--g);border-bottom:2px solid var(--g);}
+.dias-semana-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:6px;}
+.dia-sem-btn{background:var(--g3);border:1.5px solid var(--g4);border-radius:6px;padding:6px 2px;font-size:11px;font-weight:500;color:var(--txt2);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;}
+.dia-sem-btn.sel{background:var(--g);border-color:var(--g);color:#fff;}
+
 /* ── EVENTOS DEL HOGAR ── */
 .eventos-section{margin-top:16px;}
 .eventos-header{display:flex;align-items:center;justify-content:space-between;padding:10px 0 6px;}
@@ -311,6 +336,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
           <button onclick="abrirModalEvento()" style="width:100%;margin-top:6px;background:none;border:1.5px solid var(--b);color:var(--b2);border-radius:99px;padding:9px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">
             📅 Agregar evento del hogar
           </button>
+          <button class="btn-rutinas" onclick="abrirModalRutinas()">
+            🔁 Rutinas del hogar
+          </button>
         </div>
 
         <!-- Navegación semanal familia -->
@@ -489,6 +517,7 @@ async function encontrarHogar() {
     iniciarPaneles();
     escucharTareas();
   escucharEventos();
+  escucharRutinas();
     return;
   }
 
@@ -613,6 +642,10 @@ window.navegarSemana = (delta) => {
   actualizarProgreso();
   actualizarStats();
   renderEventosDia();
+  // Generación lazy de tareas recurrentes al seleccionar el día
+  if (perfilActual?.tipo === 'familia') {
+    generarTareasRecurrentes(fecha).catch(e => console.warn('[Rutinas]', e));
+  }
 };
 
 // ── SELECTOR DE DÍAS ──
@@ -1438,6 +1471,294 @@ document.getElementById('modalEvento')?.addEventListener('click', e => {
   if (e.target === document.getElementById('modalEvento')) cerrarModalEvento();
 });
 
+// ══════════════════════════════════════════════════════
+//  RUTINAS DEL HOGAR — Tareas recurrentes
+// ══════════════════════════════════════════════════════
+
+let rutinasCache = [];
+let unsubRutinas = null;
+
+// ── Colección Firestore ──
+// hogares/{hogarId}/tareasRecurrentes/{id}
+// {nombre,hora,cat,prioridad,frecuencia,diasSemana,diaDelMes,
+//  fechaInicio,fechaFin,activa,creadoPor,creadoA,ultimaGeneracion}
+
+// ── Escuchar plantillas en tiempo real ──
+function escucharRutinas() {
+  if (!hogarId || unsubRutinas) return;
+  unsubRutinas = onSnapshot(
+    collection(db, 'hogares', hogarId, 'tareasRecurrentes'),
+    snap => {
+      rutinasCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderRutinasList();
+    }
+  );
+}
+
+// ── ¿Aplica esta plantilla a la fecha? ──
+function rutinaAplicaAFecha(rut, fecha) {
+  if (!rut.activa) return false;
+  if (fecha < rut.fechaInicio) return false;
+  if (rut.fechaFin && fecha > rut.fechaFin) return false;
+
+  const d = new Date(fecha + 'T12:00:00');
+  const diaSemana = d.getDay() === 0 ? 6 : d.getDay() - 1; // 0=lun
+
+  if (rut.frecuencia === 'diaria') return true;
+
+  if (rut.frecuencia === 'semanal')
+    return (rut.diasSemana || []).includes(diaSemana);
+
+  if (rut.frecuencia === 'quincenal') {
+    if (!(rut.diasSemana || []).includes(diaSemana)) return false;
+    // Cada 2 semanas desde fechaInicio
+    const lunesInicio = getLunesDeSemana(new Date(rut.fechaInicio + 'T12:00:00'));
+    const lunesFecha  = getLunesDeSemana(d);
+    const diffSem     = Math.round((lunesFecha - lunesInicio) / (7 * 86400000));
+    return diffSem % 2 === 0;
+  }
+
+  if (rut.frecuencia === 'mensual')
+    return d.getDate() === (rut.diaDelMes || 1);
+
+  return false;
+}
+
+// ── Generar instancias recurrentes para el día seleccionado (lazy, anti-dup) ──
+async function generarTareasRecurrentes(fecha) {
+  if (!hogarId || !rutinasCache.length) return;
+  const aplicables = rutinasCache.filter(r => rutinaAplicaAFecha(r, fecha));
+  if (!aplicables.length) return;
+
+  for (const rut of aplicables) {
+    // ID determinístico → garantía de unicidad sin query previo
+    const docId = `rut_${rut.id}_${fecha}`;
+    const docRef = doc(db, 'hogares', hogarId, 'tareas', docId);
+    const snap = await getDoc(docRef);
+    if (snap.exists()) continue; // ya generada → skip
+
+    await setDoc(docRef, {
+      nombre:        rut.nombre,
+      hora:          rut.hora,
+      cat:           rut.cat,
+      prioridad:     rut.prioridad,
+      estado:        'pendiente',
+      fotoUrl:       null,
+      fecha,
+      creadoPor:     usuarioActual?.uid || '',
+      creadoA:       serverTimestamp(),
+      completadaA:   null,
+      recurrenciaId: rut.id,
+      generadaAuto:  true,
+    });
+  }
+}
+
+// ── MODAL — abrir / cerrar / tabs ──
+window.abrirModalRutinas = () => {
+  _resetFormRutina();
+  mostrarTabRutinas('lista');
+  document.getElementById('modalRutinas').classList.add('visible');
+};
+
+window.cerrarModalRutinas = () => {
+  document.getElementById('modalRutinas').classList.remove('visible');
+};
+
+window.mostrarTabRutinas = (tab) => {
+  const esLista = tab === 'lista';
+  document.getElementById('tabContenidoLista').style.display = esLista ? 'block' : 'none';
+  document.getElementById('tabContenidoNueva').style.display = esLista ? 'none' : 'block';
+  document.getElementById('tabListaRut').classList.toggle('activo', esLista);
+  document.getElementById('tabNuevaRut').classList.toggle('activo', !esLista);
+  if (!esLista) {
+    actualizarUIFrecRutina();
+    // Prefill fechaInicio con hoy si vacío
+    const fi = document.getElementById('rutFechaInicio');
+    if (fi && !fi.value) fi.value = getFechaStr(new Date());
+  }
+};
+
+window.toggleDiaSemRut = (btn) => btn.classList.toggle('sel');
+
+window.actualizarUIFrecRutina = () => {
+  const frec = document.getElementById('rutFrecuencia')?.value;
+  const diasWrap = document.getElementById('rutDiasSemanaWrap');
+  const mesWrap  = document.getElementById('rutDiasMesWrap');
+  if (diasWrap) diasWrap.style.display = ['semanal','quincenal'].includes(frec) ? 'block' : 'none';
+  if (mesWrap)  mesWrap.style.display  = frec === 'mensual' ? 'block' : 'none';
+};
+
+function _resetFormRutina() {
+  ['rutEditId','rutNombre','rutFechaInicio','rutFechaFin'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  const rutHora = document.getElementById('rutHora');
+  if (rutHora) rutHora.value = '08:00';
+  const rutFrecuencia = document.getElementById('rutFrecuencia');
+  if (rutFrecuencia) rutFrecuencia.value = 'semanal';
+  const rutPrioridad = document.getElementById('rutPrioridad');
+  if (rutPrioridad) rutPrioridad.value = 'normal';
+  const rutDiaMes = document.getElementById('rutDiaMes');
+  if (rutDiaMes) rutDiaMes.value = '1';
+  document.querySelectorAll('.dia-sem-btn').forEach(b => b.classList.remove('sel'));
+  const btn = document.getElementById('btnGuardarRutina');
+  if (btn) btn.textContent = '🔁 Guardar rutina';
+}
+
+// ── Crear / Actualizar rutina ──
+window.guardarRutina = async () => {
+  const nombre     = document.getElementById('rutNombre')?.value.trim();
+  const hora       = document.getElementById('rutHora')?.value;
+  const frec       = document.getElementById('rutFrecuencia')?.value;
+  const fechaInicio = document.getElementById('rutFechaInicio')?.value;
+  const fechaFin   = document.getElementById('rutFechaFin')?.value;
+
+  if (!nombre)      { showToast('⚠️ Escribe un nombre para la rutina'); return; }
+  if (!fechaInicio) { showToast('⚠️ Selecciona fecha de inicio'); return; }
+
+  const diasSemana = [...document.querySelectorAll('.dia-sem-btn.sel')]
+    .map(b => parseInt(b.dataset.dia));
+
+  if (['semanal','quincenal'].includes(frec) && !diasSemana.length) {
+    showToast('⚠️ Selecciona al menos un día de la semana');
+    return;
+  }
+
+  const editId = document.getElementById('rutEditId')?.value;
+  const btn    = document.getElementById('btnGuardarRutina');
+  if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
+
+  try {
+    const data = {
+      nombre,
+      hora,
+      cat:       document.getElementById('rutCat')?.value || '🏠 General',
+      prioridad: document.getElementById('rutPrioridad')?.value || 'normal',
+      frecuencia: frec,
+      diasSemana,
+      diaDelMes:  parseInt(document.getElementById('rutDiaMes')?.value || 1),
+      fechaInicio,
+      fechaFin:   fechaFin || null,
+      activa:     true,
+      creadoPor:  usuarioActual?.uid || '',
+      creadoA:    serverTimestamp(),
+      ultimaGeneracion: null,
+    };
+
+    if (editId) {
+      await updateDoc(doc(db, 'hogares', hogarId, 'tareasRecurrentes', editId), data);
+      showToast('✅ Rutina actualizada');
+    } else {
+      await addDoc(collection(db, 'hogares', hogarId, 'tareasRecurrentes'), data);
+      showToast('✅ Rutina creada');
+      _pushAParticipantes(hogarId, usuarioActual.uid, {
+        titulo: '🔁 Nueva rutina del hogar',
+        cuerpo: `${nombre} · ${_labelFrecuencia(frec)}`,
+        url: '/tareas.html',
+        tipo: 'nueva-tarea',
+      });
+    }
+    mostrarTabRutinas('lista');
+    _resetFormRutina();
+    // Generar la instancia de hoy si aplica
+    await generarTareasRecurrentes(fechaSeleccionada);
+  } catch(e) {
+    console.error('guardarRutina:', e);
+    showToast('❌ Error al guardar la rutina');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '🔁 Guardar rutina'; }
+  }
+};
+
+// ── Editar rutina ──
+window.editarRutina = (id) => {
+  const rut = rutinasCache.find(r => r.id === id);
+  if (!rut) return;
+  mostrarTabRutinas('nueva');
+  document.getElementById('rutEditId').value = id;
+  document.getElementById('rutNombre').value     = rut.nombre;
+  document.getElementById('rutHora').value       = rut.hora;
+  document.getElementById('rutFrecuencia').value = rut.frecuencia;
+  document.getElementById('rutPrioridad').value  = rut.prioridad;
+  document.getElementById('rutCat').value        = rut.cat;
+  document.getElementById('rutFechaInicio').value = rut.fechaInicio || '';
+  document.getElementById('rutFechaFin').value   = rut.fechaFin || '';
+  document.getElementById('rutDiaMes').value     = rut.diaDelMes || 1;
+  document.querySelectorAll('.dia-sem-btn').forEach(b => {
+    b.classList.toggle('sel', (rut.diasSemana || []).includes(parseInt(b.dataset.dia)));
+  });
+  actualizarUIFrecRutina();
+  const btn = document.getElementById('btnGuardarRutina');
+  if (btn) btn.textContent = '✏️ Actualizar rutina';
+};
+
+// ── Pausar / Reactivar rutina ──
+window.toggleRutinaActiva = async (id, activa) => {
+  try {
+    await updateDoc(doc(db, 'hogares', hogarId, 'tareasRecurrentes', id), { activa });
+    showToast(activa ? '▶️ Rutina reactivada' : '⏸️ Rutina pausada');
+  } catch(e) { showToast('❌ Error'); }
+};
+
+// ── Eliminar rutina ──
+window.eliminarRutina = async (id, nombre) => {
+  if (!confirm(`¿Eliminar la rutina "${nombre}"?
+Las tareas ya generadas se mantienen.`)) return;
+  try {
+    await deleteDoc(doc(db, 'hogares', hogarId, 'tareasRecurrentes', id));
+    showToast('🗑 Rutina eliminada');
+  } catch(e) { showToast('❌ Error al eliminar'); }
+};
+
+// ── Renderizar lista de rutinas ──
+function renderRutinasList() {
+  const el = document.getElementById('rutinasList');
+  if (!el) return;
+
+  if (!rutinasCache.length) {
+    el.innerHTML = '<div style="text-align:center;padding:32px 20px;color:#bbb;font-size:13px;">Sin rutinas configuradas<br><span style="font-size:12px;">Toca "Nueva rutina" para crear la primera</span></div>';
+    return;
+  }
+
+  el.innerHTML = rutinasCache.map(rut => {
+    const label = _labelFrecuencia(rut.frecuencia, rut.diasSemana, rut.diaDelMes);
+    const rangoLabel = rut.fechaFin
+      ? `${rut.fechaInicio} → ${rut.fechaFin}`
+      : `Desde ${rut.fechaInicio}`;
+    return `
+      <div class="rutina-item ${!rut.activa ? 'inactiva' : ''}">
+        <div class="rutina-icono">${rut.activa ? '🔄' : '⏸️'}</div>
+        <div class="rutina-info">
+          <div class="rutina-nombre">${rut.nombre}</div>
+          <div class="rutina-meta">${rut.hora} · ${label} · ${rut.cat}</div>
+          <div class="rutina-meta" style="font-size:10px;">${rangoLabel}</div>
+        </div>
+        <div class="rutina-acciones">
+          <button class="btn-r" onclick="editarRutina('${rut.id}')">✏️</button>
+          ${rut.activa
+            ? `<button class="btn-r" onclick="toggleRutinaActiva('${rut.id}', false)">⏸</button>`
+            : `<button class="btn-r" onclick="toggleRutinaActiva('${rut.id}', true)">▶️</button>`}
+          <button class="btn-r danger" onclick="eliminarRutina('${rut.id}','${rut.nombre.replace(/'/g,"\'")}')">🗑</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ── Helper: label legible de frecuencia ──
+function _labelFrecuencia(frec, diasSemana, diaDelMes) {
+  const DIAS_CORTOS = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+  if (frec === 'diaria') return 'Diaria';
+  if (frec === 'mensual') return `Día ${diaDelMes} c/mes`;
+  const dias = (diasSemana || []).map(d => DIAS_CORTOS[d]).join(', ');
+  return frec === 'semanal' ? `Semanal · ${dias}` : `Quincenal · ${dias}`;
+}
+
+// Cerrar modal al click fuera
+document.getElementById('modalRutinas')?.addEventListener('click', function(e) {
+  if (e.target === this) cerrarModalRutinas();
+});
+
 window.showToast = (msg) => {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -1455,6 +1776,107 @@ document.getElementById('modalFoto')?.addEventListener('click', e => {
   if (e.target === document.getElementById('modalFoto')) window.cerrarModalFoto();
 });
 </script>
+
+<!-- MODAL RUTINAS DEL HOGAR -->
+<div class="modal-rutinas" id="modalRutinas">
+  <div class="modal-rutinas-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 20px 0;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--txt);">🔁 Rutinas del hogar</div>
+      <button onclick="cerrarModalRutinas()" style="background:var(--g3);border:none;border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer;">✕</button>
+    </div>
+    <div class="rutinas-tabs">
+      <button class="rutinas-tab activo" id="tabListaRut" onclick="mostrarTabRutinas('lista')">Mis rutinas</button>
+      <button class="rutinas-tab" id="tabNuevaRut" onclick="mostrarTabRutinas('nueva')">+ Nueva rutina</button>
+    </div>
+
+    <!-- TAB LISTA -->
+    <div id="tabContenidoLista" style="padding:0 0 16px;">
+      <div id="rutinasList">
+        <div style="text-align:center;padding:32px 20px;color:#bbb;font-size:13px;">Sin rutinas configuradas</div>
+      </div>
+    </div>
+
+    <!-- TAB NUEVA / EDITAR -->
+    <div id="tabContenidoNueva" style="display:none;padding:16px 20px 32px;">
+      <input type="hidden" id="rutEditId">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div style="grid-column:1/-1;">
+          <label class="form-label">Nombre de la rutina *</label>
+          <input id="rutNombre" class="form-input" placeholder="Ej: Cambiar sábanas">
+        </div>
+        <div>
+          <label class="form-label">Hora *</label>
+          <input id="rutHora" type="time" class="form-input" value="08:00">
+        </div>
+        <div>
+          <label class="form-label">Categoría</label>
+          <select id="rutCat" class="form-select">
+            <option>🧹 Limpieza</option>
+            <option>🍳 Cocina</option>
+            <option>🎒 Niños</option>
+            <option>🐾 Mascotas</option>
+            <option>🌿 Jardín</option>
+            <option>🔧 Mantenimiento</option>
+            <option>📦 Compras</option>
+            <option>🏠 General</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Prioridad</label>
+          <select id="rutPrioridad" class="form-select">
+            <option value="normal">Normal</option>
+            <option value="urgente">Urgente</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Frecuencia *</label>
+          <select id="rutFrecuencia" class="form-select" onchange="actualizarUIFrecRutina()">
+            <option value="diaria">Diaria</option>
+            <option value="semanal">Semanal</option>
+            <option value="quincenal">Quincenal</option>
+            <option value="mensual">Mensual</option>
+          </select>
+        </div>
+        <div id="rutDiasMesWrap">
+          <label class="form-label">Día del mes</label>
+          <input id="rutDiaMes" type="number" min="1" max="31" class="form-input" value="1" placeholder="1-31">
+        </div>
+      </div>
+
+      <!-- Días de semana (para semanal y quincenal) -->
+      <div id="rutDiasSemanaWrap" style="margin-bottom:10px;">
+        <label class="form-label">Días de la semana *</label>
+        <div class="dias-semana-grid" id="diasSemanaGrid">
+          <button class="dia-sem-btn" data-dia="0" onclick="toggleDiaSemRut(this)">Lun</button>
+          <button class="dia-sem-btn" data-dia="1" onclick="toggleDiaSemRut(this)">Mar</button>
+          <button class="dia-sem-btn" data-dia="2" onclick="toggleDiaSemRut(this)">Mié</button>
+          <button class="dia-sem-btn" data-dia="3" onclick="toggleDiaSemRut(this)">Jue</button>
+          <button class="dia-sem-btn" data-dia="4" onclick="toggleDiaSemRut(this)">Vie</button>
+          <button class="dia-sem-btn" data-dia="5" onclick="toggleDiaSemRut(this)">Sáb</button>
+          <button class="dia-sem-btn" data-dia="6" onclick="toggleDiaSemRut(this)">Dom</button>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+        <div>
+          <label class="form-label">Fecha inicio *</label>
+          <input id="rutFechaInicio" type="date" class="form-input">
+        </div>
+        <div>
+          <label class="form-label">Fecha fin <span style="color:#bbb;">(opcional)</span></label>
+          <input id="rutFechaFin" type="date" class="form-input">
+        </div>
+      </div>
+
+      <button id="btnGuardarRutina" onclick="guardarRutina()" style="width:100%;background:var(--g);color:#fff;border:none;border-radius:99px;padding:13px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">
+        🔁 Guardar rutina
+      </button>
+      <button onclick="mostrarTabRutinas('lista')" style="width:100%;background:none;border:none;color:var(--txt2);font-size:13px;cursor:pointer;margin-top:10px;font-family:'DM Sans',sans-serif;padding:4px;">
+        Cancelar
+      </button>
+    </div>
+  </div>
+</div>
 
 <!-- MODAL CREAR EVENTO DEL HOGAR -->
 <div class="modal-evento" id="modalEvento">
