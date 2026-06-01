@@ -6,7 +6,7 @@
 <title>My Nana — Tu hogar funciona. Tú descansas tranquila.</title>
 
 <!-- ── SEO BÁSICO ── -->
-<meta name="description" content="Organiza tareas, menús, compras y rutinas familiares desde un solo lugar. La plataforma panameña para gestionar tu hogar con elegancia. Prueba 15 días gratis.">
+<meta name="description" content="Organiza tu hogar, con o sin nana. Tareas, menús, compras, rutinas, recordatorios y gestión de ayuda doméstica en un solo lugar. La plataforma panameña para el hogar moderno.">
 <meta name="keywords" content="app nana panama, nana panama, personal doméstico panama, empleada doméstica panama, organizar hogar panama, app hogar panama, servicio doméstico panama, nana app, mynana">
 <meta name="author" content="My Nana Panama">
 <meta name="robots" content="index, follow">
@@ -2611,17 +2611,22 @@ window.unirseConCodigo = async function() {
         <div style="font-size:11px;color:var(--txt2);margin-top:4px;"><span class="es">Para enviarte la lista del mercado directo a tu WhatsApp</span><span class="en">So we can send your grocery list directly to your WhatsApp</span></div>
       </div>
       <div class="form-group">
-        <label class="form-label"><span class="es">¿Qué tipo de nana tienes?</span><span class="en">What type of nana do you have?</span></label>
+        <label class="form-label"><span class="es">¿Cómo es tu hogar?</span><span class="en">What's your home setup?</span></label>
         <div class="type-selector">
-          <div class="type-option selected" id="tipoFija" onclick="selectTipo('fija')">
-            <div class="type-option-icon">👩‍👧</div>
-            <div class="type-option-name">Nana Fija</div>
-            <div class="type-option-desc"><span class="es">Tiempo completo · Interna o externa</span><span class="en">Full-time · Live-in or live-out</span></div>
+          <div class="type-option" id="tipoHogar" onclick="selectTipo('hogar')">
+            <div class="type-option-icon">🏠</div>
+            <div class="type-option-name"><span class="es">Sin nana</span><span class="en">No nana</span></div>
+            <div class="type-option-desc"><span class="es">Organizo el hogar</span><span class="en">Self-organized</span></div>
           </div>
           <div class="type-option" id="tipoEventual" onclick="selectTipo('eventual')">
-            <div class="type-option-icon">📅</div>
-            <div class="type-option-name"><span class="es">Nana Eventual</span><span class="en">Occasional Nana</span></div>
-            <div class="type-option-desc"><span class="es">Por días · Flexible</span><span class="en">By the day · Flexible</span></div>
+            <div class="type-option-icon">🤝</div>
+            <div class="type-option-name"><span class="es">Eventual</span><span class="en">Occasional</span></div>
+            <div class="type-option-desc"><span class="es">Por días · Flexible</span><span class="en">By the day · Flex</span></div>
+          </div>
+          <div class="type-option selected" id="tipoFija" onclick="selectTipo('fija')">
+            <div class="type-option-icon">👩‍👧</div>
+            <div class="type-option-name"><span class="es">Nana Fija</span><span class="en">Full-time</span></div>
+            <div class="type-option-desc"><span class="es">Tiempo completo</span><span class="en">Full-time</span></div>
           </div>
         </div>
       </div>
@@ -2701,16 +2706,37 @@ window.unirseConCodigo = async function() {
       <div style="font-size:12px;color:var(--txt2);margin-bottom:16px;"><span class="es">El cobro comienza automáticamente al finalizar tu prueba gratuita. Cancela cuando quieras.</span><span class="en">Billing starts automatically after your free trial ends. Cancel anytime.</span></div>
 
       <!-- PLANES -->
-      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
 
-        <!-- PLAN FLEXIBLE -->
-        <div class="type-option" id="planEventual" onclick="selectPlan('eventual')" style="text-align:left;padding:14px 16px;">
+        <!-- PLAN HOGAR -->
+        <div class="type-option" id="planHogar" onclick="selectPlan('hogar')" style="text-align:left;padding:12px 14px;">
           <div style="display:flex;align-items:center;justify-content:space-between;">
             <div style="display:flex;align-items:center;gap:10px;">
-              <div style="font-size:20px;">📅</div>
+              <div style="font-size:20px;">🏠</div>
               <div>
-                <div style="font-size:13px;font-weight:600;color:var(--txt);"><span class="es">Hogar Flexible</span><span class="en">Flexible Home</span></div>
-                <div style="font-size:11px;color:var(--txt2);margin-top:2px;"><span class="es">Para nana eventual · Por días</span><span class="en">For occasional nana · By the day</span></div>
+                <div style="font-size:13px;font-weight:600;color:var(--txt);"><span class="es">Plan Hogar</span><span class="en">Home Plan</span></div>
+                <div style="font-size:11px;color:var(--txt2);margin-top:2px;"><span class="es">Sin nana · Organiza tu hogar en familia</span><span class="en">No nana · Family home organization</span></div>
+              </div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:18px;font-weight:600;color:var(--g);">$4.99</div>
+              <div style="font-size:10px;color:var(--txt2);"><span class="es">al mes</span><span class="en">per month</span></div>
+            </div>
+          </div>
+          <div style="font-size:11px;color:var(--txt2);margin-top:6px;padding-top:6px;border-top:1px solid var(--g4);">
+            <span class="es">✓ Tareas y rutinas &nbsp; ✓ Menú semanal &nbsp; ✓ Lista del súper &nbsp; ✓ Planificador IA</span>
+            <span class="en">✓ Tasks &amp; routines &nbsp; ✓ Weekly menu &nbsp; ✓ Grocery list &nbsp; ✓ AI planner</span>
+          </div>
+        </div>
+
+        <!-- PLAN NANA EVENTUAL -->
+        <div class="type-option" id="planEventual" onclick="selectPlan('eventual')" style="text-align:left;padding:12px 14px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="font-size:20px;">🤝</div>
+              <div>
+                <div style="font-size:13px;font-weight:600;color:var(--txt);"><span class="es">Nana Eventual</span><span class="en">Occasional Help</span></div>
+                <div style="font-size:11px;color:var(--txt2);margin-top:2px;"><span class="es">Ayuda ocasional o por días</span><span class="en">Occasional or daily help</span></div>
               </div>
             </div>
             <div style="text-align:right;">
@@ -2718,29 +2744,31 @@ window.unirseConCodigo = async function() {
               <div style="font-size:10px;color:var(--txt2);"><span class="es">al mes</span><span class="en">per month</span></div>
             </div>
           </div>
-          <div style="font-size:11px;color:var(--txt2);margin-top:8px;padding-top:8px;border-top:1px solid var(--g4);">
-            <span class="es">✓ Tareas por visita &nbsp; ✓ Confirmación asistencia &nbsp; ✓ Pago por días &nbsp; ✓ Contrato legal</span><span class="en">✓ Tasks per visit &nbsp; ✓ Attendance confirmation &nbsp; ✓ Pay by day &nbsp; ✓ Legal contract</span>
+          <div style="font-size:11px;color:var(--txt2);margin-top:6px;padding-top:6px;border-top:1px solid var(--g4);">
+            <span class="es">✓ Todo lo de Hogar &nbsp; ✓ Asignación por visita &nbsp; ✓ Multi-familia &nbsp; ✓ Recordatorios</span>
+            <span class="en">✓ All of Home &nbsp; ✓ Visit assignment &nbsp; ✓ Multi-family &nbsp; ✓ Reminders</span>
           </div>
         </div>
 
-        <!-- PLAN COMPLETO -->
-        <div class="type-option selected" id="planFija" onclick="selectPlan('fija')" style="text-align:left;padding:14px 16px;position:relative;">
-          <div style="position:absolute;top:-1px;right:12px;background:var(--g);color:#fff;font-size:10px;font-weight:600;padding:3px 10px;border-radius:0 0 8px 8px;letter-spacing:.04em;"><span class="es">MÁS POPULAR</span><span class="en">MOST POPULAR</span></div>
+        <!-- PLAN NANA FIJA -->
+        <div class="type-option selected" id="planFija" onclick="selectPlan('fija')" style="text-align:left;padding:12px 14px;position:relative;">
+          <div style="position:absolute;top:-1px;right:12px;background:var(--g);color:#fff;font-size:10px;font-weight:600;padding:3px 10px;border-radius:0 0 8px 8px;letter-spacing:.04em;"><span class="es">MÁS COMPLETO</span><span class="en">MOST COMPLETE</span></div>
           <div style="display:flex;align-items:center;justify-content:space-between;">
             <div style="display:flex;align-items:center;gap:10px;">
               <div style="font-size:20px;">👩‍👧</div>
               <div>
-                <div style="font-size:13px;font-weight:600;color:var(--txt);"><span class="es">Hogar Completo</span><span class="en">Full Home</span></div>
-                <div style="font-size:11px;color:var(--txt2);margin-top:2px;"><span class="es">Para nana fija · Todo incluido</span><span class="en">For full-time nana · All inclusive</span></div>
+                <div style="font-size:13px;font-weight:600;color:var(--txt);"><span class="es">Nana Fija</span><span class="en">Full-time Nana</span></div>
+                <div style="font-size:11px;color:var(--txt2);margin-top:2px;"><span class="es">Para empleada doméstica permanente</span><span class="en">For full-time housekeeper</span></div>
               </div>
             </div>
             <div style="text-align:right;">
               <div style="font-size:18px;font-weight:600;color:var(--g);">$9.99</div>
-              <div style="font-size:10px;color:var(--txt2);">al mes</div>
+              <div style="font-size:10px;color:var(--txt2);"><span class="es">al mes · todo incluido</span><span class="en">per month · all in</span></div>
             </div>
           </div>
-          <div style="font-size:11px;color:var(--txt2);margin-top:8px;padding-top:8px;border-top:1px solid var(--g4);">
-            <span class="es">✓ Tareas ilimitadas &nbsp; ✓ Menú + delivery &nbsp; ✓ Nómina &nbsp; ✓ Videos &nbsp; ✓ Contratos</span><span class="en">✓ Unlimited tasks &nbsp; ✓ Menu + delivery &nbsp; ✓ Payroll &nbsp; ✓ Videos &nbsp; ✓ Contracts</span>
+          <div style="font-size:11px;color:var(--txt2);margin-top:6px;padding-top:6px;border-top:1px solid var(--g4);">
+            <span class="es">✓ Todo lo anterior &nbsp; ✓ Chat · Score · Nómina &nbsp; ✓ Contratos &nbsp; ✓ Perfil nana</span>
+            <span class="en">✓ All above &nbsp; ✓ Chat · Score · Payroll &nbsp; ✓ Contracts &nbsp; ✓ Nana profile</span>
           </div>
         </div>
 
@@ -3229,12 +3257,91 @@ window.unirseConCodigo = async function() {
 </section>
 
 <!-- PRICING -->
+<!-- PARA QUIÉN ES MY NANA -->
+<section style="background:#fff;padding:64px 20px;">
+  <div class="section-inner" style="max-width:900px;margin:0 auto;">
+    <div style="text-align:center;margin-bottom:40px;">
+      <div class="section-tag"><span class="es">Para todos los hogares</span><span class="en">For every home</span></div>
+      <h2 class="section-title" style="font-size:clamp(26px,4vw,36px);">
+        <span class="es">My Nana es para ti,<br>tengas nana o no.</span>
+        <span class="en">My Nana is for you,<br>with or without a nana.</span>
+      </h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;" class="quienes-grid">
+      <!-- Para familias sin nana -->
+      <div style="background:#F8FBF9;border:1.5px solid var(--g4);border-radius:20px;padding:24px 20px;text-align:center;">
+        <div style="font-size:36px;margin-bottom:12px;">🏠</div>
+        <div style="font-family:Georgia,serif;font-size:17px;font-weight:500;color:var(--txt);margin-bottom:8px;">
+          <span class="es">Parejas y familias sin nana</span><span class="en">Couples & families without a nana</span>
+        </div>
+        <div style="font-size:13px;color:var(--txt2);line-height:1.6;">
+          <span class="es">Organiza tareas, menús y compras del hogar entre todos. Sin depender de nadie externo.</span>
+          <span class="en">Organize tasks, menus and shopping together. Without depending on outside help.</span>
+        </div>
+        <div style="margin-top:16px;display:flex;flex-direction:column;gap:6px;text-align:left;">
+          <div style="font-size:12px;color:var(--g);">✓ <span class="es">Tareas y rutinas del hogar</span><span class="en">Home tasks & routines</span></div>
+          <div style="font-size:12px;color:var(--g);">✓ <span class="es">Menú semanal y lista del súper</span><span class="en">Weekly menu & grocery list</span></div>
+          <div style="font-size:12px;color:var(--g);">✓ <span class="es">Recordatorios automáticos</span><span class="en">Automatic reminders</span></div>
+        </div>
+        <a href="#" onclick="abrirFormWithPlan('hogar');return false;" style="display:block;margin-top:20px;background:var(--g3);color:var(--g);border-radius:99px;padding:10px;font-size:13px;font-weight:600;text-decoration:none;">
+          <span class="es">Empezar gratis →</span><span class="en">Start free →</span>
+        </a>
+      </div>
+
+      <!-- Para hogares con ayuda ocasional -->
+      <div style="background:#F8FBF9;border:1.5px solid var(--g4);border-radius:20px;padding:24px 20px;text-align:center;">
+        <div style="font-size:36px;margin-bottom:12px;">🤝</div>
+        <div style="font-family:Georgia,serif;font-size:17px;font-weight:500;color:var(--txt);margin-bottom:8px;">
+          <span class="es">Hogares con ayuda ocasional</span><span class="en">Homes with occasional help</span>
+        </div>
+        <div style="font-size:13px;color:var(--txt2);line-height:1.6;">
+          <span class="es">Gestiona visitas, asigna tareas y mantén el historial de cada persona que te ayuda.</span>
+          <span class="en">Manage visits, assign tasks and keep records for each helper.</span>
+        </div>
+        <div style="margin-top:16px;display:flex;flex-direction:column;gap:6px;text-align:left;">
+          <div style="font-size:12px;color:var(--g);">✓ <span class="es">Asignación de tareas por visita</span><span class="en">Tasks assigned per visit</span></div>
+          <div style="font-size:12px;color:var(--g);">✓ <span class="es">Cambio entre familias para la ayuda</span><span class="en">Family switch for the helper</span></div>
+          <div style="font-size:12px;color:var(--g);">✓ <span class="es">Historial y recordatorios</span><span class="en">History & reminders</span></div>
+        </div>
+        <a href="#" onclick="abrirFormWithPlan('eventual');return false;" style="display:block;margin-top:20px;background:var(--g3);color:var(--g);border-radius:99px;padding:10px;font-size:13px;font-weight:600;text-decoration:none;">
+          <span class="es">Empezar gratis →</span><span class="en">Start free →</span>
+        </a>
+      </div>
+
+      <!-- Para hogares con nana fija -->
+      <div style="background:linear-gradient(135deg,#F0F7F4,#FFF8EE);border:1.5px solid var(--g);border-radius:20px;padding:24px 20px;text-align:center;position:relative;">
+        <div style="position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--g);color:#fff;font-size:10px;font-weight:700;padding:3px 14px;border-radius:0 0 10px 10px;letter-spacing:.06em;">
+          <span class="es">MÁS COMPLETO</span><span class="en">MOST COMPLETE</span>
+        </div>
+        <div style="font-size:36px;margin-bottom:12px;">👩‍👧</div>
+        <div style="font-family:Georgia,serif;font-size:17px;font-weight:500;color:var(--txt);margin-bottom:8px;">
+          <span class="es">Hogares con nana fija</span><span class="en">Homes with a full-time nana</span>
+        </div>
+        <div style="font-size:13px;color:var(--txt2);line-height:1.6;">
+          <span class="es">La plataforma completa de gestión del hogar. Chat, nómina, contratos y evaluación de desempeño.</span>
+          <span class="en">The complete home management platform. Chat, payroll, contracts and performance review.</span>
+        </div>
+        <div style="margin-top:16px;display:flex;flex-direction:column;gap:6px;text-align:left;">
+          <div style="font-size:12px;color:var(--g);">✓ <span class="es">Portal completo de la nana</span><span class="en">Full nana portal</span></div>
+          <div style="font-size:12px;color:var(--g);">✓ <span class="es">Chat · Score · Nómina · Contratos</span><span class="en">Chat · Score · Payroll · Contracts</span></div>
+          <div style="font-size:12px;color:var(--g);">✓ <span class="es">Evaluación de desempeño</span><span class="en">Performance evaluation</span></div>
+        </div>
+        <a href="#" onclick="abrirFormWithPlan('fija');return false;" style="display:block;margin-top:20px;background:var(--g);color:#fff;border-radius:99px;padding:10px;font-size:13px;font-weight:600;text-decoration:none;">
+          <span class="es">Empezar gratis →</span><span class="en">Start free →</span>
+        </a>
+      </div>
+    </div>
+    <!-- Responsive -->
+    <style>@media(max-width:700px){.quienes-grid{grid-template-columns:1fr!important;}}</style>
+  </div>
+</section>
+
 <section class="pricing-section" id="pricing">
   <div class="section-inner">
     <div class="reveal" style="text-align:center;max-width:560px;margin:0 auto;">
       <div class="section-tag"><span class="es">Precios</span><span class="en">Pricing</span></div>
-      <h2 class="section-title"><span class="es">Simple, justo y sin sorpresas</span><span class="en">Simple, fair and no surprises</span></h2>
-      <p class="section-sub"><span class="es">Prueba 15 días gratis con acceso completo. Sin cargos ocultos. Cancela cuando quieras.</span><span class="en">Try 15 days free with full access. No hidden fees. Cancel anytime.</span></p>
+      <h2 class="section-title"><span class="es">Organiza tu hogar,<br>con o sin nana.</span><span class="en">Organize your home,<br>with or without a nana.</span></h2>
+      <p class="section-sub"><span class="es">Tareas, menús, compras, recordatorios y gestión de ayuda doméstica en un solo lugar. Prueba 15 días gratis.</span><span class="en">Tasks, menus, shopping, reminders and domestic help management in one place. Try free for 15 days.</span></p>
       <!-- GARANTÍA -->
       <div style="display:inline-flex;align-items:center;gap:8px;background:var(--g3);border-radius:99px;padding:8px 16px;margin-top:16px;border:1px solid var(--g4);">
         <span style="font-size:16px;">🛡️</span>
@@ -3243,61 +3350,62 @@ window.unirseConCodigo = async function() {
     </div>
     <div class="pricing-grid">
 
-      <!-- GRATIS -->
+      <!-- PLAN HOGAR -->
       <div class="pricing-card reveal">
         <div class="pricing-top">
-          <div class="pricing-name"><span class="es">Prueba Gratis</span><span class="en">Free Trial</span></div>
-          <div class="pricing-target"><span class="es">Para todas las familias</span><span class="en">For all families</span></div>
-          <div class="pricing-amount">$0</div>
-          <div class="pricing-period"><span class="es">15 días · acceso completo</span><span class="en">15 days · full access</span></div>
+          <div class="pricing-name"><span class="es">Plan Hogar</span><span class="en">Home Plan</span></div>
+          <div class="pricing-target"><span class="es">Para hogares que se organizan solos</span><span class="en">For homes that self-organize</span></div>
+          <div class="pricing-amount">$4.99</div>
+          <div class="pricing-period"><span class="es">al mes</span><span class="en">per month</span></div>
         </div>
         <ul class="pricing-feats">
-          <li class="pricing-feat">✓ <span class="es">Todos los módulos desbloqueados</span><span class="en">All modules unlocked</span></li>
-          <li class="pricing-feat">✓ <span class="es">Sin límite de tareas ni mensajes</span><span class="en">Unlimited tasks and messages</span></li>
-          <li class="pricing-feat">✓ <span class="es">Soporte por WhatsApp incluido</span><span class="en">WhatsApp support included</span></li>
-          <li class="pricing-feat">✓ <span class="es">Tarjeta requerida · cobro inicia día 16</span><span class="en">Card required · billing starts day 16</span></li>
-          <li class="pricing-feat">✓ <span class="es">Cancela antes si lo deseas</span><span class="en">Cancel before if you wish</span></li>
+          <li class="pricing-feat">✓ <span class="es">Tareas del hogar y rutinas</span><span class="en">Home tasks and routines</span></li>
+          <li class="pricing-feat">✓ <span class="es">Eventos del hogar y recordatorios</span><span class="en">Home events and reminders</span></li>
+          <li class="pricing-feat">✓ <span class="es">Menú semanal + lista del supermercado</span><span class="en">Weekly menu + grocery list</span></li>
+          <li class="pricing-feat">✓ <span class="es">Compras del hogar por categoría</span><span class="en">Home shopping by category</span></li>
+          <li class="pricing-feat">✓ <span class="es">Planificador IA semanal</span><span class="en">AI weekly planner</span></li>
+          <li class="pricing-feat">✓ <span class="es">Miembros de la familia incluidos</span><span class="en">Family members included</span></li>
         </ul>
-        <a href="#" class="pricing-btn"><span class="es">Iniciar prueba gratis →</span><span class="en">Start free trial →</span></a>
+        <a href="#" class="pricing-btn" onclick="abrirFormWithPlan('hogar')"><span class="es">Organizar mi hogar →</span><span class="en">Organize my home →</span></a>
       </div>
 
-      <!-- DESTACADO -->
-      <div class="pricing-card featured reveal">
-        <div class="pricing-top">
-          <div class="pricing-name"><span class="es">Hogar Completo</span><span class="en">Full Home</span></div>
-          <div class="pricing-target"><span class="es">Nana fija · Interna o externa</span><span class="en">Full-time nana · Live-in or live-out</span></div>
-          <div class="pricing-amount">$9.99</div>
-          <div class="pricing-period"><span class="es">al mes · todo incluido</span><span class="en">per month · all inclusive</span></div>
-        </div>
-        <ul class="pricing-feats">
-          <li class="pricing-feat">✓ <span class="es">Tareas ilimitadas con fotos</span><span class="en">Unlimited tasks with photos</span></li>
-          <li class="pricing-feat">✓ <span class="es">Menú semanal + lista del mercado</span><span class="en">Weekly menu + grocery list</span></li>
-          <li class="pricing-feat">✓ <span class="es">Chat con fotos y audios</span><span class="en">Chat with photos and audio</span></li>
-          <li class="pricing-feat">✓ <span class="es">Ayudas rápidas del hogar</span><span class="en">Panamanian training videos</span></li>
-          <li class="pricing-feat">✓ <span class="es">Contrato digital · Ley panameña</span><span class="en">Digital contract · Panamanian law</span></li>
-          <li class="pricing-feat">✓ <span class="es">Nómina + décimo tercer mes automático</span><span class="en">Payroll + automatic 13th-month bonus</span></li>
-          <li class="pricing-feat">✓ <span class="es">MyNana Score verificado</span><span class="en">Verified MyNana Score</span></li>
-        </ul>
-        <a href="https://checkout.paguelofacil.com/mynana/e089b39a" target="_blank" class="pricing-btn"><span class="es">Empezar ahora →</span><span class="en">Start now →</span></a>
-      </div>
-
-      <!-- FLEXIBLE -->
+      <!-- PLAN HOGAR FLEXIBLE -->
       <div class="pricing-card reveal">
         <div class="pricing-top">
           <div class="pricing-name"><span class="es">Hogar Flexible</span><span class="en">Flexible Home</span></div>
-          <div class="pricing-target"><span class="es">Nana eventual · Por días</span><span class="en">Occasional nana · By the day</span></div>
+          <div class="pricing-target"><span class="es">Para hogares con ayuda ocasional</span><span class="en">For homes with occasional help</span></div>
           <div class="pricing-amount">$6.99</div>
           <div class="pricing-period"><span class="es">al mes</span><span class="en">per month</span></div>
         </div>
         <ul class="pricing-feats">
-          <li class="pricing-feat">✓ <span class="es">Tareas por día de visita</span><span class="en">Tasks per visit day</span></li>
-          <li class="pricing-feat">✓ <span class="es">Confirmación de asistencia</span><span class="en">Attendance confirmation</span></li>
-          <li class="pricing-feat">✓ <span class="es">Pago por días trabajados</span><span class="en">Pay per days worked</span></li>
-          <li class="pricing-feat">✓ <span class="es">Calificación por visita</span><span class="en">Rating per visit</span></li>
-          <li class="pricing-feat">✓ <span class="es">Contrato eventual · Ley panameña</span><span class="en">Occasional contract · Panamanian law</span></li>
-          <li class="pricing-feat">✓ <span class="es">Hasta 2 eventuales</span><span class="en">Up to 2 occasional nanas</span></li>
+          <li class="pricing-feat">✓ <span class="es">Todo lo del Plan Hogar</span><span class="en">Everything in Home Plan</span></li>
+          <li class="pricing-feat">✓ <span class="es">Gestión de ayuda ocasional</span><span class="en">Occasional help management</span></li>
+          <li class="pricing-feat">✓ <span class="es">Asignación de tareas por visita</span><span class="en">Task assignment per visit</span></li>
+          <li class="pricing-feat">✓ <span class="es">Comunicación por hogar</span><span class="en">Communication per home</span></li>
+          <li class="pricing-feat">✓ <span class="es">Cambio entre familias</span><span class="en">Switch between families</span></li>
+          <li class="pricing-feat">✓ <span class="es">Recordatorios para visitas</span><span class="en">Visit reminders</span></li>
         </ul>
-        <a href="https://checkout.paguelofacil.com/mynana/586d0e75" target="_blank" class="pricing-btn"><span class="es">Empezar ahora →</span><span class="en">Start now →</span></a>
+        <a href="https://checkout.paguelofacil.com/mynana/586d0e75" target="_blank" class="pricing-btn"><span class="es">Gestionar ayuda ocasional →</span><span class="en">Manage occasional help →</span></a>
+      </div>
+
+      <!-- PLAN HOGAR COMPLETO — DESTACADO -->
+      <div class="pricing-card featured reveal">
+        <div class="pricing-top">
+          <div class="pricing-name"><span class="es">Hogar Completo</span><span class="en">Full Home</span></div>
+          <div class="pricing-target"><span class="es">Para hogares con nana fija o empleada doméstica</span><span class="en">For homes with a full-time nana or housekeeper</span></div>
+          <div class="pricing-amount">$9.99</div>
+          <div class="pricing-period"><span class="es">al mes · todo incluido</span><span class="en">per month · all inclusive</span></div>
+        </div>
+        <ul class="pricing-feats">
+          <li class="pricing-feat">✓ <span class="es">Todo lo del Hogar Flexible</span><span class="en">Everything in Flexible Home</span></li>
+          <li class="pricing-feat">✓ <span class="es">Portal completo de la nana</span><span class="en">Full nana portal</span></li>
+          <li class="pricing-feat">✓ <span class="es">Chat familiar con fotos y audios</span><span class="en">Family chat with photos and audio</span></li>
+          <li class="pricing-feat">✓ <span class="es">Score de confianza verificado</span><span class="en">Verified trust score</span></li>
+          <li class="pricing-feat">✓ <span class="es">Nómina + décimo tercer mes</span><span class="en">Payroll + 13th-month bonus</span></li>
+          <li class="pricing-feat">✓ <span class="es">Contratos digitales · Ley panameña</span><span class="en">Digital contracts · Panamanian law</span></li>
+          <li class="pricing-feat">✓ <span class="es">Evaluación de desempeño</span><span class="en">Performance evaluation</span></li>
+        </ul>
+        <a href="https://checkout.paguelofacil.com/mynana/e089b39a" target="_blank" class="pricing-btn"><span class="es">Gestionar mi nana →</span><span class="en">Manage my nana →</span></a>
       </div>
 
     </div>
@@ -4630,6 +4738,20 @@ let tipoSeleccionado = 'fija';
 let planSeleccionado = 'fija';
 let telefonoRegistro = '';
 
+// ── Pre-seleccionar plan desde botón de la landing ──
+window.abrirFormWithPlan = (plan) => {
+  planSeleccionado = plan;
+  actualizarPlanVisual();
+  openModal();
+  // Saltar al paso 2 si viene de pricing
+  setTimeout(() => {
+    if (document.getElementById('paso2') && document.getElementById('paso1')) {
+      document.getElementById('paso1').style.display = 'none';
+      document.getElementById('paso2').style.display = 'block';
+    }
+  }, 100);
+};
+
 function openModal() {
   overlay.classList.add('active');
   document.body.style.overflow = 'hidden';
@@ -4657,10 +4779,13 @@ document.querySelectorAll('a[href="#"], .btn-primary, .pricing-btn, .nav-cta').f
       // Pre-seleccionar plan según botón de pricing
       if (btn.closest('.pricing-card')) {
         const card = btn.closest('.pricing-card');
-        const nombre = card.querySelector('.pricing-name')?.textContent || '';
-        if (nombre.includes('Flexible')) {
+        const nombre = card.querySelector('.pricing-name')?.textContent?.toLowerCase() || '';
+        const cta    = btn.textContent?.toLowerCase() || '';
+        if (nombre.includes('hogar') && !nombre.includes('nana') && !nombre.includes('eventual')) {
+          planSeleccionado = 'hogar';
+        } else if (nombre.includes('eventual') || cta.includes('ocasional')) {
           planSeleccionado = 'eventual';
-        } else if (nombre.includes('Completo')) {
+        } else {
           planSeleccionado = 'fija';
         }
         actualizarPlanVisual();
@@ -4673,10 +4798,13 @@ document.querySelectorAll('a[href="#"], .btn-primary, .pricing-btn, .nav-cta').f
 // ── SELECTOR TIPO NANA ──
 function selectTipo(tipo) {
   tipoSeleccionado = tipo;
-  document.getElementById('tipoFija').classList.toggle('selected', tipo === 'fija');
-  document.getElementById('tipoEventual').classList.toggle('selected', tipo === 'eventual');
-  // Sugerir plan acorde al tipo de nana
-  planSeleccionado = tipo;
+  ['tipoHogar','tipoEventual','tipoFija'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('selected', id === 'tipo' + tipo.charAt(0).toUpperCase() + tipo.slice(1));
+  });
+  // Sincronizar plan con tipo
+  const tipoToPlan = { hogar: 'hogar', eventual: 'eventual', fija: 'fija' };
+  planSeleccionado = tipoToPlan[tipo] || 'fija';
   actualizarPlanVisual();
 }
 
@@ -4687,12 +4815,12 @@ function selectPlan(plan) {
 }
 
 function actualizarPlanVisual() {
-  const planFija = document.getElementById('planFija');
-  const planEventual = document.getElementById('planEventual');
-  if (planFija && planEventual) {
-    planFija.classList.toggle('selected', planSeleccionado === 'fija');
-    planEventual.classList.toggle('selected', planSeleccionado === 'eventual');
-  }
+  ['planHogar','planEventual','planFija'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const planId = id.replace('plan','').toLowerCase();
+    el.classList.toggle('selected', planSeleccionado === planId);
+  });
 }
 
 // ── NAVEGACIÓN ENTRE PASOS ──
@@ -4761,10 +4889,14 @@ function submitForm() {
   btn.textContent = 'Activando prueba...';
   btn.disabled = true;
 
-  const planNombre = planSeleccionado === 'fija' ? 'Hogar Completo ($9.99/mes)' : 'Hogar Flexible ($6.99/mes)';
-  const urlPago = planSeleccionado === 'fija'
-    ? 'https://checkout.paguelofacil.com/mynana/e089b39a'
-    : 'https://checkout.paguelofacil.com/mynana/586d0e75';
+  const _planMap = {
+    hogar:    { nombre: 'Plan Hogar ($4.99/mes)',       url: 'https://checkout.paguelofacil.com/mynana/586d0e75' },
+    eventual: { nombre: 'Nana Eventual ($6.99/mes)',    url: 'https://checkout.paguelofacil.com/mynana/586d0e75' },
+    fija:     { nombre: 'Nana Fija ($9.99/mes)',        url: 'https://checkout.paguelofacil.com/mynana/e089b39a' },
+  };
+  const _planInfo  = _planMap[planSeleccionado] || _planMap['fija'];
+  const planNombre = _planInfo.nombre;
+  const urlPago    = _planInfo.url;
 
   const fechaPrueba = new Date();
   fechaPrueba.setDate(fechaPrueba.getDate() + 15);
