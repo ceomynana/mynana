@@ -153,7 +153,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
 .mercado-nombre{flex:1;font-size:13px;color:var(--txt);}
 .mercado-nombre.comprado{text-decoration:line-through;color:#bbb;}
 .mercado-cat{font-size:10px;background:var(--g3);color:var(--g);padding:2px 7px;border-radius:99px;}
-.mercado-add{display:flex;gap:6px;padding:12px;border-top:1px solid var(--g4);}
+.mercado-add{display:flex;gap:6px;padding:10px 12px;border-top:1px solid var(--g4);}
+.btn-agregar-articulo{width:100%;background:none;border:1.5px dashed var(--g);color:var(--g);border-radius:10px;padding:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s;}
+.btn-agregar-articulo:hover{background:var(--g3);}
+.cat-art-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px;}
+.cat-art-btn{background:var(--cr);border:1.5px solid var(--g4);border-radius:10px;padding:8px 4px;text-align:center;cursor:pointer;font-size:11px;color:var(--txt2);font-family:'DM Sans',sans-serif;transition:all .18s;}
+.cat-art-btn:hover,.cat-art-btn.sel{background:var(--g);border-color:var(--g);color:#fff;}
+.cat-art-emoji{font-size:20px;display:block;margin-bottom:3px;}
+.mercado-sec-manual{border-top:1px solid var(--g4);margin-top:4px;}
+.mercado-sec-manual-hdr{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:8px 10px 4px;color:var(--txt2);}
+.mercado-item-manual{position:relative;}
+.mercado-item-manual .btn-del-manual{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:#bbb;font-size:14px;cursor:pointer;padding:4px;}
+.mercado-item-manual .btn-del-manual:hover{color:#e05c5c;}
 .mercado-input{flex:1;background:var(--cr);border:1.5px solid var(--g4);border-radius:8px;padding:8px 12px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--txt);outline:none;}
 .mercado-input:focus{border-color:var(--g);}
 .btn-add-mercado{background:var(--g);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;}
@@ -520,8 +531,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
           </div>
         </div>
         <div class="mercado-add">
-          <input class="mercado-input" id="mercadoInput" placeholder="Agregar producto manualmente..." onkeydown="if(event.key==='Enter')agregarMercadoManual()" />
-          <button class="btn-add-mercado" onclick="agregarMercadoManual()">+</button>
+          <button class="btn-agregar-articulo" onclick="abrirModalAgregarArticulo()">
+            ➕ Agregar artículo
+          </button>
         </div>
         <div class="mercado-acciones">
           <button class="btn-chat-mynana" onclick="enviarListaAlChat()">💬 Enviar al chat</button>
@@ -2435,6 +2447,65 @@ function renderMercado() {
     `).join('');
   }
 
+  // ── Secciones separadas para artículos manuales con catHogar ──
+  const manualesConCat = pendientes.filter(i => i.origen === 'manual' && i.catHogar);
+  const manualesSinCat = pendientes.filter(i => i.origen === 'manual' && !i.catHogar);
+
+  // Manuales sin categoría (legacy) → en sección "Otros" al final
+  const todosManSinCat = [...manualesSinCat];
+
+  if (manualesConCat.length || todosManSinCat.length) {
+    // Agrupar por catHogar
+    const gruposManual = {};
+    manualesConCat.forEach(item => {
+      const c = item.catHogar || 'otros';
+      if (!gruposManual[c]) gruposManual[c] = [];
+      gruposManual[c].push(item);
+    });
+    if (todosManSinCat.length) {
+      if (!gruposManual['otros']) gruposManual['otros'] = [];
+      gruposManual['otros'].push(...todosManSinCat);
+    }
+
+    // Para mensual: los de limpieza/baño/lavandería ya están en su sección arriba — no duplicar
+    const CAT_SKIP_MENSUAL = esMensual
+      ? new Set(Object.keys(gruposManual).filter(k =>
+          ['limpieza','bano','lavanderia'].includes(k) &&
+          (pendientes.filter(i => i.origen !== 'manual' && i.catHogar === k).length > 0)))
+      : new Set();
+
+    let htmlManual = '';
+    const ORDER_MAN = ['cocina','limpieza','bano','lavanderia','mascotas','bebes','otros'];
+    const EMOJIS_MAN = {
+      cocina:'🍎', limpieza:'🧽', bano:'🧻', lavanderia:'🧺',
+      mascotas:'🐶', bebes:'👶', otros:'📦',
+    };
+    const LABELS_MAN = {
+      cocina:'Cocina', limpieza:'Limpieza', bano:'Baño', lavanderia:'Lavandería',
+      mascotas:'Mascotas', bebes:'Bebés', otros:'Otros',
+    };
+
+    for (const cat of ORDER_MAN) {
+      const items = gruposManual[cat];
+      if (!items?.length || CAT_SKIP_MENSUAL.has(cat)) continue;
+      htmlManual += `<div class="mercado-sec-manual-hdr">${EMOJIS_MAN[cat]} ${LABELS_MAN[cat]} (${items.length})</div>`;
+      items.forEach(item => {
+        const idx = mercadoItems.indexOf(item);
+        htmlManual += `<div class="mercado-item mercado-item-manual" onclick="toggleMercadoItem(${idx})">
+          <div class="mercado-check ${item.comprado ? 'comprado' : ''}">
+            ${item.comprado ? '<svg width="10" height="8" viewBox="0 0 10 8" fill="none"><polyline points="1,4 3,7 9,1" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>' : ''}
+          </div>
+          <span class="mercado-nombre">${item.nombre}</span>
+          <button class="btn-del-manual" onclick="event.stopPropagation();eliminarItemManual('${item.key}')" title="Eliminar">✕</button>
+        </div>`;
+      });
+    }
+
+    if (htmlManual) {
+      htmlItems += `<div class="mercado-sec-manual">${htmlManual}</div>`;
+    }
+  }
+
   lista.innerHTML = htmlItems + (comprados.length ? `
     <div style="font-size:10px;color:var(--txt2);font-weight:600;text-transform:uppercase;letter-spacing:.04em;padding:10px 10px 6px;border-top:1px solid var(--g4);">
       ✓ Comprados (${comprados.length})
@@ -2452,14 +2523,82 @@ window.toggleMercadoItem = async (idx) => {
   await guardarMercado(mercadoItems);
 };
 
-window.agregarMercadoManual = async () => {
-  const input = document.getElementById('mercadoInput');
-  const nombre = input.value.trim();
-  if (!nombre) return;
-  mercadoItems.push({ nombre, cat: 'Manual', origen: 'manual', comprado: false });
+// ── Modal agregar artículo ──
+const CAT_ART_CFG = {
+  cocina:     { emoji:'🍎', label:'Cocina',     separado: false },
+  limpieza:   { emoji:'🧽', label:'Limpieza',   separado: true  },
+  lavanderia: { emoji:'🧺', label:'Lavandería', separado: true  },
+  bano:       { emoji:'🧻', label:'Baño',        separado: true  },
+  mascotas:   { emoji:'🐶', label:'Mascotas',   separado: true  },
+  bebes:      { emoji:'👶', label:'Bebés',       separado: true  },
+  otros:      { emoji:'📦', label:'Otros',       separado: true  },
+};
+let catArtSel = 'cocina';
+
+window.abrirModalAgregarArticulo = () => {
+  catArtSel = 'cocina';
+  document.querySelectorAll('.cat-art-btn').forEach(b =>
+    b.classList.toggle('sel', b.dataset.cat === 'cocina'));
+  document.getElementById('artNombre').value   = '';
+  document.getElementById('artCantidad').value = '';
+  document.getElementById('modalAgregarArticulo').classList.add('visible');
+};
+
+window.cerrarModalAgregarArticulo = () => {
+  document.getElementById('modalAgregarArticulo').classList.remove('visible');
+};
+
+window.selCatArt = (btn) => {
+  catArtSel = btn.dataset.cat;
+  document.querySelectorAll('.cat-art-btn').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+};
+
+window.guardarArticuloModal = async () => {
+  const nombre   = document.getElementById('artNombre').value.trim();
+  const cantidad = document.getElementById('artCantidad').value.trim();
+  if (!nombre) { showToast('⚠️ Escribe un artículo'); return; }
+
+  const nombreFinal = cantidad ? `${nombre} ${cantidad}` : nombre;
+  const key = nombre.toLowerCase().split(/\s+/).slice(0,2).join(' ');
+
+  // Anti-dup: no agregar si ya existe manual con mismo key
+  const yaExiste = mercadoItems.find(m => m.origen === 'manual' &&
+    m.key === key);
+  if (yaExiste) { showToast(`"${nombre}" ya está en la lista`); return; }
+
+  const cfg = CAT_ART_CFG[catArtSel];
+  const categoria = clasificarIngrediente(nombre); // para render mensual
+
+  mercadoItems.push({
+    nombre:    nombreFinal,
+    origen:    'manual',
+    comprado:  false,
+    key,
+    catHogar:  catArtSel,
+    categoria,
+    tieneAlergia: ingredienteTieneAlergia(nombre),
+    nota: '',
+  });
+
   await guardarMercado(mercadoItems);
-  input.value = '';
-  showToast(`✅ "${nombre}" agregado`);
+  cerrarModalAgregarArticulo();
+  showToast(`✅ "${nombreFinal}" agregado`);
+};
+
+// Cerrar modal al click fuera
+document.getElementById('modalAgregarArticulo')?.addEventListener('click', function(e) {
+  if (e.target === this) cerrarModalAgregarArticulo();
+});
+
+window.agregarMercadoManual = async () => {
+  // Mantener por compatibilidad — redirigir al modal
+  abrirModalAgregarArticulo();
+};
+
+window.eliminarItemManual = async (key) => {
+  mercadoItems = mercadoItems.filter(m => !(m.origen === 'manual' && m.key === key));
+  await guardarMercado(mercadoItems);
 };
 
 window.limpiarComprados = async () => {
@@ -2593,5 +2732,43 @@ window.showToast = (msg) => {
   setTimeout(() => t.classList.remove('visible'), 3000);
 };
 </script>
+
+<!-- MODAL AGREGAR ARTÍCULO AL MERCADO -->
+<div class="modal-evento" id="modalAgregarArticulo" style="z-index:300;">
+  <div class="modal-evento-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--txt);">Agregar artículo</div>
+      <button onclick="cerrarModalAgregarArticulo()" style="background:var(--g3);border:none;border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer;">✕</button>
+    </div>
+
+    <!-- Categoría -->
+    <div style="font-size:12px;font-weight:600;color:var(--txt2);margin-bottom:6px;">Categoría</div>
+    <div class="cat-art-grid" id="catArtGrid">
+      <button class="cat-art-btn sel" data-cat="cocina"    onclick="selCatArt(this)"><span class="cat-art-emoji">🍎</span>Cocina</button>
+      <button class="cat-art-btn"     data-cat="limpieza"  onclick="selCatArt(this)"><span class="cat-art-emoji">🧽</span>Limpieza</button>
+      <button class="cat-art-btn"     data-cat="lavanderia"onclick="selCatArt(this)"><span class="cat-art-emoji">🧺</span>Lavandería</button>
+      <button class="cat-art-btn"     data-cat="bano"      onclick="selCatArt(this)"><span class="cat-art-emoji">🧻</span>Baño</button>
+      <button class="cat-art-btn"     data-cat="mascotas"  onclick="selCatArt(this)"><span class="cat-art-emoji">🐶</span>Mascotas</button>
+      <button class="cat-art-btn"     data-cat="bebes"     onclick="selCatArt(this)"><span class="cat-art-emoji">👶</span>Bebés</button>
+      <button class="cat-art-btn"     data-cat="otros"     onclick="selCatArt(this)" style="grid-column:span 2;"><span class="cat-art-emoji">📦</span>Otros</button>
+    </div>
+
+    <!-- Nombre + Cantidad -->
+    <div style="display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:16px;">
+      <div>
+        <label class="form-label">Artículo *</label>
+        <input id="artNombre" class="form-input" placeholder="Ej: Leche de coco" style="font-size:13px;padding:9px 12px;">
+      </div>
+      <div style="width:90px;">
+        <label class="form-label">Cantidad</label>
+        <input id="artCantidad" class="form-input" placeholder="Ej: x2" style="font-size:13px;padding:9px 12px;">
+      </div>
+    </div>
+
+    <button onclick="guardarArticuloModal()" style="width:100%;background:var(--g);color:#fff;border:none;border-radius:99px;padding:13px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">
+      ➕ Agregar a la lista
+    </button>
+  </div>
+</div>
 </body>
 </html>
