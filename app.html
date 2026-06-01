@@ -732,9 +732,9 @@ service cloud.firestore {
       <div class="dash-stat-n" id="statMensajes">—</div>
       <div class="dash-stat-l">Mensajes</div>
     </div>
-    <div class="dash-stat-card">
+    <div class="dash-stat-card" id="wrapStatScore">
       <div class="dash-stat-n" id="statScore">—</div>
-      <div class="dash-stat-l">Confianza</div>
+      <div class="dash-stat-l" id="labelStatScore">Confianza</div>
     </div>
   </div>
 
@@ -757,7 +757,7 @@ service cloud.firestore {
       </div>
 
       <!-- Tareas -->
-      <div class="dash-card" onclick="location.href='/tareas.html'" style="cursor:pointer;">
+      <div class="dash-card" id="cardTareas" onclick="location.href='/tareas.html'" style="cursor:pointer;">
         <div class="dash-card-header">
           <div class="dash-card-icon" style="background:var(--g3);">✅</div>
           <div><div class="dash-card-title">Tareas de hoy</div><div class="dash-card-sub" id="subTareas">Cargando...</div></div>
@@ -768,7 +768,7 @@ service cloud.firestore {
       </div>
 
       <!-- Centro de Planificación del Hogar -->
-      <div class="dash-card">
+      <div class="dash-card" id="cardPlanificacion">
         <div class="dash-card-header">
           <div class="dash-card-icon" style="background:#FEF3C7;">📅</div>
           <div><div class="dash-card-title">Planificación del hogar</div><div class="dash-card-sub" id="subEventosFam">Cargando...</div></div>
@@ -779,7 +779,7 @@ service cloud.firestore {
       </div>
 
       <!-- Menú -->
-      <div class="dash-card" onclick="location.href='/menu.html'" style="cursor:pointer;">
+      <div class="dash-card" id="cardMenu" onclick="location.href='/menu.html'" style="cursor:pointer;">
         <div class="dash-card-header">
           <div class="dash-card-icon" style="background:var(--g3);">🍽️</div>
           <div><div class="dash-card-title">Menú de hoy</div><div class="dash-card-sub" id="subMenu">Cargando...</div></div>
@@ -812,7 +812,7 @@ service cloud.firestore {
       </div>
 
       <!-- Mercado -->
-      <div class="dash-card" onclick="location.href='/menu.html'" style="cursor:pointer;">
+      <div class="dash-card" id="cardMercado" onclick="location.href='/menu.html'" style="cursor:pointer;">
         <div class="dash-card-header">
           <div class="dash-card-icon" style="background:var(--g3);">🛒</div>
           <div><div class="dash-card-title">Lista del mercado</div><div class="dash-card-sub" id="subMercado">Cargando...</div></div>
@@ -822,17 +822,17 @@ service cloud.firestore {
         </div>
       </div>
 
-      <!-- Videos -->
+      <!-- Ayudas rápidas del hogar -->
       <div class="dash-card" id="cardVideosNana" onclick="location.href='/tareas.html'" style="cursor:pointer;">
         <div class="dash-card-header">
-          <div class="dash-card-icon" style="background:var(--b3);">📹</div>
-          <div><div class="dash-card-title">Videos para tu nana</div><div class="dash-card-sub">12 videos disponibles</div></div>
+          <div class="dash-card-icon" style="background:var(--g3);">💡</div>
+          <div><div class="dash-card-title">Ayudas rápidas del hogar</div><div class="dash-card-sub">Guías y consejos prácticos</div></div>
         </div>
         <div class="dash-card-body">
-          <div class="task-item"><span style="font-size:14px;">🍲</span><span class="task-name">Sancocho de gallina</span><span class="task-hora" style="color:var(--g);">Cocina</span></div>
-          <div class="task-item"><span style="font-size:14px;">🧹</span><span class="task-name">Limpiar baños</span><span class="task-hora" style="color:var(--g);">Limpieza</span></div>
-          <div class="task-item"><span style="font-size:14px;">👕</span><span class="task-name">Lavandería sin dañar ropa</span><span class="task-hora" style="color:var(--g);">Lavandería</span></div>
-          <div style="margin-top:12px;background:var(--g3);color:var(--g);border-radius:8px;padding:9px;text-align:center;font-size:13px;font-weight:500;">Ver todos los videos →</div>
+          <div class="task-item"><span style="font-size:14px;">🍲</span><span class="task-name">Recetas rápidas panameñas</span><span class="task-hora" style="color:var(--g);">Cocina</span></div>
+          <div class="task-item"><span style="font-size:14px;">🧹</span><span class="task-name">Limpieza eficiente por zona</span><span class="task-hora" style="color:var(--g);">Limpieza</span></div>
+          <div class="task-item"><span style="font-size:14px;">📅</span><span class="task-name">Rutinas semanales del hogar</span><span class="task-hora" style="color:var(--g);">Rutinas</span></div>
+          <div style="margin-top:12px;background:var(--g3);color:var(--g);border-radius:8px;padding:9px;text-align:center;font-size:13px;font-weight:500;">Ver guías del hogar →</div>
         </div>
       </div>
 
@@ -849,8 +849,8 @@ service cloud.firestore {
 
     </div>
 
-    <!-- Link para compartir con nana -->
-    <div style="background:var(--g);border-radius:var(--r);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:12px;">
+    <!-- Banner buscar nana -->
+    <div id="wrapBannerBuscar" style="background:var(--g);border-radius:var(--r);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:12px;">
       <div>
         <div id="bannerBuscarNana" style="font-size:13px;font-weight:500;color:#fff;margin-bottom:4px;">👩 ¿Buscas una nana?</div>
         <div style="font-size:12px;color:rgba(255,255,255,.6);">Encuentra personal doméstico de confianza</div>
@@ -858,8 +858,8 @@ service cloud.firestore {
       <a href="/index.html#buscar" style="background:#fff;color:var(--g);font-size:13px;font-weight:600;padding:10px 18px;border-radius:99px;text-decoration:none;white-space:nowrap;">Buscar nana →</a>
     </div>
 
-    <!-- Link para compartir con nana -->
-    <div style="background:var(--g);border-radius:var(--r);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+    <!-- Banner compartir nana -->
+    <div id="wrapBannerCompartir" style="background:var(--g);border-radius:var(--r);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
       <div>
         <div id="bannerCompartirNana" style="font-size:13px;font-weight:500;color:#fff;margin-bottom:4px;">🔗 Comparte el acceso con tu nana</div>
         <div style="font-size:12px;color:rgba(255,255,255,.6);">mynana.app/app.html</div>
@@ -1874,8 +1874,9 @@ async function cargarDashboardFamilia() {
     // Leer tipoHogar — con_nana_fija | con_nana_eventual | sin_nana
     // Hogares existentes sin campo = con_nana_fija (compatibilidad total)
     const _hogarDoc    = await getDoc(doc(db, 'hogares', hogarId));
-    const _tipoHogar   = _hogarDoc.exists() ? (_hogarDoc.data().tipoHogar || 'con_nana_fija') : 'con_nana_fija';
+    const _tipoHogar   = _hogarDoc.exists() ? (_hogarDoc.data().tipoHogar || 'con_nana') : 'con_nana';
     window._tipoHogar  = _tipoHogar;
+    window._hogarId    = hogarId; // disponible para paneles eventuales
     localStorage.setItem('mynana_tipoHogar', _tipoHogar);
     aplicarModoHogar(_tipoHogar);
 
@@ -2998,35 +2999,193 @@ let _planPagoSeleccionado = 'fija';
 // ══════════════════════════════════════════════════════
 
 // Cards y secciones que dependen de si hay nana
-const _CARDS_SOLO_CON_NANA = [
-  'cardChatNana',       // Chat con tu nana
-  'cardScoreNana',      // Confianza del hogar
-  'cardNomina',         // Contratos y nómina
-  'cardVideosNana',     // Videos para tu nana
-  'cardVincularNana',   // Vincular nana
-  'bannerBuscarNana',   // "¿Buscas una nana?"
-  'bannerCompartirNana',// "Comparte el acceso con tu nana"
-];
+// ══════════════════════════════════════════════════════
+//  DASHBOARD INTELIGENTE — visibilidad por tipo de hogar
+// ══════════════════════════════════════════════════════
 
 window.aplicarModoHogar = (tipoHogar) => {
-  // Fallback para hogares existentes sin campo tipoHogar
-  const _tipo = tipoHogar || 'con_nana';
-  const tieneNana = _tipo !== 'sin_nana';
-  _CARDS_SOLO_CON_NANA.forEach(id => {
+  const tipo = tipoHogar || 'con_nana'; // fallback hogares existentes
+
+  // ── Visibilidad por ID ──────────────────────────────
+  // Formato: { id: { sin_nana, con_ayuda, con_nana } }  true=visible false=oculto
+  const VISIBILIDAD = {
+    // Siempre visibles
+    cardTareas:        { sin_nana: true,  con_ayuda: true,  con_nana: true  },
+    cardPlanificacion: { sin_nana: true,  con_ayuda: true,  con_nana: true  },
+    cardMenu:          { sin_nana: true,  con_ayuda: true,  con_nana: true  },
+    cardMercado:       { sin_nana: true,  con_ayuda: true,  con_nana: true  },
+    // Con nana o ayuda
+    cardChatNana:      { sin_nana: false, con_ayuda: true,  con_nana: true  },
+    cardScoreNana:     { sin_nana: false, con_ayuda: true,  con_nana: true  },
+    wrapStatScore:     { sin_nana: false, con_ayuda: true,  con_nana: true  },
+    // Nómina: visible para con_ayuda (renombrada), completa para con_nana
+    cardNomina:        { sin_nana: false, con_ayuda: true,  con_nana: true  },
+    // Solo nana fija
+    cardVideosNana:    { sin_nana: true,  con_ayuda: true,  con_nana: true  },
+    // Banners
+    wrapBannerBuscar:  { sin_nana: false, con_ayuda: true,  con_nana: true  },
+    wrapBannerCompartir:{ sin_nana: false, con_ayuda: true, con_nana: true  },
+  };
+
+  Object.entries(VISIBILIDAD).forEach(([id, regla]) => {
     const el = document.getElementById(id);
-    if (el) el.style.display = tieneNana ? '' : 'none';
+    if (el) el.style.display = regla[tipo] ? '' : 'none';
   });
-  // Actualizar subtítulo del panel de tareas
-  const panelSub = document.querySelector('.panel-sub');
-  if (panelSub && panelSub.textContent.includes('nana')) {
-    panelSub.textContent = tieneNana
-      ? 'Crea y asigna tareas a tu nana'
-      : 'Organiza las tareas del hogar';
+
+  // ── Textos dinámicos según tipo ─────────────────────
+  const textos = {
+    sin_nana: {
+      chatTitulo:     null, // oculto
+      chatSub:        null,
+      scoreTitulo:    null, // oculto
+      nominaTitulo:   null, // oculto
+      bannerBuscar:   null, // oculto
+      bannerCompartir:null, // oculto
+      panelSub:       'Organiza las tareas del hogar',
+    },
+    con_ayuda: {
+      chatTitulo:     'Chat con tu ayuda',
+      chatSub:        'Comunícate por visita',
+      scoreTitulo:    'Calificación por visita',
+      nominaTitulo:   'Pagos por visita',
+      nominaSub:      'Registro de pagos eventuales',
+      bannerBuscar:   '🤝 ¿Necesitas ayuda por días?',
+      bannerCompartir:'🔗 Comparte el acceso con tu ayuda',
+      panelSub:       'Gestiona las tareas de tu ayuda',
+    },
+    con_nana: {
+      chatTitulo:     'Chat con tu nana',
+      chatSub:        null, // mantener original
+      scoreTitulo:    'Confianza del hogar',
+      nominaTitulo:   'Contratos y nómina',
+      nominaSub:      null,
+      bannerBuscar:   '👩 ¿Buscas una nana?',
+      bannerCompartir:'🔗 Comparte el acceso con tu nana',
+      panelSub:       'Crea y asigna tareas a tu nana',
+    },
+  };
+
+  const t = textos[tipo] || textos['con_nana'];
+
+  // Chat título y sub
+  const chatTitle = document.querySelector('#cardChatNana .dash-card-title');
+  if (chatTitle && t.chatTitulo) chatTitle.textContent = t.chatTitulo;
+  const chatSub = document.getElementById('subChat');
+  if (chatSub && t.chatSub) chatSub.textContent = t.chatSub;
+
+  // Score título
+  const scoreTitle = document.querySelector('#cardScoreNana .dash-card-title');
+  if (scoreTitle && t.scoreTitulo) scoreTitle.textContent = t.scoreTitulo;
+  const scoreStatLabel = document.getElementById('labelStatScore');
+  if (scoreStatLabel && t.scoreTitulo) scoreStatLabel.textContent = t.scoreTitulo;
+
+  // Nómina título y sub
+  const nominaTitle = document.querySelector('#cardNomina .dash-card-title');
+  if (nominaTitle && t.nominaTitulo) nominaTitle.textContent = t.nominaTitulo;
+  const nominaSub = document.getElementById('subNomina');
+  if (nominaSub && t.nominaSub) nominaSub.textContent = t.nominaSub;
+
+  // Banners — con_ayuda recibe panel operativo en lugar del banner de búsqueda
+  if (tipo === 'con_ayuda') {
+    const wrapBuscar = document.getElementById('wrapBannerBuscar');
+    if (wrapBuscar) {
+      wrapBuscar.style.background = '#fff';
+      wrapBuscar.style.border     = '1px solid var(--g4)';
+      wrapBuscar.innerHTML = `
+        <div style="width:100%;">
+          <div style="font-size:12px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">Panel de ayuda eventual</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+            <div style="background:var(--g3);border-radius:10px;padding:10px;text-align:center;">
+              <div style="font-size:11px;color:var(--txt2);margin-bottom:4px;">Próxima visita</div>
+              <div style="font-size:16px;font-weight:600;color:var(--g);" id="panelAyudaVisita">—</div>
+              <div style="font-size:10px;color:var(--txt2);">días</div>
+            </div>
+            <div style="background:var(--g3);border-radius:10px;padding:10px;text-align:center;">
+              <div style="font-size:11px;color:var(--txt2);margin-bottom:4px;">Último pago</div>
+              <div style="font-size:16px;font-weight:600;color:var(--g);" id="panelAyudaPago">—</div>
+              <div style="font-size:10px;color:var(--txt2);">registrado</div>
+            </div>
+            <div style="background:var(--g3);border-radius:10px;padding:10px;text-align:center;">
+              <div style="font-size:11px;color:var(--txt2);margin-bottom:4px;">Calificación</div>
+              <div style="font-size:16px;font-weight:600;color:var(--g);" id="panelAyudaScore">—</div>
+              <div style="font-size:10px;color:var(--txt2);">promedio</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:10px;">
+            <button onclick="location.href='/nomina.html'" style="flex:1;background:var(--g);color:#fff;border:none;border-radius:99px;padding:9px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Registrar pago</button>
+            <button onclick="location.href='/tareas.html'" style="flex:1;background:var(--g3);color:var(--g);border:1.5px solid var(--g4);border-radius:99px;padding:9px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Ver tareas</button>
+          </div>
+        </div>`;
+      cargarPanelAyudaEventual(window._hogarId);
+    }
+  } else {
+    const bannerBuscar = document.getElementById('bannerBuscarNana');
+    if (bannerBuscar && t.bannerBuscar) bannerBuscar.textContent = t.bannerBuscar;
   }
-  console.log('[tipoHogar]', tipoHogar, '→', tieneNana ? 'modo con nana' : 'modo sin nana');
+  const bannerCompartir = document.getElementById('bannerCompartirNana');
+  if (bannerCompartir && t.bannerCompartir) bannerCompartir.textContent = t.bannerCompartir;
+
+  // Subtítulo del panel de tareas (nana screen)
+  const panelSub = document.getElementById('panelFamSub');
+  if (panelSub && t.panelSub) panelSub.textContent = t.panelSub;
+
+  window._tipoHogar = tipo;
+  console.log('[tipoHogar]', tipo);
 };
 
 // Leer tipoHogar guardado (para módulos que cargan sin dashboard)
+// ── Panel operativo para nana eventual ──────────────────
+async function cargarPanelAyudaEventual(hogarId) {
+  if (!hogarId) return;
+  try {
+    // Próxima visita — leer de eventos o del perfil alimentario como referencia
+    const hoy = new Date();
+    const en14 = new Date(hoy); en14.setDate(hoy.getDate() + 14);
+    const hoyStr = getFechaStr2(hoy);
+    const en14Str = getFechaStr2(en14);
+
+    const [snapEv, snapPagos] = await Promise.all([
+      getDocs(query(collection(db, 'hogares', hogarId, 'eventos'),
+        where('fecha', '>=', hoyStr), where('fecha', '<=', en14Str),
+        orderBy('fecha', 'asc'))),
+      getDocs(query(collection(db, 'hogares', hogarId, 'pagos'),
+        orderBy('fecha', 'desc'))),
+    ]);
+
+    // Próxima visita
+    const proxVisita = snapPagos.empty ? null : snapEv.docs[0]?.data();
+    const elVisita = document.getElementById('panelAyudaVisita');
+    if (elVisita) {
+      if (proxVisita?.fecha) {
+        const diff = Math.ceil((new Date(proxVisita.fecha + 'T00:00:00') - hoy) / 86400000);
+        elVisita.textContent = diff <= 0 ? 'Hoy' : diff === 1 ? 'Mañana' : `En ${diff}`;
+      } else {
+        elVisita.textContent = '—';
+      }
+    }
+
+    // Último pago
+    const elPago = document.getElementById('panelAyudaPago');
+    if (elPago) {
+      if (!snapPagos.empty) {
+        const pago = snapPagos.docs[0].data();
+        elPago.textContent = pago.monto ? `$${pago.monto}` : '✓';
+      } else {
+        elPago.textContent = '—';
+      }
+    }
+
+    // Score promedio — reutilizar cargarScoreDash si ya está en memoria
+    const elScore = document.getElementById('panelAyudaScore');
+    if (elScore) {
+      const scoreActual = document.getElementById('statScore')?.textContent;
+      elScore.textContent = scoreActual && scoreActual !== '—' ? scoreActual : '—';
+    }
+  } catch(e) {
+    console.warn('cargarPanelAyudaEventual:', e);
+  }
+}
+
 window.getTipoHogar = () =>
   window._tipoHogar || localStorage.getItem('mynana_tipoHogar') || 'con_nana';
 
