@@ -688,6 +688,10 @@ window.seleccionarDia = (fecha, el) => {
   actualizarProgreso();
   actualizarStats();
   renderEventosDia();
+  // Generar tareas recurrentes para el día seleccionado (solo familia)
+  if (perfilActual?.tipo === 'familia') {
+    generarTareasRecurrentes(fecha).catch(e => console.warn('[Rutinas]', e));
+  }
 };
 
 function escucharTareas() {
