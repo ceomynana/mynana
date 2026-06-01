@@ -156,10 +156,17 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
 .mercado-add{display:flex;gap:6px;padding:10px 12px;border-top:1px solid var(--g4);}
 .btn-agregar-articulo{width:100%;background:none;border:1.5px dashed var(--g);color:var(--g);border-radius:10px;padding:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s;}
 .btn-agregar-articulo:hover{background:var(--g3);}
-.cat-art-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px;}
-.cat-art-btn{background:var(--cr);border:1.5px solid var(--g4);border-radius:10px;padding:8px 4px;text-align:center;cursor:pointer;font-size:11px;color:var(--txt2);font-family:'DM Sans',sans-serif;transition:all .18s;}
+/* Modal agregar artículo — bottom sheet propio */
+.modal-art{display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.45);align-items:flex-end;justify-content:center;backdrop-filter:blur(3px);}
+.modal-art.visible{display:flex;}
+.modal-art-box{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:20px 20px calc(16px + env(safe-area-inset-bottom,0px));max-height:88vh;overflow-y:auto;}
+@keyframes slideUpArt{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-art.visible .modal-art-box{animation:slideUpArt .28s ease;}
+/* Categorías — 2 columnas compactas */
+.cat-art-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-bottom:16px;}
+.cat-art-btn{background:var(--cr);border:1.5px solid var(--g4);border-radius:10px;padding:10px 8px;text-align:center;cursor:pointer;font-size:12px;font-weight:500;color:var(--txt2);font-family:'DM Sans',sans-serif;transition:all .18s;display:flex;align-items:center;gap:8px;}
 .cat-art-btn:hover,.cat-art-btn.sel{background:var(--g);border-color:var(--g);color:#fff;}
-.cat-art-emoji{font-size:20px;display:block;margin-bottom:3px;}
+.cat-art-emoji{font-size:18px;flex-shrink:0;}
 .mercado-sec-manual{border-top:1px solid var(--g4);margin-top:4px;}
 .mercado-sec-manual-hdr{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:8px 10px 4px;color:var(--txt2);}
 .mercado-item-manual{position:relative;}
@@ -2734,38 +2741,41 @@ window.showToast = (msg) => {
 </script>
 
 <!-- MODAL AGREGAR ARTÍCULO AL MERCADO -->
-<div class="modal-evento" id="modalAgregarArticulo" style="z-index:300;">
-  <div class="modal-evento-box">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-      <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--txt);">Agregar artículo</div>
-      <button onclick="cerrarModalAgregarArticulo()" style="background:var(--g3);border:none;border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer;">✕</button>
+<div class="modal-art" id="modalAgregarArticulo">
+  <div class="modal-art-box">
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+      <div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:var(--txt);">Agregar artículo</div>
+        <div style="font-size:11px;color:var(--txt2);margin-top:2px;">Se agrega a la lista del mercado</div>
+      </div>
+      <button onclick="cerrarModalAgregarArticulo()" style="background:var(--g3);border:none;border-radius:50%;width:34px;height:34px;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">✕</button>
     </div>
 
     <!-- Categoría -->
-    <div style="font-size:12px;font-weight:600;color:var(--txt2);margin-bottom:6px;">Categoría</div>
+    <div style="font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Categoría</div>
     <div class="cat-art-grid" id="catArtGrid">
-      <button class="cat-art-btn sel" data-cat="cocina"    onclick="selCatArt(this)"><span class="cat-art-emoji">🍎</span>Cocina</button>
-      <button class="cat-art-btn"     data-cat="limpieza"  onclick="selCatArt(this)"><span class="cat-art-emoji">🧽</span>Limpieza</button>
-      <button class="cat-art-btn"     data-cat="lavanderia"onclick="selCatArt(this)"><span class="cat-art-emoji">🧺</span>Lavandería</button>
-      <button class="cat-art-btn"     data-cat="bano"      onclick="selCatArt(this)"><span class="cat-art-emoji">🧻</span>Baño</button>
-      <button class="cat-art-btn"     data-cat="mascotas"  onclick="selCatArt(this)"><span class="cat-art-emoji">🐶</span>Mascotas</button>
-      <button class="cat-art-btn"     data-cat="bebes"     onclick="selCatArt(this)"><span class="cat-art-emoji">👶</span>Bebés</button>
-      <button class="cat-art-btn"     data-cat="otros"     onclick="selCatArt(this)" style="grid-column:span 2;"><span class="cat-art-emoji">📦</span>Otros</button>
+      <button class="cat-art-btn sel" data-cat="cocina"     onclick="selCatArt(this)"><span class="cat-art-emoji">🍎</span>Cocina</button>
+      <button class="cat-art-btn"     data-cat="limpieza"   onclick="selCatArt(this)"><span class="cat-art-emoji">🧽</span>Limpieza</button>
+      <button class="cat-art-btn"     data-cat="lavanderia" onclick="selCatArt(this)"><span class="cat-art-emoji">🧺</span>Lavandería</button>
+      <button class="cat-art-btn"     data-cat="bano"       onclick="selCatArt(this)"><span class="cat-art-emoji">🧻</span>Baño</button>
+      <button class="cat-art-btn"     data-cat="mascotas"   onclick="selCatArt(this)"><span class="cat-art-emoji">🐶</span>Mascotas</button>
+      <button class="cat-art-btn"     data-cat="bebes"      onclick="selCatArt(this)"><span class="cat-art-emoji">👶</span>Bebés</button>
+      <button class="cat-art-btn"     data-cat="otros"      onclick="selCatArt(this)" style="grid-column:span 2;justify-content:center;"><span class="cat-art-emoji">📦</span>Otros</button>
     </div>
 
-    <!-- Nombre + Cantidad -->
-    <div style="display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:16px;">
-      <div>
-        <label class="form-label">Artículo *</label>
-        <input id="artNombre" class="form-input" placeholder="Ej: Leche de coco" style="font-size:13px;padding:9px 12px;">
-      </div>
-      <div style="width:90px;">
-        <label class="form-label">Cantidad</label>
-        <input id="artCantidad" class="form-input" placeholder="Ej: x2" style="font-size:13px;padding:9px 12px;">
-      </div>
+    <!-- Campos -->
+    <div style="margin-bottom:12px;">
+      <label class="form-label">Artículo *</label>
+      <input id="artNombre" class="form-input" placeholder="Ej: Leche de coco" style="font-size:13px;padding:10px 12px;">
+    </div>
+    <div style="margin-bottom:20px;">
+      <label class="form-label">Cantidad <span style="color:#bbb;font-weight:400;">(opcional)</span></label>
+      <input id="artCantidad" class="form-input" placeholder="Ej: x2 · 1 bolsa · 500ml" style="font-size:13px;padding:10px 12px;">
     </div>
 
-    <button onclick="guardarArticuloModal()" style="width:100%;background:var(--g);color:#fff;border:none;border-radius:99px;padding:13px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">
+    <!-- Botón -->
+    <button onclick="guardarArticuloModal()" style="width:100%;background:var(--g);color:#fff;border:none;border-radius:99px;padding:14px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">
       ➕ Agregar a la lista
     </button>
   </div>
