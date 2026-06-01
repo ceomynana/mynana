@@ -627,6 +627,26 @@ service cloud.firestore {
       <input type="password" class="form-input" id="regPass" placeholder="Mínimo 6 caracteres" />
 
       <div id="regCamposFamilia">
+        <!-- Tipo de hogar -->
+        <div style="margin-bottom:14px;">
+          <div style="font-size:12px;font-weight:600;color:var(--txt2);margin-bottom:8px;">¿Tienes ayuda en casa?</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid #1A6B52;border-radius:10px;cursor:pointer;background:#F0F7F4;" id="thFija" onclick="selTipoHogar('con_nana_fija')">
+              <span style="font-size:18px;">👩</span>
+              <div><div style="font-size:13px;font-weight:500;">Tengo nana fija</div><div style="font-size:11px;color:#888;">Empleada doméstica permanente</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:10px;cursor:pointer;" id="thEventual" onclick="selTipoHogar('con_nana_eventual')">
+              <span style="font-size:18px;">🤝</span>
+              <div><div style="font-size:13px;font-weight:500;">Tengo ayuda ocasional</div><div style="font-size:11px;color:#888;">Nana eventual o por días</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:10px;cursor:pointer;" id="thSinNana" onclick="selTipoHogar('sin_nana')">
+              <span style="font-size:18px;">🏠</span>
+              <div><div style="font-size:13px;font-weight:500;">No tengo nana</div><div style="font-size:11px;color:#888;">Gestiono el hogar en familia</div></div>
+            </div>
+          </div>
+          <input type="hidden" id="regTipoHogar" value="con_nana_fija">
+        </div>
+
         <div style="background:var(--b3);border-radius:10px;padding:12px 14px;margin-bottom:14px;cursor:pointer;" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
           <div style="font-size:13px;font-weight:500;color:var(--b2);">👨‍👩‍👧 ¿Te invitó un familiar? Toca aquí</div>
           <div style="font-size:11px;color:var(--txt2);margin-top:2px;">Si tu pareja ya tiene cuenta, ingresa su código familiar</div>
@@ -770,7 +790,7 @@ service cloud.firestore {
       </div>
 
       <!-- Chat -->
-      <div class="dash-card" onclick="location.href='/chat.html'" style="cursor:pointer;">
+      <div class="dash-card" id="cardChatNana" onclick="location.href='/chat.html'" style="cursor:pointer;">
         <div class="dash-card-header">
           <div class="dash-card-icon" style="background:var(--b3);">💬</div>
           <div><div class="dash-card-title">Chat con tu nana</div><div class="dash-card-sub" id="subChat">Cargando...</div></div>
@@ -781,7 +801,7 @@ service cloud.firestore {
       </div>
 
       <!-- Confianza -->
-      <div class="dash-card" onclick="location.href='/score.html'" style="cursor:pointer;">
+      <div class="dash-card" id="cardScoreNana" onclick="location.href='/score.html'" style="cursor:pointer;">
         <div class="dash-card-header">
           <div class="dash-card-icon" style="background:var(--g3);">🌟</div>
           <div><div class="dash-card-title">Confianza del hogar</div><div class="dash-card-sub" id="subScore">Cargando...</div></div>
@@ -803,7 +823,7 @@ service cloud.firestore {
       </div>
 
       <!-- Videos -->
-      <div class="dash-card" onclick="location.href='/tareas.html'" style="cursor:pointer;">
+      <div class="dash-card" id="cardVideosNana" onclick="location.href='/tareas.html'" style="cursor:pointer;">
         <div class="dash-card-header">
           <div class="dash-card-icon" style="background:var(--b3);">📹</div>
           <div><div class="dash-card-title">Videos para tu nana</div><div class="dash-card-sub">12 videos disponibles</div></div>
@@ -817,7 +837,7 @@ service cloud.firestore {
       </div>
 
       <!-- Contratos -->
-      <div class="dash-card" onclick="location.href='/nomina.html'" style="cursor:pointer;">
+      <div class="dash-card" id="cardNomina" onclick="location.href='/nomina.html'" style="cursor:pointer;">
         <div class="dash-card-header">
           <div class="dash-card-icon" style="background:var(--g3);">📋</div>
           <div><div class="dash-card-title">Contratos y nómina</div><div class="dash-card-sub" id="subNomina">Según ley panameña</div></div>
@@ -832,7 +852,7 @@ service cloud.firestore {
     <!-- Link para compartir con nana -->
     <div style="background:var(--g);border-radius:var(--r);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:12px;">
       <div>
-        <div style="font-size:13px;font-weight:500;color:#fff;margin-bottom:4px;">👩 ¿Buscas una nana?</div>
+        <div id="bannerBuscarNana" style="font-size:13px;font-weight:500;color:#fff;margin-bottom:4px;">👩 ¿Buscas una nana?</div>
         <div style="font-size:12px;color:rgba(255,255,255,.6);">Encuentra personal doméstico de confianza</div>
       </div>
       <a href="/index.html#buscar" style="background:#fff;color:var(--g);font-size:13px;font-weight:600;padding:10px 18px;border-radius:99px;text-decoration:none;white-space:nowrap;">Buscar nana →</a>
@@ -841,7 +861,7 @@ service cloud.firestore {
     <!-- Link para compartir con nana -->
     <div style="background:var(--g);border-radius:var(--r);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
       <div>
-        <div style="font-size:13px;font-weight:500;color:#fff;margin-bottom:4px;">🔗 Comparte el acceso con tu nana</div>
+        <div id="bannerCompartirNana" style="font-size:13px;font-weight:500;color:#fff;margin-bottom:4px;">🔗 Comparte el acceso con tu nana</div>
         <div style="font-size:12px;color:rgba(255,255,255,.6);">mynana.app/app.html</div>
       </div>
       <a href="https://wa.me/?text=Hola%2C%20te%20invito%20a%20My%20Nana%20%F0%9F%8F%A0%0Amynana.app%2Fapp.html" target="_blank" style="background:#25D366;color:#fff;font-size:13px;font-weight:500;padding:10px 18px;border-radius:99px;text-decoration:none;white-space:nowrap;">💬 Enviar por WhatsApp</a>
@@ -1726,7 +1746,8 @@ window.registrarse = async () => {
           await addDoc(collection(db, 'hogares'), {
             participantes: [cred.user.uid],
             creadoPor: cred.user.uid,
-            creado: serverTimestamp()
+            creado: serverTimestamp(),
+            tipoHogar: document.getElementById('regTipoHogar')?.value || 'con_nana_fija'
           });
         }
       } else {
@@ -1734,7 +1755,8 @@ window.registrarse = async () => {
         await addDoc(collection(db, 'hogares'), {
           participantes: [cred.user.uid],
           creadoPor: cred.user.uid,
-          creado: serverTimestamp()
+          creado: serverTimestamp(),
+          tipoHogar: document.getElementById('regTipoHogar')?.value || 'con_nana_fija'
         });
       }
     }
@@ -1848,6 +1870,14 @@ async function cargarDashboardFamilia() {
     let totalMsgs = 0;
     snapConvStats.forEach(d => totalMsgs += (d.data().noLeidos || 0));
     document.getElementById('statMensajes').textContent = totalMsgs || '0';
+
+    // Leer tipoHogar — con_nana_fija | con_nana_eventual | sin_nana
+    // Hogares existentes sin campo = con_nana_fija (compatibilidad total)
+    const _hogarDoc    = await getDoc(doc(db, 'hogares', hogarId));
+    const _tipoHogar   = _hogarDoc.exists() ? (_hogarDoc.data().tipoHogar || 'con_nana_fija') : 'con_nana_fija';
+    window._tipoHogar  = _tipoHogar;
+    localStorage.setItem('mynana_tipoHogar', _tipoHogar);
+    aplicarModoHogar(_tipoHogar);
 
     // Iniciar sistema de notificaciones
     iniciarNotificaciones(user.uid, hogarId);
@@ -2962,6 +2992,55 @@ window.cerrarModalPago = () => {
 };
 
 let _planPagoSeleccionado = 'fija';
+
+// ══════════════════════════════════════════════════════
+//  MODO HOGAR — interruptor de visibilidad global
+// ══════════════════════════════════════════════════════
+
+// Cards y secciones que dependen de si hay nana
+const _CARDS_SOLO_CON_NANA = [
+  'cardChatNana',       // Chat con tu nana
+  'cardScoreNana',      // Confianza del hogar
+  'cardNomina',         // Contratos y nómina
+  'cardVideosNana',     // Videos para tu nana
+  'cardVincularNana',   // Vincular nana
+  'bannerBuscarNana',   // "¿Buscas una nana?"
+  'bannerCompartirNana',// "Comparte el acceso con tu nana"
+];
+
+window.aplicarModoHogar = (tipoHogar) => {
+  const tieneNana = tipoHogar !== 'sin_nana';
+  _CARDS_SOLO_CON_NANA.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = tieneNana ? '' : 'none';
+  });
+  // Actualizar subtítulo del panel de tareas
+  const panelSub = document.querySelector('.panel-sub');
+  if (panelSub && panelSub.textContent.includes('nana')) {
+    panelSub.textContent = tieneNana
+      ? 'Crea y asigna tareas a tu nana'
+      : 'Organiza las tareas del hogar';
+  }
+  console.log('[tipoHogar]', tipoHogar, '→', tieneNana ? 'modo con nana' : 'modo sin nana');
+};
+
+// Leer tipoHogar guardado (para módulos que cargan sin dashboard)
+window.getTipoHogar = () =>
+  window._tipoHogar || localStorage.getItem('mynana_tipoHogar') || 'con_nana_fija';
+
+window.tieneNana = () => getTipoHogar() !== 'sin_nana';
+
+window.selTipoHogar = (tipo) => {
+  document.getElementById('regTipoHogar').value = tipo;
+  const map = { con_nana_fija:'thFija', con_nana_eventual:'thEventual', sin_nana:'thSinNana' };
+  ['thFija','thEventual','thSinNana'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const sel = id === map[tipo];
+    el.style.borderColor = sel ? '#1A6B52' : '#e0e0e0';
+    el.style.background  = sel ? '#F0F7F4' : '';
+  });
+};
 
 window.selectPlanPago = (plan) => {
   _planPagoSeleccionado = plan;
