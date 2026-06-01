@@ -1940,6 +1940,13 @@ async function cargarEventosDash(hogarId) {
   const body = document.getElementById('bodyEventosFam');
   if (!sub || !body) return;
 
+  // Estado seguro inmediato — nunca queda en "Cargando..."
+  const mostrarVacio = (msg = 'Nada agendado esta semana 🌿') => {
+    sub.textContent = 'Sin planificación próxima';
+    body.innerHTML  = `<div style="text-align:center;padding:16px;color:#bbb;font-size:13px;">${msg}</div>`;
+  };
+  mostrarVacio('Cargando planificación...');
+
   try {
     const hoy   = new Date(); hoy.setHours(0,0,0,0);
     const en14d = new Date(hoy); en14d.setDate(hoy.getDate() + 14);
@@ -1952,16 +1959,17 @@ async function cargarEventosDash(hogarId) {
       return getFechaStr2(d);
     });
 
-    // Consultas en paralelo
     const TIPOS_EMOJI = {
       tecnico:'🔧', fumigacion:'🪲', mantenimiento:'🏗️',
       veterinario:'🐾', delivery:'📦', cita:'🏥', visita:'👨‍👩‍👧', otro:'📌',
     };
 
+    // Eventos: solo orderBy('fecha') — evita índice compuesto no creado.
+    // hora se ordena en cliente.
     const [snapEv, snapRut, snapConf] = await Promise.all([
       getDocs(query(collection(db, 'hogares', hogarId, 'eventos'),
         where('fecha', '>=', hoyStr), where('fecha', '<=', en14Str),
-        orderBy('fecha','asc'), orderBy('hora','asc'))),
+        orderBy('fecha','asc'))),
       getDocs(collection(db, 'hogares', hogarId, 'tareasRecurrentes')),
       getDoc(doc(db, 'hogares', hogarId, 'configuracion', 'alimentaria')),
     ]);
@@ -2065,7 +2073,10 @@ async function cargarEventosDash(hogarId) {
     sub.textContent = `${total} próximo${total > 1 ? 's' : ''}`;
     body.innerHTML  = html + '<div style="height:6px;"></div>';
 
-  } catch(e) { console.warn('cargarEventosDash:', e); }
+  } catch(e) {
+    console.warn('cargarEventosDash:', e.message);
+    mostrarVacio('Nada agendado esta semana 🌿');
+  }
 }
 
 async function cargarEstadoDash(hogarId, uid) {
