@@ -2325,25 +2325,30 @@ async function cargarScoreDash(hogarId, uid) {
 }
 
 function cargarMercadoDash(hogarId) {
-  const hoy = new Date();
+  // semanaId idéntico al de menu.html: YYYY-WXX basado en el lunes de la semana
+  const hoy    = new Date();
   const diaIdx = hoy.getDay() === 0 ? 6 : hoy.getDay() - 1;
-  const lunes = new Date(hoy);
+  const lunes  = new Date(hoy);
   lunes.setDate(hoy.getDate() - diaIdx);
   lunes.setHours(0,0,0,0);
-  const semanaId = `${lunes.getFullYear()}-${String(lunes.getMonth()+1).padStart(2,'0')}-${String(lunes.getDate()).padStart(2,'0')}`;
+  const semanaId = `${lunes.getFullYear()}-W${String(Math.ceil(lunes.getDate() / 7)).padStart(2,'0')}`;
 
   onSnapshot(collection(db, 'hogares', hogarId, 'mercado'), (snap) => {
-    const weekDoc = snap.docs.find(d => d.id === semanaId)
-      || snap.docs.sort((a,b) => b.id.localeCompare(a.id))[0];
-    const items = weekDoc ? (weekDoc.data().items || []) : [];
+    // Solo el documento exacto de esta semana — sin fallback a semanas anteriores
+    const weekDoc  = snap.docs.find(d => d.id === semanaId);
+    const items    = weekDoc ? (weekDoc.data().items || []) : [];
     const pendientes = items.filter(i => !i.comprado);
     const comprados  = items.filter(i => i.comprado);
 
     const subTxt = items.length
-      ? comprados.length === items.length ? '✅ Lista completa — todo comprado' : `${pendientes.length} pendientes · ${comprados.length} comprados`
+      ? comprados.length === items.length
+        ? '✅ Lista completa — todo comprado'
+        : `${pendientes.length} pendientes · ${comprados.length} comprados`
       : 'Sin productos en la lista';
 
-    ['subMercado','subMercadoNana'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=subTxt; });
+    ['subMercado','subMercadoNana'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.textContent = subTxt;
+    });
 
     const emptyHtml = `
       <div style="text-align:center;padding:16px;">
@@ -2365,7 +2370,9 @@ function cargarMercadoDash(hogarId) {
       (items.length > 5 ? `<div style="font-size:12px;color:#bbb;text-align:center;margin-top:8px;">Ver lista completa (${items.length}) →</div>` : '');
 
     const html = items.length ? filledHtml : emptyHtml;
-    ['bodyMercado','bodyMercadoNana'].forEach(id => { const el=document.getElementById(id); if(el) el.innerHTML=html; });
+    ['bodyMercado','bodyMercadoNana'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.innerHTML = html;
+    });
   });
 }
 
