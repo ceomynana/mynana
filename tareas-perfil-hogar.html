@@ -125,6 +125,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
 /* DÍAS */
 .dias-scroll{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;-ms-overflow-style:none;scrollbar-width:none;margin-bottom:16px;}
 .dias-scroll::-webkit-scrollbar{display:none;}
+.semana-nav-row{display:flex;align-items:center;justify-content:space-between;padding:0 0 8px;}
+.semana-nav-btn{background:none;border:1px solid var(--border);border-radius:99px;padding:5px 12px;font-size:12px;font-weight:500;color:var(--secondary);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.semana-nav-btn:hover{border-color:var(--green);color:var(--green);}
+.semana-offset-label{font-size:12px;font-weight:600;color:var(--secondary);}
+.semana-offset-label.actual{color:var(--green);}
 .dia-tab{flex-shrink:0;width:72px;border-radius:12px;border:1.5px solid var(--g4);background:#fff;padding:10px 6px;text-align:center;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;}
 .dia-tab.activo{background:var(--g);border-color:var(--g);}
 .dia-tab.hoy{border-color:var(--g);}
@@ -486,6 +491,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
           </div>
 
           <div style="padding:12px 14px 0;">
+            <div class="semana-nav-row">
+              <button class="semana-nav-btn" onclick="navegarSemana(-1)">← Anterior</button>
+              <span class="semana-offset-label" id="semanaOffsetLabel">Esta semana</span>
+              <button class="semana-nav-btn" onclick="navegarSemana(1)">Siguiente →</button>
+            </div>
             <div class="dias-scroll" id="diasScroll"></div>
           </div>
 
@@ -970,32 +980,81 @@ async function guardarPerfil() {
    FECHAS Y DÍAS
 ════════════════════════════════════════ */
 let lunesDeSemana = null;
+let semanaOffset  = 0; // 0=esta semana, -1=anterior, 1=siguiente
 
-function iniciarFechas() {
-  const hoy = new Date();
-  lunesDeSemana = getLunes(hoy);
+// Calcular lunes con offset
+function getLunesConOffset(offset) {
+  const hoy  = new Date();
+  const lunes = getLunes(hoy);
+  lunes.setDate(lunes.getDate() + (offset || 0) * 7);
+  return lunes;
+}
+
+// Label legible del offset
+function getSemanaOffsetLabel(offset) {
+  if (offset === 0) return 'Esta semana';
+  if (offset === 1) return 'Próxima semana';
+  if (offset === -1) return 'Semana anterior';
+  return offset > 0 ? `En ${offset} semanas` : `Hace ${Math.abs(offset)} semanas`;
+}
+
+// Actualizar todo al cambiar semana
+function actualizarSemana() {
+  lunesDeSemana = getLunesConOffset(semanaOffset);
   const domingo = new Date(lunesDeSemana);
-  domingo.setDate(lunesDeSemana.getDate()+6);
+  domingo.setDate(lunesDeSemana.getDate() + 6);
+
+  // Label de rango de fechas
   document.getElementById('semanaRange').textContent =
     `${formatFecha(lunesDeSemana)} al ${formatFecha(domingo)}`;
-  diaActivo = DIAS[hoy.getDay()===0?6:hoy.getDay()-1];
+
+  // Label "Esta semana / Próxima semana..."
+  const offsetEl = document.getElementById('semanaOffsetLabel');
+  if (offsetEl) {
+    offsetEl.textContent  = getSemanaOffsetLabel(semanaOffset);
+    offsetEl.className    = 'semana-offset-label' + (semanaOffset === 0 ? ' actual' : '');
+  }
+
+  // Seleccionar lunes por defecto al cambiar semana
+  diaActivo = DIAS[0];
+  renderDias();
+  cargarSemana();
+}
+
+// Navegar entre semanas
+window.navegarSemana = (delta) => {
+  semanaOffset += delta;
+  actualizarSemana();
+};
+
+function iniciarFechas() {
+  semanaOffset  = 0;
+  lunesDeSemana = getLunesConOffset(0);
+  const hoy     = new Date();
+  const domingo = new Date(lunesDeSemana);
+  domingo.setDate(lunesDeSemana.getDate() + 6);
+  document.getElementById('semanaRange').textContent =
+    `${formatFecha(lunesDeSemana)} al ${formatFecha(domingo)}`;
+  // Iniciar en el día de hoy
+  diaActivo = DIAS[hoy.getDay() === 0 ? 6 : hoy.getDay() - 1];
   renderDias();
 }
 
 function renderDias() {
   if (!lunesDeSemana) return;
-  const hoy = new Date();
-  const diahoy = DIAS[hoy.getDay()===0?6:hoy.getDay()-1];
-  document.getElementById('diasScroll').innerHTML = DIAS.map((dia,i)=>{
+  const hoy    = new Date();
+  const diahoy = DIAS[hoy.getDay() === 0 ? 6 : hoy.getDay() - 1];
+  const esEstaSemana = semanaOffset === 0;
+  document.getElementById('diasScroll').innerHTML = DIAS.map((dia, i) => {
     const fecha = new Date(lunesDeSemana);
-    fecha.setDate(lunesDeSemana.getDate()+i);
-    const cnt = (semanaActual[dia]||[]).length;
-    const esHoy = dia===diahoy;
-    const esActivo = dia===diaActivo;
-    return `<div class="dia-tab${esActivo?' activo':''}${esHoy&&!esActivo?' hoy':''}" onclick="seleccionarDia('${dia}',this)">
+    fecha.setDate(lunesDeSemana.getDate() + i);
+    const cnt     = (semanaActual[dia] || []).length;
+    const esHoy   = esEstaSemana && dia === diahoy; // "Hoy" solo en semana actual
+    const esActivo = dia === diaActivo;
+    return `<div class="dia-tab${esActivo ? ' activo' : ''}${esHoy && !esActivo ? ' hoy' : ''}" onclick="seleccionarDia('${dia}',this)">
       <div class="dia-letra">${dia.slice(0,3)}</div>
       <div class="dia-num">${fecha.getDate()}</div>
-      ${cnt>0?`<div class="dia-dot"></div><div class="dia-count">${cnt}t</div>`:'<div style="height:9px;"></div>'}
+      ${cnt > 0 ? `<div class="dia-dot"></div><div class="dia-count">${cnt}t</div>` : '<div style="height:9px;"></div>'}
     </div>`;
   }).join('');
 }
