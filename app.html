@@ -795,7 +795,7 @@ service cloud.firestore {
       </div>
 
       <!-- Videos -->
-      <div class="dash-card" onclick="location.href='/videos.html'" style="cursor:pointer;">
+      <div class="dash-card" onclick="location.href='/tareas.html'" style="cursor:pointer;">
         <div class="dash-card-header">
           <div class="dash-card-icon" style="background:var(--b3);">📹</div>
           <div><div class="dash-card-title">Videos para tu nana</div><div class="dash-card-sub">12 videos disponibles</div></div>
@@ -827,7 +827,7 @@ service cloud.firestore {
         <div style="font-size:13px;font-weight:500;color:#fff;margin-bottom:4px;">👩 ¿Buscas una nana?</div>
         <div style="font-size:12px;color:rgba(255,255,255,.6);">Encuentra personal doméstico de confianza</div>
       </div>
-      <a href="/buscador.html" style="background:#fff;color:var(--g);font-size:13px;font-weight:600;padding:10px 18px;border-radius:99px;text-decoration:none;white-space:nowrap;">Buscar nana →</a>
+      <a href="/index.html#buscar" style="background:#fff;color:var(--g);font-size:13px;font-weight:600;padding:10px 18px;border-radius:99px;text-decoration:none;white-space:nowrap;">Buscar nana →</a>
     </div>
 
     <!-- Link para compartir con nana -->
@@ -2725,7 +2725,7 @@ function renderTarjetasNana(tareas, hogarId) {
       </div>
       <div class="dash-card-body" id="bodyMercadoNana"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Cargando...</div></div>
     </div>
-    <div class="dash-card" onclick="location.href='/videos.html'" style="cursor:pointer;">
+    <div class="dash-card" onclick="location.href='/tareas.html'" style="cursor:pointer;">
       <div class="dash-card-header">
         <div class="dash-card-icon" style="background:var(--b3);">📹</div>
         <div><div class="dash-card-title">Aprende algo nuevo</div><div class="dash-card-sub">Videos de capacitación</div></div>
@@ -2742,7 +2742,7 @@ function renderTarjetasNana(tareas, hogarId) {
       </div>
       <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Ver historial de pagos →</div></div>
     </div>
-    <div class="dash-card" onclick="location.href='/buscador.html'" style="cursor:pointer;">
+    <div class="dash-card" onclick="location.href='/score.html'" style="cursor:pointer;">
       <div class="dash-card-header">
         <div class="dash-card-icon" style="background:var(--b3);">👤</div>
         <div><div class="dash-card-title">Mi perfil</div><div class="dash-card-sub">Editar y compartir</div></div>
@@ -2784,12 +2784,12 @@ function renderTareasNanaDemo() {
       </div>
       <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Abrir chat</div></div>
     </div>
-    <div class="dash-card" onclick="location.href='/videos.html'" style="cursor:pointer;">
+    <div class="dash-card" onclick="location.href='/tareas.html'" style="cursor:pointer;">
       <div class="dash-card-header">
-        <div class="dash-card-icon" style="background:var(--b3);">📹</div>
-        <div><div class="dash-card-title">Aprender</div><div class="dash-card-sub">Videos de capacitacion</div></div>
+        <div class="dash-card-icon" style="background:var(--b3);">📋</div>
+        <div><div class="dash-card-title">Mis rutinas</div><div class="dash-card-sub">Tareas recurrentes</div></div>
       </div>
-      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Ver videos</div></div>
+      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Ver rutinas asignadas →</div></div>
     </div>
     <div class="dash-card" onclick="location.href='/nomina.html'" style="cursor:pointer;">
       <div class="dash-card-header">
@@ -2798,12 +2798,12 @@ function renderTareasNanaDemo() {
       </div>
       <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Ver historial</div></div>
     </div>
-    <div class="dash-card" onclick="location.href='/buscador.html'" style="cursor:pointer;">
+    <div class="dash-card" onclick="location.href='/score.html'" style="cursor:pointer;">
       <div class="dash-card-header">
-        <div class="dash-card-icon" style="background:var(--b3);">👤</div>
-        <div><div class="dash-card-title">Mi perfil</div><div class="dash-card-sub">Editar y compartir</div></div>
+        <div class="dash-card-icon" style="background:var(--b3);">⭐</div>
+        <div><div class="dash-card-title">Mi desempeño</div><div class="dash-card-sub">Evaluación y reconocimientos</div></div>
       </div>
-      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Actualizar perfil</div></div>
+      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Ver mi calificación →</div></div>
     </div>
   `;
 }
