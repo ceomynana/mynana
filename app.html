@@ -244,6 +244,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
 .proxima-tarea-btn{display:block;background:var(--g);color:#fff;text-align:center;padding:14px;font-size:15px;font-weight:600;text-decoration:none;transition:background .2s;}
 .proxima-tarea-btn:hover{background:var(--g2);}
 
+/* ── SELECTOR DE HOGAR — nana eventual ── */
+.modal-hogar-sel{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.55);align-items:flex-end;justify-content:center;}
+.modal-hogar-sel.visible{display:flex;}
+.modal-hogar-box{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:24px 20px calc(20px + env(safe-area-inset-bottom,0px));}
+.hogar-sel-item{display:flex;align-items:center;gap:12px;padding:14px 12px;border-radius:12px;cursor:pointer;transition:background .15s;border:1.5px solid var(--g4);margin-bottom:8px;}
+.hogar-sel-item:hover,.hogar-sel-item.activo{background:var(--g3);border-color:var(--g);}
+.hogar-sel-av{width:40px;height:40px;border-radius:50%;background:var(--g);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;flex-shrink:0;}
+
 /* BOTTOM NAV MEJORADO */
 .bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#fff;border-top:.5px solid var(--g4);padding:6px 0 max(20px, env(safe-area-inset-bottom, 20px));display:flex;z-index:50;box-shadow:0 -4px 20px rgba(0,0,0,.06);}
 .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:6px 0;transition:all .2s;}
@@ -1655,9 +1663,11 @@ window.registrarse = async () => {
       }
     }
     if (tipoReg === 'nana') {
-      datos.apellido = document.getElementById('regApellido').value.trim();
-      datos.cedula = document.getElementById('regCedula').value.trim();
-      datos.telefono = document.getElementById('regTelefono').value.trim();
+      datos.apellido  = document.getElementById('regApellido').value.trim();
+      datos.cedula    = document.getElementById('regCedula').value.trim();
+      datos.telefono  = document.getElementById('regTelefono').value.trim();
+      // Subtipo: eventual (múltiples familias) o fija (1 familia)
+      datos.subtipo = 'fija'; // default — se puede actualizar en perfil
 
       // Vincular con familia via código
       const codigo = document.getElementById('regCodigo').value.trim().toUpperCase();
@@ -2581,6 +2591,92 @@ window.ingresarCodigoNana = async () => {
   }
 };
 
+// ═══════════════════════════════════════════════════
+//  SELECTOR DE HOGAR — Nana eventual
+// ═══════════════════════════════════════════════════
+
+// Obtener hogarId activo — respeta selector para nana eventual
+async function resolverHogarNana(user) {
+  const snap = await getDocs(
+    query(collection(db, 'hogares'), where('participantes', 'array-contains', user.uid))
+  );
+  if (snap.empty) return null;
+
+  // Si solo hay 1 hogar → usar directamente
+  if (snap.docs.length === 1) {
+    const id = snap.docs[0].id;
+    localStorage.setItem('hogarActivoNana', id);
+    return id;
+  }
+
+  // Múltiples hogares → respetar selección guardada o pedir selección
+  const guardado = localStorage.getItem('hogarActivoNana');
+  const existe   = snap.docs.find(d => d.id === guardado);
+  if (existe) return guardado;
+
+  // No hay selección válida → mostrar selector y esperar
+  return new Promise(resolve => {
+    mostrarSelectorHogar(snap.docs, user, resolve);
+  });
+}
+
+async function mostrarSelectorHogar(hogarDocs, user, onSelect) {
+  const lista = document.getElementById('hogarSelLista');
+  if (!lista) return;
+  lista.innerHTML = '<div style="text-align:center;padding:16px;color:#bbb;">Cargando familias...</div>';
+  document.getElementById('modalHogarSel').classList.add('visible');
+
+  // Para cada hogar, encontrar el nombre de la familia
+  const items = await Promise.all(hogarDocs.map(async (hogarDoc) => {
+    const participantes = hogarDoc.data().participantes || [];
+    let nombreFamilia = 'Familia';
+    for (const uid of participantes) {
+      if (uid === user.uid) continue;
+      try {
+        const p = await getDoc(doc(db, 'usuarios', uid));
+        if (p.exists() && p.data().tipo === 'familia') {
+          nombreFamilia = p.data().nombre || 'Familia';
+          break;
+        }
+      } catch(e) {}
+    }
+    return { id: hogarDoc.id, nombre: nombreFamilia };
+  }));
+
+  lista.innerHTML = items.map((item, i) => `
+    <div class="hogar-sel-item" onclick="seleccionarHogarNana('${item.id}')">
+      <div class="hogar-sel-av">${item.nombre[0]?.toUpperCase() || 'F'}</div>
+      <div>
+        <div style="font-size:14px;font-weight:500;color:var(--txt);">${item.nombre}</div>
+        <div style="font-size:11px;color:var(--txt2);">Tocar para trabajar con esta familia hoy</div>
+      </div>
+    </div>`).join('');
+
+  window._hogarSelResolve = onSelect;
+}
+
+window.seleccionarHogarNana = (hogarId) => {
+  localStorage.setItem('hogarActivoNana', hogarId);
+  document.getElementById('modalHogarSel').classList.remove('visible');
+  if (window._hogarSelResolve) {
+    window._hogarSelResolve(hogarId);
+    window._hogarSelResolve = null;
+  }
+};
+
+// Botón "Cambiar familia" en el header de nana
+window.cambiarFamiliaNana = async () => {
+  localStorage.removeItem('hogarActivoNana');
+  const user = auth.currentUser;
+  if (!user) return;
+  const snap = await getDocs(
+    query(collection(db, 'hogares'), where('participantes', 'array-contains', user.uid))
+  );
+  if (snap.docs.length <= 1) { showToastNana('Solo estás vinculada a una familia'); return; }
+  const hogarId = await new Promise(resolve => mostrarSelectorHogar(snap.docs, user, resolve));
+  if (hogarId) cargarTareasNana(); // recargar dashboard con nuevo hogar
+};
+
 function mostrarNana(data) {
   mostrarScreen('nana');
 
@@ -2608,46 +2704,40 @@ function mostrarNana(data) {
       const auth = getAuth();
       const user = auth.currentUser;
       if (!user) return;
-      const qHogar = query(collection(db, 'hogares'), where('participantes', 'array-contains', user.uid));
-      const snap = await getDocs(qHogar);
-      if (!snap.empty) {
-        const hogarId = snap.docs[0].id;
-        iniciarNotificacionesNana(user.uid, hogarId);
+      const hogarIdNana = localStorage.getItem('hogarActivoNana');
+      if (hogarIdNana) {
+        iniciarNotificacionesNana(user.uid, hogarIdNana);
+      } else {
+        const qHogar = query(collection(db, 'hogares'), where('participantes', 'array-contains', user.uid));
+        const snap = await getDocs(qHogar);
+        if (!snap.empty) iniciarNotificacionesNana(user.uid, snap.docs[0].id);
       }
     } catch(e) { console.error(e); }
   }, 1000);
 }
 
 async function cargarTareasNana() {
-  // Usa db y auth globales — no import dinamico
   try {
     const user = auth.currentUser;
     if (!user) return;
 
-    // Buscar hogar
-    const qHogar = query(collection(db, 'hogares'), where('participantes', 'array-contains', user.uid));
-    const snapHogar = await getDocs(qHogar);
-    if (snapHogar.empty) { renderTareasNanaDemo(); return; }
+    // Resolver hogar — respeta selector para nana eventual
+    const hogarId = await resolverHogarNana(user);
+    if (!hogarId) { renderTareasNanaDemo(); return; }
 
     // Verificar si hay una familia en el hogar
-    const hogarData = snapHogar.docs[0].data();
-    const participantes = hogarData.participantes || [];
+    const hogarDoc = await getDoc(doc(db, 'hogares', hogarId));
+    const participantes = hogarDoc.exists() ? (hogarDoc.data().participantes || []) : [];
     let tieneFamilia = false;
     for (const uid of participantes) {
       if (uid === user.uid) continue;
-      const perfilSnap = await getDoc(doc(db, 'usuarios', uid));
-      if (perfilSnap.exists() && perfilSnap.data().tipo === 'familia') {
-        tieneFamilia = true; break;
-      }
+      const p = await getDoc(doc(db, 'usuarios', uid));
+      if (p.exists() && p.data().tipo === 'familia') { tieneFamilia = true; break; }
     }
 
-    // Ocultar tarjeta de vincular si ya hay familia
     const cardVincular = document.getElementById('cardVincularHogar');
     if (cardVincular) cardVincular.style.display = tieneFamilia ? 'none' : 'block';
-
     if (!tieneFamilia) { renderTareasNanaDemo(); return; }
-
-    const hogarId = snapHogar.docs[0].id;
     const hoyStr = (() => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })();
     const qTareas = query(collection(db, 'hogares', hogarId, 'tareas'));
     const snapTareas = await getDocs(qTareas);
@@ -4494,6 +4584,15 @@ window.updateDoc = updateDoc;
 window.arrayUnion = arrayUnion;
 window.serverTimestamp = serverTimestamp;
 </script>
+
+  <!-- SELECTOR DE HOGAR — nana eventual -->
+  <div class="modal-hogar-sel" id="modalHogarSel">
+    <div class="modal-hogar-box">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--txt);margin-bottom:4px;">¿Con quién trabajas hoy?</div>
+      <div style="font-size:12px;color:var(--txt2);margin-bottom:16px;">Selecciona la familia para ver sus tareas, menú y chat.</div>
+      <div id="hogarSelLista"></div>
+    </div>
+  </div>
 
 </body>
 </html>
