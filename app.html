@@ -629,22 +629,22 @@ service cloud.firestore {
       <div id="regCamposFamilia">
         <!-- Tipo de hogar -->
         <div style="margin-bottom:14px;">
-          <div style="font-size:12px;font-weight:600;color:var(--txt2);margin-bottom:8px;">¿Tienes ayuda en casa?</div>
+          <div style="font-size:12px;font-weight:600;color:var(--txt2);margin-bottom:8px;">¿Cómo se organiza tu hogar?</div>
           <div style="display:flex;flex-direction:column;gap:6px;">
-            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid #1A6B52;border-radius:10px;cursor:pointer;background:#F0F7F4;" id="thFija" onclick="selTipoHogar('con_nana_fija')">
-              <span style="font-size:18px;">👩</span>
-              <div><div style="font-size:13px;font-weight:500;">Tengo nana fija</div><div style="font-size:11px;color:#888;">Empleada doméstica permanente</div></div>
-            </div>
-            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:10px;cursor:pointer;" id="thEventual" onclick="selTipoHogar('con_nana_eventual')">
-              <span style="font-size:18px;">🤝</span>
-              <div><div style="font-size:13px;font-weight:500;">Tengo ayuda ocasional</div><div style="font-size:11px;color:#888;">Nana eventual o por días</div></div>
-            </div>
             <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:10px;cursor:pointer;" id="thSinNana" onclick="selTipoHogar('sin_nana')">
               <span style="font-size:18px;">🏠</span>
-              <div><div style="font-size:13px;font-weight:500;">No tengo nana</div><div style="font-size:11px;color:#888;">Gestiono el hogar en familia</div></div>
+              <div><div style="font-size:13px;font-weight:500;">Me organizo sin nana</div><div style="font-size:11px;color:#888;">Gestiono el hogar en familia</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:10px;cursor:pointer;" id="thEventual" onclick="selTipoHogar('con_ayuda')">
+              <span style="font-size:18px;">🤝</span>
+              <div><div style="font-size:13px;font-weight:500;">Tengo ayuda por días</div><div style="font-size:11px;color:#888;">Nana eventual o ayuda ocasional</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid #1A6B52;border-radius:10px;cursor:pointer;background:#F0F7F4;" id="thFija" onclick="selTipoHogar('con_nana')">
+              <span style="font-size:18px;">👩‍🍳</span>
+              <div><div style="font-size:13px;font-weight:500;">Tengo nana fija</div><div style="font-size:11px;color:#888;">Empleada doméstica permanente</div></div>
             </div>
           </div>
-          <input type="hidden" id="regTipoHogar" value="con_nana_fija">
+          <input type="hidden" id="regTipoHogar" value="con_nana">
         </div>
 
         <div style="background:var(--b3);border-radius:10px;padding:12px 14px;margin-bottom:14px;cursor:pointer;" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
@@ -1747,7 +1747,7 @@ window.registrarse = async () => {
             participantes: [cred.user.uid],
             creadoPor: cred.user.uid,
             creado: serverTimestamp(),
-            tipoHogar: document.getElementById('regTipoHogar')?.value || 'con_nana_fija'
+            tipoHogar: document.getElementById('regTipoHogar')?.value || 'con_nana'
           });
         }
       } else {
@@ -1756,7 +1756,7 @@ window.registrarse = async () => {
           participantes: [cred.user.uid],
           creadoPor: cred.user.uid,
           creado: serverTimestamp(),
-          tipoHogar: document.getElementById('regTipoHogar')?.value || 'con_nana_fija'
+          tipoHogar: document.getElementById('regTipoHogar')?.value || 'con_nana'
         });
       }
     }
@@ -3009,7 +3009,9 @@ const _CARDS_SOLO_CON_NANA = [
 ];
 
 window.aplicarModoHogar = (tipoHogar) => {
-  const tieneNana = tipoHogar !== 'sin_nana';
+  // Fallback para hogares existentes sin campo tipoHogar
+  const _tipo = tipoHogar || 'con_nana';
+  const tieneNana = _tipo !== 'sin_nana';
   _CARDS_SOLO_CON_NANA.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = tieneNana ? '' : 'none';
@@ -3026,14 +3028,14 @@ window.aplicarModoHogar = (tipoHogar) => {
 
 // Leer tipoHogar guardado (para módulos que cargan sin dashboard)
 window.getTipoHogar = () =>
-  window._tipoHogar || localStorage.getItem('mynana_tipoHogar') || 'con_nana_fija';
+  window._tipoHogar || localStorage.getItem('mynana_tipoHogar') || 'con_nana';
 
 window.tieneNana = () => getTipoHogar() !== 'sin_nana';
 
 window.selTipoHogar = (tipo) => {
   document.getElementById('regTipoHogar').value = tipo;
-  const map = { con_nana_fija:'thFija', con_nana_eventual:'thEventual', sin_nana:'thSinNana' };
-  ['thFija','thEventual','thSinNana'].forEach(id => {
+  const map = { sin_nana:'thSinNana', con_ayuda:'thEventual', con_nana:'thFija' };
+  ['thSinNana','thEventual','thFija'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
     const sel = id === map[tipo];
