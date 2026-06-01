@@ -1948,7 +1948,10 @@ async function encontrarHogar() {
   const q = query(collection(db, 'hogares'), where('participantes', 'array-contains', usuarioActual.uid));
   const snap = await getDocs(q);
   if (!snap.empty) {
-    hogarId = snap.docs[0].id;
+    // Respetar hogarActivoNana para nana eventual
+    const guardado = localStorage.getItem('hogarActivoNana');
+    const valido   = snap.docs.find(d => d.id === guardado);
+    hogarId = (valido ? guardado : snap.docs[0].id);
   } else if (perfilActual.tipo === 'nana') {
     const qFam = query(collection(db, 'usuarios'), where('tipo', '==', 'familia'));
     const snapFam = await getDocs(qFam);
