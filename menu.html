@@ -33,6 +33,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
 .compra-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(212,165,165,.2);border:1px solid rgba(212,165,165,.35);border-radius:99px;padding:3px 10px;font-size:11px;color:var(--b);margin-top:4px;}
 .frec-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
 .notif-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--g4);}
+.cat-hogar-row{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--g4);}
+.cat-hogar-row:last-child{border-bottom:none;}
+.cat-hogar-left{flex:1;min-width:0;}
+.cat-hogar-titulo{font-size:13px;color:var(--txt);font-weight:500;margin-bottom:6px;}
+.cat-hogar-chips{display:flex;flex-wrap:wrap;gap:4px;}
+.prod-chip{display:inline-flex;align-items:center;gap:4px;background:var(--g3);border:1px solid var(--g4);border-radius:99px;padding:3px 10px;font-size:11px;color:var(--txt2);}
+.prod-chip .del-chip{cursor:pointer;color:#bbb;font-size:10px;line-height:1;}
+.prod-chip .del-chip:hover{color:#e05c5c;}
+.add-prod-row{display:flex;gap:6px;margin-top:6px;}
+.add-prod-input{flex:1;border:1.5px solid var(--g4);border-radius:99px;padding:5px 12px;font-size:12px;font-family:'DM Sans',sans-serif;color:var(--txt);background:#fff;outline:none;}
+.add-prod-input:focus{border-color:var(--g);}
+.add-prod-btn{background:var(--g);color:#fff;border:none;border-radius:99px;padding:5px 12px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;}
 .notif-toggle-row:last-child{border-bottom:none;}
 .notif-toggle-label{font-size:13px;color:var(--txt);}
 .notif-toggle-sub{font-size:11px;color:var(--txt2);margin-top:1px;}
@@ -371,6 +383,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
           <span class="toggle-track"></span>
         </label>
       </div>
+    </div>
+
+    <!-- Categorías del hogar -->
+    <div class="perfil-seccion">
+      <div class="perfil-label">🏠 Consumibles del hogar</div>
+      <div style="font-size:11px;color:var(--txt2);margin-bottom:10px;">Activa las categorías que compras regularmente. Sus productos se incluirán automáticamente en la lista del supermercado.</div>
+      <div id="catHogarLista"></div>
     </div>
 
     <button onclick="guardarPerfil()" style="width:100%;background:var(--g);color:#fff;border:none;border-radius:99px;padding:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;margin-top:4px;">
@@ -1236,6 +1255,67 @@ window.selFrecuencia = (frec) => {
   }
 };
 
+// ── Render UI de categorías del hogar en el modal ──
+function renderCatHogar() {
+  const contenedor = document.getElementById('catHogarLista');
+  if (!contenedor) return;
+
+  contenedor.innerHTML = CATS_HOGAR.map(cat => {
+    const cfg       = getCatHogar(cat.id);
+    const chipsHtml = cfg.productos.map((p, idx) => `
+      <span class="prod-chip">
+        ${p}
+        <span class="del-chip" onclick="quitarProductoCat('${cat.id}',${idx})">✕</span>
+      </span>`).join('');
+
+    return `
+      <div class="cat-hogar-row">
+        <div class="cat-hogar-left">
+          <div class="cat-hogar-titulo">${cat.emoji} ${cat.label}</div>
+          <div class="cat-hogar-chips" id="chips_${cat.id}">${chipsHtml}</div>
+          ${cfg.activa ? `
+          <div class="add-prod-row">
+            <input class="add-prod-input" id="addProd_${cat.id}" placeholder="Agregar producto..." onkeydown="if(event.key==='Enter')agregarProductoCat('${cat.id}')">
+            <button class="add-prod-btn" onclick="agregarProductoCat('${cat.id}')">+</button>
+          </div>` : ''}
+        </div>
+        <label class="toggle-sw" style="margin-top:2px;">
+          <input type="checkbox" id="cat_${cat.id}" ${cfg.activa ? 'checked' : ''}
+            onchange="toggleCatHogar('${cat.id}', this.checked)">
+          <span class="toggle-track"></span>
+        </label>
+      </div>`;
+  }).join('');
+}
+
+window.toggleCatHogar = (id, activa) => {
+  if (!perfilAlimentario.categoriasHogar) perfilAlimentario.categoriasHogar = {};
+  if (!perfilAlimentario.categoriasHogar[id]) {
+    const base = CATS_HOGAR.find(c => c.id === id);
+    perfilAlimentario.categoriasHogar[id] = { activa, productos: [...base.defaults] };
+  } else {
+    perfilAlimentario.categoriasHogar[id].activa = activa;
+  }
+  renderCatHogar(); // re-render para mostrar/ocultar input
+};
+
+window.agregarProductoCat = (id) => {
+  const input = document.getElementById(`addProd_${id}`);
+  if (!input) return;
+  const nombre = input.value.trim();
+  if (!nombre) return;
+  if (!perfilAlimentario.categoriasHogar?.[id]) return;
+  perfilAlimentario.categoriasHogar[id].productos.push(nombre);
+  input.value = '';
+  renderCatHogar();
+};
+
+window.quitarProductoCat = (id, idx) => {
+  if (!perfilAlimentario.categoriasHogar?.[id]) return;
+  perfilAlimentario.categoriasHogar[id].productos.splice(idx, 1);
+  renderCatHogar();
+};
+
 function sincronizarUIFrecuencia() {
   const f = perfilAlimentario.frecuenciaCompra || 'semanal';
   const d = perfilAlimentario.diaCompra ?? 1;
@@ -1280,7 +1360,33 @@ let perfilAlimentario = {
   notifRecordatorio24h:    true,
   notifRecordatorio1h:     false,
   notifRecordatorioCompra: true,
+  // Consumibles recurrentes del hogar — compatibles con hogares sin este campo
+  categoriasHogar: {},
 };
+
+// Definición de categorías con productos sugeridos por defecto
+const CATS_HOGAR = [
+  { id:'limpieza',   emoji:'🧽', label:'Limpieza',
+    defaults:['Cloro','Limpiador multiusos','Bolsas de basura','Desinfectante','Limpiavidrios'] },
+  { id:'lavanderia', emoji:'🧺', label:'Lavandería',
+    defaults:['Detergente','Suavizante','Blanqueador'] },
+  { id:'bano',       emoji:'🧻', label:'Baño',
+    defaults:['Papel higiénico','Jabón de manos','Pasta dental','Cepillos de dientes'] },
+  { id:'mascotas',   emoji:'🐶', label:'Mascotas',
+    defaults:['Comida para mascota','Snacks para mascota','Arena para gato'] },
+  { id:'bebes',      emoji:'👶', label:'Bebés',
+    defaults:['Pañales','Toallitas húmedas','Shampoo bebé','Crema para pañal'] },
+];
+
+// Obtener config de una categoría (con fallback a defaults)
+function getCatHogar(id) {
+  const base = CATS_HOGAR.find(c => c.id === id);
+  const saved = perfilAlimentario.categoriasHogar?.[id];
+  return {
+    activa:    saved?.activa    ?? false,
+    productos: saved?.productos ?? base?.defaults ?? [],
+  };
+}
 
 // ── PERFIL: helpers ──
 function personasEnComida(tiempo) {
@@ -1328,6 +1434,7 @@ window.abrirPerfil = () => {
   renderContadores();
   sincronizarChipsFromPerfil();
   sincronizarUIFrecuencia();
+  renderCatHogar();
   document.getElementById('perfilModal').classList.remove('oculto');
 };
 window.cerrarPerfil = () => document.getElementById('perfilModal').classList.add('oculto');
@@ -1445,6 +1552,7 @@ window.guardarPerfil = async () => {
     perfilAlimentario.notifRecordatorio24h    = document.getElementById('notif24h')?.checked ?? true;
     perfilAlimentario.notifRecordatorio1h     = document.getElementById('notif1h')?.checked ?? false;
     perfilAlimentario.notifRecordatorioCompra = document.getElementById('notifCompra')?.checked ?? true;
+    // categoriasHogar ya está actualizado en memoria por toggleCatHogar/agregarProductoCat/quitarProductoCat
 
     await setDoc(doc(db, 'hogares', hogarId, 'configuracion', 'alimentaria'), {
       ...perfilAlimentario, actualizadoA: serverTimestamp()
@@ -2099,6 +2207,32 @@ function humanizarCantidadMercado(nombreIngrediente, vecesEnSemana) {
     .replace(/\s+/g, ' ');
 }
 
+// ── Generar ítems recurrentes del hogar (categorías activas) ──
+function generarConsumiblesRecurrentes() {
+  const items = [];
+  CATS_HOGAR.forEach(cat => {
+    const cfg = getCatHogar(cat.id);
+    if (!cfg.activa) return;
+    cfg.productos.forEach(nombre => {
+      if (!nombre.trim()) return;
+      const key = nombre.toLowerCase().trim().split(/\s+/).slice(0,2).join(' ');
+      // Clasificar para render mensual correcto
+      const categoria = clasificarIngrediente(nombre);
+      items.push({
+        nombre,
+        origen:    'recurrente',
+        comprado:  false,
+        tieneAlergia: ingredienteTieneAlergia(nombre),
+        key,
+        categoria,
+        nota: '',
+        catHogar: cat.id, // referencia a la categoría de origen
+      });
+    });
+  });
+  return items;
+}
+
 function generarListaMercado() {
   // consolidado: key → { nombreBase, cantAccum, vecesEnSemana, dias, tieneAlergia }
   const consolidado = {};
@@ -2158,14 +2292,24 @@ function generarListaMercado() {
   });
 
   // Mantener estado de comprados y manuales
-  const manuales = mercadoItems.filter(i => i.origen === 'manual');
-  const autoItems = nuevosItems.map(ni => {
-    const existente = mercadoItems.find(m => m.key === ni.key || 
+  const manuales     = mercadoItems.filter(i => i.origen === 'manual');
+  const recurrentes  = mercadoItems.filter(i => i.origen === 'recurrente');
+  const autoItems    = nuevosItems.map(ni => {
+    const existente = mercadoItems.find(m => m.key === ni.key ||
       m.nombre.toLowerCase().split('(')[0].trim().split(' ').slice(0,2).join(' ') === ni.key);
     return existente ? { ...ni, comprado: existente.comprado } : ni;
   });
 
-  guardarMercado([...autoItems, ...manuales]);
+  // Consumibles recurrentes: anti-dup contra menú + preservar estado comprado
+  const nuevosRec = generarConsumiblesRecurrentes();
+  const recFinal  = nuevosRec
+    .filter(nr => !autoItems.some(ai => ai.key === nr.key)) // no duplicar con ingredientes del menú
+    .map(nr => {
+      const existe = recurrentes.find(r => r.key === nr.key);
+      return existe ? { ...nr, comprado: existe.comprado } : nr; // preservar comprado
+    });
+
+  guardarMercado([...autoItems, ...recFinal, ...manuales]);
 }
 
 async function guardarMercado(items) {
