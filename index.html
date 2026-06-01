@@ -5256,8 +5256,8 @@ const FEATS = {
     titulo_en: 'Panamanian weekly menu',
     desc: 'Planifica los 4 tiempos de comida para toda la semana. La nana sugiere, la familia aprueba. Los ingredientes van directo al mercado.',
     desc_en: 'Plan all 4 meals for the whole week. The nana suggests, the family approves. Ingredients go straight to the grocery list.',
-    puntos: ['Desayuno, almuerzo, merienda y cena', 'Platos panameños reales', 'La nana puede sugerir platos', 'Genera lista del mercado automáticamente'],
-    puntos_en: ['Breakfast, lunch, snack and dinner', 'Real Panamanian dishes', 'The nana can suggest dishes', 'Automatically generates grocery list'],
+    puntos: ['Desayuno, almuerzo, merienda y cena', 'Platos panameños reales', 'Planificador IA sugiere el menú', 'Genera lista del mercado automáticamente'],
+    puntos_en: ['Breakfast, lunch, snack and dinner', 'Real Panamanian dishes', 'AI planner suggests the menu', 'Automatically generates grocery list'],
     demo: () => {
       const esEN = idiomaActual === 'en';
       const dias = esEN ? ['M','T','W','T','F','S','S'] : ['L','M','X','J','V','S','D'];
@@ -5331,12 +5331,12 @@ const FEATS = {
   },
   mercado: {
     emoji: '🛒',
-    titulo: 'Mercado + Delivery',
-    titulo_en: 'Groceries + Delivery',
-    desc: 'La lista del mercado se genera sola desde el menú semanal. Con un toque la pides por PedidosYa, Merkapp, ASAP o Rey Delivery.',
-    desc_en: 'The grocery list generates itself from the weekly menu. With one tap you order via PedidosYa, Merkapp, ASAP or Rey Delivery.',
-    puntos: ['Lista generada desde el menú automáticamente', 'Conectada con 4 plataformas de delivery en Panamá', 'La nana recibe notificación cuando llega el mercado', 'Todos pueden agregar productos a la lista'],
-    puntos_en: ['List auto-generated from the menu', 'Connected to 4 delivery platforms in Panama', 'The nana gets notified when groceries arrive', 'Anyone can add items to the list'],
+    titulo: 'Lista del súper',
+    titulo_en: 'Grocery list',
+    desc: 'La lista se genera automáticamente desde el menú semanal. Agrega productos manuales, organiza por categoría y marca lo que ya compraste.',
+    desc_en: 'The list generates automatically from the weekly menu. Add items manually, organize by category, and mark what you already bought.',
+    puntos: ['Lista generada desde el menú automáticamente', 'Agrega artículos manuales por categoría', 'Compras del hogar: limpieza, baño, mascotas', 'Todos los miembros del hogar pueden editar'],
+    puntos_en: ['List auto-generated from the menu', 'Add manual items by category', 'Home supplies: cleaning, bath, pets', 'All household members can edit'],
     demo: () => {
       const esEN = idiomaActual === 'en';
       const title = esEN ? 'Grocery list' : 'Lista del mercado';
@@ -5362,23 +5362,21 @@ const FEATS = {
             <span style="font-size:11px;color:#bbb;">${qty}</span>
             <span style="font-size:10px;padding:2px 7px;border-radius:99px;background:${src==='Menú'?'var(--g3)':'var(--b3)'};color:${src==='Menú'?'var(--g)':'var(--b2)'};">${src}</span>
           </div>`).join('')}
-        <div style="margin-top:4px;background:var(--cr);border-radius:10px;padding:10px 12px;border:1px solid var(--g4);">
-          <div style="font-size:11px;font-weight:600;color:var(--txt);margin-bottom:8px;">${esEN ? 'Order with:' : 'Pedir con:'}</div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;">
-            ${[['🔴','PedidosYa',true],['🟢','Merkapp',false],['🔵','Rey',false],['🩷','ASAP',false]].map(([c,n,sel])=>`<div style="padding:5px 10px;border-radius:8px;border:${sel?'1.5px solid var(--g)':'1px solid var(--g4)'};background:${sel?'var(--g3)':'#fff'};font-size:11px;color:${sel?'var(--g)':'var(--txt2)'};">${c} ${n}</div>`).join('')}
-          </div>
+        <div style="margin-top:4px;background:var(--g3);border-radius:10px;padding:10px 12px;border:1px solid var(--g4);display:flex;align-items:center;gap:8px;">
+          <span style="font-size:16px;">➕</span>
+          <div style="font-size:11px;color:var(--g);">${esEN ? 'Add item manually by category (cleaning, bath, pets…)' : 'Agrega artículos manuales por categoría (limpieza, baño, mascotas…)'}</div>
         </div>
       </div>`;
     }
   },
   score: {
     emoji: '⭐',
-    titulo: 'MyNana Score',
-    titulo_en: 'MyNana Score',
-    desc: 'La primera base de datos verificada de personal doméstico en Panamá. Busca por cédula y ve el historial real antes de contratar.',
-    desc_en: 'Panama\'s first verified household staff database. Search by ID and see the real history before hiring.',
-    puntos: ['Búsqueda por cédula o pasaporte', '6 categorías de valoración', '5 niveles de reputación', 'Solo visible para familias verificadas'],
-    puntos_en: ['Search by national ID or passport', '6 rating categories', '5 reputation levels', 'Only visible to verified families'],
+    titulo: 'Confianza del hogar',
+    titulo_en: 'Home trust score',
+    desc: 'La familia evalúa el desempeño de la nana en 6 categorías. El score crece con el tiempo y refleja el trabajo real del hogar.',
+    desc_en: 'The family rates the nana\'s performance in 6 categories. The score grows over time and reflects real household work.',
+    puntos: ['6 categorías: puntualidad, limpieza, cocina y más', 'Score visible para la nana en tiempo real', '5 niveles de reputación acumulados', 'Historial de evaluaciones por período'],
+    puntos_en: ['6 categories: punctuality, cleaning, cooking and more', 'Score visible to the nana in real time', '5 accumulated reputation levels', 'Evaluation history by period'],
     demo: () => {
       const esEN = idiomaActual === 'en';
       const cats = esEN
@@ -5635,11 +5633,11 @@ const FEATS = {
   buscador: {
     emoji: '🔍',
     titulo: 'Buscador de nanas',
-    titulo_en: 'Nana search',
-    desc: 'Encuentra personal doméstico verificado con score real de otras familias. Filtra por zona, experiencia, especialidad y calificación mínima. Las nanas controlan si aparecen o no.',
-    desc_en: 'Find verified domestic staff with real scores from other families. Filter by area, experience, specialty, and minimum rating. Nanas control whether they appear or not.',
-    puntos: ['Filtros por zona, tipo y score mínimo', 'Score verificado por familias reales', 'La nana activa o desactiva su perfil', 'Contacto directo por WhatsApp'],
-    puntos_en: ['Filters by area, type, and minimum score', 'Score verified by real families', 'Nana activates or deactivates her profile', 'Direct contact via WhatsApp'],
+    titulo_en: 'Nana finder',
+    desc: 'Encuentra nanas verificadas cerca de ti con score real de otras familias. Próximamente disponible en Ciudad de Panamá.',
+    desc_en: 'Find verified nanas near you with real scores from other families. Coming soon to Panama City.',
+    puntos: ['Score verificado por familias reales', 'Filtra por zona, experiencia y especialidad', 'La nana activa o desactiva su perfil', '🔜 Próximamente en Ciudad de Panamá'],
+    puntos_en: ['Score verified by real families', 'Filter by area, experience, and specialty', 'Nana activates or deactivates her profile', '🔜 Coming soon to Panama City'],
     demo: () => {
       const esEN = idiomaActual === 'en';
       const nanas = esEN ? [
