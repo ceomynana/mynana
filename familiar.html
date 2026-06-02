@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Centro Familiar · My Nana</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=DM+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --g:#1A6B52;--g2:#0F4D3A;--g3:#E8F4EF;--g4:#D4E8DF;
+  --b:#6BAED6;--b2:#2B6CB0;--b3:#E8F1F8;
+  --txt:#1A1A1A;--txt2:#6B7280;
+  --cr:#FAFAFA;--r:16px;--border:#E5E7EB;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:#F0F4F0;color:var(--txt);
+     padding-bottom:calc(32px + env(safe-area-inset-bottom,0px));}
+.nav{background:var(--g2);padding:env(safe-area-inset-top,0px) 16px 0;position:sticky;top:0;z-index:50;}
+.nav-inner{height:56px;display:flex;align-items:center;gap:12px;}
+.nav-back{background:rgba(255,255,255,.12);border:none;color:#fff;border-radius:99px;
+          padding:6px 14px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.nav-title{font-family:'Cormorant Garamond',serif;font-size:20px;color:#fff;flex:1;text-align:center;}
+.nav-add{background:rgba(255,255,255,.12);border:none;color:#fff;border-radius:99px;
+         padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.tabs{background:#fff;display:flex;border-bottom:1px solid var(--border);}
+.tab{flex:1;padding:12px 4px;text-align:center;font-size:11px;font-weight:500;color:var(--txt2);
+     cursor:pointer;border-bottom:2px solid transparent;border:none;background:none;
+     font-family:'DM Sans',sans-serif;white-space:nowrap;transition:all .2s;}
+.tab.activo{color:var(--g);border-bottom:2px solid var(--g);}
+.content{padding:14px 16px 32px;max-width:600px;margin:0 auto;}
+.panel{display:none;} .panel.activo{display:block;}
+.sec-label{font-size:10px;font-weight:700;color:var(--txt2);text-transform:uppercase;
+           letter-spacing:.06em;margin:16px 0 8px;}
+.card{background:#fff;border-radius:var(--r);border:1px solid var(--border);margin-bottom:10px;overflow:hidden;}
+.card-head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.card-icon{width:36px;height:36px;border-radius:10px;background:var(--g3);
+           display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.card-title{font-size:14px;font-weight:600;color:var(--txt);}
+.card-sub{font-size:11px;color:var(--txt2);margin-top:2px;}
+.card-body{padding:12px 16px;}
+
+/* Miembro card */
+.miembro-card{display:flex;align-items:center;gap:12px;padding:12px 16px;
+              border-bottom:1px solid var(--border);}
+.miembro-card:last-child{border-bottom:none;}
+.miembro-av{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;
+            justify-content:center;font-size:22px;flex-shrink:0;position:relative;}
+.miembro-av .estado-dot{position:absolute;bottom:0;right:0;width:12px;height:12px;
+                         border-radius:50%;border:2px solid #fff;}
+.miembro-info{flex:1;min-width:0;}
+.miembro-nombre{font-size:14px;font-weight:600;color:var(--txt);}
+.miembro-rol{font-size:11px;color:var(--txt2);margin-top:2px;}
+.miembro-stats{display:flex;gap:6px;margin-top:5px;}
+.stat-chip{font-size:10px;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--g3);color:var(--g);}
+.miembro-actions{display:flex;gap:6px;flex-shrink:0;}
+.btn-mini{background:var(--g3);border:none;border-radius:8px;padding:6px 10px;
+          font-size:11px;font-weight:600;color:var(--g);cursor:pointer;font-family:'DM Sans',sans-serif;}
+.btn-mini.danger{background:#FEF2F2;color:#DC2626;}
+
+/* Ranking */
+.rank-item{display:flex;align-items:center;gap:10px;padding:10px 16px;
+           border-bottom:1px solid var(--border);}
+.rank-item:last-child{border-bottom:none;}
+.rank-pos{width:28px;text-align:center;font-size:16px;flex-shrink:0;}
+.rank-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;
+         justify-content:center;font-size:18px;flex-shrink:0;}
+.rank-info{flex:1;min-width:0;}
+.rank-nombre{font-size:13px;font-weight:600;color:var(--txt);}
+.rank-bar-wrap{margin-top:4px;background:var(--g4);border-radius:99px;height:6px;overflow:hidden;}
+.rank-bar{height:6px;border-radius:99px;transition:width .5s ease;}
+.rank-pct{font-size:12px;font-weight:700;color:var(--g);flex-shrink:0;min-width:32px;text-align:right;}
+
+/* Hero resumen */
+.hero-resumen{background:var(--g2);border-radius:var(--r);padding:18px 16px;margin-bottom:10px;}
+.hero-hl{font-family:'Cormorant Garamond',serif;font-size:22px;color:#fff;margin-bottom:12px;}
+.hero-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.hero-stat{background:rgba(255,255,255,.1);border-radius:10px;padding:10px;text-align:center;}
+.hero-stat-n{font-size:20px;font-weight:600;color:#fff;}
+.hero-stat-l{font-size:9px;color:rgba(255,255,255,.65);margin-top:2px;}
+
+/* Período selector */
+.periodo-tabs{display:flex;gap:6px;margin-bottom:12px;}
+.periodo-tab{flex:1;padding:7px 8px;border-radius:99px;border:1.5px solid var(--border);
+             background:#fff;font-size:12px;font-weight:500;color:var(--txt2);
+             cursor:pointer;text-align:center;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.periodo-tab.activo{background:var(--g);border-color:var(--g);color:#fff;}
+
+/* Modal miembro */
+.modal-backdrop{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.45);
+                align-items:flex-end;justify-content:center;backdrop-filter:blur(3px);}
+.modal-backdrop.visible{display:flex;}
+.modal-box{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:480px;
+           padding:20px 20px calc(20px + env(safe-area-inset-bottom,0px));
+           max-height:88vh;overflow-y:auto;}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-backdrop.visible .modal-box{animation:slideUp .28s ease;}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.modal-title{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--txt);}
+.modal-close{background:var(--g3);border:none;border-radius:50%;width:32px;height:32px;
+             font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.form-group{margin-bottom:12px;}
+.form-label{font-size:11px;font-weight:600;color:var(--txt2);margin-bottom:5px;display:block;}
+.form-input{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;
+            font-size:13px;font-family:'DM Sans',sans-serif;color:var(--txt);
+            background:#fff;outline:none;transition:border-color .2s;}
+.form-input:focus{border-color:var(--g);}
+.rol-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:6px;}
+.rol-btn{background:var(--g3);border:1.5px solid var(--border);border-radius:10px;
+         padding:10px 4px;text-align:center;cursor:pointer;font-size:11px;
+         font-weight:500;color:var(--txt2);font-family:'DM Sans',sans-serif;
+         display:flex;flex-direction:column;align-items:center;gap:3px;transition:all .15s;}
+.rol-btn.sel{border-color:var(--g);background:var(--g);color:#fff;}
+.rol-emoji{font-size:20px;}
+.btn-primary{width:100%;background:var(--g);color:#fff;border:none;border-radius:99px;
+             padding:13px;font-size:14px;font-weight:600;cursor:pointer;
+             font-family:'DM Sans',sans-serif;margin-bottom:8px;}
+.btn-secondary{width:100%;background:#fff;color:var(--txt2);border:1.5px solid var(--border);
+               border-radius:99px;padding:11px;font-size:13px;font-weight:500;
+               cursor:pointer;font-family:'DM Sans',sans-serif;}
+.empty-state{text-align:center;padding:32px 16px;color:var(--txt2);font-size:13px;}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-80px);
+       background:var(--g);color:#fff;font-size:13px;font-weight:500;padding:12px 20px;
+       border-radius:99px;z-index:300;transition:transform .35s;white-space:nowrap;}
+.toast.visible{transform:translateX(-50%) translateY(0);}
+.periodo-selector{display:flex;gap:6px;margin-bottom:14px;}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- Modal agregar/editar miembro -->
+<div class="modal-backdrop" id="modalMiembro">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="modalMiembroTitulo">Agregar miembro</div>
+      <button class="modal-close" onclick="cerrarModalMiembro()">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Nombre</label>
+      <input class="form-input" id="mNombre" placeholder="Nombre del miembro">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Rol</label>
+      <div class="rol-grid" id="rolGrid"></div>
+      <input type="hidden" id="mRol" value="otro">
+    </div>
+    <button class="btn-primary" onclick="guardarMiembro()">💾 Guardar miembro</button>
+    <button class="btn-secondary" onclick="cerrarModalMiembro()">Cancelar</button>
+  </div>
+</div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <button class="nav-back" onclick="history.back()">← Inicio</button>
+    <div class="nav-title">Centro Familiar</div>
+    <button class="nav-add" onclick="abrirModalMiembro()">+ Agregar</button>
+  </div>
+</nav>
+
+<div class="tabs">
+  <button class="tab activo" onclick="cambiarTab('resumen',this)">🏠 Resumen</button>
+  <button class="tab" onclick="cambiarTab('miembros',this)">👥 Miembros</button>
+  <button class="tab" onclick="cambiarTab('ranking',this)">🏆 Ranking</button>
+  <button class="tab" onclick="cambiarTab('stats',this)">📊 Stats</button>
+</div>
+
+<div class="content">
+
+  <!-- ══ TAB RESUMEN ══ -->
+  <div class="panel activo" id="panel-resumen">
+    <div class="hero-resumen" id="heroResumen">
+      <div class="hero-hl" id="heroHL">Cargando el hogar...</div>
+      <div class="hero-stats">
+        <div class="hero-stat"><div class="hero-stat-n" id="hsTotalHoy">—</div><div class="hero-stat-l">Tareas hoy</div></div>
+        <div class="hero-stat"><div class="hero-stat-n" id="hsComplHoy">—</div><div class="hero-stat-l">Completadas</div></div>
+        <div class="hero-stat"><div class="hero-stat-n" id="hsCumpl">—</div><div class="hero-stat-l">Cumplimiento</div></div>
+      </div>
+    </div>
+
+    <div class="sec-label">Miembros activos</div>
+    <div class="card" id="resumenMiembros">
+      <div class="empty-state">Cargando miembros...</div>
+    </div>
+
+    <div class="sec-label">Esta semana</div>
+    <div class="card">
+      <div class="card-body" id="resumenSemana">
+        <div class="empty-state">Sin datos esta semana</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TAB MIEMBROS ══ -->
+  <div class="panel" id="panel-miembros">
+    <div class="sec-label">Miembros del hogar</div>
+    <div class="card" id="listaMiembros">
+      <div class="empty-state">Cargando...</div>
+    </div>
+    <button class="btn-primary" style="margin-top:4px;" onclick="abrirModalMiembro()">
+      + Agregar miembro
+    </button>
+  </div>
+
+  <!-- ══ TAB RANKING ══ -->
+  <div class="panel" id="panel-ranking">
+    <div class="periodo-selector">
+      <button class="periodo-tab activo" onclick="cambiarPeriodo('semana',this)">Esta semana</button>
+      <button class="periodo-tab" onclick="cambiarPeriodo('mes',this)">Este mes</button>
+    </div>
+
+    <div class="sec-label" id="rankingLabel">Ranking semanal</div>
+
+    <!-- Campeón -->
+    <div class="card" id="cardCampeon" style="display:none;">
+      <div class="card-body" style="text-align:center;padding:20px 16px;">
+        <div id="campeonEmoji" style="font-size:48px;margin-bottom:8px;">—</div>
+        <div style="font-size:11px;font-weight:700;color:var(--g);text-transform:uppercase;letter-spacing:.06em;">🏆 Campeón de la semana</div>
+        <div id="campeonNombre" style="font-family:'Cormorant Garamond',serif;font-size:24px;color:var(--txt);margin-top:4px;">—</div>
+        <div id="campeonPct" style="font-size:13px;color:var(--txt2);margin-top:4px;">—</div>
+      </div>
+    </div>
+
+    <div class="sec-label">Posiciones</div>
+    <div class="card" id="listaRanking">
+      <div class="empty-state">Sin datos suficientes para rankear</div>
+    </div>
+  </div>
+
+  <!-- ══ TAB STATS ══ -->
+  <div class="panel" id="panel-stats">
+    <div class="periodo-selector">
+      <button class="periodo-tab activo" onclick="cambiarPeriodStats('semana',this)">Esta semana</button>
+      <button class="periodo-tab" onclick="cambiarPeriodStats('mes',this)">Este mes</button>
+    </div>
+
+    <div class="sec-label">Estadísticas del hogar</div>
+    <div class="card">
+      <div class="card-body" id="statsGlobales">
+        <div class="empty-state">Sin datos</div>
+      </div>
+    </div>
+
+    <div class="sec-label">Por miembro</div>
+    <div class="card" id="statsPorMiembro">
+      <div class="empty-state">Sin datos por miembro</div>
+    </div>
+  </div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import { getFirestore, doc, setDoc, getDoc, deleteDoc, collection,
+         addDoc, getDocs, query, where, orderBy, serverTimestamp
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+const fbApp = initializeApp({
+  apiKey:"AIzaSyDDJRJ8A8P507lllGRBOoXO30ESAH1GAnw",
+  authDomain:"mynanapapp.firebaseapp.com",
+  projectId:"mynanapapp",
+  storageBucket:"mynanapapp.firebasestorage.app",
+  messagingSenderId:"124180779437",
+  appId:"1:124180779437:web:d217743000b0f1fedfd124"
+});
+const auth = getAuth(fbApp);
+const db   = getFirestore(fbApp);
+
+// ── Constantes de roles ──────────────────────────────────────────────────────
+const ROLES = {
+  mamá:           { label:'Mamá',           emoji:'👩',  color:'#1A6B52' },
+  papá:           { label:'Papá',           emoji:'👨',  color:'#2B6CB0' },
+  hijo:           { label:'Hijo',           emoji:'👦',  color:'#D97706' },
+  hija:           { label:'Hija',           emoji:'👧',  color:'#DB2777' },
+  nana_fija:      { label:'Nana fija',      emoji:'👩‍🍳', color:'#7C3AED' },
+  ayuda_eventual: { label:'Ayuda eventual', emoji:'🤝',  color:'#0891B2' },
+  otro:           { label:'Otro',           emoji:'👤',  color:'#6B7280' },
+};
+
+// ── Globals ──────────────────────────────────────────────────────────────────
+let hogarId      = null;
+let miembros     = [];   // [{ uid, nombre, rol, color, avatarEmoji, activo }]
+let tareas       = [];   // tareas cargadas del período
+let editandoUid  = null;
+let periodoRank  = 'semana';
+let periodoStats = 'semana';
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const showToast = msg => {
+  const t = $('toast'); t.textContent = msg;
+  t.classList.add('visible');
+  setTimeout(() => t.classList.remove('visible'), 2800);
+};
+
+function getFechaStr(d) { return d.toISOString().split('T')[0]; }
+
+function getRangoFechas(periodo) {
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  if (periodo === 'semana') {
+    const lunes = new Date(hoy);
+    lunes.setDate(hoy.getDate() - (hoy.getDay() === 0 ? 6 : hoy.getDay() - 1));
+    const domingo = new Date(lunes); domingo.setDate(lunes.getDate() + 6);
+    return { desde: getFechaStr(lunes), hasta: getFechaStr(domingo) };
+  }
+  const inicio = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+  const fin    = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
+  return { desde: getFechaStr(inicio), hasta: getFechaStr(fin) };
+}
+
+// ── Tabs ─────────────────────────────────────────────────────────────────────
+window.cambiarTab = (tab, el) => {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('activo'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('activo'));
+  el.classList.add('activo');
+  $('panel-' + tab).classList.add('activo');
+  if (tab === 'ranking') renderRanking();
+  if (tab === 'stats')   renderStats();
+};
+
+window.cambiarPeriodo = (p, el) => {
+  periodoRank = p;
+  document.querySelectorAll('#panel-ranking .periodo-tab').forEach(t => t.classList.remove('activo'));
+  el.classList.add('activo');
+  $('rankingLabel').textContent = p === 'semana' ? 'Ranking semanal' : 'Ranking mensual';
+  cargarTareasYRenderizar();
+};
+
+window.cambiarPeriodStats = (p, el) => {
+  periodoStats = p;
+  document.querySelectorAll('#panel-stats .periodo-tab').forEach(t => t.classList.remove('activo'));
+  el.classList.add('activo');
+  cargarTareasYRenderizar();
+};
+
+// ── Resolver miembros (con fallback para hogares sin colección miembros) ─────
+async function resolverMiembros() {
+  const snap = await getDocs(collection(db, 'hogares', hogarId, 'miembros'));
+
+  if (!snap.empty) {
+    miembros = snap.docs.map(d => ({ ...d.data() }))
+      .filter(m => m.activo !== false);
+    return;
+  }
+
+  // FALLBACK: construir desde participantes + usuarios (hogares existentes)
+  const hogarDoc = await getDoc(doc(db, 'hogares', hogarId));
+  const uids     = hogarDoc.exists() ? (hogarDoc.data().participantes || []) : [];
+  const COLORES  = ['#1A6B52','#2B6CB0','#D97706','#DB2777','#7C3AED','#0891B2','#6B7280'];
+  const perfiles = await Promise.all(uids.map((uid, i) =>
+    getDoc(doc(db, 'usuarios', uid)).then(d => {
+      if (!d.exists()) return null;
+      const data = d.data();
+      const esNana = data.tipo === 'nana';
+      const rol    = esNana ? 'nana_fija' : 'otro';
+      return {
+        uid, activo: true,
+        nombre:      data.nombre || 'Miembro',
+        rol,
+        color:       ROLES[rol].color || COLORES[i % COLORES.length],
+        avatarEmoji: ROLES[rol].emoji,
+      };
+    })
+  ));
+  miembros = perfiles.filter(Boolean);
+}
+
+// ── Cargar tareas del período ─────────────────────────────────────────────────
+async function cargarTareasYRenderizar() {
+  const periodo = $('panel-ranking').classList.contains('activo') ? periodoRank : periodoStats;
+  const { desde, hasta } = getRangoFechas(periodo);
+  try {
+    const snap = await getDocs(
+      query(collection(db, 'hogares', hogarId, 'tareas'),
+            where('fecha', '>=', desde),
+            where('fecha', '<=', hasta))
+    );
+    tareas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderRanking();
+    renderStats();
+  } catch(e) { console.warn('cargarTareas:', e); }
+}
+
+// ── Stats por miembro ─────────────────────────────────────────────────────────
+function statsParaMiembro(m) {
+  const propias = tareas.filter(t =>
+    t.asignadoA === m.uid ||
+    (t.asignadoNombre === 'Nana' && m.rol === 'nana_fija') ||
+    (t.asignadoNombre === 'Ayuda del día' && m.rol === 'ayuda_eventual')
+  );
+  const completadas = propias.filter(t => t.estado === 'completa').length;
+  const total       = propias.length;
+  const pct         = total > 0 ? Math.round((completadas / total) * 100) : 0;
+  return { total, completadas, pendientes: total - completadas, pct };
+}
+
+// ── Render: Resumen ───────────────────────────────────────────────────────────
+async function renderResumen() {
+  // Hero nombre del hogar
+  const hogarDoc = await getDoc(doc(db, 'hogares', hogarId));
+  const nombre   = hogarDoc.exists() ? (hogarDoc.data().nombreHogar || 'Tu hogar') : 'Tu hogar';
+  $('heroHL').textContent = `👨‍👩‍👧 ${nombre}`;
+
+  // Stats de hoy
+  const hoy = getFechaStr(new Date());
+  try {
+    const snapHoy = await getDocs(
+      query(collection(db, 'hogares', hogarId, 'tareas'), where('fecha', '==', hoy))
+    );
+    const tareasHoy = snapHoy.docs.map(d => d.data());
+    const complHoy  = tareasHoy.filter(t => t.estado === 'completa').length;
+    const pctHoy    = tareasHoy.length > 0 ? Math.round(complHoy / tareasHoy.length * 100) : 0;
+    $('hsTotalHoy').textContent = tareasHoy.length;
+    $('hsComplHoy').textContent = complHoy;
+    $('hsCumpl').textContent    = `${pctHoy}%`;
+  } catch(e) {}
+
+  // Miembros en resumen
+  $('resumenMiembros').innerHTML = miembros.length
+    ? miembros.map(m => {
+        const rol = ROLES[m.rol] || ROLES['otro'];
+        return `<div class="miembro-card">
+          <div class="miembro-av" style="background:${rol.color}22;">
+            <span>${rol.emoji}</span>
+            <div class="estado-dot" style="background:${m.activo !== false ? '#22c55e' : '#9ca3af'};"></div>
+          </div>
+          <div class="miembro-info">
+            <div class="miembro-nombre">${m.nombre}</div>
+            <div class="miembro-rol">${rol.label}</div>
+          </div>
+        </div>`;
+      }).join('')
+    : '<div class="empty-state">Sin miembros configurados<br><span style="font-size:12px;">Toca "+ Agregar" para añadir al primero</span></div>';
+
+  // Esta semana
+  const { desde, hasta } = getRangoFechas('semana');
+  try {
+    const snapSem = await getDocs(
+      query(collection(db, 'hogares', hogarId, 'tareas'),
+            where('fecha', '>=', desde), where('fecha', '<=', hasta))
+    );
+    const tarSem  = snapSem.docs.map(d => d.data());
+    const complSem = tarSem.filter(t => t.estado === 'completa').length;
+    $('resumenSemana').innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div style="background:var(--g3);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:24px;font-weight:600;color:var(--g);">${tarSem.length}</div>
+          <div style="font-size:11px;color:var(--txt2);margin-top:2px;">Tareas esta semana</div>
+        </div>
+        <div style="background:var(--g3);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:24px;font-weight:600;color:var(--g);">${complSem}</div>
+          <div style="font-size:11px;color:var(--txt2);margin-top:2px;">Completadas</div>
+        </div>
+        <div style="background:var(--b3);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:24px;font-weight:600;color:var(--b2);">${tarSem.length - complSem}</div>
+          <div style="font-size:11px;color:var(--txt2);margin-top:2px;">Pendientes</div>
+        </div>
+        <div style="background:var(--g3);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:24px;font-weight:600;color:var(--g);">${tarSem.length > 0 ? Math.round(complSem/tarSem.length*100) : 0}%</div>
+          <div style="font-size:11px;color:var(--txt2);margin-top:2px;">Cumplimiento</div>
+        </div>
+      </div>`;
+  } catch(e) {}
+}
+
+// ── Render: Lista de miembros ─────────────────────────────────────────────────
+function renderListaMiembros() {
+  $('listaMiembros').innerHTML = miembros.length
+    ? miembros.map(m => {
+        const rol = ROLES[m.rol] || ROLES['otro'];
+        return `<div class="miembro-card">
+          <div class="miembro-av" style="background:${rol.color}22;font-size:22px;">${rol.emoji}</div>
+          <div class="miembro-info">
+            <div class="miembro-nombre">${m.nombre}</div>
+            <div class="miembro-rol">${rol.label} · ${m.activo !== false ? 'Activo' : 'Inactivo'}</div>
+          </div>
+          <div class="miembro-actions">
+            <button class="btn-mini" onclick="editarMiembro('${m.uid}')">✏️</button>
+            <button class="btn-mini" onclick="toggleActivoMiembro('${m.uid}',${m.activo !== false})">${m.activo !== false ? '⏸' : '▶️'}</button>
+            <button class="btn-mini danger" onclick="eliminarMiembro('${m.uid}','${m.nombre.replace(/'/g,"\\'")}')">🗑</button>
+          </div>
+        </div>`;
+      }).join('')
+    : `<div class="empty-state">Sin miembros todavía<br><span style="font-size:12px;">Agrega a los miembros de tu hogar para asignar tareas y ver el ranking</span></div>`;
+}
+
+// ── Render: Ranking ───────────────────────────────────────────────────────────
+function renderRanking() {
+  if (!miembros.length || !tareas.length) {
+    $('cardCampeon').style.display = 'none';
+    $('listaRanking').innerHTML = '<div class="empty-state">Sin tareas asignadas en este período</div>';
+    return;
+  }
+
+  const ranked = miembros
+    .map(m => ({ ...m, ...statsParaMiembro(m) }))
+    .filter(m => m.total > 0)
+    .sort((a, b) => b.pct !== a.pct ? b.pct - a.pct : b.completadas - a.completadas);
+
+  if (!ranked.length) {
+    $('cardCampeon').style.display = 'none';
+    $('listaRanking').innerHTML = '<div class="empty-state">Sin tareas asignadas a miembros</div>';
+    return;
+  }
+
+  // Campeón
+  const campeon = ranked[0];
+  const campRol = ROLES[campeon.rol] || ROLES['otro'];
+  $('cardCampeon').style.display = 'block';
+  $('campeonEmoji').textContent  = campRol.emoji;
+  $('campeonNombre').textContent = campeon.nombre;
+  $('campeonPct').textContent    = `${campeon.completadas} de ${campeon.total} tareas · ${campeon.pct}% de cumplimiento`;
+
+  const medallas = ['🥇','🥈','🥉'];
+  $('listaRanking').innerHTML = ranked.map((m, i) => {
+    const rol = ROLES[m.rol] || ROLES['otro'];
+    return `<div class="rank-item">
+      <div class="rank-pos">${medallas[i] || `${i+1}`}</div>
+      <div class="rank-av" style="background:${rol.color}22;">${rol.emoji}</div>
+      <div class="rank-info">
+        <div class="rank-nombre">${m.nombre}</div>
+        <div class="rank-bar-wrap">
+          <div class="rank-bar" style="width:${m.pct}%;background:${rol.color};"></div>
+        </div>
+      </div>
+      <div class="rank-pct" style="color:${rol.color};">${m.pct}%</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Render: Stats ─────────────────────────────────────────────────────────────
+function renderStats() {
+  const total      = tareas.length;
+  const completadas = tareas.filter(t => t.estado === 'completa').length;
+  const pendientes  = total - completadas;
+  const conAsignar  = tareas.filter(t => t.asignadoA).length;
+  const cumplimiento = total > 0 ? Math.round(completadas / total * 100) : 0;
+
+  // Miembro más activo
+  let masActivo = null, maxTareas = 0;
+  miembros.forEach(m => {
+    const s = statsParaMiembro(m);
+    if (s.total > maxTareas) { maxTareas = s.total; masActivo = m; }
+  });
+
+  // Mejor cumplimiento
+  let mejorCumpl = null, maxPct = -1;
+  miembros.forEach(m => {
+    const s = statsParaMiembro(m);
+    if (s.total > 0 && s.pct > maxPct) { maxPct = s.pct; mejorCumpl = m; }
+  });
+
+  $('statsGlobales').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+      <div style="background:var(--g3);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:22px;font-weight:600;color:var(--g);">${total}</div>
+        <div style="font-size:11px;color:var(--txt2);margin-top:2px;">Total tareas</div>
+      </div>
+      <div style="background:var(--g3);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:22px;font-weight:600;color:var(--g);">${completadas}</div>
+        <div style="font-size:11px;color:var(--txt2);margin-top:2px;">Completadas</div>
+      </div>
+      <div style="background:var(--b3);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:22px;font-weight:600;color:var(--b2);">${pendientes}</div>
+        <div style="font-size:11px;color:var(--txt2);margin-top:2px;">Pendientes</div>
+      </div>
+      <div style="background:var(--g3);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:22px;font-weight:600;color:var(--g);">${cumplimiento}%</div>
+        <div style="font-size:11px;color:var(--txt2);margin-top:2px;">Cumplimiento</div>
+      </div>
+    </div>
+    ${masActivo ? `<div style="padding:10px;background:var(--g3);border-radius:10px;margin-bottom:6px;display:flex;align-items:center;gap:10px;">
+      <span style="font-size:20px;">⚡</span>
+      <div><div style="font-size:12px;font-weight:600;color:var(--g);">Miembro más activo</div>
+      <div style="font-size:13px;color:var(--txt);">${masActivo.nombre} · ${statsParaMiembro(masActivo).total} tareas</div></div>
+    </div>` : ''}
+    ${mejorCumpl ? `<div style="padding:10px;background:#FEF9EE;border-radius:10px;display:flex;align-items:center;gap:10px;">
+      <span style="font-size:20px;">🏆</span>
+      <div><div style="font-size:12px;font-weight:600;color:#D97706;">Mejor cumplimiento</div>
+      <div style="font-size:13px;color:var(--txt);">${mejorCumpl.nombre} · ${maxPct}%</div></div>
+    </div>` : ''}`;
+
+  // Por miembro
+  const conStats = miembros.map(m => ({ ...m, ...statsParaMiembro(m) })).filter(m => m.total > 0);
+  $('statsPorMiembro').innerHTML = conStats.length
+    ? conStats.map(m => {
+        const rol = ROLES[m.rol] || ROLES['otro'];
+        return `<div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">
+          <div style="font-size:22px;">${rol.emoji}</div>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:600;color:var(--txt);">${m.nombre}</div>
+            <div style="font-size:11px;color:var(--txt2);margin-top:1px;">${m.completadas} completadas · ${m.pendientes} pendientes</div>
+            <div style="margin-top:4px;background:var(--g4);border-radius:99px;height:5px;overflow:hidden;">
+              <div style="width:${m.pct}%;height:5px;background:${rol.color};border-radius:99px;"></div>
+            </div>
+          </div>
+          <div style="font-size:14px;font-weight:700;color:${rol.color};">${m.pct}%</div>
+        </div>`;
+      }).join('')
+    : '<div class="empty-state">Sin tareas asignadas a miembros en este período</div>';
+}
+
+// ── Modal miembro ─────────────────────────────────────────────────────────────
+function buildRolGrid(seleccionado) {
+  $('rolGrid').innerHTML = Object.entries(ROLES).map(([key, r]) => `
+    <button class="rol-btn ${seleccionado === key ? 'sel' : ''}"
+            onclick="selRol('${key}')" data-rol="${key}">
+      <span class="rol-emoji">${r.emoji}</span>
+      <span>${r.label}</span>
+    </button>`).join('');
+}
+
+window.selRol = (rol) => {
+  $('mRol').value = rol;
+  document.querySelectorAll('.rol-btn').forEach(b =>
+    b.classList.toggle('sel', b.dataset.rol === rol));
+};
+
+window.abrirModalMiembro = () => {
+  editandoUid = null;
+  $('modalMiembroTitulo').textContent = 'Agregar miembro';
+  $('mNombre').value = '';
+  $('mRol').value    = 'otro';
+  buildRolGrid('otro');
+  $('modalMiembro').classList.add('visible');
+};
+
+window.editarMiembro = (uid) => {
+  const m = miembros.find(x => x.uid === uid);
+  if (!m) return;
+  editandoUid = uid;
+  $('modalMiembroTitulo').textContent = 'Editar miembro';
+  $('mNombre').value = m.nombre;
+  $('mRol').value    = m.rol;
+  buildRolGrid(m.rol);
+  $('modalMiembro').classList.add('visible');
+};
+
+window.cerrarModalMiembro = () => $('modalMiembro').classList.remove('visible');
+
+window.guardarMiembro = async () => {
+  const nombre = $('mNombre').value.trim();
+  const rol    = $('mRol').value || 'otro';
+  if (!nombre) { showToast('⚠️ Escribe el nombre del miembro'); return; }
+
+  const uid   = editandoUid || `m_${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
+  const rolCfg = ROLES[rol] || ROLES['otro'];
+  const data = {
+    uid, nombre, rol,
+    color:       rolCfg.color,
+    avatarEmoji: rolCfg.emoji,
+    activo:      true,
+    creadoA:     serverTimestamp(),
+  };
+  try {
+    await setDoc(doc(db, 'hogares', hogarId, 'miembros', uid), data);
+    if (editandoUid) {
+      const idx = miembros.findIndex(m => m.uid === editandoUid);
+      if (idx >= 0) miembros[idx] = data; else miembros.push(data);
+    } else {
+      miembros.push(data);
+    }
+    cerrarModalMiembro();
+    renderListaMiembros();
+    renderResumen();
+    showToast(editandoUid ? '✅ Miembro actualizado' : '✅ Miembro agregado');
+  } catch(e) { showToast('❌ Error al guardar'); console.error(e); }
+};
+
+window.toggleActivoMiembro = async (uid, estaActivo) => {
+  try {
+    await setDoc(doc(db, 'hogares', hogarId, 'miembros', uid),
+      { activo: !estaActivo }, { merge: true });
+    const m = miembros.find(x => x.uid === uid);
+    if (m) m.activo = !estaActivo;
+    renderListaMiembros();
+    showToast(!estaActivo ? '▶️ Miembro reactivado' : '⏸ Miembro pausado');
+  } catch(e) { showToast('❌ Error'); }
+};
+
+window.eliminarMiembro = async (uid, nombre) => {
+  if (!confirm(`¿Eliminar a "${nombre}" del centro familiar?\nSus tareas asignadas no se borran.`)) return;
+  try {
+    await deleteDoc(doc(db, 'hogares', hogarId, 'miembros', uid));
+    miembros = miembros.filter(m => m.uid !== uid);
+    renderListaMiembros();
+    showToast('🗑 Miembro eliminado');
+  } catch(e) { showToast('❌ Error al eliminar'); }
+};
+
+// Cerrar al click fuera
+$('modalMiembro').addEventListener('click', function(e) {
+  if (e.target === this) cerrarModalMiembro();
+});
+
+// ── Auth + Init ───────────────────────────────────────────────────────────────
+onAuthStateChanged(auth, async user => {
+  if (!user) { location.href = '/app.html'; return; }
+  try {
+    const { getDocs: gD, query: q, collection: col, where: w } = await import(
+      'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+    const snap = await getDocs(
+      query(collection(db, 'hogares'), where('participantes', 'array-contains', user.uid))
+    );
+    if (snap.empty) { location.href = '/app.html'; return; }
+    const guardado = localStorage.getItem('hogarActivoNana');
+    const valido   = snap.docs.find(d => d.id === guardado);
+    hogarId = valido ? guardado : snap.docs[0].id;
+
+    await resolverMiembros();
+    renderListaMiembros();
+    await renderResumen();
+    await cargarTareasYRenderizar();
+  } catch(e) { console.error('Init familiar:', e); }
+});
+</script>
+</body>
+</html>
