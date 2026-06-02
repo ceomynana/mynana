@@ -147,6 +147,18 @@ body{font-family:'DM Sans',sans-serif;background:#F0F4F0;color:var(--txt);
         </div>
 
         <div class="fm-group">
+          <label class="fm-label">Logo / Foto <span style="font-weight:400;color:#9ca3af;">(URL de imagen opcional)</span></label>
+          <input class="fm-input" id="fLogoUrl" placeholder="https://ejemplo.com/logo.png">
+          <div id="logoPreview" style="margin-top:8px;display:none;">
+            <img id="logoImg" src="" alt="Preview"
+                 style="width:64px;height:64px;object-fit:cover;border-radius:10px;border:1px solid var(--border);">
+          </div>
+          <div style="font-size:11px;color:var(--txt2);margin-top:4px;">
+            Pega la URL directa de la imagen. Puedes usar Imgur (imgur.com) para subir logos gratis.
+          </div>
+        </div>
+
+        <div class="fm-group">
           <label class="fm-label">Descripción</label>
           <textarea class="fm-textarea" id="fDesc" placeholder="Servicio que ofrece..."></textarea>
         </div>
@@ -336,6 +348,7 @@ window.guardarProveedor = async () => {
   const cobertura = $('fCobertura').value.trim()
     .split('\n').map(l => l.trim()).filter(Boolean);
 
+  const logoUrl = $('fLogoUrl').value.trim();
   const data = {
     nombre,
     descripcion:     $('fDesc').value.trim(),
@@ -350,6 +363,7 @@ window.guardarProveedor = async () => {
     verificado:      $('fVerificado').checked,
     activo:          $('fActivo').checked,
     plan:            'basico',
+    logoUrl:         logoUrl || null,
     actualizadoA:    serverTimestamp(),
   };
 
@@ -386,6 +400,16 @@ window.editarProveedor = (id) => {
   $('fCobertura').value = (p.cobertura || []).join('\n');
   $('fPrecio').value  = p.precioRango || '';
   $('fTiempo').value  = p.tiempoRespuesta || '';
+  $('fLogoUrl').value = p.logoUrl || '';
+  // Mostrar preview si hay logo
+  const prevEl = document.getElementById('logoPreview');
+  const imgEl  = document.getElementById('logoImg');
+  if (p.logoUrl) {
+    imgEl.src = p.logoUrl;
+    prevEl.style.display = 'block';
+  } else {
+    prevEl.style.display = 'none';
+  }
   $('fVerificado').checked = p.verificado !== false;
   $('fActivo').checked     = p.activo !== false;
 
@@ -398,9 +422,25 @@ window.editarProveedor = (id) => {
   $('formBody').scrollIntoView({ behavior:'smooth' });
 };
 
+// Preview del logo al pegar URL
+document.getElementById('fLogoUrl')?.addEventListener('input', function() {
+  const url = this.value.trim();
+  const preview = document.getElementById('logoPreview');
+  const img     = document.getElementById('logoImg');
+  if (url) {
+    img.src = url;
+    img.onload  = () => { preview.style.display = 'block'; };
+    img.onerror = () => { preview.style.display = 'none'; };
+  } else {
+    preview.style.display = 'none';
+  }
+});
+
 window.cancelarEdicion = () => {
   $('editId').value = '';
   $('fNombre').value = $('fDesc').value = $('fWA').value = '';
+  $('fLogoUrl').value = '';
+  document.getElementById('logoPreview').style.display = 'none';
   $('fTel').value = $('fCobertura').value = $('fPrecio').value = $('fTiempo').value = '';
   $('fVerificado').checked = true;
   $('fActivo').checked = true;
@@ -430,9 +470,15 @@ function renderLista() {
         const catLabel = (p.categorias || [])
           .map(id => CATEGORIAS.find(c => c.id === id)?.label || id)
           .slice(0,2).join(', ');
-        const emoji = CATEGORIAS.find(c => (p.categorias||[])[0] === c.id)?.emoji || '🔧';
+        const emoji   = CATEGORIAS.find(c => (p.categorias||[])[0] === c.id)?.emoji || '🔧';
+        const avatarHTML = p.logoUrl
+          ? `<img src="${p.logoUrl}" alt="${p.nombre}"
+                  style="width:40px;height:40px;object-fit:cover;border-radius:10px;border:1px solid var(--border);"
+                  onerror="this.style.display='none';this.nextSibling.style.display='flex';">
+             <span style="display:none;font-size:18px;">${emoji}</span>`
+          : `<span style="font-size:18px;">${emoji}</span>`;
         return `<div class="prov-item">
-          <div class="prov-av">${emoji}</div>
+          <div class="prov-av">${avatarHTML}</div>
           <div class="prov-info">
             <div class="prov-nombre">${p.nombre} ${p.verificado ? '✓' : ''}</div>
             <div class="prov-meta">${catLabel}${p.precioRango ? ' · ' + p.precioRango : ''}</div>
