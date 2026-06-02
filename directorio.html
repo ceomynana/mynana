@@ -223,6 +223,11 @@ function estrellas(rating) {
 
 function tarjetaHTML(p) {
   const cat = CATEGORIAS.find(c => (p.categorias || [])[0] === c.id) || CATEGORIAS[0];
+  const avatarHTML = p.logoUrl
+    ? `<img src="${p.logoUrl}" alt="${p.nombre}"
+            style="width:48px;height:48px;object-fit:cover;border-radius:12px;"
+            onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span style=\"font-size:24px;\">${cat.emoji}</span>')">`
+    : `<span style="font-size:24px;">${cat.emoji}</span>`;
   const cob = (p.cobertura || []).join(' · ');
   const categoriaLabel = (p.categorias || [])
     .map(id => CATEGORIAS.find(c => c.id === id)?.label || id)
@@ -231,7 +236,7 @@ function tarjetaHTML(p) {
   return `
     <div class="prov-card">
       <div class="prov-head">
-        <div class="prov-av">${cat.emoji}</div>
+        <div class="prov-av">${avatarHTML}</div>
         <div class="prov-info">
           <div class="prov-nombre">${p.nombre}</div>
           <div class="prov-desc">${p.descripcion || ''}</div>
