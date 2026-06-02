@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Directorio de Proveedores · My Nana</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=DM+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --g:#1A6B52;--g2:#0F4D3A;--g3:#E8F4EF;--g4:#D4E8DF;
+  --txt:#1A1A1A;--txt2:#6B7280;
+  --cr:#FAFAFA;--r:16px;--border:#E5E7EB;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:#F0F4F0;color:var(--txt);
+     padding-bottom:calc(32px + env(safe-area-inset-bottom,0px));}
+.nav{background:var(--g2);padding:env(safe-area-inset-top,0px) 16px 0;position:sticky;top:0;z-index:50;}
+.nav-inner{height:56px;display:flex;align-items:center;gap:12px;}
+.nav-back{background:rgba(255,255,255,.12);border:none;color:#fff;border-radius:99px;
+          padding:6px 14px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.nav-title{font-family:'Cormorant Garamond',serif;font-size:20px;color:#fff;flex:1;text-align:center;}
+.content{padding:14px 16px 32px;max-width:600px;margin:0 auto;}
+.sec-label{font-size:10px;font-weight:700;color:var(--txt2);text-transform:uppercase;
+           letter-spacing:.06em;margin:16px 0 8px;}
+
+/* Buscador */
+.search-wrap{position:relative;margin-bottom:12px;}
+.search-input{width:100%;padding:11px 14px 11px 38px;border:1.5px solid var(--border);
+              border-radius:99px;font-size:13px;font-family:'DM Sans',sans-serif;
+              background:#fff;color:var(--txt);outline:none;transition:border-color .2s;}
+.search-input:focus{border-color:var(--g);}
+.search-ico{position:absolute;left:13px;top:50%;transform:translateY(-50%);
+            font-size:15px;pointer-events:none;}
+
+/* Chips de categoría */
+.cat-scroll{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;
+            -ms-overflow-style:none;scrollbar-width:none;}
+.cat-scroll::-webkit-scrollbar{display:none;}
+.cat-chip{display:flex;align-items:center;gap:5px;white-space:nowrap;
+          padding:7px 12px;border-radius:99px;border:1.5px solid var(--border);
+          background:#fff;font-size:12px;font-weight:500;color:var(--txt2);
+          cursor:pointer;flex-shrink:0;transition:all .18s;}
+.cat-chip.activo{background:var(--g);border-color:var(--g);color:#fff;}
+
+/* Tarjeta proveedor */
+.prov-card{background:#fff;border-radius:var(--r);border:1px solid var(--border);
+           margin-bottom:10px;overflow:hidden;}
+.prov-head{padding:14px 16px 10px;display:flex;align-items:flex-start;gap:12px;}
+.prov-av{width:48px;height:48px;border-radius:12px;background:var(--g3);
+         display:flex;align-items:center;justify-content:center;
+         font-size:24px;flex-shrink:0;}
+.prov-info{flex:1;min-width:0;}
+.prov-nombre{font-size:14px;font-weight:600;color:var(--txt);line-height:1.3;}
+.prov-desc{font-size:12px;color:var(--txt2);margin-top:2px;line-height:1.4;}
+.badge-ver{display:inline-flex;align-items:center;gap:3px;background:#E8F4EF;
+           color:var(--g);font-size:10px;font-weight:700;padding:2px 8px;
+           border-radius:99px;margin-top:5px;}
+.prov-meta{display:flex;flex-wrap:wrap;gap:6px;padding:0 16px 10px;}
+.meta-chip{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--txt2);
+           background:var(--cr);border:1px solid var(--border);
+           border-radius:99px;padding:3px 9px;}
+.rating-star{color:#F59E0B;}
+.prov-cobertura{font-size:11px;color:var(--txt2);padding:0 16px 10px;
+                line-height:1.5;}
+.prov-btns{display:flex;gap:8px;padding:10px 16px;border-top:1px solid var(--border);}
+.btn-wa{flex:1;background:#25D366;color:#fff;border:none;border-radius:99px;
+        padding:10px;font-size:13px;font-weight:600;cursor:pointer;
+        font-family:'DM Sans',sans-serif;display:flex;align-items:center;
+        justify-content:center;gap:6px;}
+.btn-tel{flex:1;background:var(--g3);color:var(--g);border:1.5px solid var(--g4);
+         border-radius:99px;padding:10px;font-size:13px;font-weight:600;
+         cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;
+         align-items:center;justify-content:center;gap:6px;}
+.btn-tel:hover{background:var(--g4);}
+.btn-wa:active,.btn-wa:hover{opacity:.9;}
+
+/* Toast */
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-80px);
+       background:var(--g2);color:#fff;font-size:13px;font-weight:500;
+       padding:12px 20px;border-radius:99px;z-index:300;
+       transition:transform .35s;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.2);}
+.toast.visible{transform:translateX(-50%) translateY(0);}
+.empty-state{text-align:center;padding:32px 16px;color:var(--txt2);font-size:13px;}
+.loading{text-align:center;padding:40px 16px;color:var(--txt2);font-size:13px;}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <button class="nav-back" onclick="history.back()">← Volver</button>
+    <div class="nav-title">Directorio de servicios</div>
+    <div style="width:60px;"></div>
+  </div>
+</nav>
+
+<div class="content">
+
+  <!-- Buscador -->
+  <div class="search-wrap" style="margin-top:4px;">
+    <span class="search-ico">🔍</span>
+    <input class="search-input" id="buscador"
+           placeholder="Buscar proveedor o servicio..."
+           oninput="filtrar()">
+  </div>
+
+  <!-- Categorías -->
+  <div class="cat-scroll" id="catScroll"></div>
+
+  <!-- Listado -->
+  <div id="listado">
+    <div class="loading">Cargando proveedores...</div>
+  </div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import { getFirestore, collection, query, where, getDocs,
+         addDoc, doc, serverTimestamp
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+const fbApp = initializeApp({
+  apiKey:"AIzaSyDDJRJ8A8P507lllGRBOoXO30ESAH1GAnw",
+  authDomain:"mynanapapp.firebaseapp.com",
+  projectId:"mynanapapp",
+  storageBucket:"mynanapapp.firebasestorage.app",
+  messagingSenderId:"124180779437",
+  appId:"1:124180779437:web:d217743000b0f1fedfd124"
+});
+const auth = getAuth(fbApp);
+const db   = getFirestore(fbApp);
+
+// ── Categorías del directorio ─────────────────────────────────────────────
+const CATEGORIAS = [
+  { id:'todas',             emoji:'🏠', label:'Todas' },
+  { id:'aire_acondicionado',emoji:'❄️', label:'Aire acond.' },
+  { id:'plomeria',          emoji:'🔩', label:'Plomería' },
+  { id:'electricidad',      emoji:'⚡', label:'Electricidad' },
+  { id:'fumigacion',        emoji:'🪲', label:'Fumigación' },
+  { id:'jardineria',        emoji:'🌿', label:'Jardinería' },
+  { id:'limpieza_profunda', emoji:'🧹', label:'Limp. profunda' },
+  { id:'veterinario',       emoji:'🐾', label:'Veterinario' },
+  { id:'lavado_muebles',    emoji:'🛋️', label:'Lavado muebles' },
+  { id:'pintura',           emoji:'🖌️', label:'Pintura' },
+  { id:'mudanzas',          emoji:'🚛', label:'Mudanzas' },
+  { id:'piscinas',          emoji:'🏊', label:'Piscinas' },
+  { id:'seguridad',         emoji:'🔒', label:'Seguridad' },
+];
+
+// ── Globals ───────────────────────────────────────────────────────────────
+let proveedores    = [];
+let catSel         = 'todas';
+let busqueda       = '';
+let hogarId        = null;
+let usuarioUid     = null;
+
+const $ = id => document.getElementById(id);
+function hoy() { return new Date().toISOString().split('T')[0]; }
+function showToast(msg) {
+  const t = $('toast'); t.textContent = msg;
+  t.classList.add('visible');
+  setTimeout(() => t.classList.remove('visible'), 2800);
+}
+
+// ── Render chips de categoría ─────────────────────────────────────────────
+function renderCats() {
+  $('catScroll').innerHTML = CATEGORIAS.map(c => `
+    <button class="cat-chip ${catSel === c.id ? 'activo' : ''}"
+            onclick="selCat('${c.id}')">
+      ${c.emoji} ${c.label}
+    </button>`).join('');
+}
+
+window.selCat = (id) => {
+  catSel = id;
+  renderCats();
+  renderListado();
+};
+
+window.filtrar = () => {
+  busqueda = $('buscador').value.trim().toLowerCase();
+  renderListado();
+};
+
+// ── Render tarjetas ───────────────────────────────────────────────────────
+function renderListado() {
+  let lista = proveedores.filter(p => p.activo !== false);
+
+  if (catSel !== 'todas') {
+    lista = lista.filter(p => (p.categorias || []).includes(catSel));
+  }
+
+  if (busqueda) {
+    lista = lista.filter(p =>
+      p.nombre?.toLowerCase().includes(busqueda) ||
+      p.descripcion?.toLowerCase().includes(busqueda) ||
+      (p.cobertura || []).some(z => z.toLowerCase().includes(busqueda))
+    );
+  }
+
+  if (!lista.length) {
+    $('listado').innerHTML = `
+      <div class="empty-state">
+        <div style="font-size:32px;margin-bottom:8px;">🔍</div>
+        Sin proveedores en esta categoría todavía.<br>
+        <span style="font-size:12px;">Estamos incorporando más servicios cada semana.</span>
+      </div>`;
+    return;
+  }
+
+  $('listado').innerHTML = lista.map(p => tarjetaHTML(p)).join('');
+}
+
+function estrellas(rating) {
+  const r = Math.round(rating || 0);
+  return '★'.repeat(r) + '☆'.repeat(5 - r);
+}
+
+function tarjetaHTML(p) {
+  const cat = CATEGORIAS.find(c => (p.categorias || [])[0] === c.id) || CATEGORIAS[0];
+  const cob = (p.cobertura || []).join(' · ');
+  const categoriaLabel = (p.categorias || [])
+    .map(id => CATEGORIAS.find(c => c.id === id)?.label || id)
+    .join(', ');
+
+  return `
+    <div class="prov-card">
+      <div class="prov-head">
+        <div class="prov-av">${cat.emoji}</div>
+        <div class="prov-info">
+          <div class="prov-nombre">${p.nombre}</div>
+          <div class="prov-desc">${p.descripcion || ''}</div>
+          ${p.verificado ? `<div class="badge-ver">✓ Verificado por My Nana</div>` : ''}
+        </div>
+      </div>
+
+      <div class="prov-meta">
+        ${p.rating ? `<span class="meta-chip"><span class="rating-star">${estrellas(p.rating)}</span> ${p.rating}</span>` : ''}
+        ${p.precioRango ? `<span class="meta-chip">💰 ${p.precioRango}</span>` : ''}
+        ${p.tiempoRespuesta ? `<span class="meta-chip">⏱ ${p.tiempoRespuesta}</span>` : ''}
+        ${categoriaLabel ? `<span class="meta-chip">🔧 ${categoriaLabel}</span>` : ''}
+      </div>
+
+      ${cob ? `<div class="prov-cobertura">📍 ${cob}</div>` : ''}
+
+      <div class="prov-btns">
+        ${p.whatsapp ? `
+          <button class="btn-wa"
+                  onclick="contactarWhatsApp('${p.id}','${encodeURIComponent(p.nombre)}','${p.whatsapp}','${(p.categorias||[])[0]||'otro'}')">
+            💬 WhatsApp
+          </button>` : ''}
+        ${p.telefono ? `
+          <button class="btn-tel"
+                  onclick="contactarTelefono('${p.id}','${encodeURIComponent(p.nombre)}','${p.telefono}','${(p.categorias||[])[0]||'otro'}')">
+            📞 Llamar
+          </button>` : ''}
+      </div>
+    </div>`;
+}
+
+// ── Generar lead y abrir WhatsApp ─────────────────────────────────────────
+window.contactarWhatsApp = async (provId, provNombreEnc, waNum, categoria) => {
+  const provNombre = decodeURIComponent(provNombreEnc);
+  await registrarLead(provId, provNombre, categoria, 'whatsapp');
+
+  const msg = encodeURIComponent(
+    `Hola, los encontré en My Nana App 🏠\n` +
+    `Me interesa solicitar un servicio de *${CATEGORIAS.find(c=>c.id===categoria)?.label || categoria}*.\n` +
+    `¿Podrían darme más información y disponibilidad?`
+  );
+  const num = waNum.replace(/\D/g,'');
+  window.open(`https://wa.me/${num}?text=${msg}`, '_blank');
+};
+
+window.contactarTelefono = async (provId, provNombreEnc, tel, categoria) => {
+  const provNombre = decodeURIComponent(provNombreEnc);
+  await registrarLead(provId, provNombre, categoria, 'telefono');
+  window.open(`tel:${tel}`, '_self');
+};
+
+// ── Anti-duplicados: 1 lead por usuario+proveedor+día ─────────────────────
+async function registrarLead(provId, provNombre, categoria, canal) {
+  if (!usuarioUid) return; // no autenticado — solo abre el contacto igual
+
+  try {
+    // Verificar si ya existe lead hoy para este par usuario+proveedor
+    const snap = await getDocs(
+      query(collection(db, 'leads'),
+        where('usuarioUid',  '==', usuarioUid),
+        where('proveedorId', '==', provId),
+        where('fecha',       '==', hoy())
+      )
+    );
+
+    if (!snap.empty) {
+      // Lead ya registrado hoy — no duplicar, continuar con el contacto
+      return;
+    }
+
+    // Crear nuevo lead
+    await addDoc(collection(db, 'leads'), {
+      // Quién
+      hogarId:        hogarId  || null,
+      usuarioUid:     usuarioUid,
+      // A quién
+      proveedorId:    provId,
+      proveedorNombre: provNombre,
+      categoria:      categoria,
+      // Cómo y desde dónde
+      canal:          canal,
+      fuente:         'directorio',
+      estado:         'enviado',
+      // Cuándo
+      fecha:          hoy(),
+      creadoA:        serverTimestamp(),
+    });
+  } catch(e) {
+    // Si falla la creación del lead no bloqueamos el contacto
+    console.warn('registrarLead:', e);
+  }
+}
+
+// ── Cargar proveedores ────────────────────────────────────────────────────
+async function cargarProveedores() {
+  try {
+    const snap = await getDocs(
+      query(collection(db, 'proveedores'), where('activo', '==', true))
+    );
+    proveedores = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderListado();
+  } catch(e) {
+    console.error('cargarProveedores:', e);
+    $('listado').innerHTML =
+      '<div class="empty-state">Error al cargar los proveedores. Intenta de nuevo.</div>';
+  }
+}
+
+// ── Leer parámetro de categoría en la URL ────────────────────────────────
+// Permite abrir directorio.html?cat=aire_acondicionado desde mantenimiento.html
+function leerCatURL() {
+  const params = new URLSearchParams(window.location.search);
+  const cat = params.get('cat');
+  if (cat && CATEGORIAS.find(c => c.id === cat)) catSel = cat;
+}
+
+// ── Auth + Init ───────────────────────────────────────────────────────────
+renderCats(); // render inmediato de chips sin esperar auth
+leerCatURL();
+renderCats();
+
+onAuthStateChanged(auth, async user => {
+  if (user) {
+    usuarioUid = user.uid;
+    // Obtener hogarId
+    try {
+      const { getDocs: gD2, query: q2, collection: col2, where: w2 } =
+        await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+      const snap = await getDocs(
+        query(collection(db, 'hogares'), where('participantes', 'array-contains', user.uid))
+      );
+      if (!snap.empty) {
+        const guardado = localStorage.getItem('hogarActivoNana');
+        const valido   = snap.docs.find(d => d.id === guardado);
+        hogarId = valido ? guardado : snap.docs[0].id;
+      }
+    } catch(e) { console.warn('hogarId:', e); }
+  }
+  // Cargar proveedores independientemente de si está autenticado
+  await cargarProveedores();
+});
+</script>
+</body>
+</html>
