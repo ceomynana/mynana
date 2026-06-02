@@ -1291,14 +1291,21 @@ window.irAlVideo = (cat) => {
 // ══════════════════════════════════════════════════════
 
 const EVENTO_TIPOS = {
-  tecnico:      { emoji:'🔧', label:'Técnico' },
-  fumigacion:   { emoji:'🪲', label:'Fumigación' },
-  mantenimiento:{ emoji:'🏗️', label:'Mantenimiento' },
-  veterinario:  { emoji:'🐾', label:'Veterinario' },
-  delivery:     { emoji:'📦', label:'Delivery' },
-  cita:         { emoji:'🏥', label:'Cita médica' },
-  visita:       { emoji:'👨‍👩‍👧', label:'Visita familiar' },
-  otro:         { emoji:'📌', label:'Evento' },
+  // Tipos originales — sin cambio, compatibilidad total
+  tecnico:          { emoji:'🔧', label:'Técnico' },
+  fumigacion:       { emoji:'🪲', label:'Fumigación' },
+  mantenimiento:    { emoji:'🏗️', label:'Mantenimiento' },
+  veterinario:      { emoji:'🐾', label:'Veterinario' },
+  delivery:         { emoji:'📦', label:'Delivery' },
+  cita:             { emoji:'🏥', label:'Cita médica' },
+  visita:           { emoji:'👨‍👩‍👧', label:'Visita' },
+  otro:             { emoji:'📌', label:'Evento' },
+  // Nuevos tipos de mantenimiento del hogar
+  aire_acondicionado: { emoji:'❄️', label:'Aire acond.' },
+  plomeria:           { emoji:'🔩', label:'Plomería' },
+  electricidad:       { emoji:'⚡', label:'Electricidad' },
+  limpieza_profunda:  { emoji:'🧹', label:'Limp. profunda' },
+  remodelacion:       { emoji:'🏠', label:'Remodelación' },
 };
 
 let tipoEventoSel = 'tecnico';
@@ -1980,6 +1987,11 @@ document.getElementById('modalFoto')?.addEventListener('click', e => {
       <button class="tipo-evento-btn" data-tipo="fumigacion" onclick="selTipoEvento(this)"><span class="tipo-evento-emoji">🪲</span>Fumigación</button>
       <button class="tipo-evento-btn" data-tipo="mantenimiento" onclick="selTipoEvento(this)"><span class="tipo-evento-emoji">🏗️</span>Mantenim.</button>
       <button class="tipo-evento-btn" data-tipo="veterinario" onclick="selTipoEvento(this)"><span class="tipo-evento-emoji">🐾</span>Veterinario</button>
+      <button class="tipo-evento-btn" data-tipo="aire_acondicionado" onclick="selTipoEvento(this)"><span class="tipo-evento-emoji">❄️</span>Aire acond.</button>
+      <button class="tipo-evento-btn" data-tipo="plomeria" onclick="selTipoEvento(this)"><span class="tipo-evento-emoji">🔩</span>Plomería</button>
+      <button class="tipo-evento-btn" data-tipo="electricidad" onclick="selTipoEvento(this)"><span class="tipo-evento-emoji">⚡</span>Electricidad</button>
+      <button class="tipo-evento-btn" data-tipo="limpieza_profunda" onclick="selTipoEvento(this)"><span class="tipo-evento-emoji">🧹</span>Limp. prof.</button>
+      <button class="tipo-evento-btn" data-tipo="remodelacion" onclick="selTipoEvento(this)"><span class="tipo-evento-emoji">🏠</span>Remodelación</button>
       <button class="tipo-evento-btn" data-tipo="delivery" onclick="selTipoEvento(this)"><span class="tipo-evento-emoji">📦</span>Delivery</button>
       <button class="tipo-evento-btn" data-tipo="cita" onclick="selTipoEvento(this)"><span class="tipo-evento-emoji">🏥</span>Cita médica</button>
       <button class="tipo-evento-btn" data-tipo="visita" onclick="selTipoEvento(this)"><span class="tipo-evento-emoji">👨‍👩‍👧</span>Visita</button>
