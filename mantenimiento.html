@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Mantenimiento del hogar · My Nana</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=DM+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --g:#1A6B52;--g2:#0F4D3A;--g3:#E8F4EF;--g4:#D4E8DF;
+  --b:#6BAED6;--b2:#2B6CB0;--b3:#E8F1F8;
+  --txt:#1A1A1A;--txt2:#6B7280;
+  --cr:#FAFAFA;--r:16px;--border:#E5E7EB;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:#F0F4F0;color:var(--txt);
+     padding-bottom:calc(32px + env(safe-area-inset-bottom,0px));}
+.nav{background:var(--g2);padding:env(safe-area-inset-top,0px) 16px 0;position:sticky;top:0;z-index:50;}
+.nav-inner{height:56px;display:flex;align-items:center;gap:12px;}
+.nav-back{background:rgba(255,255,255,.12);border:none;color:#fff;border-radius:99px;
+          padding:6px 14px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.nav-title{font-family:'Cormorant Garamond',serif;font-size:20px;color:#fff;flex:1;text-align:center;}
+.nav-add{background:rgba(255,255,255,.12);border:none;color:#fff;border-radius:99px;
+         padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.tabs{background:#fff;display:flex;border-bottom:1px solid var(--border);}
+.tab{flex:1;padding:12px 4px;text-align:center;font-size:12px;font-weight:500;color:var(--txt2);
+     cursor:pointer;border-bottom:2px solid transparent;border:none;background:none;
+     font-family:'DM Sans',sans-serif;transition:all .2s;}
+.tab.activo{color:var(--g);border-bottom:2px solid var(--g);}
+.content{padding:14px 16px 32px;max-width:600px;margin:0 auto;}
+.panel{display:none;} .panel.activo{display:block;}
+.sec-label{font-size:10px;font-weight:700;color:var(--txt2);text-transform:uppercase;
+           letter-spacing:.06em;margin:16px 0 8px;}
+.card{background:#fff;border-radius:var(--r);border:1px solid var(--border);margin-bottom:10px;overflow:hidden;}
+
+/* Mini calendario */
+.cal-wrap{background:#fff;border-radius:var(--r);border:1px solid var(--border);
+          padding:14px;margin-bottom:10px;}
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.cal-mes{font-size:14px;font-weight:600;color:var(--txt);}
+.cal-btn{background:var(--g3);border:none;border-radius:99px;width:28px;height:28px;
+         cursor:pointer;font-size:14px;color:var(--g);display:flex;align-items:center;justify-content:center;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+.cal-head{text-align:center;font-size:10px;font-weight:600;color:var(--txt2);padding:3px 0;}
+.cal-day{text-align:center;padding:5px 2px;border-radius:6px;font-size:12px;
+         cursor:pointer;position:relative;transition:background .15s;}
+.cal-day:hover{background:var(--g3);}
+.cal-day.hoy{background:var(--g);color:#fff;font-weight:600;}
+.cal-day.sel{background:var(--g3);color:var(--g);font-weight:600;outline:1.5px solid var(--g);}
+.cal-day.tiene-evento::after{content:'';position:absolute;bottom:2px;left:50%;
+  transform:translateX(-50%);width:5px;height:5px;border-radius:50%;background:var(--g);}
+.cal-day.hoy.tiene-evento::after{background:#fff;}
+.cal-day.otro-mes{color:#d1d5db;}
+
+/* Cronograma */
+.crono-mes{font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;
+           letter-spacing:.06em;padding:10px 0 6px;}
+.crono-item{display:flex;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);}
+.crono-item:last-child{border-bottom:none;}
+.crono-fecha{width:38px;text-align:center;flex-shrink:0;}
+.crono-fecha-dia{font-size:18px;font-weight:600;color:var(--g);line-height:1;}
+.crono-fecha-mes{font-size:9px;color:var(--txt2);text-transform:uppercase;}
+.crono-body{flex:1;min-width:0;}
+.crono-tipo{display:flex;align-items:center;gap:6px;margin-bottom:2px;}
+.crono-emoji{font-size:16px;}
+.crono-label{font-size:10px;font-weight:600;color:var(--g);text-transform:uppercase;letter-spacing:.04em;}
+.crono-titulo{font-size:13px;font-weight:500;color:var(--txt);line-height:1.3;}
+.crono-meta{font-size:11px;color:var(--txt2);margin-top:2px;}
+.crono-actions{display:flex;gap:5px;margin-top:6px;}
+.btn-crono{background:var(--g3);border:none;border-radius:99px;padding:4px 10px;
+           font-size:11px;font-weight:600;color:var(--g);cursor:pointer;font-family:'DM Sans',sans-serif;}
+.btn-crono.cancel{background:#FEF2F2;color:#9CA3AF;}
+.estado-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:99px;flex-shrink:0;align-self:flex-start;}
+.estado-badge.pendiente{background:#FEF3C7;color:#D97706;}
+.estado-badge.completado{background:var(--g3);color:var(--g);}
+.estado-badge.cancelado{background:#F3F4F6;color:#9CA3AF;}
+
+/* Historial */
+.hist-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);}
+.hist-item:last-child{border-bottom:none;}
+.hist-emoji{font-size:20px;flex-shrink:0;}
+.hist-info{flex:1;min-width:0;}
+.hist-titulo{font-size:13px;font-weight:500;color:var(--txt);}
+.hist-meta{font-size:11px;color:var(--txt2);margin-top:2px;}
+.hist-estado{font-size:18px;flex-shrink:0;}
+
+/* Modal crear evento mínimo */
+.modal-back{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.45);
+            align-items:flex-end;justify-content:center;backdrop-filter:blur(3px);}
+.modal-back.visible{display:flex;}
+.modal-box{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:480px;
+           padding:20px 20px calc(20px + env(safe-area-inset-bottom,0px));max-height:90vh;overflow-y:auto;}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-back.visible .modal-box{animation:slideUp .28s ease;}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.modal-tit{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--txt);}
+.modal-cls{background:var(--g3);border:none;border-radius:50%;width:32px;height:32px;
+           font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.tipo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:14px;}
+.tipo-btn{background:var(--cr);border:1.5px solid var(--border);border-radius:10px;
+          padding:8px 3px;text-align:center;cursor:pointer;font-size:10px;font-weight:500;
+          color:var(--txt2);font-family:'DM Sans',sans-serif;transition:all .18s;
+          display:flex;flex-direction:column;align-items:center;gap:2px;}
+.tipo-btn:hover,.tipo-btn.sel{background:var(--g);border-color:var(--g);color:#fff;}
+.tipo-emoji{font-size:18px;}
+.fm-label{font-size:11px;font-weight:600;color:var(--txt2);margin-bottom:4px;display:block;}
+.fm-input{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;
+          font-size:13px;font-family:'DM Sans',sans-serif;color:var(--txt);outline:none;
+          background:#fff;transition:border-color .2s;}
+.fm-input:focus{border-color:var(--g);}
+.fm-row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+.fm-group{margin-bottom:10px;}
+.btn-primary{width:100%;background:var(--g);color:#fff;border:none;border-radius:99px;
+             padding:13px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-80px);
+       background:var(--g);color:#fff;font-size:13px;font-weight:500;padding:12px 20px;
+       border-radius:99px;z-index:300;transition:transform .35s;white-space:nowrap;}
+.toast.visible{transform:translateX(-50%) translateY(0);}
+.empty-state{text-align:center;padding:28px 16px;color:var(--txt2);font-size:13px;}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- Modal crear evento (versión mínima, guarda en misma colección) -->
+<div class="modal-back" id="modalNuevo">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <div class="modal-tit">Nuevo evento</div>
+      <button class="modal-cls" onclick="cerrarModal()">✕</button>
+    </div>
+    <!-- Selector de tipo -->
+    <div style="font-size:11px;font-weight:600;color:var(--txt2);margin-bottom:6px;">Tipo</div>
+    <div class="tipo-grid" id="tipoGrid"></div>
+    <!-- Campos -->
+    <div class="fm-row2">
+      <div>
+        <label class="fm-label">Título *</label>
+        <input class="fm-input" id="nTitulo" placeholder="Ej: Técnico A/C">
+      </div>
+      <div>
+        <label class="fm-label">Fecha *</label>
+        <input class="fm-input" id="nFecha" type="date">
+      </div>
+    </div>
+    <div class="fm-row2">
+      <div>
+        <label class="fm-label">Hora *</label>
+        <input class="fm-input" id="nHora" type="time" value="09:00">
+      </div>
+      <div>
+        <label class="fm-label">Proveedor</label>
+        <input class="fm-input" id="nProveedor" placeholder="Empresa o nombre">
+      </div>
+    </div>
+    <div class="fm-group">
+      <label class="fm-label">Notas</label>
+      <input class="fm-input" id="nNotas" placeholder="Instrucciones, teléfono...">
+    </div>
+    <button class="btn-primary" onclick="guardarEvento()">🔧 Guardar evento</button>
+  </div>
+</div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <button class="nav-back" onclick="history.back()">← Inicio</button>
+    <div class="nav-title">Mantenimiento del hogar</div>
+    <button class="nav-add" onclick="abrirModal()">+ Nuevo</button>
+  </div>
+</nav>
+
+<div class="tabs">
+  <button class="tab activo" onclick="cambiarTab('calendario',this)">📅 Calendario</button>
+  <button class="tab" onclick="cambiarTab('cronograma',this)">📋 Cronograma</button>
+  <button class="tab" onclick="cambiarTab('historial',this)">📂 Historial</button>
+</div>
+
+<div class="content">
+
+  <!-- ══ CALENDARIO ══ -->
+  <div class="panel activo" id="panel-calendario">
+    <div class="cal-wrap">
+      <div class="cal-nav">
+        <button class="cal-btn" onclick="navMes(-1)">←</button>
+        <div class="cal-mes" id="calLabel">—</div>
+        <button class="cal-btn" onclick="navMes(1)">→</button>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+
+    <div class="sec-label" id="calDayLabel">Eventos del día</div>
+    <div class="card" id="calDayList">
+      <div class="empty-state">Selecciona un día para ver sus eventos</div>
+    </div>
+  </div>
+
+  <!-- ══ CRONOGRAMA ══ -->
+  <div class="panel" id="panel-cronograma">
+    <div class="sec-label">Próximos 90 días</div>
+    <div id="cronograma">
+      <div class="empty-state">Sin eventos próximos</div>
+    </div>
+  </div>
+
+  <!-- ══ HISTORIAL ══ -->
+  <div class="panel" id="panel-historial">
+    <div class="card" id="histResumen" style="margin-bottom:10px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;text-align:center;">
+        <div style="padding:14px 8px;border-right:1px solid var(--border);">
+          <div style="font-size:22px;font-weight:600;color:var(--g);" id="hTotal">0</div>
+          <div style="font-size:10px;color:var(--txt2);margin-top:2px;">Total</div>
+        </div>
+        <div style="padding:14px 8px;border-right:1px solid var(--border);">
+          <div style="font-size:22px;font-weight:600;color:var(--g);" id="hCompl">0</div>
+          <div style="font-size:10px;color:var(--txt2);margin-top:2px;">Completados</div>
+        </div>
+        <div style="padding:14px 8px;">
+          <div style="font-size:22px;font-weight:600;color:#D97706;" id="hPend">0</div>
+          <div style="font-size:10px;color:var(--txt2);margin-top:2px;">Pendientes</div>
+        </div>
+      </div>
+    </div>
+    <div class="sec-label">Últimos 6 meses</div>
+    <div class="card" id="listaHistorial">
+      <div class="empty-state">Sin historial</div>
+    </div>
+  </div>
+
+</div><!-- /content -->
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import { getFirestore, doc, addDoc, getDoc, updateDoc, collection,
+         query, where, orderBy, getDocs, serverTimestamp
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+const fbApp = initializeApp({
+  apiKey:"AIzaSyDDJRJ8A8P507lllGRBOoXO30ESAH1GAnw",
+  authDomain:"mynanapapp.firebaseapp.com",
+  projectId:"mynanapapp",
+  storageBucket:"mynanapapp.firebasestorage.app",
+  messagingSenderId:"124180779437",
+  appId:"1:124180779437:web:d217743000b0f1fedfd124"
+});
+const auth = getAuth(fbApp);
+const db   = getFirestore(fbApp);
+
+// ── Tipos — espejo exacto de tareas.html para compatibilidad total ──
+const TIPOS = {
+  tecnico:            { emoji:'🔧', label:'Técnico' },
+  fumigacion:         { emoji:'🪲', label:'Fumigación' },
+  mantenimiento:      { emoji:'🏗️', label:'Mantenimiento' },
+  veterinario:        { emoji:'🐾', label:'Veterinario' },
+  delivery:           { emoji:'📦', label:'Delivery' },
+  cita:               { emoji:'🏥', label:'Cita médica' },
+  visita:             { emoji:'👨‍👩‍👧', label:'Visita' },
+  otro:               { emoji:'📌', label:'Evento' },
+  aire_acondicionado: { emoji:'❄️', label:'Aire acond.' },
+  plomeria:           { emoji:'🔩', label:'Plomería' },
+  electricidad:       { emoji:'⚡', label:'Electricidad' },
+  limpieza_profunda:  { emoji:'🧹', label:'Limp. prof.' },
+  remodelacion:       { emoji:'🏠', label:'Remodelación' },
+};
+
+// ── Globals ──
+let hogarId     = null;
+let userUid     = null;
+let eventos     = [];
+let calMes      = new Date();
+let diaSelCal   = null;
+let tipoNuevo   = 'tecnico';
+
+const $ = id => document.getElementById(id);
+const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+               'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const MESES_C = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const DIAS_H  = ['Lu','Ma','Mi','Ju','Vi','Sa','Do'];
+
+function showToast(m) {
+  const t = $('toast'); t.textContent = m;
+  t.classList.add('visible');
+  setTimeout(() => t.classList.remove('visible'), 2600);
+}
+function getFechaStr(d) { return d.toISOString().split('T')[0]; }
+function formatHora12(h) {
+  if (!h) return ''; const [hh,mm] = h.split(':').map(Number);
+  return `${hh % 12 || 12}:${String(mm).padStart(2,'0')} ${hh >= 12 ? 'pm' : 'am'}`;
+}
+
+// ── Tabs ──
+window.cambiarTab = (tab, el) => {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('activo'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('activo'));
+  el.classList.add('activo');
+  $('panel-' + tab).classList.add('activo');
+  if (tab === 'calendario')  renderCalendario();
+  if (tab === 'cronograma')  renderCronograma();
+  if (tab === 'historial')   renderHistorial();
+};
+
+// ── Cargar eventos ──
+async function cargarEventos() {
+  if (!hogarId) return;
+  const hoy    = new Date(); hoy.setHours(0,0,0,0);
+  const hace6m = new Date(hoy); hace6m.setMonth(hoy.getMonth() - 6);
+  const en3m   = new Date(hoy); en3m.setMonth(hoy.getMonth() + 3);
+  try {
+    const snap = await getDocs(
+      query(collection(db, 'hogares', hogarId, 'eventos'),
+            where('fecha', '>=', getFechaStr(hace6m)),
+            where('fecha', '<=', getFechaStr(en3m)),
+            orderBy('fecha','asc'), orderBy('hora','asc'))
+    );
+    eventos = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+    renderCalendario();
+    renderCronograma();
+    renderHistorial();
+  } catch(e) { console.warn('cargarEventos:', e); }
+}
+
+// ── CALENDARIO ──────────────────────────────────────────────────────────────
+function renderCalendario() {
+  calMes.setDate(1);
+  $('calLabel').textContent = `${MESES[calMes.getMonth()]} ${calMes.getFullYear()}`;
+
+  const primerDia = new Date(calMes.getFullYear(), calMes.getMonth(), 1);
+  const ultimoDia = new Date(calMes.getFullYear(), calMes.getMonth() + 1, 0);
+  const hoy = getFechaStr(new Date());
+
+  // Días con eventos en este mes
+  const diasConEvento = new Set(
+    eventos
+      .filter(e => e.estado !== 'cancelado')
+      .filter(e => {
+        const [y,m] = (e.fecha||'').split('-').map(Number);
+        return y === calMes.getFullYear() && m === calMes.getMonth() + 1;
+      })
+      .map(e => e.fecha)
+  );
+
+  // Offset lunes=0
+  let offset = primerDia.getDay() - 1;
+  if (offset < 0) offset = 6;
+
+  let html = DIAS_H.map(d => `<div class="cal-head">${d}</div>`).join('');
+
+  // Celdas vacías
+  for (let i = 0; i < offset; i++) html += '<div class="cal-day otro-mes"></div>';
+
+  // Días del mes
+  for (let d = 1; d <= ultimoDia.getDate(); d++) {
+    const fecha = `${calMes.getFullYear()}-${String(calMes.getMonth()+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const esHoy = fecha === hoy;
+    const esSel = fecha === diaSelCal;
+    const tieneEv = diasConEvento.has(fecha);
+    html += `<div class="cal-day ${esHoy?'hoy':''} ${esSel&&!esHoy?'sel':''} ${tieneEv?'tiene-evento':''}"
+                  onclick="selDiaCal('${fecha}')">${d}</div>`;
+  }
+
+  $('calGrid').innerHTML = html;
+
+  if (diaSelCal) renderEventosDia(diaSelCal);
+}
+
+function selDiaCal(fecha) {
+  diaSelCal = fecha;
+  renderCalendario();
+  renderEventosDia(fecha);
+}
+
+window.navMes = (delta) => {
+  calMes = new Date(calMes.getFullYear(), calMes.getMonth() + delta, 1);
+  renderCalendario();
+};
+
+function renderEventosDia(fecha) {
+  const [y,m,d] = fecha.split('-').map(Number);
+  const f = new Date(y, m-1, d);
+  $('calDayLabel').textContent =
+    `${['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'][f.getDay()]} ${d} de ${MESES[m-1]}`;
+
+  const del = eventos.filter(e => e.fecha === fecha && e.estado !== 'cancelado');
+  if (!del.length) {
+    $('calDayList').innerHTML = '<div class="empty-state">Sin eventos este día</div>';
+    return;
+  }
+  $('calDayList').innerHTML = del.map(e => eventoHTML(e, true)).join('');
+}
+
+// ── CRONOGRAMA ──────────────────────────────────────────────────────────────
+function renderCronograma() {
+  const hoy    = getFechaStr(new Date());
+  const en90d  = new Date(); en90d.setDate(en90d.getDate() + 90);
+  const en90s  = getFechaStr(en90d);
+
+  const proximos = eventos.filter(e =>
+    e.fecha >= hoy && e.fecha <= en90s && e.estado !== 'cancelado'
+  );
+
+  if (!proximos.length) {
+    $('cronograma').innerHTML = '<div class="empty-state">Sin eventos en los próximos 90 días<br><button onclick="abrirModal()" style="margin-top:12px;background:var(--g);color:#fff;border:none;border-radius:99px;padding:9px 20px;font-size:13px;font-weight:600;cursor:pointer;font-family:\'DM Sans\',sans-serif;">+ Agregar evento</button></div>';
+    return;
+  }
+
+  // Agrupar por mes
+  const porMes = {};
+  proximos.forEach(e => {
+    const [y, m] = e.fecha.split('-').map(Number);
+    const key = `${y}-${String(m).padStart(2,'0')}`;
+    if (!porMes[key]) porMes[key] = { y, m, items:[] };
+    porMes[key].items.push(e);
+  });
+
+  $('cronograma').innerHTML = Object.values(porMes)
+    .sort((a,b) => a.y !== b.y ? a.y - b.y : a.m - b.m)
+    .map(grupo => `
+      <div class="crono-mes">${MESES[grupo.m-1]} ${grupo.y}</div>
+      <div class="card">${grupo.items.map(e => cronoItemHTML(e)).join('')}</div>`)
+    .join('');
+}
+
+function cronoItemHTML(e) {
+  const t   = TIPOS[e.tipo] || TIPOS['otro'];
+  const [,, d] = e.fecha.split('-');
+  const esFam = true; // en mantenimiento.html solo accede familia
+  return `<div class="crono-item">
+    <div class="crono-fecha">
+      <div class="crono-fecha-dia">${parseInt(d)}</div>
+      <div class="crono-fecha-mes">${MESES_C[parseInt(e.fecha.split('-')[1])-1]}</div>
+    </div>
+    <div class="crono-body">
+      <div class="crono-tipo">
+        <span class="crono-emoji">${t.emoji}</span>
+        <span class="crono-label">${t.label}</span>
+      </div>
+      <div class="crono-titulo">${e.titulo}</div>
+      <div class="crono-meta">${formatHora12(e.hora)}${e.proveedor ? ' · ' + e.proveedor : ''}${e.notas ? ' · ' + e.notas : ''}</div>
+      ${e.estado === 'pendiente' ? `<div class="crono-actions">
+        <button class="btn-crono" onclick="cambiarEstado('${e.id}','completado')">✅ Completado</button>
+        <button class="btn-crono cancel" onclick="cambiarEstado('${e.id}','cancelado')">✕ Cancelar</button>
+      </div>` : ''}
+    </div>
+    <span class="estado-badge ${e.estado}">${e.estado}</span>
+  </div>`;
+}
+
+// ── HISTORIAL ───────────────────────────────────────────────────────────────
+function renderHistorial() {
+  const hoy    = getFechaStr(new Date());
+  const hace6m = new Date(); hace6m.setMonth(hace6m.getMonth() - 6);
+  const hace6s = getFechaStr(hace6m);
+
+  const hist = [...eventos]
+    .filter(e => e.fecha < hoy && e.fecha >= hace6s)
+    .sort((a, b) => b.fecha.localeCompare(a.fecha));
+
+  const total   = hist.length;
+  const compl   = hist.filter(e => e.estado === 'completado').length;
+  const pend    = hist.filter(e => e.estado === 'pendiente').length;
+
+  $('hTotal').textContent = total;
+  $('hCompl').textContent = compl;
+  $('hPend').textContent  = pend;
+
+  $('listaHistorial').innerHTML = hist.length
+    ? hist.map(e => {
+        const t = TIPOS[e.tipo] || TIPOS['otro'];
+        const [y,m,d] = e.fecha.split('-');
+        return `<div class="hist-item">
+          <div class="hist-emoji">${t.emoji}</div>
+          <div class="hist-info">
+            <div class="hist-titulo">${e.titulo}</div>
+            <div class="hist-meta">${parseInt(d)} ${MESES_C[parseInt(m)-1]} ${y}${e.proveedor ? ' · ' + e.proveedor : ''}</div>
+          </div>
+          <div class="hist-estado">${e.estado === 'completado' ? '✅' : e.estado === 'cancelado' ? '❌' : '⏳'}</div>
+        </div>`;
+      }).join('')
+    : '<div class="empty-state">Sin historial en los últimos 6 meses</div>';
+}
+
+// ── Vista de eventos del día (calendar) ─────────────────────────────────────
+function eventoHTML(e, conAcciones) {
+  const t = TIPOS[e.tipo] || TIPOS['otro'];
+  return `<div class="crono-item">
+    <div class="crono-fecha">
+      <div style="font-size:22px;">${t.emoji}</div>
+    </div>
+    <div class="crono-body">
+      <div class="crono-titulo">${e.titulo}</div>
+      <div class="crono-meta">${formatHora12(e.hora)}${e.proveedor ? ' · ' + e.proveedor : ''}${e.notas ? ' · ' + e.notas : ''}</div>
+      ${conAcciones && e.estado === 'pendiente' ? `<div class="crono-actions">
+        <button class="btn-crono" onclick="cambiarEstado('${e.id}','completado')">✅ Completado</button>
+        <button class="btn-crono cancel" onclick="cambiarEstado('${e.id}','cancelado')">✕ Cancelar</button>
+      </div>` : ''}
+    </div>
+    <span class="estado-badge ${e.estado}">${e.estado}</span>
+  </div>`;
+}
+
+// ── Cambiar estado ─────────────────────────────────────────────────────────
+window.cambiarEstado = async (id, nuevoEstado) => {
+  try {
+    await updateDoc(doc(db, 'hogares', hogarId, 'eventos', id), {
+      estado: nuevoEstado,
+    });
+    const ev = eventos.find(e => e.id === id);
+    if (ev) ev.estado = nuevoEstado;
+    renderCalendario();
+    renderCronograma();
+    renderHistorial();
+    showToast(nuevoEstado === 'completado' ? '✅ Evento completado' : '✕ Evento cancelado');
+  } catch(err) { showToast('❌ Error al actualizar'); }
+};
+
+// ── Modal nuevo evento ──────────────────────────────────────────────────────
+function buildTipoGrid(sel) {
+  $('tipoGrid').innerHTML = Object.entries(TIPOS).map(([key, t]) => `
+    <button class="tipo-btn ${sel === key ? 'sel' : ''}" data-tipo="${key}"
+            onclick="selTipo(this)">
+      <span class="tipo-emoji">${t.emoji}</span>
+      <span>${t.label}</span>
+    </button>`).join('');
+}
+
+window.selTipo = (btn) => {
+  tipoNuevo = btn.dataset.tipo;
+  document.querySelectorAll('.tipo-btn').forEach(b =>
+    b.classList.toggle('sel', b.dataset.tipo === tipoNuevo));
+};
+
+window.abrirModal = () => {
+  tipoNuevo = 'tecnico';
+  buildTipoGrid('tecnico');
+  $('nTitulo').value   = '';
+  $('nFecha').value    = getFechaStr(new Date());
+  $('nHora').value     = '09:00';
+  $('nProveedor').value = '';
+  $('nNotas').value    = '';
+  $('modalNuevo').classList.add('visible');
+};
+
+window.cerrarModal = () => $('modalNuevo').classList.remove('visible');
+
+window.guardarEvento = async () => {
+  const titulo = $('nTitulo').value.trim();
+  const fecha  = $('nFecha').value;
+  const hora   = $('nHora').value;
+  if (!titulo) { showToast('⚠️ Escribe un título'); return; }
+  if (!fecha)  { showToast('⚠️ Selecciona la fecha'); return; }
+  try {
+    const ref = await addDoc(collection(db, 'hogares', hogarId, 'eventos'), {
+      tipo:     tipoNuevo,
+      titulo,
+      fecha,
+      hora,
+      proveedor:   $('nProveedor').value.trim(),
+      notas:       $('nNotas').value.trim(),
+      asignadoA:   null,
+      estado:      'pendiente',
+      creadoPor:   userUid,
+      creadoA:     serverTimestamp(),
+      recordatorioEnviado:    false,
+      recordatorio24hEnviado: false,
+    });
+    const nuevo = {
+      id: ref.id, tipo: tipoNuevo, titulo, fecha, hora,
+      proveedor: $('nProveedor').value.trim(),
+      notas: $('nNotas').value.trim(),
+      estado: 'pendiente', asignadoA: null,
+    };
+    eventos.push(nuevo);
+    eventos.sort((a,b) => a.fecha.localeCompare(b.fecha));
+    cerrarModal();
+    diaSelCal = fecha;
+    calMes = new Date(fecha + 'T00:00:00');
+    renderCalendario();
+    renderCronograma();
+    showToast('✅ Evento creado');
+  } catch(err) { showToast('❌ Error al guardar'); console.error(err); }
+};
+
+$('modalNuevo').addEventListener('click', function(e) {
+  if (e.target === this) cerrarModal();
+});
+
+// ── Auth + Init ─────────────────────────────────────────────────────────────
+onAuthStateChanged(auth, async user => {
+  if (!user) { location.href = '/app.html'; return; }
+  userUid = user.uid;
+  try {
+    const snap = await getDocs(
+      query(collection(db, 'hogares'), where('participantes', 'array-contains', user.uid))
+    );
+    if (snap.empty) { location.href = '/app.html'; return; }
+    const guardado = localStorage.getItem('hogarActivoNana');
+    const valido   = snap.docs.find(d => d.id === guardado);
+    hogarId = valido ? guardado : snap.docs[0].id;
+
+    // Iniciar calendario en mes actual
+    calMes    = new Date();
+    diaSelCal = getFechaStr(new Date());
+
+    await cargarEventos();
+  } catch(e) { console.error('Init mantenimiento:', e); }
+});
+</script>
+</body>
+</html>
