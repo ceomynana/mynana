@@ -48,6 +48,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
 .panel-badge{background:var(--b);color:#fff;font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;}
 
 /* ── RUTINAS DEL HOGAR ── */
+.chip-asignado{display:inline-flex;align-items:center;gap:4px;background:var(--g3);
+  color:var(--g);font-size:10px;font-weight:600;padding:2px 8px;border-radius:99px;margin-left:6px;}
 .btn-rutinas{width:100%;margin-top:6px;background:none;border:1.5px solid var(--g);color:var(--g);border-radius:99px;padding:9px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s;}
 .btn-rutinas:hover{background:var(--g3);}
 .rutina-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--g4);}
@@ -330,6 +332,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
               </select>
             </div>
           </div>
+          <div class="form-group" id="wrapAsignadoA" style="display:none;">
+            <label class="form-label" style="font-size:11px;">Asignado a</label>
+            <select class="form-select" id="inAsignadoA" style="font-size:13px;"></select>
+          </div>
           <button class="btn-crear" id="btnCrear" onclick="crearTarea()">
             + Agregar tarea
           </button>
@@ -524,6 +530,7 @@ async function encontrarHogar() {
     escucharTareas();
   escucharEventos();
   escucharRutinas();
+  cargarMiembrosHogar();
     return;
   }
 
@@ -844,7 +851,10 @@ function renderTareas() {
         <div style="width:40px;height:40px;border-radius:10px;background:#F0F7F4;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">${emoji}</div>
         <div style="flex:1;min-width:0;">
           <div style="font-size:13px;font-weight:500;color:${hecha ? '#6b7280' : '#1A2E25'};${hecha ? 'text-decoration:line-through;' : ''}line-height:1.4;word-break:break-word;">${t.nombre}</div>
-          <div style="font-size:11px;color:#9ca3af;margin-top:2px;">🕐 ${hora12} &nbsp;·&nbsp; ${t.cat || ''}</div>
+          <div style="font-size:11px;color:#9ca3af;margin-top:2px;">
+            🕐 ${hora12} &nbsp;·&nbsp; ${t.cat || ''}
+            ${t.asignadoNombre ? `<span class="chip-asignado">👤 ${t.asignadoNombre}</span>` : ''}
+          </div>
         </div>
         <div style="width:28px;height:28px;border-radius:50%;border:2px solid ${hecha ? '#1A6B52' : '#d1d5db'};background:${hecha ? '#1A6B52' : 'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;" onclick="${esNana ? `marcarHecha('${t.id}', ${hecha})` : ''}">
           ${hecha ? '<svg width="12" height="10" viewBox="0 0 12 10" fill="none"><polyline points="1,5 4,9 11,1" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>' : ''}
@@ -932,6 +942,8 @@ window.crearTarea = async () => {
   btn.disabled = true;
 
   try {
+    const asignadoUid    = document.getElementById('inAsignadoA')?.value || '';
+    const asignadoNombre = resolverNombreAsignado(asignadoUid);
     await addDoc(collection(db, 'hogares', hogarId, 'tareas'), {
       nombre,
       hora,
@@ -939,10 +951,12 @@ window.crearTarea = async () => {
       prioridad,
       estado: 'pendiente',
       fotoUrl: null,
-      fecha: fechaSeleccionada,   // YYYY-MM-DD — filtra por día
+      fecha: fechaSeleccionada,
       creadoPor: usuarioActual.uid,
       creadoA: serverTimestamp(),
-      completadaA: null
+      completadaA: null,
+      asignadoA: asignadoUid  || null,
+      asignadoNombre: asignadoNombre || null,
     });
 
     document.getElementById('inNombre').value = '';
@@ -1768,6 +1782,69 @@ function _labelFrecuencia(frec, diasSemana, diaDelMes) {
 document.getElementById('modalRutinas')?.addEventListener('click', function(e) {
   if (e.target === this) cerrarModalRutinas();
 });
+
+// ══════════════════════════════════════════════════════
+//  ASIGNACIÓN DE TAREAS A MIEMBROS DEL HOGAR
+// ══════════════════════════════════════════════════════
+
+let miembrosCache = []; // [{ uid, nombre, tipo }]
+
+// Cargar miembros del hogar una sola vez
+async function cargarMiembrosHogar() {
+  if (!hogarId) return;
+  try {
+    const hogarDoc = await getDoc(doc(db, 'hogares', hogarId));
+    const uids     = hogarDoc.exists() ? (hogarDoc.data().participantes || []) : [];
+    const perfiles = await Promise.all(
+      uids.map(uid => getDoc(doc(db, 'usuarios', uid)).then(d =>
+        d.exists() ? { uid, nombre: d.data().nombre || 'Miembro', tipo: d.data().tipo || 'familia' } : null
+      ))
+    );
+    miembrosCache = perfiles.filter(Boolean);
+    renderSelectorAsignado();
+  } catch(e) { console.warn('cargarMiembrosHogar:', e); }
+}
+
+// Construir las opciones del selector según tipoHogar
+function renderSelectorAsignado() {
+  const tipoHogar  = localStorage.getItem('mynana_tipoHogar') || 'con_nana';
+  const select     = document.getElementById('inAsignadoA');
+  const wrap       = document.getElementById('wrapAsignadoA');
+  if (!select || !wrap) return;
+
+  // Miembros de la familia (excluir nanas)
+  const familia = miembrosCache.filter(m => m.tipo === 'familia');
+  const nanas   = miembrosCache.filter(m => m.tipo === 'nana');
+
+  const opciones = [{ value: '', label: 'Todos' }];
+
+  if (tipoHogar === 'sin_nana') {
+    familia.forEach(m => opciones.push({ value: m.uid, label: m.nombre.split(' ')[0] }));
+  } else if (tipoHogar === 'con_ayuda') {
+    familia.forEach(m => opciones.push({ value: m.uid, label: m.nombre.split(' ')[0] }));
+    opciones.push({ value: 'ayuda', label: 'Ayuda del día' });
+  } else {
+    // con_nana
+    nanas.forEach(m => opciones.push({ value: m.uid, label: 'Nana' }));
+    familia.forEach(m => opciones.push({ value: m.uid, label: m.nombre.split(' ')[0] }));
+  }
+
+  select.innerHTML = opciones.map(o =>
+    `<option value="${o.value}">${o.label}</option>`
+  ).join('');
+
+  // Mostrar el selector si hay más de 1 opción real (no solo "Todos")
+  wrap.style.display = opciones.length > 1 ? 'block' : 'none';
+}
+
+// Resolver nombre a partir del value del selector
+function resolverNombreAsignado(uid) {
+  if (!uid) return null;
+  if (uid === 'ayuda') return 'Ayuda del día';
+  if (uid === 'nana')  return 'Nana';
+  const m = miembrosCache.find(x => x.uid === uid);
+  return m ? m.nombre.split(' ')[0] : null;
+}
 
 window.showToast = (msg) => {
   const t = document.getElementById('toast');
