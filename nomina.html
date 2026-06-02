@@ -3,1176 +3,803 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>My Nana — Nómina y Contratos</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet">
+<title>Pagos y contratos · My Nana</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=DM+Sans:wght@400;500;600&display=swap">
 <style>
-:root{--g:#1A6B52;--g2:#0F4A38;--g3:#F0F7F4;--g4:#E1F0EB;--b:#D4A5A5;--b2:#BF9090;--b3:#F7EFEF;--cr:#F9F5F0;--txt:#1A2E25;--txt2:#4A6358;--r:14px;}
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);overflow-x:hidden;min-height:100vh;min-height:100dvh;}
-
-/* SPLASH */
-#splash{position:fixed;inset:0;background:var(--g2);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;transition:opacity .4s;}
-#splash.oculto{opacity:0;pointer-events:none;}
-
-/* NO AUTH */
-#noAuth{position:fixed;inset:0;background:var(--g2);z-index:998;display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px;gap:16px;}
-#noAuth.visible{display:flex;}
-
-/* HEADER */
-.app-header{background:var(--g2);padding:48px 20px 16px;position:sticky;top:0;z-index:50;}
-@media(min-width:768px){.app-header{padding-top:16px;}}
-.header-top{display:flex;align-items:center;justify-content:space-between;}
-.header-logo{font-family:'Cormorant Garamond',serif;font-size:20px;color:#fff;}
-.header-logo em{color:var(--b);font-style:normal;}
-.header-back{background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.7);font-size:13px;padding:7px 14px;border-radius:99px;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;}
-
-/* TABS */
-.tabs{display:flex;background:var(--g2);padding:0 20px 14px;gap:8px;}
-.tab{flex:1;padding:10px;border-radius:10px;border:1.5px solid rgba(255,255,255,.15);background:transparent;color:rgba(255,255,255,.6);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;text-align:center;transition:all .2s;}
-.tab.activo{background:var(--b);border-color:var(--b);color:#fff;}
-
-/* LAYOUT */
-.layout{max-width:1100px;margin:0 auto;padding:20px 16px 80px;}
-@media(min-width:900px){.layout{display:grid;grid-template-columns:1fr 380px;gap:20px;}}
-
-/* PANEL */
-.panel{background:#fff;border-radius:var(--r);border:1px solid var(--g4);overflow:hidden;margin-bottom:16px;}
-.panel-hdr{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--g4);}
-.panel-title{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--txt);}
-.panel-sub{font-size:12px;color:var(--txt2);margin-top:2px;}
-.panel-badge{font-size:11px;font-weight:600;padding:4px 10px;border-radius:99px;}
-
-/* CONFIGURACIÓN NANA */
-.config-form{padding:16px 18px;display:flex;flex-direction:column;gap:12px;}
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.form-group{display:flex;flex-direction:column;gap:4px;}
-.form-label{font-size:11px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.04em;}
-.form-input{background:var(--cr);border:1.5px solid var(--g4);border-radius:8px;padding:10px 12px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--txt);outline:none;width:100%;}
-.form-input:focus{border-color:var(--g);background:#fff;}
-.form-select{width:100%;background:var(--cr);border:1.5px solid var(--g4);border-radius:8px;padding:10px 12px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--txt);outline:none;appearance:none;cursor:pointer;}
-.form-select:focus{border-color:var(--g);}
-.btn-calc{width:100%;background:var(--g);color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;padding:13px;border-radius:99px;border:none;cursor:pointer;transition:all .2s;}
-.btn-calc:hover{background:var(--g2);}
-
-/* RESULTADO NÓMINA */
-.nomina-resultado{padding:16px 18px;}
-.nomina-mes{font-size:12px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;}
-.nomina-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--cr);border-radius:8px;margin-bottom:6px;border:1px solid var(--g4);}
-.nomina-row.desc{background:var(--b3);border-color:#EDE0E0;}
-.nomina-row.total{background:var(--g);border-radius:10px;margin-top:10px;}
-.nomina-label{font-size:13px;color:var(--txt2);}
-.nomina-label.total{color:#fff;font-weight:600;}
-.nomina-valor{font-size:14px;font-weight:500;color:var(--txt);}
-.nomina-valor.positivo{color:var(--g);}
-.nomina-valor.negativo{color:var(--b2);}
-.nomina-valor.total{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:#fff;}
-.nomina-sep{font-size:11px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em;margin:12px 0 8px;}
-.btn-pagar{width:100%;background:var(--g);color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;padding:13px;border-radius:99px;border:none;cursor:pointer;margin-top:14px;transition:all .2s;}
-.btn-pagar:hover{background:var(--g2);}
-.btn-recibo{width:100%;background:var(--g3);color:var(--g);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:11px;border-radius:99px;border:none;cursor:pointer;margin-top:8px;}
-
-/* DÍAS TRABAJADOS */
-.dias-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:14px 18px;}
-.dia-header{font-size:10px;text-align:center;color:var(--txt2);font-weight:600;padding:4px 0;}
-.dia-cell{aspect-ratio:1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;border:1.5px solid var(--g4);background:#fff;font-weight:500;color:var(--txt2);transition:all .15s;}
-.dia-cell.trabajado{background:var(--g);border-color:var(--g);color:#fff;}
-.dia-cell.libre{background:var(--b3);border-color:var(--b);color:var(--b2);}
-.dia-cell.vacio{background:transparent;border-color:transparent;cursor:default;}
-.dia-cell.hoy{border-color:var(--g);font-weight:600;}
-.dias-resumen{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 18px 14px;}
-.dias-stat{background:var(--cr);border-radius:10px;padding:12px;text-align:center;border:1px solid var(--g4);}
-.dias-stat-n{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:var(--g);}
-.dias-stat-l{font-size:11px;color:var(--txt2);margin-top:3px;}
-
-/* CONTRATO */
-.contrato-wrap{padding:16px 18px;}
-.contrato-tipo-sel{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
-.tipo-btn{padding:10px;border-radius:10px;border:1.5px solid var(--g4);background:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--txt2);cursor:pointer;text-align:center;transition:all .2s;}
-.tipo-btn.activo{background:var(--g);border-color:var(--g);color:#fff;}
-.contrato-preview{background:var(--cr);border-radius:10px;padding:16px;border:1px solid var(--g4);font-size:12px;color:var(--txt2);line-height:1.8;margin-bottom:14px;white-space:pre-wrap;max-height:300px;overflow-y:auto;}
-.contrato-preview strong{color:var(--txt);}
-.btn-descargar{width:100%;background:var(--g2);color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;padding:13px;border-radius:99px;border:none;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;}
-.btn-descargar:hover{background:var(--g);}
-
-/* HISTORIAL PAGOS */
-.pago-item{padding:12px 18px;border-bottom:1px solid var(--g4);display:flex;align-items:center;gap:12px;}
+:root{
+  --g:#1A6B52; --g2:#0F4D3A; --g3:#E8F4EF; --g4:#D4E8DF;
+  --b:#6BAED6; --b2:#2B6CB0; --b3:#E8F1F8;
+  --txt:#1A1A1A; --txt2:#6B7280;
+  --cr:#FAFAFA; --r:16px; --border:#E5E7EB;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:#F0F4F0;color:var(--txt);min-height:100vh;
+     padding-bottom:env(safe-area-inset-bottom,20px);}
+.nav{background:var(--g2);padding:env(safe-area-inset-top,0px) 16px 0;position:sticky;top:0;z-index:50;}
+.nav-inner{height:56px;display:flex;align-items:center;gap:12px;}
+.nav-back{background:rgba(255,255,255,.12);border:none;color:#fff;border-radius:99px;
+          padding:6px 14px;font-size:13px;font-weight:500;cursor:pointer;
+          font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:4px;}
+.nav-title{font-family:'Cormorant Garamond',serif;font-size:20px;color:#fff;flex:1;text-align:center;}
+.nav-tipo{font-size:10px;font-weight:600;padding:3px 10px;border-radius:99px;letter-spacing:.04em;}
+.tabs{background:#fff;display:flex;border-bottom:1px solid var(--border);overflow-x:auto;
+      -ms-overflow-style:none;scrollbar-width:none;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{flex:1;min-width:70px;padding:12px 8px;text-align:center;font-size:12px;font-weight:500;
+     color:var(--txt2);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;
+     border:none;background:none;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.tab.activo{color:var(--g);border-bottom:2px solid var(--g);}
+.content{padding:14px 16px 40px;max-width:600px;margin:0 auto;}
+.panel{display:none;} .panel.activo{display:block;}
+.sec-label{font-size:10px;font-weight:600;color:var(--txt2);text-transform:uppercase;
+           letter-spacing:.06em;margin:16px 0 8px;}
+.card{background:#fff;border-radius:var(--r);border:1px solid var(--border);margin-bottom:10px;overflow:hidden;}
+.card-head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.card-icon{width:36px;height:36px;border-radius:10px;background:var(--g3);
+           display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.card-title{font-size:14px;font-weight:600;color:var(--txt);}
+.card-sub{font-size:11px;color:var(--txt2);margin-top:2px;}
+.card-body{padding:12px 16px;}
+.badge{display:inline-block;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:600;margin-left:6px;}
+.badge-ev{background:#E1F5EE;color:#0F6E56;}
+.badge-fij{background:#E8F1F8;color:#2B6CB0;}
+.row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;
+     border-bottom:1px solid var(--border);}
+.row:last-child{border-bottom:none;}
+.row-label{font-size:12px;color:var(--txt2);}
+.row-val{font-size:12px;font-weight:500;color:var(--txt);}
+.clause{padding:8px 0;border-bottom:1px solid var(--border);}
+.clause:last-child{border-bottom:none;}
+.clause-num{font-size:10px;font-weight:700;color:var(--g);margin-bottom:3px;}
+.clause-text{font-size:12px;color:var(--txt);line-height:1.55;}
+.btn-primary{width:100%;background:var(--g);color:#fff;border:none;border-radius:99px;
+             padding:13px;font-size:14px;font-weight:600;cursor:pointer;
+             font-family:'DM Sans',sans-serif;margin-bottom:8px;transition:all .2s;}
+.btn-primary:hover{background:var(--g2);}
+.btn-secondary{width:100%;background:#fff;color:var(--txt2);border:1.5px solid var(--border);
+               border-radius:99px;padding:11px;font-size:13px;font-weight:500;
+               cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.btn-secondary:hover{border-color:var(--g);color:var(--g);}
+.form-label{font-size:11px;font-weight:600;color:var(--txt2);margin-bottom:5px;display:block;}
+.form-input{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;
+            font-size:13px;font-family:'DM Sans',sans-serif;color:var(--txt);
+            background:#fff;outline:none;transition:border-color .2s;}
+.form-input:focus{border-color:var(--g);}
+.form-group{margin-bottom:12px;}
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.pago-item{display:flex;align-items:center;justify-content:space-between;
+           padding:9px 0;border-bottom:1px solid var(--border);}
 .pago-item:last-child{border-bottom:none;}
-.pago-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
-.pago-info{flex:1;}
-.pago-desc{font-size:13px;font-weight:500;color:var(--txt);}
-.pago-fecha{font-size:11px;color:#bbb;margin-top:2px;}
-.pago-monto{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--g);}
-.pago-estado{font-size:10px;font-weight:600;padding:3px 8px;border-radius:99px;}
-
-/* MODAL REGISTRAR PAGO */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;display:flex;align-items:flex-end;justify-content:center;}
-.modal-overlay.oculto{display:none;}
-.modal-box{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:24px 20px 40px;}
-@media(min-width:768px){.modal-overlay{align-items:center;}.modal-box{border-radius:20px;}}
-.modal-title{font-size:16px;font-weight:600;color:var(--txt);margin-bottom:16px;}
-.modal-cancel{width:100%;background:transparent;border:1px solid var(--g4);border-radius:99px;padding:12px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--txt2);cursor:pointer;margin-top:10px;}
-
-/* TOAST */
-.toast{position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--g);color:#fff;font-size:13px;font-weight:500;padding:10px 20px;border-radius:99px;z-index:300;transition:transform .3s;white-space:nowrap;box-shadow:0 4px 16px rgba(26,107,82,.3);}
+.pago-fecha{font-size:12px;color:var(--txt2);}
+.pago-concepto{font-size:13px;font-weight:500;color:var(--txt);margin-top:1px;}
+.pago-monto{font-size:14px;font-weight:600;color:var(--g);}
+.visit-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.visit-item:last-child{border-bottom:none;}
+.visit-cal{width:38px;height:38px;border-radius:10px;background:var(--g3);
+           display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;}
+.visit-day{font-size:16px;font-weight:600;color:var(--g);line-height:1;}
+.visit-mon{font-size:9px;color:#1D9E75;text-transform:uppercase;}
+.visit-info{flex:1;min-width:0;}
+.visit-name{font-size:13px;font-weight:500;color:var(--txt);}
+.visit-tasks{font-size:11px;color:var(--txt2);margin-top:2px;white-space:nowrap;
+             overflow:hidden;text-overflow:ellipsis;}
+.visit-footer{display:flex;align-items:center;gap:6px;margin-top:4px;}
+.stars{color:#F59E0B;font-size:11px;}
+.visit-monto{font-size:12px;font-weight:600;color:var(--g);margin-left:auto;}
+.hist-hero{background:var(--g2);border-radius:var(--r);padding:18px;margin-bottom:10px;}
+.hist-total-l{font-size:12px;color:rgba(255,255,255,.65);margin-bottom:4px;}
+.hist-total-n{font-family:'Cormorant Garamond',serif;font-size:36px;color:#fff;font-weight:500;}
+.hist-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:14px;}
+.hist-stat{background:rgba(255,255,255,.1);border-radius:10px;padding:10px 6px;text-align:center;}
+.hist-stat-n{font-size:18px;font-weight:600;color:#fff;}
+.hist-stat-l{font-size:9px;color:rgba(255,255,255,.6);margin-top:2px;}
+.mes-item{display:flex;align-items:center;justify-content:space-between;
+          padding:9px 0;border-bottom:1px solid var(--border);}
+.mes-item:last-child{border-bottom:none;}
+.mes-label{font-size:13px;font-weight:500;color:var(--txt);}
+.mes-visitas{font-size:11px;color:var(--txt2);}
+.mes-total{font-size:13px;font-weight:600;color:var(--g);}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-80px);
+       background:var(--g);color:#fff;font-size:13px;font-weight:500;padding:12px 20px;
+       border-radius:99px;z-index:1000;transition:transform .35s ease;white-space:nowrap;
+       box-shadow:0 8px 24px rgba(26,107,82,.3);}
 .toast.visible{transform:translateX(-50%) translateY(0);}
-
-.empty-state{text-align:center;padding:32px 20px;}
-.empty-icon{font-size:36px;margin-bottom:10px;}
+.empty-state{text-align:center;padding:32px 16px;color:var(--txt2);font-size:13px;}
+/* Print */
+@media print{
+  .nav,.tabs,.btn-primary,.btn-secondary,.form-group,.form-row-2{display:none!important;}
+  .panel{display:block!important;}
+  #panel-pagos,#panel-visitas,#panel-historial{display:none!important;}
+  body{background:#fff;} .card{border:1px solid #ccc;}
+}
 </style>
 </head>
 <body>
 
-<!-- SPLASH -->
-<div id="splash">
-  <div style="width:72px;height:72px;border-radius:50%;background:var(--g);border:3px solid var(--b);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:24px;color:#fff;">MN</div>
-  <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:#fff;">NANA</div>
-  <div style="font-size:13px;color:rgba(255,255,255,.5);">Cargando nómina...</div>
-</div>
-
-<!-- NO AUTH -->
-<div id="noAuth">
-  <div style="font-family:'Cormorant Garamond',serif;font-size:24px;color:#fff;">My <span style="color:#D4A5A5;">Nana</span></div>
-  <div style="font-size:14px;color:rgba(255,255,255,.6);text-align:center;">Necesitas iniciar sesión</div>
-  <a href="/app.html" style="background:var(--b);color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;padding:14px 32px;border-radius:99px;border:none;cursor:pointer;text-decoration:none;display:inline-block;">Iniciar sesión →</a>
-</div>
-
-<!-- MODAL REGISTRAR PAGO -->
-<div class="modal-overlay oculto" id="modalPago">
-  <div class="modal-box">
-    <div class="modal-title">Registrar pago realizado</div>
-    <div class="form-group" style="margin-bottom:12px;">
-      <label class="form-label">Concepto</label>
-      <select class="form-select" id="pagoConcepto">
-        <option value="Salario mensual">Salario mensual</option>
-        <option value="Quincena">Quincena</option>
-        <option value="Décimo tercer mes">Décimo tercer mes</option>
-        <option value="Vacaciones">Vacaciones</option>
-        <option value="Prima de antigüedad">Prima de antigüedad</option>
-        <option value="Pago por días">Pago por días trabajados</option>
-        <option value="Otro">Otro</option>
-      </select>
-    </div>
-    <div class="form-row" style="margin-bottom:12px;">
-      <div class="form-group">
-        <label class="form-label">Monto ($)</label>
-        <input type="number" class="form-input" id="pagoMonto" placeholder="0.00" step="0.01" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">Fecha</label>
-        <input type="date" class="form-input" id="pagoFecha" />
-      </div>
-    </div>
-    <div class="form-group" style="margin-bottom:14px;">
-      <label class="form-label">Nota (opcional)</label>
-      <input type="text" class="form-input" id="pagoNota" placeholder="Ej: Pago quincena 1-15 mayo" />
-    </div>
-    <button class="btn-calc" onclick="guardarPago()">Registrar pago →</button>
-    <button class="modal-cancel" onclick="cerrarModalPago()">Cancelar</button>
-  </div>
-</div>
-
-<!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<!-- HEADER -->
-<div class="app-header" id="appHeader" style="display:none;">
-  <div class="header-top" style="margin-bottom:12px;">
-    <div class="header-logo">My <em>Nana</em> — Nómina</div>
-    <a href="/app.html" class="header-back">← Dashboard</a>
+<nav class="nav">
+  <div class="nav-inner">
+    <button class="nav-back" onclick="history.back()">← Inicio</button>
+    <div class="nav-title">Pagos y contratos</div>
+    <div class="nav-tipo" id="navTipo" style="background:#E1F5EE;color:#0F6E56;">Eventual</div>
   </div>
-  <!-- TABS -->
-  <div class="tabs">
-    <button class="tab activo" onclick="cambiarTab('nomina',this)">💰 Nómina</button>
-    <button class="tab" onclick="cambiarTab('dias',this)">📅 Días</button>
-    <button class="tab" onclick="cambiarTab('contrato',this)">📋 Contrato</button>
-    <button class="tab" onclick="cambiarTab('pagos',this)">🧾 Pagos</button>
-  </div>
+</nav>
+
+<div class="tabs">
+  <button class="tab activo" onclick="cambiarTab('contratos',this)">📄 Contratos</button>
+  <button class="tab" onclick="cambiarTab('pagos',this)">💳 Pagos</button>
+  <button class="tab" onclick="cambiarTab('visitas',this)">📅 Visitas</button>
+  <button class="tab" onclick="cambiarTab('historial',this)">📊 Historial</button>
 </div>
 
-<!-- CONTENIDO -->
-<div id="appContent" style="display:none;">
-  <div class="layout">
-    <div id="tabContenido"></div>
-    <div id="tabLateral"></div>
+<div class="content">
+
+  <!-- ══ TAB CONTRATOS ══ -->
+  <div class="panel activo" id="panel-contratos">
+    <div class="sec-label" id="contLabelActivo">Acuerdo activo</div>
+    <div class="card" id="cardContratoActivo">
+      <div class="card-head">
+        <div class="card-icon">📋</div>
+        <div>
+          <div class="card-title" id="contTipoNombre">Cargando...</div>
+          <div class="card-sub" id="contVigencia">—</div>
+        </div>
+      </div>
+      <div class="card-body" id="contResumenBody">
+        <div class="empty-state">Cargando contrato...</div>
+      </div>
+    </div>
+
+    <div class="sec-label" id="clausulasLabel">Cláusulas del acuerdo</div>
+    <div class="card">
+      <div class="card-body" id="clausulasBody">
+        <div class="empty-state">Sin cláusulas registradas</div>
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="imprimirContrato()">🖨️ Ver contrato para imprimir</button>
+    <button class="btn-secondary" onclick="mostrarFormContrato()">✏️ Editar acuerdo</button>
+
+    <!-- Formulario nuevo/editar contrato -->
+    <div id="formContrato" style="display:none;margin-top:14px;">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-icon">✏️</div>
+          <div><div class="card-title" id="formContratoTitulo">Configurar acuerdo</div></div>
+        </div>
+        <div class="card-body">
+          <div class="form-group">
+            <label class="form-label">Nombre de la persona</label>
+            <input class="form-input" id="cNombre" placeholder="Nombre completo">
+          </div>
+          <div class="form-row-2">
+            <div>
+              <label class="form-label">Cédula (opcional)</label>
+              <input class="form-input" id="cCedula" placeholder="8-123-456">
+            </div>
+            <div>
+              <label class="form-label">Teléfono</label>
+              <input class="form-input" id="cTelefono" placeholder="6000-0000">
+            </div>
+          </div>
+          <div id="fieldsTarifaEventual">
+            <div class="form-row-2">
+              <div>
+                <label class="form-label">Tarifa por visita ($)</label>
+                <input class="form-input" id="cTarifa" type="number" placeholder="25.00">
+              </div>
+              <div>
+                <label class="form-label">Frecuencia estimada</label>
+                <select class="form-input" id="cFrecuencia">
+                  <option value="1 vez / semana">1 vez / semana</option>
+                  <option value="2 veces / semana">2 veces / semana</option>
+                  <option value="3 veces / semana">3 veces / semana</option>
+                  <option value="Diario">Diario</option>
+                  <option value="Quincenal">Quincenal</option>
+                  <option value="Mensual">Mensual</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div id="fieldsSalarioFijo" style="display:none;">
+            <div class="form-row-2">
+              <div>
+                <label class="form-label">Salario mensual ($)</label>
+                <input class="form-input" id="cSalario" type="number" placeholder="500.00">
+              </div>
+              <div>
+                <label class="form-label">Horas semanales</label>
+                <input class="form-input" id="cHoras" type="number" placeholder="48">
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Servicios acordados</label>
+            <input class="form-input" id="cServicios" placeholder="Limpieza general, lavandería, cocina...">
+          </div>
+          <div class="form-row-2">
+            <div>
+              <label class="form-label">Forma de pago</label>
+              <select class="form-input" id="cFormaPago">
+                <option value="Efectivo">Efectivo</option>
+                <option value="Yappy">Yappy</option>
+                <option value="Transferencia">Transferencia</option>
+                <option value="Efectivo / Yappy">Efectivo / Yappy</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Fecha de inicio</label>
+              <input class="form-input" id="cFechaInicio" type="date">
+            </div>
+          </div>
+          <button class="btn-primary" onclick="guardarContrato()">💾 Guardar acuerdo</button>
+          <button class="btn-secondary" onclick="cancelarFormContrato()">Cancelar</button>
+        </div>
+      </div>
+    </div>
   </div>
-</div>
+
+  <!-- ══ TAB PAGOS ══ -->
+  <div class="panel" id="panel-pagos">
+    <div class="sec-label">Registrar pago</div>
+    <div class="card">
+      <div class="card-body">
+        <div class="form-row-2">
+          <div>
+            <label class="form-label">Concepto</label>
+            <select class="form-input" id="pConcepto">
+              <option value="Pago por visita">Pago por visita</option>
+              <option value="Pago por hora">Pago por hora</option>
+              <option value="Salario mensual">Salario mensual</option>
+              <option value="Adelanto">Adelanto</option>
+              <option value="Décimo tercer mes">Décimo tercer mes</option>
+              <option value="Liquidación">Liquidación</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Monto ($)</label>
+            <input class="form-input" id="pMonto" type="number" placeholder="25.00">
+          </div>
+        </div>
+        <div class="form-row-2">
+          <div>
+            <label class="form-label">Fecha</label>
+            <input class="form-input" id="pFecha" type="date">
+          </div>
+          <div>
+            <label class="form-label">Método</label>
+            <select class="form-input" id="pMetodo">
+              <option value="Efectivo">Efectivo</option>
+              <option value="Yappy">Yappy</option>
+              <option value="Transferencia">Transferencia</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notas (opcional)</label>
+          <input class="form-input" id="pNotas" placeholder="Ej: Visita del martes, semana 1">
+        </div>
+        <button class="btn-primary" onclick="registrarPago()">✅ Registrar pago</button>
+      </div>
+    </div>
+
+    <div class="sec-label">Pagos recientes</div>
+    <div class="card">
+      <div class="card-body" id="listaPagos">
+        <div class="empty-state">Sin pagos registrados</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TAB VISITAS ══ -->
+  <div class="panel" id="panel-visitas">
+    <div class="sec-label">Registrar visita</div>
+    <div class="card">
+      <div class="card-body">
+        <div class="form-row-2">
+          <div>
+            <label class="form-label">Fecha de visita</label>
+            <input class="form-input" id="vFecha" type="date">
+          </div>
+          <div>
+            <label class="form-label">Calificación</label>
+            <select class="form-input" id="vCalif">
+              <option value="5">⭐⭐⭐⭐⭐ Excelente</option>
+              <option value="4">⭐⭐⭐⭐ Muy buena</option>
+              <option value="3">⭐⭐⭐ Buena</option>
+              <option value="2">⭐⭐ Regular</option>
+              <option value="1">⭐ Mala</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tareas realizadas</label>
+          <input class="form-input" id="vTareas" placeholder="Ej: Limpieza general, lavandería, cocina">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Pago asociado ($)</label>
+          <input class="form-input" id="vPago" type="number" placeholder="25.00">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notas (opcional)</label>
+          <input class="form-input" id="vNotas" placeholder="Observaciones de la visita">
+        </div>
+        <button class="btn-primary" onclick="registrarVisita()">📅 Registrar visita</button>
+      </div>
+    </div>
+
+    <div class="sec-label">Visitas registradas</div>
+    <div class="card">
+      <div class="card-body" id="listaVisitas" style="padding:8px 16px;">
+        <div class="empty-state">Sin visitas registradas</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TAB HISTORIAL ══ -->
+  <div class="panel" id="panel-historial">
+    <div class="hist-hero" id="histHero">
+      <div class="hist-total-l">Total pagado este año</div>
+      <div class="hist-total-n" id="histTotalN">$0.00</div>
+      <div class="hist-stats">
+        <div class="hist-stat">
+          <div class="hist-stat-n" id="histVisitas">0</div>
+          <div class="hist-stat-l">Visitas</div>
+        </div>
+        <div class="hist-stat">
+          <div class="hist-stat-n" id="histPromedio">$0</div>
+          <div class="hist-stat-l">Promedio</div>
+        </div>
+        <div class="hist-stat">
+          <div class="hist-stat-n" id="histCalif">—</div>
+          <div class="hist-stat-l">Calificación</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec-label">Desglose por mes</div>
+    <div class="card">
+      <div class="card-body" id="histMeses" style="padding:8px 16px;">
+        <div class="empty-state">Sin registros aún</div>
+      </div>
+    </div>
+
+    <div class="sec-label">Todos los pagos</div>
+    <div class="card">
+      <div class="card-body" id="histPagosAll" style="padding:8px 16px;">
+        <div class="empty-state">Sin pagos registrados</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /content -->
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, where, getDocs, orderBy, onSnapshot, serverTimestamp, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getFirestore, doc, setDoc, getDoc, collection, addDoc,
+         query, where, getDocs, orderBy, serverTimestamp, onSnapshot
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 const firebaseConfig = {
-  apiKey:"AIzaSyDDJRJ8A8P507lllGRBOoXO30ESAH1GAnw",
-  authDomain:"mynanapapp.firebaseapp.com",
-  projectId:"mynanapapp",
-  storageBucket:"mynanapapp.firebasestorage.app",
-  messagingSenderId:"124180779437",
-  appId:"1:124180779437:web:d217743000b0f1fedfd124"
+  apiKey: "AIzaSyDDJRJ8A8P507lllGRBOoXO30ESAH1GAnw",
+  authDomain: "mynanapapp.firebaseapp.com",
+  projectId: "mynanapapp",
+  storageBucket: "mynanapapp.firebasestorage.app",
+  messagingSenderId: "124180779437",
+  appId: "1:124180779437:web:d217743000b0f1fedfd124"
 };
+const fbApp = initializeApp(firebaseConfig);
+const auth  = getAuth(fbApp);
+const db    = getFirestore(fbApp);
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+// ── Globals ──
+let hogarId   = null;
+let tipoHogar = localStorage.getItem('mynana_tipoHogar') || 'con_nana';
+let contratoActual = null;
+let pagosCache = [];
+let visitasCache = [];
 
-let usuarioActual = null;
-let perfilActual = null;
-let nanaVinculada = null;
-let hogarId = null;
-let tabActual = 'nomina';
-let diasTrabajados = {};
-let pagosHistorial = [];
-let tipoContrato = 'fija';
+// ── Helpers ──
+const $ = id => document.getElementById(id);
+const MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const MESES_FULL = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                    'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
-const MES_ACTUAL = new Date().toLocaleString('es-PA', { month: 'long', year: 'numeric' });
-const HOY = new Date();
-
-// ── AUTH ──
-onAuthStateChanged(auth, async (user) => {
-  document.getElementById('splash').classList.add('oculto');
-  if (!user) { document.getElementById('noAuth').classList.add('visible'); return; }
-  usuarioActual = user;
-  const perfil = await getDoc(doc(db, 'usuarios', user.uid));
-  if (!perfil.exists()) { document.getElementById('noAuth').classList.add('visible'); return; }
-  perfilActual = perfil.data();
-
-  if (perfilActual.tipo !== 'familia') {
-    // Vista especial para la nana — solo puede VER sus pagos
-    document.getElementById('appHeader').style.display = 'block';
-    document.getElementById('appContent').style.display = 'block';
-
-    // Ocultar tabs de nómina, días y contrato — solo mostrar pagos
-    document.querySelector('.tabs').innerHTML = `
-      <div style="font-size:13px;color:rgba(255,255,255,.7);padding:4px 0;">
-        👩 Vista de trabajadora — tus pagos recibidos
-      </div>`;
-
-    await cargarDatos();
-    renderVistaNana();
-    return;
-  }
-
-  document.getElementById('appHeader').style.display = 'block';
-  document.getElementById('appContent').style.display = 'block';
-
-  await cargarDatos();
-  renderTab('nomina');
-});
-
-async function cargarDatos() {
-  const qHogar = query(collection(db, 'hogares'), where('participantes', 'array-contains', usuarioActual.uid));
-  const snapHogar = await getDocs(qHogar);
-  if (!snapHogar.empty) {
-    hogarId = snapHogar.docs[0].id;
-    const participantes = snapHogar.docs[0].data().participantes || [];
-    // Buscar específicamente quien tiene tipo 'nana'
-    for (const pUid of participantes) {
-      if (pUid === usuarioActual.uid) continue;
-      const pSnap = await getDoc(doc(db, 'usuarios', pUid));
-      if (pSnap.exists() && pSnap.data().tipo === 'nana') {
-        nanaVinculada = { uid: pUid, ...pSnap.data() };
-        break;
-      }
-    }
-  }
-
-  // Cargar días trabajados del mes
-  const mesKey = `${HOY.getFullYear()}-${String(HOY.getMonth()+1).padStart(2,'0')}`;
-  const diasSnap = await getDoc(doc(db, 'hogares', hogarId || 'sin-hogar', 'dias', mesKey));
-  if (diasSnap.exists()) diasTrabajados = diasSnap.data().dias || {};
-
-  // Cargar pagos
-  if (hogarId) {
-    const qPagos = query(collection(db, 'hogares', hogarId, 'pagos'), orderBy('fecha', 'desc'));
-    const snapPagos = await getDocs(qPagos);
-    pagosHistorial = snapPagos.docs.map(d => ({ id: d.id, ...d.data() }));
-  }
+function showToast(msg) {
+  const t = $('toast'); t.textContent = msg;
+  t.classList.add('visible');
+  setTimeout(() => t.classList.remove('visible'), 2800);
 }
 
-// ── TABS ──
-window.cambiarTab = (tab, btn) => {
-  tabActual = tab;
-  document.querySelectorAll('.tab').forEach(b => b.classList.remove('activo'));
-  btn.classList.add('activo');
-  renderTab(tab);
+function hoy() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function formatFecha(str) {
+  if (!str) return '—';
+  const [y,m,d] = str.split('-');
+  return `${d} ${MESES[parseInt(m)-1]} ${y}`;
+}
+
+function stars(n) {
+  return '★'.repeat(n) + '☆'.repeat(5-n);
+}
+
+// ── Tabs ──
+window.cambiarTab = (tab, el) => {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('activo'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('activo'));
+  el.classList.add('activo');
+  $('panel-' + tab).classList.add('activo');
+  if (tab === 'historial') renderHistorial();
 };
 
-function renderTab(tab) {
-  const c = document.getElementById('tabContenido');
-  const l = document.getElementById('tabLateral');
-  l.innerHTML = '';
-  if (tab === 'nomina') renderNomina(c, l);
-  else if (tab === 'dias') renderDias(c, l);
-  else if (tab === 'contrato') renderContrato(c, l);
-  else if (tab === 'pagos') renderPagos(c, l);
-}
-
-// ── VISTA NANA ──
-function renderVistaNana() {
-  const c = document.getElementById('tabContenido');
-  const l = document.getElementById('tabLateral');
-  const totalRecibido = pagosHistorial.reduce((s, p) => s + (p.monto || 0), 0);
-
-  c.innerHTML = `
-    <div class="panel">
-      <div class="panel-hdr">
-        <div>
-          <div class="panel-title">Mis pagos recibidos</div>
-          <div class="panel-sub">${pagosHistorial.length} pagos registrados</div>
-        </div>
-        <div class="panel-badge" style="background:var(--g3);color:var(--g);">
-          $${totalRecibido.toFixed(2)} total
-        </div>
-      </div>
-      ${!pagosHistorial.length ? `
-        <div class="empty-state">
-          <div class="empty-icon">💰</div>
-          <div style="font-size:15px;font-weight:500;color:var(--txt);margin-bottom:4px;">Sin pagos registrados aún</div>
-          <div style="font-size:13px;color:var(--txt2);">La familia registrará tus pagos aquí</div>
-        </div>` :
-        pagosHistorial.map(p => {
-          const fecha = p.fecha?.toDate
-            ? p.fecha.toDate().toLocaleDateString('es-PA')
-            : p.fecha || '';
-          return `<div class="pago-item">
-            <div class="pago-icon" style="background:var(--g3);">💰</div>
-            <div class="pago-info">
-              <div class="pago-desc">${p.concepto}</div>
-              <div class="pago-fecha">${fecha}${p.nota ? ' · ' + p.nota : ''}</div>
-            </div>
-            <div style="text-align:right;">
-              <div class="pago-monto">$${parseFloat(p.monto).toFixed(2)}</div>
-              <div class="pago-estado" style="background:var(--g3);color:var(--g);">Recibido</div>
-            </div>
-          </div>`;
-        }).join('')}
-    </div>`;
-
-  l.innerHTML = `
-    <div class="panel">
-      <div class="panel-hdr"><div class="panel-title">Mi resumen</div></div>
-      <div style="padding:16px 18px;display:flex;flex-direction:column;gap:12px;">
-        <div style="background:var(--g2);border-radius:12px;padding:18px;text-align:center;">
-          <div style="font-size:12px;color:rgba(255,255,255,.55);margin-bottom:6px;">Total recibido</div>
-          <div style="font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:600;color:#fff;">
-            $${totalRecibido.toFixed(2)}
-          </div>
-          <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:4px;">
-            ${pagosHistorial.length} pagos registrados
-          </div>
-        </div>
-
-        <!-- Desglose por concepto -->
-        ${pagosHistorial.length > 0 ? `
-          <div style="background:var(--cr);border-radius:10px;padding:12px 14px;border:1px solid var(--g4);">
-            <div style="font-size:11px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;">Por concepto</div>
-            ${Object.entries(pagosHistorial.reduce((acc, p) => {
-              acc[p.concepto] = (acc[p.concepto] || 0) + p.monto;
-              return acc;
-            }, {})).map(([concepto, total]) => `
-              <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--txt2);margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--g4);">
-                <span>${concepto}</span>
-                <span style="font-weight:500;color:var(--g);">$${total.toFixed(2)}</span>
-              </div>`).join('')}
-          </div>` : ''}
-
-        <!-- Tus derechos -->
-        <div style="background:var(--g3);border-radius:10px;padding:14px;border:1px solid var(--g4);">
-          <div style="font-size:12px;font-weight:600;color:var(--g);margin-bottom:10px;">📋 Tus derechos laborales</div>
-          ${[
-            ['💰','Décimo tercer mes','Se paga en abril, agosto y diciembre'],
-            ['🏖️','Vacaciones','30 días por cada 11 meses trabajados'],
-            ['🏥','Seguro Social','Tu empleador debe inscribirte en la CSS'],
-            ['⭐','Prima de antigüedad','1 semana de salario por año al terminar'],
-          ].map(([e,t,d]) => `
-            <div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:8px;">
-              <span style="font-size:16px;flex-shrink:0;">${e}</span>
-              <div>
-                <div style="font-size:12px;font-weight:500;color:var(--txt);">${t}</div>
-                <div style="font-size:11px;color:var(--txt2);">${d}</div>
-              </div>
-            </div>`).join('')}
-        </div>
-
-        <a href="/app.html" style="display:block;background:var(--g);color:#fff;text-align:center;padding:13px;border-radius:99px;font-size:14px;font-weight:500;text-decoration:none;">← Volver al inicio</a>
-      </div>
-    </div>`;
-}
-
-// ── NÓMINA ──
-function renderNomina(c, l) {
-  const nombreNana = nanaVinculada?.nombre || 'Tu nana';
-  const tipoNana = nanaVinculada?.tipo || 'fija';
-
-  c.innerHTML = `
-    <div class="panel">
-      <div class="panel-hdr">
-        <div>
-          <div class="panel-title">Calcular nómina</div>
-          <div class="panel-sub">${nombreNana} · ${MES_ACTUAL}</div>
-        </div>
-        <div class="panel-badge" style="background:var(--g3);color:var(--g);">
-          ${tipoNana === 'eventual' ? 'Eventual' : 'Fija'}
-        </div>
-      </div>
-      <div class="config-form">
-        <div class="form-group">
-          <label class="form-label">Tipo de nana</label>
-          <select class="form-select" id="tipoNomina" onchange="calcularNomina()">
-            <option value="fija" ${tipoNana !== 'eventual' ? 'selected' : ''}>Nana fija — salario mensual</option>
-            <option value="eventual" ${tipoNana === 'eventual' ? 'selected' : ''}>Nana eventual — por días</option>
-          </select>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label" id="labelSalario">Salario mensual ($)</label>
-            <input type="number" class="form-input" id="salarioBase" placeholder="450.00" step="0.01" oninput="calcularNomina()" />
-          </div>
-          <div class="form-group" id="grupoAntiguedad">
-            <label class="form-label">Años de trabajo</label>
-            <input type="number" class="form-input" id="anosAntiguedad" placeholder="1" min="0" oninput="calcularNomina()" />
-          </div>
-        </div>
-        <div class="form-row" id="filaDias">
-          <div class="form-group">
-            <label class="form-label">Días trabajados</label>
-            <input type="number" class="form-input" id="diasTrab" placeholder="22" min="0" max="31" oninput="calcularNomina()" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Días del mes</label>
-            <input type="number" class="form-input" id="diasMes" value="${new Date(HOY.getFullYear(), HOY.getMonth()+1, 0).getDate()}" min="28" max="31" oninput="calcularNomina()" />
-          </div>
-        </div>
-        <button class="btn-calc" onclick="calcularNomina()">Calcular nómina →</button>
-      </div>
-    </div>
-    <div id="resultadoNomina"></div>`;
-
-  // Precargar días trabajados del mes
-  const diasCount = Object.values(diasTrabajados).filter(v => v === 'trabajo').length;
-  if (diasCount > 0) {
-    setTimeout(() => {
-      const el = document.getElementById('diasTrab');
-      if (el) el.value = diasCount;
-    }, 100);
+// ── Aplicar tipo de hogar ──
+function aplicarTipoHogar() {
+  const esEventual = tipoHogar !== 'con_nana';
+  const navTipo = $('navTipo');
+  if (navTipo) {
+    navTipo.textContent  = esEventual ? 'Eventual' : 'Nana fija';
+    navTipo.style.background = esEventual ? '#E1F5EE' : '#E8F1F8';
+    navTipo.style.color      = esEventual ? '#0F6E56' : '#2B6CB0';
   }
-
-  l.innerHTML = `
-    <div class="panel">
-      <div class="panel-hdr">
-        <div class="panel-title">Ley panameña</div>
-      </div>
-      <div style="padding:14px 18px;font-size:13px;color:var(--txt2);line-height:1.8;display:flex;flex-direction:column;gap:10px;">
-        <div style="background:var(--g3);border-radius:8px;padding:10px 12px;">
-          <div style="font-weight:600;color:var(--g);margin-bottom:4px;">📌 Art. 230-231 · Código de Trabajo</div>
-          <div>Régimen especial para trabajadoras del hogar en la República de Panamá.</div>
-        </div>
-        ${[
-          ['💰','Salario mínimo','$325/mes para trabajo doméstico (2024)'],
-          ['📅','Décimo tercer mes','1/12 del salario mensual por mes trabajado'],
-          ['🏖️','Vacaciones','30 días continuos por cada 11 meses trabajados'],
-          ['⭐','Prima de antigüedad','1 semana por año trabajado al terminar'],
-          ['🏥','CSS (empleador)','12.25% del salario bruto'],
-          ['🏥','CSS (trabajadora)','9.75% del salario bruto'],
-          ['📋','Contrato','Obligatorio por escrito · Art. 231'],
-        ].map(([e,t,d]) => `<div style="display:flex;gap:10px;align-items:flex-start;">
-          <span style="font-size:16px;flex-shrink:0;">${e}</span>
-          <div><div style="font-weight:500;color:var(--txt);">${t}</div><div style="font-size:12px;">${d}</div></div>
-        </div>`).join('')}
-      </div>
-    </div>`;
-}
-
-window.calcularNomina = () => {
-  const tipo = document.getElementById('tipoNomina')?.value || 'fija';
-  const salarioBase = parseFloat(document.getElementById('salarioBase')?.value) || 0;
-  const anos = parseFloat(document.getElementById('anosAntiguedad')?.value) || 0;
-  const diasTrab = parseInt(document.getElementById('diasTrab')?.value) || 0;
-  const diasMes = parseInt(document.getElementById('diasMes')?.value) || 30;
-
-  if (!salarioBase) return;
-
-  let salario, decimoMes, vacaciones, primaAntiguedad, cssEmpleador, cssTrabajadora;
-
-  if (tipo === 'fija') {
-    salario = diasTrab > 0 ? (salarioBase / diasMes) * diasTrab : salarioBase;
-    decimoMes = salarioBase / 12;
-    vacaciones = salarioBase / 12;
-    primaAntiguedad = anos > 0 ? (salarioBase / 52) * anos : 0;
-    cssEmpleador = salario * 0.1225;
-    cssTrabajadora = salario * 0.0975;
-  } else {
-    const salarioDiario = salarioBase;
-    salario = salarioDiario * diasTrab;
-    decimoMes = salario / 12;
-    vacaciones = salario / 12;
-    primaAntiguedad = anos > 0 ? (salario / 52) * anos : 0;
-    cssEmpleador = salario * 0.1225;
-    cssTrabajadora = salario * 0.0975;
-    document.getElementById('labelSalario').textContent = 'Salario por día ($)';
-  }
-
-  const totalBruto = salario + decimoMes + vacaciones + primaAntiguedad;
-  const totalNeto = totalBruto - cssTrabajadora;
-  const costoEmpleador = totalBruto + cssEmpleador;
-
-  const fmt = n => `$${n.toFixed(2)}`;
-
-  document.getElementById('resultadoNomina').innerHTML = `
-    <div class="panel">
-      <div class="panel-hdr">
-        <div class="panel-title">Resultado · ${MES_ACTUAL}</div>
-        <div class="panel-badge" style="background:var(--g3);color:var(--g);">${diasTrab} días trabajados</div>
-      </div>
-      <div class="nomina-resultado">
-        <div class="nomina-mes">Ingresos</div>
-        <div class="nomina-row">
-          <span class="nomina-label">Salario ${tipo === 'eventual' ? `(${diasTrab} días × ${fmt(salarioBase)})` : 'proporcional'}</span>
-          <span class="nomina-valor positivo">${fmt(salario)}</span>
-        </div>
-        <div class="nomina-row">
-          <span class="nomina-label">Décimo tercer mes (proporcional)</span>
-          <span class="nomina-valor positivo">${fmt(decimoMes)}</span>
-        </div>
-        <div class="nomina-row">
-          <span class="nomina-label">Vacaciones (proporcional)</span>
-          <span class="nomina-valor positivo">${fmt(vacaciones)}</span>
-        </div>
-        ${primaAntiguedad > 0 ? `<div class="nomina-row">
-          <span class="nomina-label">Prima de antigüedad (${anos} año${anos !== 1?'s':''})</span>
-          <span class="nomina-valor positivo">${fmt(primaAntiguedad)}</span>
-        </div>` : ''}
-        <div class="nomina-sep">Deducciones (trabajadora)</div>
-        <div class="nomina-row desc">
-          <span class="nomina-label">CSS trabajadora (9.75%)</span>
-          <span class="nomina-valor negativo">-${fmt(cssTrabajadora)}</span>
-        </div>
-        <div class="nomina-row total">
-          <span class="nomina-label total">Total a pagar a la nana</span>
-          <span class="nomina-valor total">${fmt(totalNeto)}</span>
-        </div>
-        <div style="background:var(--cr);border-radius:10px;padding:12px 14px;margin-top:10px;border:1px solid var(--g4);">
-          <div style="font-size:11px;color:var(--txt2);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Costo total para el empleador</div>
-          <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--txt2);margin-bottom:4px;"><span>CSS empleador (12.25%)</span><span style="color:var(--b2);">+${fmt(cssEmpleador)}</span></div>
-          <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:600;color:var(--txt);"><span>Costo total empleador</span><span>${fmt(costoEmpleador)}</span></div>
-        </div>
-        <button class="btn-pagar" onclick="abrirModalPago(${totalNeto.toFixed(2)})">💳 Registrar este pago</button>
-        <button class="btn-recibo" onclick="generarRecibo(${totalNeto.toFixed(2)}, ${salario.toFixed(2)}, ${decimoMes.toFixed(2)}, ${vacaciones.toFixed(2)}, ${cssTrabajadora.toFixed(2)})">🖨️ Imprimir recibo</button>
-      </div>
-    </div>`;
-};
-
-// ── DÍAS TRABAJADOS ──
-function renderDias(c, l) {
-  const año = HOY.getFullYear();
-  const mes = HOY.getMonth();
-  const diasEnMes = new Date(año, mes+1, 0).getDate();
-  const primerDia = new Date(año, mes, 1).getDay();
-  const offset = primerDia === 0 ? 6 : primerDia - 1;
-
-  const dias_labels = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
-  const mesNombre = HOY.toLocaleString('es-PA', { month: 'long', year: 'numeric' });
-
-  let diasTrabCount = 0, diasLibreCount = 0;
-  for (let k in diasTrabajados) {
-    if (diasTrabajados[k] === 'trabajo') diasTrabCount++;
-    if (diasTrabajados[k] === 'libre') diasLibreCount++;
-  }
-
-  c.innerHTML = `
-    <div class="panel">
-      <div class="panel-hdr">
-        <div class="panel-title">Días trabajados · ${mesNombre}</div>
-        <div style="display:flex;gap:6px;">
-          <div style="font-size:11px;background:var(--g);color:#fff;padding:4px 8px;border-radius:6px;">${diasTrabCount} trabajados</div>
-          <div style="font-size:11px;background:var(--b3);color:var(--b2);padding:4px 8px;border-radius:6px;">${diasLibreCount} libres</div>
-        </div>
-      </div>
-      <div style="padding:14px 18px 8px;">
-        <div style="font-size:12px;color:var(--txt2);margin-bottom:10px;">Toca cada día para marcar. Verde = trabajó, Rosa = día libre, Blanco = sin registro.</div>
-        <div style="display:flex;gap:8px;margin-bottom:12px;">
-          <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--txt2);"><div style="width:12px;height:12px;border-radius:3px;background:var(--g);"></div> Trabajó</div>
-          <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--txt2);"><div style="width:12px;height:12px;border-radius:3px;background:var(--b3);border:1px solid var(--b);"></div> Libre</div>
-          <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--txt2);"><div style="width:12px;height:12px;border-radius:3px;background:#fff;border:1px solid var(--g4);"></div> Sin marcar</div>
-        </div>
-      </div>
-      <div class="dias-grid">
-        ${dias_labels.map(d => `<div class="dia-header">${d}</div>`).join('')}
-        ${Array(offset).fill('<div class="dia-cell vacio"></div>').join('')}
-        ${Array.from({length: diasEnMes}, (_,i) => {
-          const d = i + 1;
-          const key = `${año}-${String(mes+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-          const estado = diasTrabajados[key];
-          const esHoy = d === HOY.getDate();
-          return `<div class="dia-cell ${estado === 'trabajo' ? 'trabajado' : estado === 'libre' ? 'libre' : ''} ${esHoy ? 'hoy' : ''}"
-            onclick="toggleDia('${key}', this)">${d}</div>`;
-        }).join('')}
-      </div>
-      <div class="dias-resumen">
-        <div class="dias-stat"><div class="dias-stat-n">${diasTrabCount}</div><div class="dias-stat-l">Días trabajados</div></div>
-        <div class="dias-stat"><div class="dias-stat-n">${diasLibreCount}</div><div class="dias-stat-l">Días libres</div></div>
-        <div class="dias-stat"><div class="dias-stat-n">${diasEnMes - diasTrabCount - diasLibreCount}</div><div class="dias-stat-l">Sin registrar</div></div>
-      </div>
-      <div style="padding:0 18px 16px;display:flex;gap:8px;">
-        <button onclick="marcarSemanaLaboral()" style="flex:1;background:var(--g3);color:var(--g);border:none;border-radius:99px;padding:10px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">✅ Marcar semana completa</button>
-        <button onclick="limpiarMes()" style="background:var(--b3);color:var(--b2);border:none;border-radius:99px;padding:10px 14px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;">🗑 Limpiar</button>
-      </div>
-    </div>`;
-
-  l.innerHTML = `
-    <div class="panel">
-      <div class="panel-hdr"><div class="panel-title">Resumen del mes</div></div>
-      <div style="padding:16px 18px;display:flex;flex-direction:column;gap:10px;">
-        <div style="background:var(--g3);border-radius:10px;padding:14px;border:1px solid var(--g4);">
-          <div style="font-size:12px;color:var(--txt2);margin-bottom:4px;">Salario proporcional estimado</div>
-          <div style="font-size:11px;color:#bbb;margin-bottom:8px;">Basado en ${diasTrabCount} días trabajados</div>
-          <div style="font-size:11px;color:var(--txt2);">Si el salario mensual es $450:</div>
-          <div style="font-family:'Cormorant Garamond',serif;font-size:24px;color:var(--g);margin-top:4px;">
-            $${((450 / new Date(año, mes+1, 0).getDate()) * diasTrabCount).toFixed(2)}
-          </div>
-          <div style="font-size:11px;color:#bbb;margin-top:2px;">Ve a Nómina para el cálculo exacto</div>
-        </div>
-        <button onclick="document.querySelectorAll('.tab')[0].click()" style="background:var(--g);color:#fff;border:none;border-radius:99px;padding:12px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">Calcular nómina completa →</button>
-      </div>
-    </div>`;
-}
-
-window.toggleDia = async (key, el) => {
-  if (!hogarId) { showToast('Sin hogar configurado'); return; }
-  const estado = diasTrabajados[key];
-  if (!estado) { diasTrabajados[key] = 'trabajo'; el.className = 'dia-cell trabajado' + (el.classList.contains('hoy') ? ' hoy' : ''); }
-  else if (estado === 'trabajo') { diasTrabajados[key] = 'libre'; el.className = 'dia-cell libre' + (el.classList.contains('hoy') ? ' hoy' : ''); }
-  else { delete diasTrabajados[key]; el.className = 'dia-cell' + (el.classList.contains('hoy') ? ' hoy' : ''); }
-
-  const mesKey = `${HOY.getFullYear()}-${String(HOY.getMonth()+1).padStart(2,'0')}`;
-  await setDoc(doc(db, 'hogares', hogarId, 'dias', mesKey), { dias: diasTrabajados }, { merge: true });
-  renderDias(document.getElementById('tabContenido'), document.getElementById('tabLateral'));
-};
-
-window.marcarSemanaLaboral = async () => {
-  const año = HOY.getFullYear(); const mes = HOY.getMonth();
-  const diasEnMes = new Date(año, mes+1, 0).getDate();
-  for (let d = 1; d <= diasEnMes; d++) {
-    const fecha = new Date(año, mes, d);
-    const diaSemana = fecha.getDay();
-    const key = `${año}-${String(mes+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    if (diaSemana >= 1 && diaSemana <= 6) diasTrabajados[key] = 'trabajo';
-    else diasTrabajados[key] = 'libre';
-  }
-  const mesKey = `${año}-${String(mes+1).padStart(2,'0')}`;
-  await setDoc(doc(db, 'hogares', hogarId, 'dias', mesKey), { dias: diasTrabajados });
-  renderDias(document.getElementById('tabContenido'), document.getElementById('tabLateral'));
-  showToast('✅ Semana laboral marcada');
-};
-
-window.limpiarMes = async () => {
-  diasTrabajados = {};
-  const mesKey = `${HOY.getFullYear()}-${String(HOY.getMonth()+1).padStart(2,'0')}`;
-  await setDoc(doc(db, 'hogares', hogarId, 'dias', mesKey), { dias: {} });
-  renderDias(document.getElementById('tabContenido'), document.getElementById('tabLateral'));
-  showToast('🗑 Mes limpiado');
-};
-
-// ── CONTRATO ──
-function renderContrato(c, l) {
-  const nana = nanaVinculada;
-  const familia = perfilActual;
-  const hoy = new Date().toLocaleDateString('es-PA', { day:'numeric', month:'long', year:'numeric' });
-
-  c.innerHTML = `
-    <div class="panel">
-      <div class="panel-hdr"><div class="panel-title">Contrato de trabajo</div></div>
-      <div class="contrato-wrap">
-        <div style="font-size:12px;color:var(--txt2);margin-bottom:12px;">Selecciona el tipo de contrato según tu nana:</div>
-        <div class="contrato-tipo-sel">
-          <button class="tipo-btn activo" id="btnFija" onclick="selTipoContrato('fija')">👩 Nana fija</button>
-          <button class="tipo-btn" id="btnEventual" onclick="selTipoContrato('eventual')">📅 Nana eventual</button>
-        </div>
-        <div class="contrato-preview" id="contratoPreview"></div>
-        <button class="btn-descargar" onclick="imprimirContrato()">🖨️ Imprimir / Descargar contrato</button>
-      </div>
-    </div>`;
-
-  generarTextoContrato();
-
-  l.innerHTML = `
-    <div class="panel">
-      <div class="panel-hdr"><div class="panel-title">Datos para el contrato</div></div>
-      <div class="config-form">
-
-        <div style="font-size:11px;font-weight:600;color:var(--g);text-transform:uppercase;letter-spacing:.06em;padding:4px 0;">Datos de la nana</div>
-
-        <div class="form-group">
-          <label class="form-label">Nombre completo de la nana</label>
-          <input class="form-input" id="cNanaNombre" value="${nana?.nombre || ''}" placeholder="Nombre y apellido" />
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">Cédula de la nana</label>
-            <input class="form-input" id="cNanaCedula" value="${nana?.cedula || ''}" placeholder="8-123-4567" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Teléfono</label>
-            <input class="form-input" id="cNanaTel" value="${nana?.telefono || ''}" placeholder="6612-3456" />
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Dirección de la nana</label>
-          <input class="form-input" id="cNanaDireccion" placeholder="Ej: Tocumen, Panamá" />
-        </div>
-
-        <div style="font-size:11px;font-weight:600;color:var(--g);text-transform:uppercase;letter-spacing:.06em;padding:4px 0;margin-top:4px;">Datos del empleador</div>
-
-        <div class="form-group">
-          <label class="form-label">Nombre completo del empleador</label>
-          <input class="form-input" id="cFamiliaNombre" value="${familia?.nombre || ''}" placeholder="Tu nombre completo" />
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">Cédula del empleador</label>
-            <input class="form-input" id="cFamiliaCedula" placeholder="8-000-0000" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Teléfono empleador</label>
-            <input class="form-input" id="cFamiliaТel" placeholder="6600-0000" />
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Dirección del hogar</label>
-          <input class="form-input" id="cDireccion" placeholder="Ej: Calle 50, Apto 2B, Ciudad de Panamá" />
-        </div>
-
-        <div style="font-size:11px;font-weight:600;color:var(--g);text-transform:uppercase;letter-spacing:.06em;padding:4px 0;margin-top:4px;">Condiciones laborales</div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label" id="labelSalContrato">Salario mensual ($)</label>
-            <input class="form-input" id="cSalario" placeholder="450.00" type="number" step="0.01" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Fecha de inicio</label>
-            <input class="form-input" id="cFechaInicio" type="date" />
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Forma de pago</label>
-          <select class="form-select" id="cFormaPago">
-            <option value="mensual">Mensual (último día del mes)</option>
-            <option value="quincenal">Quincenal (días 15 y último)</option>
-            <option value="semanal">Semanal (cada viernes)</option>
-            <option value="diario">Al final de cada jornada (eventual)</option>
-          </select>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">Hora de entrada</label>
-            <input class="form-input" id="cHoraEntrada" type="time" value="07:00" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Hora de salida</label>
-            <input class="form-input" id="cHoraSalida" type="time" value="17:00" />
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Días de trabajo</label>
-          <select class="form-select" id="cDiasTrabajo">
-            <option value="lunes a viernes">Lunes a viernes</option>
-            <option value="lunes a sábado">Lunes a sábado</option>
-            <option value="lunes a domingo">Lunes a domingo (con día de descanso)</option>
-            <option value="días acordados">Días acordados entre las partes</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Funciones principales</label>
-          <select class="form-select" id="cFunciones">
-            <option value="limpieza, cocina y labores del hogar">Limpieza, cocina y labores del hogar</option>
-            <option value="limpieza, cocina, cuidado de niños y labores del hogar">Limpieza, cocina, cuidado de niños y labores del hogar</option>
-            <option value="limpieza y labores del hogar">Solo limpieza y labores del hogar</option>
-            <option value="cocina y labores del hogar">Solo cocina y labores del hogar</option>
-            <option value="cuidado de niños y labores del hogar">Cuidado de niños y labores del hogar</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">¿Incluye alojamiento?</label>
-          <select class="form-select" id="cAlojamiento">
-            <option value="no">No — la trabajadora no reside en el hogar</option>
-            <option value="si">Sí — la trabajadora reside en el hogar</option>
-          </select>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">Años de antigüedad</label>
-            <input class="form-input" id="cAntiguedad" type="number" placeholder="0" min="0" value="0" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Período de prueba</label>
-            <select class="form-select" id="cPrueba">
-              <option value="dos (2) semanas">2 semanas (mínimo legal)</option>
-              <option value="un (1) mes">1 mes</option>
-              <option value="ninguno">Sin período de prueba</option>
-            </select>
-          </div>
-        </div>
-
-        <button class="btn-calc" onclick="generarTextoContrato()">Generar contrato →</button>
-        <div style="font-size:11px;color:#bbb;text-align:center;">Recuerda que este contrato debe firmarse en dos copias — una para cada parte.</div>
-      </div>
-    </div>`;
-
-  // Inicializar fecha de hoy y ajustar label si es eventual
-  const inputFecha = document.getElementById('cFechaInicio');
-  if (inputFecha) inputFecha.value = new Date().toISOString().split('T')[0];
-  if (tipoContrato === 'eventual') {
-    const label = document.getElementById('labelSalContrato');
-    if (label) label.textContent = 'Salario por día ($)';
-  }
-}
-
-window.selTipoContrato = (tipo) => {
-  tipoContrato = tipo;
-  document.getElementById('btnFija').classList.toggle('activo', tipo === 'fija');
-  document.getElementById('btnEventual').classList.toggle('activo', tipo === 'eventual');
-  generarTextoContrato();
-};
-
-window.generarTextoContrato = () => {
-  const nombreNana = document.getElementById('cNanaNombre')?.value || nanaVinculada?.nombre || '[NOMBRE DE LA NANA]';
-  const cedulaNana = document.getElementById('cNanaCedula')?.value || nanaVinculada?.cedula || '[CÉDULA NANA]';
-  const telNana = document.getElementById('cNanaTel')?.value || nanaVinculada?.telefono || '[TELÉFONO NANA]';
-  const dirNana = document.getElementById('cNanaDireccion')?.value || '[DIRECCIÓN NANA]';
-  const nombreFamilia = document.getElementById('cFamiliaNombre')?.value || perfilActual?.nombre || '[NOMBRE DEL EMPLEADOR]';
-  const cedulaFamilia = document.getElementById('cFamiliaCedula')?.value || '[CÉDULA EMPLEADOR]';
-  const telFamilia = document.getElementById('cFamiliaТel')?.value || '[TELÉFONO EMPLEADOR]';
-  const salario = document.getElementById('cSalario')?.value || '[SALARIO]';
-  const formaPago = document.getElementById('cFormaPago')?.value || 'quincenal';
-  const horaEntrada = document.getElementById('cHoraEntrada')?.value || '07:00';
-  const horaSalida = document.getElementById('cHoraSalida')?.value || '17:00';
-  const diasTrabajo = document.getElementById('cDiasTrabajo')?.value || 'lunes a sábado';
-  const funciones = document.getElementById('cFunciones')?.value || 'limpieza, cocina y labores del hogar';
-  const alojamiento = document.getElementById('cAlojamiento')?.value || 'no';
-  const antiguedad = document.getElementById('cAntiguedad')?.value || '0';
-  const prueba = document.getElementById('cPrueba')?.value || 'dos (2) semanas';
-  const direccion = document.getElementById('cDireccion')?.value || '[DIRECCIÓN DEL HOGAR]';
-
-  const fechaInicio = document.getElementById('cFechaInicio')?.value
-    ? new Date(document.getElementById('cFechaInicio').value + 'T12:00:00').toLocaleDateString('es-PA', {day:'numeric',month:'long',year:'numeric'})
-    : '[FECHA DE INICIO]';
-  const hoy = new Date().toLocaleDateString('es-PA', {day:'numeric',month:'long',year:'numeric'});
-
-  const formaPagoTexto = {
-    'mensual': 'de forma mensual, pagaderos el último día hábil de cada mes',
-    'quincenal': 'de forma quincenal, pagaderos los días 15 y último de cada mes',
-    'semanal': 'de forma semanal, pagaderos cada viernes',
-    'diario': 'al final de cada jornada de trabajo'
-  }[formaPago] || formaPago;
-
-  const clausulaAlojamiento = alojamiento === 'si'
-    ? '\nDÉCIMA PRIMERA — ALOJAMIENTO: El Empleador proporcionará alojamiento digno a La Trabajadora dentro del hogar, con espacio privado y adecuado conforme al Artículo 230 del Código de Trabajo.\n'
-    : '';
-
-  const textoFija =
-`CONTRATO INDIVIDUAL DE TRABAJO DOMÉSTICO
-Art. 231 - Código de Trabajo de la República de Panamá
-
-Ciudad de Panamá, ${hoy}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PARTES CONTRATANTES
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-EMPLEADOR: ${nombreFamilia}
-Cédula: ${cedulaFamilia} | Teléfono: ${telFamilia}
-Domicilio: ${direccion}
-
-TRABAJADORA: ${nombreNana}
-Cédula: ${cedulaNana} | Teléfono: ${telNana}
-Domicilio: ${dirNana}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-CLÁUSULAS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-PRIMERA — OBJETO
-La Trabajadora prestará servicios de trabajo doméstico en el hogar ubicado en ${direccion}. Las funciones incluyen: ${funciones}.
-
-SEGUNDA — DURACIÓN Y PERÍODO DE PRUEBA
-El contrato inicia el ${fechaInicio} por tiempo indefinido, con período de prueba de ${prueba} conforme al Art. 75 del Código de Trabajo.
-
-TERCERA — SALARIO Y FORMA DE PAGO
-El Empleador pagará $${salario} mensuales, ${formaPagoTexto}. Este salario no será inferior al mínimo legal para trabajo doméstico.
-
-CUARTA — JORNADA DE TRABAJO
-La jornada será ${diasTrabajo}, de ${horaEntrada} a ${horaSalida} horas, con una hora de descanso para almuerzo. La jornada no excederá 10 horas diarias conforme al Art. 230.
-
-QUINTA — DÍAS DE DESCANSO
-La Trabajadora tendrá un día de descanso semanal obligatorio y todos los días feriados nacionales con goce de salario.
-
-SEXTA — DÉCIMO TERCER MES
-El Empleador pagará el décimo tercer mes en tres cuotas: 15 de abril, 15 de agosto y 20 de diciembre, conforme a los Art. 91-95 del Código de Trabajo.
-
-SÉPTIMA — VACACIONES
-La Trabajadora tendrá derecho a 30 días continuos de vacaciones con goce de salario por cada 11 meses de trabajo efectivo, conforme al Art. 54.
-
-OCTAVA — SEGURO SOCIAL
-El Empleador inscribirá a la Trabajadora en la CSS y efectuará el descuento del 9.75% del salario bruto, más el aporte patronal del 12.25%.
-
-NOVENA — PRIMA DE ANTIGÜEDAD
-Al terminar la relación laboral, el Empleador pagará una semana de salario por cada año trabajado conforme al Art. 224.${parseInt(antiguedad) > 0 ? ' La Trabajadora acumula ' + antiguedad + ' año(s) de antigüedad reconocida.' : ''}
-${clausulaAlojamiento}
-DÉCIMA — CONFIDENCIALIDAD
-La Trabajadora mantendrá reserva absoluta sobre la vida privada y actividades de la familia del Empleador.
-
-DÉCIMA PRIMERA — TERMINACIÓN
-El contrato podrá terminar por las causas establecidas en los Art. 210-228 del Código de Trabajo de Panamá.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-FIRMAS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Firmado en dos ejemplares de igual valor a ${hoy}.
-
-
-________________________      ________________________
-${nombreFamilia}              ${nombreNana}
-EMPLEADOR                     TRABAJADORA
-Cédula: ${cedulaFamilia}      Cédula: ${cedulaNana}
-
-
-________________________
-TESTIGO (opcional)
-Nombre: _______________
-Cédula: _______________`;
-
-  const textoEventual =
-`CONTRATO DE TRABAJO DOMÉSTICO EVENTUAL
-Art. 231 - Código de Trabajo de la República de Panamá
-
-Ciudad de Panamá, ${hoy}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PARTES CONTRATANTES
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-EMPLEADOR: ${nombreFamilia}
-Cédula: ${cedulaFamilia} | Teléfono: ${telFamilia}
-Domicilio: ${direccion}
-
-TRABAJADORA: ${nombreNana}
-Cédula: ${cedulaNana} | Teléfono: ${telNana}
-Domicilio: ${dirNana}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-CLÁUSULAS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-PRIMERA — OBJETO Y NATURALEZA EVENTUAL
-La Trabajadora prestará servicios domésticos eventuales en el hogar ubicado en ${direccion}. Los servicios incluyen: ${funciones}. Los servicios NO son continuos ni habituales conforme al Art. 231.
-
-SEGUNDA — INICIO DE SERVICIOS
-Los servicios inician el ${fechaInicio}. Los días específicos se acordarán con anticipación entre las partes.
-
-TERCERA — REMUNERACIÓN Y FORMA DE PAGO
-El Empleador pagará $${salario} por cada día trabajado, ${formaPagoTexto}. El horario será de ${horaEntrada} a ${horaSalida} horas.
-
-CUARTA — DÍAS DE TRABAJO
-Los servicios se prestarán los ${diasTrabajo === 'días acordados' ? 'días que acuerden las partes con anticipación' : diasTrabajo}.
-
-QUINTA — BENEFICIOS PROPORCIONALES
-La Trabajadora tiene derecho al pago proporcional del décimo tercer mes, vacaciones y demás beneficios calculados sobre el total devengado.
-
-SEXTA — SEGURO SOCIAL
-Si la relación laboral supera los umbrales de la CSS, el Empleador deberá inscribir a la Trabajadora y realizar los aportes correspondientes.
-
-SÉPTIMA — TERMINACIÓN
-Cualquiera de las partes puede terminar el acuerdo con aviso previo de una semana.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-FIRMAS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Firmado en dos ejemplares de igual valor a ${hoy}.
-
-
-________________________      ________________________
-${nombreFamilia}              ${nombreNana}
-EMPLEADOR                     TRABAJADORA
-Cédula: ${cedulaFamilia}      Cédula: ${cedulaNana}`;
-
-  const preview = document.getElementById('contratoPreview');
-  if (preview) preview.textContent = tipoContrato === 'fija' ? textoFija : textoEventual;
-};
-
-window.imprimirContrato = () => {
-  const texto = document.getElementById('contratoPreview')?.textContent;
-  if (!texto) return;
-  const ventana = window.open('', '_blank');
-  ventana.document.write(`<!DOCTYPE html><html><head><title>Contrato My Nana</title>
-    <style>body{font-family:Arial,sans-serif;padding:40px;font-size:13px;line-height:1.8;color:#222;}
-    h1{font-size:16px;text-align:center;margin-bottom:20px;}
-    pre{white-space:pre-wrap;font-family:Arial,sans-serif;}</style></head>
-    <body><pre>${texto}</pre></body></html>`);
-  ventana.document.close();
-  ventana.print();
-};
-
-// ── PAGOS ──
-function renderPagos(c, l) {
-  const totalPagado = pagosHistorial.reduce((s, p) => s + (p.monto || 0), 0);
-
-  c.innerHTML = `
-    <div class="panel">
-      <div class="panel-hdr">
-        <div>
-          <div class="panel-title">Registro de pagos</div>
-          <div class="panel-sub">${pagosHistorial.length} pagos registrados</div>
-        </div>
-        <button onclick="abrirModalPago()" style="background:var(--g);color:#fff;border:none;border-radius:99px;padding:8px 16px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">+ Registrar pago</button>
-      </div>
-      ${!pagosHistorial.length ? `
-        <div class="empty-state">
-          <div class="empty-icon">💰</div>
-          <div style="font-size:15px;font-weight:500;color:var(--txt);margin-bottom:4px;">Sin pagos registrados</div>
-          <div style="font-size:13px;color:var(--txt2);">Registra el primer pago para llevar el historial</div>
-        </div>` :
-        pagosHistorial.map(p => {
-          const fecha = p.fecha?.toDate ? p.fecha.toDate().toLocaleDateString('es-PA') : p.fecha || '';
-          return `<div class="pago-item">
-            <div class="pago-icon" style="background:var(--g3);">💰</div>
-            <div class="pago-info">
-              <div class="pago-desc">${p.concepto}</div>
-              <div class="pago-fecha">${fecha}${p.nota ? ' · ' + p.nota : ''}</div>
-            </div>
-            <div style="text-align:right;">
-              <div class="pago-monto">$${parseFloat(p.monto).toFixed(2)}</div>
-              <div class="pago-estado" style="background:var(--g3);color:var(--g);">Pagado</div>
-            </div>
-          </div>`;
-        }).join('')}
-    </div>`;
-
-  l.innerHTML = `
-    <div class="panel">
-      <div class="panel-hdr"><div class="panel-title">Resumen total</div></div>
-      <div style="padding:16px 18px;display:flex;flex-direction:column;gap:10px;">
-        <div style="background:var(--g2);border-radius:12px;padding:18px;text-align:center;">
-          <div style="font-size:12px;color:rgba(255,255,255,.55);margin-bottom:6px;">Total pagado</div>
-          <div style="font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:600;color:#fff;">$${totalPagado.toFixed(2)}</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:4px;">${pagosHistorial.length} pagos registrados</div>
-        </div>
-        ${pagosHistorial.length > 0 ? `
-          <div style="background:var(--cr);border-radius:10px;padding:12px;border:1px solid var(--g4);">
-            <div style="font-size:11px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Por concepto</div>
-            ${Object.entries(pagosHistorial.reduce((acc, p) => {
-              acc[p.concepto] = (acc[p.concepto] || 0) + p.monto;
-              return acc;
-            }, {})).map(([concepto, total]) => `
-              <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--txt2);margin-bottom:4px;">
-                <span>${concepto}</span>
-                <span style="font-weight:500;color:var(--g);">$${total.toFixed(2)}</span>
-              </div>`).join('')}
-          </div>` : ''}
-        <button onclick="abrirModalPago()" class="btn-calc">+ Registrar nuevo pago</button>
-      </div>
-    </div>`;
-}
-
-// ── MODAL PAGO ──
-window.abrirModalPago = (montoSugerido) => {
-  document.getElementById('modalPago').classList.remove('oculto');
-  const hoy = new Date().toISOString().split('T')[0];
-  document.getElementById('pagoFecha').value = hoy;
-  if (montoSugerido) document.getElementById('pagoMonto').value = montoSugerido;
-};
-
-window.cerrarModalPago = () => document.getElementById('modalPago').classList.add('oculto');
-
-window.guardarPago = async () => {
-  const concepto = document.getElementById('pagoConcepto').value;
-  const monto = parseFloat(document.getElementById('pagoMonto').value);
-  const fecha = document.getElementById('pagoFecha').value;
-  const nota = document.getElementById('pagoNota').value.trim();
-
-  if (!monto || !fecha) { showToast('Completa monto y fecha'); return; }
-  if (!hogarId) { showToast('Sin hogar configurado'); return; }
-
-  try {
-    const ref = await addDoc(collection(db, 'hogares', hogarId, 'pagos'), {
-      concepto, monto, fecha, nota,
-      nanaUid: nanaVinculada?.uid || null,
-      nanaNombre: nanaVinculada?.nombre || '',
-      registradoPor: usuarioActual.uid,
-      timestamp: serverTimestamp()
+  // Campos en formulario contrato
+  if ($('fieldsTarifaEventual')) $('fieldsTarifaEventual').style.display = esEventual ? 'block' : 'none';
+  if ($('fieldsSalarioFijo'))    $('fieldsSalarioFijo').style.display    = esEventual ? 'none' : 'block';
+  // Conceptos de pago relevantes
+  const pConcepto = $('pConcepto');
+  if (pConcepto) {
+    Array.from(pConcepto.options).forEach(opt => {
+      const soloFija = ['Salario mensual','Décimo tercer mes','Liquidación'].includes(opt.value);
+      opt.hidden = esEventual && soloFija;
     });
-
-    pagosHistorial.unshift({ id: ref.id, concepto, monto, fecha, nota });
-    cerrarModalPago();
-    document.getElementById('pagoMonto').value = '';
-    document.getElementById('pagoNota').value = '';
-    renderPagos(document.getElementById('tabContenido'), document.getElementById('tabLateral'));
-    showToast(`✅ Pago de $${monto.toFixed(2)} registrado`);
-  } catch(e) {
-    showToast('❌ Error al registrar');
-    console.error(e);
+    if (esEventual) pConcepto.value = 'Pago por visita';
   }
+  // Prellenar monto con tarifa
+  if (esEventual && contratoActual?.tarifaPorVisita) {
+    const vp = $('vPago'); if (vp && !vp.value) vp.value = contratoActual.tarifaPorVisita;
+    const pp = $('pMonto'); if (pp && !pp.value) pp.value = contratoActual.tarifaPorVisita;
+  }
+}
+
+// ── Cargar contrato ──
+async function cargarContrato() {
+  if (!hogarId) return;
+  try {
+    const snap = await getDocs(
+      query(collection(db, 'hogares', hogarId, 'contratos'), orderBy('creadoA','desc'))
+    );
+    if (!snap.empty) {
+      contratoActual = { id: snap.docs[0].id, ...snap.docs[0].data() };
+      renderContrato();
+    } else {
+      renderContratoVacio();
+    }
+  } catch(e) { console.warn('cargarContrato:', e); renderContratoVacio(); }
+}
+
+function renderContrato() {
+  const c = contratoActual;
+  if (!c) return renderContratoVacio();
+  const esEventual = c.tipo === 'eventual';
+  $('contTipoNombre').innerHTML = esEventual
+    ? 'Acuerdo de Servicios Eventuales del Hogar <span class="badge badge-ev">Eventual</span>'
+    : 'Contrato de Trabajo Doméstico <span class="badge badge-fij">Nana fija</span>';
+  $('contVigencia').textContent = `Vigente desde ${formatFecha(c.fechaInicioAcuerdo)}${c.fechaFinAcuerdo ? ' · hasta ' + formatFecha(c.fechaFinAcuerdo) : ' · Sin vencimiento fijo'}`;
+  $('contResumenBody').innerHTML = `
+    <div class="row"><span class="row-label">Persona</span><span class="row-val">${c.nombreAyuda || '—'}</span></div>
+    <div class="row"><span class="row-label">Cédula</span><span class="row-val">${c.cedula || 'No registrada'}</span></div>
+    ${esEventual
+      ? `<div class="row"><span class="row-label">Tarifa por visita</span><span class="row-val">$${c.tarifaPorVisita || '—'}</span></div>
+         <div class="row"><span class="row-label">Frecuencia estimada</span><span class="row-val">${c.frecuenciaEstimada || '—'}</span></div>`
+      : `<div class="row"><span class="row-label">Salario mensual</span><span class="row-val">$${c.salarioMensual || '—'}</span></div>
+         <div class="row"><span class="row-label">Horas semanales</span><span class="row-val">${c.horasSemanales || '—'}</span></div>`}
+    <div class="row"><span class="row-label">Servicios acordados</span><span class="row-val" style="text-align:right;max-width:60%;">${c.serviciosAcordados || '—'}</span></div>
+    <div class="row"><span class="row-label">Forma de pago</span><span class="row-val">${c.formaPago || '—'}</span></div>`;
+
+  // Cláusulas
+  const clausulas = esEventual ? clausulasEventual(c) : clausulasFijo(c);
+  $('clausulasBody').innerHTML = clausulas.map((cl,i) => `
+    <div class="clause">
+      <div class="clause-num">${i+1}. ${cl.titulo}</div>
+      <div class="clause-text">${cl.texto}</div>
+    </div>`).join('');
+}
+
+function clausulasEventual(c) {
+  return [
+    { titulo: 'Servicios acordados',
+      texto: c.serviciosAcordados || 'Los servicios serán acordados en cada visita entre las partes.' },
+    { titulo: 'Tarifa y pago',
+      texto: `$${c.tarifaPorVisita || '—'} por visita, pagaderos al finalizar el servicio. No incluye descuentos por SSNL ni retenciones de ningún tipo.` },
+    { titulo: 'Naturaleza del servicio',
+      texto: 'Este acuerdo constituye una prestación de servicios independiente, esporádica y sin exclusividad. No genera subordinación continua, derecho a salario mensual fijo, vacaciones anuales, décimo tercer mes ni liquidación laboral.' },
+    { titulo: 'Forma y frecuencia',
+      texto: `Frecuencia estimada: ${c.frecuenciaEstimada || 'según necesidad del hogar'}. La frecuencia podrá variar por acuerdo mutuo sin generar obligación alguna.` },
+    { titulo: 'Confidencialidad del hogar',
+      texto: 'La persona prestadora del servicio se compromete a guardar discreción sobre la vida privada, rutinas y pertenencias del hogar.' },
+    { titulo: 'Terminación del acuerdo',
+      texto: 'Cualquiera de las partes puede dar por terminado este acuerdo con 7 días de aviso previo, sin derecho a indemnización dado el carácter eventual del servicio.' },
+  ];
+}
+
+function clausulasFijo(c) {
+  return [
+    { titulo: 'Cargo y funciones',
+      texto: c.serviciosAcordados || 'Empleada doméstica. Funciones: limpieza general, lavandería, cocina y cuidado del hogar.' },
+    { titulo: 'Salario y jornada',
+      texto: `Salario mensual: $${c.salarioMensual || '—'}. Jornada: ${c.horasSemanales || 48} horas semanales conforme al Código de Trabajo de Panamá.` },
+    { titulo: 'Prestaciones legales',
+      texto: 'Le corresponden: décimo tercer mes, vacaciones anuales (30 días), liquidación según años de servicio, y Seguro Social (SSNL) a cargo del empleador.' },
+    { titulo: 'Forma de pago',
+      texto: `Pago ${c.formaPago || 'mensual'} al final de cada período.` },
+    { titulo: 'Confidencialidad',
+      texto: 'La empleada se compromete a guardar discreción sobre la vida privada y pertenencias del hogar.' },
+    { titulo: 'Terminación',
+      texto: 'El despido sin justa causa genera derecho a preaviso y liquidación completa según el Código de Trabajo de la República de Panamá.' },
+  ];
+}
+
+function renderContratoVacio() {
+  $('contTipoNombre').textContent = 'Sin acuerdo configurado';
+  $('contVigencia').textContent   = 'Toca "Editar acuerdo" para crear uno';
+  $('contResumenBody').innerHTML  = '<div class="empty-state">Sin datos del acuerdo</div>';
+  $('clausulasBody').innerHTML    = '<div class="empty-state">Las cláusulas aparecerán aquí</div>';
+}
+
+// ── Formulario contrato ──
+window.mostrarFormContrato = () => {
+  $('formContrato').style.display = 'block';
+  $('formContratoTitulo').textContent = contratoActual ? 'Editar acuerdo' : 'Crear acuerdo';
+  if (contratoActual) {
+    const c = contratoActual;
+    $('cNombre').value    = c.nombreAyuda || '';
+    $('cCedula').value    = c.cedula || '';
+    $('cTelefono').value  = c.telefono || '';
+    $('cServicios').value = c.serviciosAcordados || '';
+    $('cFormaPago').value = c.formaPago || 'Efectivo';
+    $('cFechaInicio').value = c.fechaInicioAcuerdo || '';
+    if (c.tarifaPorVisita) $('cTarifa').value = c.tarifaPorVisita;
+    if (c.frecuenciaEstimada) $('cFrecuencia').value = c.frecuenciaEstimada;
+    if (c.salarioMensual)  $('cSalario').value = c.salarioMensual;
+    if (c.horasSemanales)  $('cHoras').value   = c.horasSemanales;
+  } else {
+    $('cFechaInicio').value = hoy();
+  }
+  aplicarTipoHogar();
+  $('formContrato').scrollIntoView({ behavior:'smooth' });
 };
 
-// ── RECIBO ──
-window.generarRecibo = (neto, salario, decimo, vacaciones, css) => {
-  const nana = nanaVinculada;
-  const ventana = window.open('', '_blank');
-  ventana.document.write(`<!DOCTYPE html><html><head><title>Recibo de Pago - My Nana</title>
-  <style>
-    body{font-family:Arial,sans-serif;max-width:600px;margin:40px auto;padding:20px;color:#1A2E25;}
-    .header{background:#0F4A38;color:#fff;padding:20px;border-radius:10px 10px 0 0;text-align:center;}
-    .logo{font-size:24px;font-weight:600;margin-bottom:4px;}
-    .sub{font-size:13px;opacity:.7;}
-    .body{border:1px solid #E1F0EB;padding:20px;border-radius:0 0 10px 10px;}
-    .row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #F0F7F4;font-size:14px;}
-    .row.total{background:#1A6B52;color:#fff;padding:12px;border-radius:8px;margin-top:10px;font-weight:600;font-size:16px;}
-    .row.desc{color:#BF9090;}
-    .footer{text-align:center;font-size:12px;color:#888;margin-top:16px;}
-  </style></head><body>
-  <div class="header">
-    <div class="logo">My Nana</div>
-    <div class="sub">Recibo de Pago · ${new Date().toLocaleDateString('es-PA',{day:'numeric',month:'long',year:'numeric'})}</div>
-  </div>
-  <div class="body">
-    <div class="row"><span>Trabajadora</span><span><b>${nana?.nombre || 'Nana'}</b></span></div>
-    <div class="row"><span>Cédula</span><span>${nana?.cedula || '—'}</span></div>
-    <div class="row"><span>Período</span><span>${new Date().toLocaleString('es-PA',{month:'long',year:'numeric'})}</span></div>
-    <div style="height:10px;"></div>
-    <div class="row"><span>Salario proporcional</span><span>$${salario.toFixed(2)}</span></div>
-    <div class="row"><span>Décimo tercer mes</span><span>$${decimo.toFixed(2)}</span></div>
-    <div class="row"><span>Vacaciones proporcionales</span><span>$${vacaciones.toFixed(2)}</span></div>
-    <div class="row desc"><span>CSS trabajadora (9.75%)</span><span>-$${css.toFixed(2)}</span></div>
-    <div class="row total"><span>TOTAL A PAGAR</span><span>$${neto.toFixed(2)}</span></div>
-    <div style="margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:20px;">
-      <div style="border-top:1px solid #ccc;padding-top:8px;text-align:center;font-size:12px;color:#888;">Firma del Empleador</div>
-      <div style="border-top:1px solid #ccc;padding-top:8px;text-align:center;font-size:12px;color:#888;">Firma de la Trabajadora</div>
-    </div>
-  </div>
-  <div class="footer">Generado por My Nana · mynana.app · República de Panamá</div>
-  </body></html>`);
-  ventana.document.close();
-  ventana.print();
+window.cancelarFormContrato = () => {
+  $('formContrato').style.display = 'none';
 };
 
-// ── TOAST ──
-window.showToast = (msg) => {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('visible');
-  setTimeout(() => t.classList.remove('visible'), 3000);
+window.guardarContrato = async () => {
+  const nombre = $('cNombre').value.trim();
+  if (!nombre) { showToast('⚠️ Escribe el nombre de la persona'); return; }
+  const esEventual = tipoHogar !== 'con_nana';
+  const data = {
+    tipo:              esEventual ? 'eventual' : 'fijo',
+    nombreAyuda:       nombre,
+    cedula:            $('cCedula').value.trim(),
+    telefono:          $('cTelefono').value.trim(),
+    serviciosAcordados: $('cServicios').value.trim(),
+    formaPago:         $('cFormaPago').value,
+    fechaInicioAcuerdo: $('cFechaInicio').value || hoy(),
+    fechaFinAcuerdo:   null,
+    creadoA:           serverTimestamp(),
+  };
+  if (esEventual) {
+    data.tarifaPorVisita  = parseFloat($('cTarifa').value) || 0;
+    data.frecuenciaEstimada = $('cFrecuencia').value;
+  } else {
+    data.salarioMensual = parseFloat($('cSalario').value) || 0;
+    data.horasSemanales = parseInt($('cHoras').value) || 48;
+  }
+  try {
+    if (contratoActual?.id) {
+      await setDoc(doc(db, 'hogares', hogarId, 'contratos', contratoActual.id), data);
+    } else {
+      await addDoc(collection(db, 'hogares', hogarId, 'contratos'), data);
+    }
+    contratoActual = data;
+    renderContrato();
+    $('formContrato').style.display = 'none';
+    showToast('✅ Acuerdo guardado');
+  } catch(e) { showToast('❌ Error al guardar'); console.error(e); }
 };
 
-// Modal cerrar afuera
-document.getElementById('modalPago').addEventListener('click', e => {
-  if (e.target === document.getElementById('modalPago')) cerrarModalPago();
+// ── Imprimir ──
+window.imprimirContrato = () => window.print();
+
+// ── Pagos ──
+async function cargarPagos() {
+  if (!hogarId) return;
+  try {
+    const snap = await getDocs(
+      query(collection(db, 'hogares', hogarId, 'pagos'), orderBy('fecha','desc'))
+    );
+    pagosCache = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+    renderPagos();
+  } catch(e) { console.warn('cargarPagos:', e); }
+}
+
+function renderPagos() {
+  const el = $('listaPagos');
+  if (!pagosCache.length) {
+    el.innerHTML = '<div class="empty-state">Sin pagos registrados</div>'; return;
+  }
+  el.innerHTML = pagosCache.slice(0,10).map(p => `
+    <div class="pago-item">
+      <div>
+        <div class="pago-fecha">${formatFecha(p.fecha)} · ${p.metodo || 'Efectivo'}</div>
+        <div class="pago-concepto">${p.concepto}${p.notas ? ' · '+p.notas : ''}</div>
+      </div>
+      <div class="pago-monto">+$${parseFloat(p.monto).toFixed(2)}</div>
+    </div>`).join('');
+}
+
+window.registrarPago = async () => {
+  const monto = parseFloat($('pMonto').value);
+  const fecha = $('pFecha').value;
+  if (!monto || !fecha) { showToast('⚠️ Completa monto y fecha'); return; }
+  try {
+    await addDoc(collection(db, 'hogares', hogarId, 'pagos'), {
+      concepto: $('pConcepto').value,
+      monto, fecha,
+      metodo:   $('pMetodo').value,
+      notas:    $('pNotas').value.trim(),
+      tipo:     tipoHogar !== 'con_nana' ? 'eventual' : 'fijo',
+      creadoA:  serverTimestamp(),
+    });
+    $('pMonto').value = ''; $('pNotas').value = ''; $('pFecha').value = hoy();
+    await cargarPagos();
+    showToast('✅ Pago registrado');
+  } catch(e) { showToast('❌ Error al registrar'); }
+};
+
+// ── Visitas ──
+async function cargarVisitas() {
+  if (!hogarId) return;
+  try {
+    const snap = await getDocs(
+      query(collection(db, 'hogares', hogarId, 'visitas'), orderBy('fecha','desc'))
+    );
+    visitasCache = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+    renderVisitas();
+  } catch(e) { console.warn('cargarVisitas:', e); }
+}
+
+function renderVisitas() {
+  const el = $('listaVisitas');
+  if (!visitasCache.length) {
+    el.innerHTML = '<div class="empty-state">Sin visitas registradas</div>'; return;
+  }
+  el.innerHTML = visitasCache.slice(0,12).map(v => {
+    const parts = v.fecha?.split('-') || [];
+    const day = parts[2] || '—';
+    const mon = parts[1] ? MESES[parseInt(parts[1])-1] : '—';
+    const calif = parseInt(v.calificacion) || 0;
+    return `<div class="visit-item">
+      <div class="visit-cal"><div class="visit-day">${day}</div><div class="visit-mon">${mon}</div></div>
+      <div class="visit-info">
+        <div class="visit-name">${v.tareasRealizadas || 'Visita registrada'}</div>
+        <div class="visit-tasks">${v.notas || ''}</div>
+        <div class="visit-footer">
+          <span class="stars">${stars(calif)}</span>
+          <span style="font-size:10px;color:var(--txt2);">${calif}.0</span>
+          ${v.pagoAsociado ? `<span class="visit-monto">$${parseFloat(v.pagoAsociado).toFixed(0)}</span>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.registrarVisita = async () => {
+  const fecha = $('vFecha').value;
+  if (!fecha) { showToast('⚠️ Selecciona la fecha de la visita'); return; }
+  try {
+    await addDoc(collection(db, 'hogares', hogarId, 'visitas'), {
+      fecha,
+      calificacion:    parseInt($('vCalif').value) || 5,
+      tareasRealizadas: $('vTareas').value.trim(),
+      pagoAsociado:    parseFloat($('vPago').value) || 0,
+      notas:           $('vNotas').value.trim(),
+      creadoA:         serverTimestamp(),
+    });
+    $('vFecha').value=''; $('vTareas').value=''; $('vNotas').value=''; $('vPago').value='';
+    await cargarVisitas();
+    showToast('✅ Visita registrada');
+  } catch(e) { showToast('❌ Error al registrar'); }
+};
+
+// ── Historial ──
+function renderHistorial() {
+  const totalPagado  = pagosCache.reduce((s,p) => s + (parseFloat(p.monto)||0), 0);
+  const totalVisitas = visitasCache.length;
+  const promedio     = totalVisitas > 0 ? totalPagado / totalVisitas : 0;
+  const califs       = visitasCache.map(v => parseInt(v.calificacion)||0).filter(n=>n>0);
+  const califProm    = califs.length ? (califs.reduce((s,n)=>s+n,0)/califs.length).toFixed(1) : '—';
+
+  $('histTotalN').textContent = `$${totalPagado.toFixed(2)}`;
+  $('histVisitas').textContent = totalVisitas;
+  $('histPromedio').textContent = promedio > 0 ? `$${Math.round(promedio)}` : '$0';
+  $('histCalif').textContent    = califProm;
+
+  // Por mes
+  const porMes = {};
+  pagosCache.forEach(p => {
+    const [y,m] = (p.fecha||'').split('-');
+    if (!y || !m) return;
+    const key = `${y}-${m}`;
+    if (!porMes[key]) porMes[key] = { y, m:parseInt(m), total:0, visitas:0 };
+    porMes[key].total += parseFloat(p.monto)||0;
+  });
+  visitasCache.forEach(v => {
+    const [y,m] = (v.fecha||'').split('-');
+    if (!y || !m) return;
+    const key = `${y}-${m}`;
+    if (porMes[key]) porMes[key].visitas++;
+  });
+
+  const mesesOrdenados = Object.values(porMes).sort((a,b)=>
+    b.y !== a.y ? b.y - a.y : b.m - a.m);
+
+  $('histMeses').innerHTML = mesesOrdenados.length
+    ? mesesOrdenados.map(mes => `
+        <div class="mes-item">
+          <div><div class="mes-label">${MESES_FULL[mes.m-1]} ${mes.y}</div>
+          <div class="mes-visitas">${mes.visitas} visita${mes.visitas!==1?'s':''}</div></div>
+          <div class="mes-total">$${mes.total.toFixed(2)}</div>
+        </div>`).join('')
+    : '<div class="empty-state">Sin registros aún</div>';
+
+  $('histPagosAll').innerHTML = pagosCache.length
+    ? pagosCache.map(p => `
+        <div class="pago-item">
+          <div>
+            <div class="pago-fecha">${formatFecha(p.fecha)}</div>
+            <div class="pago-concepto">${p.concepto}${p.notas ? ' · '+p.notas : ''}</div>
+          </div>
+          <div class="pago-monto">$${parseFloat(p.monto).toFixed(2)}</div>
+        </div>`).join('')
+    : '<div class="empty-state">Sin pagos</div>';
+}
+
+// ── Auth + Init ──
+onAuthStateChanged(auth, async user => {
+  if (!user) { location.href = '/app.html'; return; }
+  try {
+    const snap = await getDocs(
+      query(collection(db, 'hogares'), where('participantes','array-contains', user.uid))
+    );
+    if (snap.empty) { location.href = '/app.html'; return; }
+    const guardado = localStorage.getItem('hogarActivoNana');
+    const valido   = snap.docs.find(d => d.id === guardado);
+    hogarId = valido ? guardado : snap.docs[0].id;
+
+    // Leer tipoHogar real de Firestore
+    const hogarDoc = await getDoc(doc(db, 'hogares', hogarId));
+    if (hogarDoc.exists()) {
+      tipoHogar = hogarDoc.data().tipoHogar || 'con_nana';
+      localStorage.setItem('mynana_tipoHogar', tipoHogar);
+    }
+
+    aplicarTipoHogar();
+
+    // Prefill fechas
+    const fechaHoy = hoy();
+    $('pFecha').value = fechaHoy;
+    $('vFecha').value = fechaHoy;
+
+    // Cargar todo en paralelo
+    await Promise.all([cargarContrato(), cargarPagos(), cargarVisitas()]);
+    aplicarTipoHogar(); // re-aplicar con tarifa cargada
+  } catch(e) { console.error('Init nomina:', e); }
 });
 </script>
 </body>
