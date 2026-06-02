@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Admin · Proveedores · My Nana</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=DM+Sans:wght@400;500;600&display=swap">
+<style>
+/* TODO (antes de producción): reforzar con Firebase Rules para que solo
+   los UIDs en config/adminUids puedan escribir en la colección proveedores.
+   La validación actual es únicamente en cliente — suficiente para MVP
+   pero no para un entorno de producción con múltiples usuarios. */
+:root{
+  --g:#1A6B52;--g2:#0F4D3A;--g3:#E8F4EF;--g4:#D4E8DF;
+  --txt:#1A1A1A;--txt2:#6B7280;
+  --cr:#FAFAFA;--r:16px;--border:#E5E7EB;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:#F0F4F0;color:var(--txt);
+     padding-bottom:calc(40px + env(safe-area-inset-bottom,0px));}
+.nav{background:var(--g2);padding:env(safe-area-inset-top,0px) 16px 0;position:sticky;top:0;z-index:50;}
+.nav-inner{height:56px;display:flex;align-items:center;gap:12px;}
+.nav-back{background:rgba(255,255,255,.12);border:none;color:#fff;border-radius:99px;
+          padding:6px 14px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.nav-title{font-family:'Cormorant Garamond',serif;font-size:18px;color:#fff;flex:1;text-align:center;}
+.nav-badge{background:rgba(255,200,0,.2);color:#FFD60A;font-size:10px;font-weight:700;
+           padding:3px 10px;border-radius:99px;letter-spacing:.04em;}
+.content{padding:14px 16px 40px;max-width:640px;margin:0 auto;}
+.sec-label{font-size:10px;font-weight:700;color:var(--txt2);text-transform:uppercase;
+           letter-spacing:.06em;margin:16px 0 8px;}
+.card{background:#fff;border-radius:var(--r);border:1px solid var(--border);margin-bottom:10px;overflow:hidden;}
+.card-head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.card-icon{width:34px;height:34px;border-radius:8px;background:var(--g3);
+           display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.card-title{font-size:13px;font-weight:600;color:var(--txt);}
+.card-sub{font-size:11px;color:var(--txt2);margin-top:1px;}
+.card-body{padding:14px 16px;}
+.form-row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.fm-group{margin-bottom:10px;}
+.fm-label{font-size:11px;font-weight:600;color:var(--txt2);margin-bottom:4px;display:block;}
+.fm-input,.fm-select,.fm-textarea{width:100%;padding:10px 12px;border:1.5px solid var(--border);
+  border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--txt);
+  background:#fff;outline:none;transition:border-color .2s;}
+.fm-input:focus,.fm-select:focus,.fm-textarea:focus{border-color:var(--g);}
+.fm-textarea{resize:vertical;min-height:60px;}
+.cat-check-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.cat-check{display:flex;align-items:center;gap:6px;padding:7px 8px;
+           border:1.5px solid var(--border);border-radius:8px;cursor:pointer;
+           font-size:11px;color:var(--txt2);background:#fff;transition:all .15s;}
+.cat-check input[type=checkbox]{accent-color:var(--g);width:14px;height:14px;flex-shrink:0;}
+.cat-check.sel{background:var(--g3);border-color:var(--g);color:var(--g);}
+.btn-primary{width:100%;background:var(--g);color:#fff;border:none;border-radius:99px;
+             padding:13px;font-size:14px;font-weight:600;cursor:pointer;
+             font-family:'DM Sans',sans-serif;margin-bottom:8px;transition:opacity .2s;}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;}
+.btn-secondary{width:100%;background:#fff;color:var(--txt2);border:1.5px solid var(--border);
+               border-radius:99px;padding:11px;font-size:13px;font-weight:500;
+               cursor:pointer;font-family:'DM Sans',sans-serif;}
+.btn-danger{background:#FEF2F2;color:#DC2626;border:1px solid #FECACA;
+            border-radius:99px;padding:6px 14px;font-size:11px;font-weight:600;
+            cursor:pointer;font-family:'DM Sans',sans-serif;}
+.btn-edit{background:var(--g3);color:var(--g);border:none;border-radius:99px;
+          padding:6px 14px;font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;}
+/* Lista proveedores */
+.prov-item{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);}
+.prov-item:last-child{border-bottom:none;}
+.prov-av{width:40px;height:40px;border-radius:10px;background:var(--g3);
+         display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.prov-info{flex:1;min-width:0;}
+.prov-nombre{font-size:13px;font-weight:600;color:var(--txt);}
+.prov-meta{font-size:11px;color:var(--txt2);margin-top:2px;}
+.estado-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.estado-dot.activo{background:#22c55e;}
+.estado-dot.inactivo{background:#9ca3af;}
+/* Rating input */
+.rating-wrap{display:flex;gap:4px;margin-top:4px;}
+.rating-star-btn{font-size:22px;cursor:pointer;background:none;border:none;
+                 padding:2px;line-height:1;color:#D1D5DB;transition:color .1s;}
+.rating-star-btn.sel{color:#F59E0B;}
+/* Toast */
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-80px);
+       background:var(--g2);color:#fff;font-size:13px;font-weight:500;
+       padding:12px 20px;border-radius:99px;z-index:300;
+       transition:transform .35s;white-space:nowrap;}
+.toast.visible{transform:translateX(-50%) translateY(0);}
+.acceso-denegado{position:fixed;inset:0;background:#fff;display:flex;flex-direction:column;
+                 align-items:center;justify-content:center;z-index:500;padding:32px;text-align:center;}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- Pantalla de acceso denegado (oculta hasta verificar) -->
+<div class="acceso-denegado" id="pantallaBloqueo" style="display:none;">
+  <div style="font-size:48px;margin-bottom:16px;">🔒</div>
+  <div style="font-family:'Cormorant Garamond',serif;font-size:24px;margin-bottom:8px;">Acceso restringido</div>
+  <div style="font-size:14px;color:#6B7280;">Esta sección solo está disponible para administradores de My Nana.</div>
+  <button onclick="location.href='/app.html'"
+          style="margin-top:24px;background:#1A6B52;color:#fff;border:none;border-radius:99px;
+                 padding:12px 28px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">
+    Ir al inicio
+  </button>
+</div>
+
+<div id="appContent" style="display:none;">
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <button class="nav-back" onclick="history.back()">← Salir</button>
+      <div class="nav-title">Admin · Proveedores</div>
+      <span class="nav-badge">ADMIN</span>
+    </div>
+  </nav>
+
+  <div class="content">
+
+    <!-- Estadísticas rápidas -->
+    <div class="card" style="margin-top:4px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;text-align:center;">
+        <div style="padding:14px 8px;border-right:1px solid var(--border);">
+          <div style="font-size:22px;font-weight:600;color:var(--g);" id="statTotal">—</div>
+          <div style="font-size:10px;color:var(--txt2);margin-top:2px;">Total</div>
+        </div>
+        <div style="padding:14px 8px;border-right:1px solid var(--border);">
+          <div style="font-size:22px;font-weight:600;color:var(--g);" id="statActivos">—</div>
+          <div style="font-size:10px;color:var(--txt2);margin-top:2px;">Activos</div>
+        </div>
+        <div style="padding:14px 8px;">
+          <div style="font-size:22px;font-weight:600;color:#D97706;" id="statLeads">—</div>
+          <div style="font-size:10px;color:var(--txt2);margin-top:2px;">Leads hoy</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulario agregar/editar -->
+    <div class="sec-label" id="formLabel">Agregar proveedor</div>
+    <div class="card">
+      <div class="card-body" id="formBody">
+
+        <input type="hidden" id="editId">
+
+        <div class="fm-group">
+          <label class="fm-label">Nombre del proveedor *</label>
+          <input class="fm-input" id="fNombre" placeholder="Ej: Frío Express">
+        </div>
+
+        <div class="fm-group">
+          <label class="fm-label">Descripción</label>
+          <textarea class="fm-textarea" id="fDesc" placeholder="Servicio que ofrece..."></textarea>
+        </div>
+
+        <div class="fm-group">
+          <label class="fm-label">Categorías * (selecciona una o más)</label>
+          <div class="cat-check-grid" id="catCheckGrid"></div>
+        </div>
+
+        <div class="form-row2">
+          <div>
+            <label class="fm-label">WhatsApp</label>
+            <input class="fm-input" id="fWA" placeholder="+507 6000-0000">
+          </div>
+          <div>
+            <label class="fm-label">Teléfono</label>
+            <input class="fm-input" id="fTel" placeholder="+507 2000-0000">
+          </div>
+        </div>
+
+        <div class="fm-group">
+          <label class="fm-label">Cobertura (una zona por línea)</label>
+          <textarea class="fm-textarea" id="fCobertura" placeholder="Ciudad de Panamá&#10;San Miguelito&#10;La Chorrera"></textarea>
+        </div>
+
+        <div class="form-row2">
+          <div>
+            <label class="fm-label">Precio aproximado</label>
+            <input class="fm-input" id="fPrecio" placeholder="$50 - $200">
+          </div>
+          <div>
+            <label class="fm-label">Tiempo de respuesta</label>
+            <input class="fm-input" id="fTiempo" placeholder="< 24 horas">
+          </div>
+        </div>
+
+        <div class="fm-group">
+          <label class="fm-label">Rating inicial (1-5)</label>
+          <div class="rating-wrap" id="ratingWrap"></div>
+          <input type="hidden" id="fRating" value="5">
+        </div>
+
+        <div class="fm-group" style="display:flex;align-items:center;gap:10px;">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="fVerificado" checked style="accent-color:var(--g);width:16px;height:16px;">
+            <span style="font-size:13px;font-weight:500;">Verificado por My Nana</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="fActivo" checked style="accent-color:var(--g);width:16px;height:16px;">
+            <span style="font-size:13px;font-weight:500;">Activo</span>
+          </label>
+        </div>
+
+        <button class="btn-primary" id="btnGuardar" onclick="guardarProveedor()">
+          ➕ Guardar proveedor
+        </button>
+        <button class="btn-secondary" id="btnCancelarEdit" style="display:none;" onclick="cancelarEdicion()">
+          Cancelar edición
+        </button>
+      </div>
+    </div>
+
+    <!-- Lista de proveedores -->
+    <div class="sec-label">Proveedores registrados</div>
+    <div class="card" id="listaProveedores">
+      <div style="padding:24px;text-align:center;color:var(--txt2);font-size:13px;">Cargando...</div>
+    </div>
+
+  </div>
+</div><!-- /appContent -->
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import { getFirestore, doc, getDoc, setDoc, addDoc, updateDoc,
+         collection, getDocs, query, where, orderBy, serverTimestamp
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+/*
+ * TODO (ANTES DE PRODUCCIÓN):
+ * Agregar Firebase Rules para que solo los UIDs en config/adminUids
+ * puedan escribir en la colección `proveedores`. Ejemplo:
+ *
+ * match /proveedores/{id} {
+ *   allow read: if true;
+ *   allow write: if request.auth != null &&
+ *     request.auth.uid in get(/databases/$(database)/documents/config/adminUids).data.uids;
+ * }
+ *
+ * Actualmente la validación es solo en cliente (MVP).
+ */
+
+const fbApp = initializeApp({
+  apiKey:"AIzaSyDDJRJ8A8P507lllGRBOoXO30ESAH1GAnw",
+  authDomain:"mynanapapp.firebaseapp.com",
+  projectId:"mynanapapp",
+  storageBucket:"mynanapapp.firebasestorage.app",
+  messagingSenderId:"124180779437",
+  appId:"1:124180779437:web:d217743000b0f1fedfd124"
+});
+const auth = getAuth(fbApp);
+const db   = getFirestore(fbApp);
+
+const CATEGORIAS = [
+  { id:'aire_acondicionado',emoji:'❄️', label:'Aire acond.' },
+  { id:'plomeria',          emoji:'🔩', label:'Plomería' },
+  { id:'electricidad',      emoji:'⚡', label:'Electricidad' },
+  { id:'fumigacion',        emoji:'🪲', label:'Fumigación' },
+  { id:'jardineria',        emoji:'🌿', label:'Jardinería' },
+  { id:'limpieza_profunda', emoji:'🧹', label:'Limp. profunda' },
+  { id:'veterinario',       emoji:'🐾', label:'Veterinario' },
+  { id:'lavado_muebles',    emoji:'🛋️', label:'Lavado muebles' },
+  { id:'pintura',           emoji:'🖌️', label:'Pintura' },
+  { id:'mudanzas',          emoji:'🚛', label:'Mudanzas' },
+  { id:'piscinas',          emoji:'🏊', label:'Piscinas' },
+  { id:'seguridad',         emoji:'🔒', label:'Seguridad' },
+  { id:'tecnico',           emoji:'🔧', label:'Técnico general' },
+  { id:'mantenimiento',     emoji:'🏗️', label:'Mantenimiento' },
+  { id:'otro',              emoji:'📌', label:'Otro' },
+];
+
+let proveedoresCache = [];
+let ratingVal = 5;
+const $ = id => document.getElementById(id);
+function hoy() { return new Date().toISOString().split('T')[0]; }
+function showToast(msg) {
+  const t = $('toast'); t.textContent = msg;
+  t.classList.add('visible');
+  setTimeout(() => t.classList.remove('visible'), 2800);
+}
+
+// ── Verificación de acceso admin ──────────────────────────────────────────
+async function verificarAdmin(uid) {
+  try {
+    const snap = await getDoc(doc(db, 'config', 'adminUids'));
+    if (!snap.exists()) return false;
+    const uids = snap.data().uids || [];
+    return uids.includes(uid);
+  } catch(e) {
+    console.warn('verificarAdmin:', e);
+    return false;
+  }
+}
+
+// ── Render checks de categoría ────────────────────────────────────────────
+function renderCatChecks(seleccionadas = []) {
+  $('catCheckGrid').innerHTML = CATEGORIAS.map(c => `
+    <label class="cat-check ${seleccionadas.includes(c.id) ? 'sel' : ''}">
+      <input type="checkbox" value="${c.id}"
+             ${seleccionadas.includes(c.id) ? 'checked' : ''}
+             onchange="toggleCat(this)">
+      ${c.emoji} ${c.label}
+    </label>`).join('');
+}
+
+window.toggleCat = (cb) => {
+  cb.closest('.cat-check').classList.toggle('sel', cb.checked);
+};
+
+function getCatsSeleccionadas() {
+  return Array.from($('catCheckGrid').querySelectorAll('input[type=checkbox]:checked'))
+    .map(cb => cb.value);
+}
+
+// ── Rating interactivo ────────────────────────────────────────────────────
+function renderRating(val) {
+  ratingVal = val;
+  $('fRating').value = val;
+  $('ratingWrap').innerHTML = [1,2,3,4,5].map(n => `
+    <button type="button" class="rating-star-btn ${n <= val ? 'sel' : ''}"
+            onclick="setRating(${n})">★</button>`).join('');
+}
+
+window.setRating = (n) => renderRating(n);
+
+// ── Guardar proveedor (crear o actualizar) ────────────────────────────────
+window.guardarProveedor = async () => {
+  const nombre = $('fNombre').value.trim();
+  const cats   = getCatsSeleccionadas();
+
+  if (!nombre)       { showToast('⚠️ Escribe el nombre del proveedor'); return; }
+  if (!cats.length)  { showToast('⚠️ Selecciona al menos una categoría'); return; }
+
+  const btn = $('btnGuardar');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+
+  const cobertura = $('fCobertura').value.trim()
+    .split('\n').map(l => l.trim()).filter(Boolean);
+
+  const data = {
+    nombre,
+    descripcion:     $('fDesc').value.trim(),
+    categorias:      cats,
+    whatsapp:        $('fWA').value.trim(),
+    telefono:        $('fTel').value.trim(),
+    cobertura,
+    precioRango:     $('fPrecio').value.trim(),
+    tiempoRespuesta: $('fTiempo').value.trim(),
+    rating:          parseFloat($('fRating').value) || 5,
+    totalReviews:    0,
+    verificado:      $('fVerificado').checked,
+    activo:          $('fActivo').checked,
+    plan:            'basico',
+    actualizadoA:    serverTimestamp(),
+  };
+
+  try {
+    const editId = $('editId').value;
+    if (editId) {
+      await updateDoc(doc(db, 'proveedores', editId), data);
+      showToast('✅ Proveedor actualizado');
+    } else {
+      data.creadoA  = serverTimestamp();
+      data.totalLeads = 0;
+      await addDoc(collection(db, 'proveedores'), data);
+      showToast('✅ Proveedor creado');
+    }
+    cancelarEdicion();
+    await cargarProveedores();
+  } catch(e) {
+    showToast('❌ Error al guardar'); console.error(e);
+  } finally {
+    btn.disabled = false; btn.textContent = '➕ Guardar proveedor';
+  }
+};
+
+// ── Editar ────────────────────────────────────────────────────────────────
+window.editarProveedor = (id) => {
+  const p = proveedoresCache.find(x => x.id === id);
+  if (!p) return;
+
+  $('editId').value   = id;
+  $('fNombre').value  = p.nombre || '';
+  $('fDesc').value    = p.descripcion || '';
+  $('fWA').value      = p.whatsapp || '';
+  $('fTel').value     = p.telefono || '';
+  $('fCobertura').value = (p.cobertura || []).join('\n');
+  $('fPrecio').value  = p.precioRango || '';
+  $('fTiempo').value  = p.tiempoRespuesta || '';
+  $('fVerificado').checked = p.verificado !== false;
+  $('fActivo').checked     = p.activo !== false;
+
+  renderCatChecks(p.categorias || []);
+  renderRating(p.rating || 5);
+
+  $('formLabel').textContent = `Editando: ${p.nombre}`;
+  $('btnGuardar').textContent = '💾 Actualizar proveedor';
+  $('btnCancelarEdit').style.display = 'block';
+  $('formBody').scrollIntoView({ behavior:'smooth' });
+};
+
+window.cancelarEdicion = () => {
+  $('editId').value = '';
+  $('fNombre').value = $('fDesc').value = $('fWA').value = '';
+  $('fTel').value = $('fCobertura').value = $('fPrecio').value = $('fTiempo').value = '';
+  $('fVerificado').checked = true;
+  $('fActivo').checked = true;
+  renderCatChecks([]);
+  renderRating(5);
+  $('formLabel').textContent = 'Agregar proveedor';
+  $('btnGuardar').textContent = '➕ Guardar proveedor';
+  $('btnCancelarEdit').style.display = 'none';
+};
+
+// ── Togglear activo/inactivo ──────────────────────────────────────────────
+window.toggleActivo = async (id, activo) => {
+  try {
+    await updateDoc(doc(db, 'proveedores', id), { activo: !activo, actualizadoA: serverTimestamp() });
+    showToast(!activo ? '▶️ Proveedor activado' : '⏸ Proveedor desactivado');
+    await cargarProveedores();
+  } catch(e) { showToast('❌ Error'); }
+};
+
+// ── Render lista ──────────────────────────────────────────────────────────
+function renderLista() {
+  $('statTotal').textContent   = proveedoresCache.length;
+  $('statActivos').textContent = proveedoresCache.filter(p => p.activo !== false).length;
+
+  $('listaProveedores').innerHTML = proveedoresCache.length
+    ? proveedoresCache.map(p => {
+        const catLabel = (p.categorias || [])
+          .map(id => CATEGORIAS.find(c => c.id === id)?.label || id)
+          .slice(0,2).join(', ');
+        const emoji = CATEGORIAS.find(c => (p.categorias||[])[0] === c.id)?.emoji || '🔧';
+        return `<div class="prov-item">
+          <div class="prov-av">${emoji}</div>
+          <div class="prov-info">
+            <div class="prov-nombre">${p.nombre} ${p.verificado ? '✓' : ''}</div>
+            <div class="prov-meta">${catLabel}${p.precioRango ? ' · ' + p.precioRango : ''}</div>
+          </div>
+          <div class="estado-dot ${p.activo !== false ? 'activo' : 'inactivo'}"></div>
+          <div style="display:flex;gap:5px;flex-shrink:0;margin-left:6px;">
+            <button class="btn-edit" onclick="editarProveedor('${p.id}')">✏️</button>
+            <button class="btn-danger" onclick="toggleActivo('${p.id}',${p.activo !== false})">
+              ${p.activo !== false ? 'Pausar' : 'Activar'}
+            </button>
+          </div>
+        </div>`;
+      }).join('')
+    : '<div style="padding:24px;text-align:center;color:var(--txt2);font-size:13px;">Sin proveedores aún</div>';
+}
+
+// ── Cargar proveedores y leads de hoy ─────────────────────────────────────
+async function cargarProveedores() {
+  const snap = await getDocs(query(collection(db, 'proveedores'), orderBy('creadoA', 'desc')));
+  proveedoresCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  renderLista();
+}
+
+async function cargarLeadsHoy() {
+  try {
+    const snap = await getDocs(
+      query(collection(db, 'leads'), where('fecha', '==', hoy()))
+    );
+    $('statLeads').textContent = snap.size;
+  } catch(e) { $('statLeads').textContent = '—'; }
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+renderCatChecks([]);
+renderRating(5);
+
+onAuthStateChanged(auth, async user => {
+  if (!user) { location.href = '/app.html'; return; }
+
+  const esAdmin = await verificarAdmin(user.uid);
+  if (!esAdmin) {
+    $('pantallaBloqueo').style.display = 'flex';
+    return;
+  }
+
+  $('appContent').style.display = 'block';
+  await Promise.all([cargarProveedores(), cargarLeadsHoy()]);
+});
+</script>
+</body>
+</html>
