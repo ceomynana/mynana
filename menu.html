@@ -237,6 +237,27 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
 .mercado-cat-hdr{font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--txt2);padding:6px 10px 3px;margin-top:4px;}
 .mercado-duplicado{background:#FEF3C7;}
 .dup-badge{font-size:10px;background:#FEF3C7;color:#92400E;padding:1px 6px;border-radius:99px;margin-left:4px;}
+
+/* ── MODO MENÚ POR MIEMBRO ── */
+.modo-menu-selector{display:flex;gap:6px;padding:10px 14px;background:#fff;border-bottom:1px solid var(--g4);}
+.modo-btn{flex:1;padding:8px;border-radius:99px;border:1.5px solid var(--g4);background:#fff;font-size:12px;font-weight:500;color:var(--txt2);cursor:pointer;text-align:center;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.modo-btn.activo{background:var(--g);border-color:var(--g);color:#fff;}
+.miembro-selector-row{display:flex;gap:6px;padding:8px 12px;overflow-x:auto;scrollbar-width:none;background:var(--g3);align-items:center;}
+.miembro-selector-row::-webkit-scrollbar{display:none;}
+.miembro-chip{display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:99px;border:1.5px solid var(--g4);background:#fff;font-size:12px;font-weight:500;color:var(--txt2);cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s;}
+.miembro-chip.sel{border-color:var(--g);background:var(--g);color:#fff;}
+.miembro-chip-perfil{background:none;border:none;padding:2px 4px;font-size:13px;cursor:pointer;flex-shrink:0;}
+.quien-come-wrap{padding:6px 14px 8px;background:#F8FBF9;border-top:1px solid var(--g4);}
+.quien-come-label{font-size:10px;font-weight:600;color:var(--txt2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em;display:block;}
+.quien-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:99px;border:1.5px solid var(--g4);background:#fff;font-size:11px;font-weight:500;color:var(--txt2);cursor:pointer;margin:2px;transition:all .13s;}
+.quien-chip.sel{border-color:var(--g);background:var(--g3);color:var(--g);font-weight:600;}
+.modal-perfil{display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.5);align-items:flex-end;justify-content:center;backdrop-filter:blur(3px);}
+.modal-perfil.visible{display:flex;}
+.perfil-box{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:20px 20px calc(20px + env(safe-area-inset-bottom,0px));max-height:85vh;overflow-y:auto;}
+.perfil-chip-grid{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px;margin-bottom:10px;}
+.perfil-chip{padding:5px 11px;border-radius:99px;border:1.5px solid var(--g4);background:#fff;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .13s;}
+.perfil-chip.sel{background:var(--g);border-color:var(--g);color:#fff;}
+.perfil-form-label{font-size:11px;font-weight:600;color:var(--txt2);margin-bottom:4px;display:block;margin-top:10px;}
 </style>
 </head>
 <body>
@@ -257,6 +278,44 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
+
+<!-- ══ MODAL PERFIL ALIMENTARIO POR MIEMBRO ══ -->
+<div class="modal-perfil" id="modalPerfilMiembro">
+  <div class="perfil-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:18px;" id="perfilMiembroTitulo">Perfil alimentario</div>
+      <button onclick="cerrarModalPerfil()" style="background:var(--g3);border:none;border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:14px;">✕</button>
+    </div>
+
+    <label class="perfil-form-label">Alergias</label>
+    <div class="perfil-chip-grid" id="perfilAlergiasGrid"></div>
+    <input class="form-input" id="perfilAlergiasCustom" placeholder="Otra alergia (Enter para agregar)" style="margin-top:5px;font-size:12px;" onkeydown="if(event.key==='Enter'){agregarPerfilCustom('alergias');event.preventDefault();}">
+
+    <label class="perfil-form-label">Intolerancias</label>
+    <div class="perfil-chip-grid" id="perfilIntolerGrid"></div>
+    <input class="form-input" id="perfilIntolerCustom" placeholder="Otra intolerancia (Enter para agregar)" style="margin-top:5px;font-size:12px;" onkeydown="if(event.key==='Enter'){agregarPerfilCustom('intolerancias');event.preventDefault();}">
+
+    <label class="perfil-form-label">Restricciones</label>
+    <div class="perfil-chip-grid" id="perfilRestricGrid"></div>
+    <input class="form-input" id="perfilRestricCustom" placeholder="Otra restricción (Enter para agregar)" style="margin-top:5px;font-size:12px;" onkeydown="if(event.key==='Enter'){agregarPerfilCustom('restricciones');event.preventDefault();}">
+
+    <label class="perfil-form-label">Objetivo nutricional</label>
+    <div class="perfil-chip-grid" id="perfilObjetivoGrid"></div>
+
+    <label class="perfil-form-label">¿Participa en el menú compartido?</label>
+    <div style="display:flex;gap:8px;margin-top:4px;">
+      <button id="perfilPartSi" class="perfil-chip sel" onclick="setPerfilParticipa(true)">✅ Sí</button>
+      <button id="perfilPartNo" class="perfil-chip"    onclick="setPerfilParticipa(false)">❌ No</button>
+    </div>
+
+    <label class="perfil-form-label">Notas adicionales</label>
+    <textarea class="form-input" id="perfilNotas" rows="2" placeholder="Ej: no le gustan los vegetales verdes" style="resize:vertical;font-size:12px;"></textarea>
+
+    <button onclick="guardarPerfilMiembro()" style="width:100%;background:var(--g);color:#fff;border:none;border-radius:99px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:14px;">
+      💾 Guardar perfil
+    </button>
+  </div>
+</div>
 
 <!-- MODAL AGREGAR INGREDIENTE -->
 <div class="modal-overlay oculto" id="modalIng">
@@ -506,6 +565,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
             <div style="font-size:12px;color:var(--txt2);" id="menuDiaSub">Selecciona un día para ver o editar</div>
           </div>
           <div style="display:flex;align-items:center;gap:8px;">
+            <!-- Selector modo menú: compartido / por miembro -->
+            <div style="display:flex;background:var(--g3);border-radius:99px;padding:2px;gap:2px;border:1px solid var(--g4);">
+              <button class="modo-btn activo" id="modoBtnCompartido" onclick="cambiarModoMenu('compartido')" style="font-size:11px;padding:5px 9px;">🍽 Todos</button>
+              <button class="modo-btn" id="modoBtnMiembro"    onclick="cambiarModoMenu('por_miembro')"  style="font-size:11px;padding:5px 9px;">👥 Por miembro</button>
+            </div>
             <!-- Toggle saludable -->
             <div style="display:flex;align-items:center;gap:6px;background:var(--cr);border-radius:99px;padding:4px 10px;border:1px solid var(--g4);">
               <span style="font-size:14px;">🥗</span>
@@ -518,6 +582,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
             </div>
             <div id="menuDiaAcciones"></div>
           </div>
+        </div>
+        <!-- Fila de miembros (visible solo en modo por_miembro) -->
+        <div id="miembroSelectorWrap" style="display:none;padding:6px 12px;background:var(--g3);border-bottom:1px solid var(--g4);">
+          <div style="font-size:10px;font-weight:600;color:var(--txt2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em;">Ver menú de:</div>
+          <div class="miembro-selector-row" id="miembroSelectorRow" style="background:transparent;padding:0;"></div>
         </div>
         <div id="menuDiaContent"></div>
       </div>
@@ -993,6 +1062,9 @@ let unsubMercado = null;
 let modoSaludable = false;
 let modoEconomico = false;
 let modoActual = 'tradicional'; // nuevo sistema de 6 modos
+let modoMenu  = 'compartido';   // 'compartido' | 'por_miembro'
+let miembrosHogar = [];         // [{ uid, nombre, rol, color, avatarEmoji, perfil }]
+let miembroEditandoPerfil = null;
 
 // ── SELECTOR DE TIPO DE MENÚ ──
 window.cambiarTipoMenu = (tipo) => {
@@ -1609,6 +1681,40 @@ function platoTieneAlergia(nombrePlato) {
   return ings.some(ing => ingredienteTieneAlergia(ing));
 }
 
+// Verifica si algún miembro asignado al plato tiene alergia a algún ingrediente
+function platoTieneAlergiaParaMiembros(nombrePlato, miembrosAsignados) {
+  if (!miembrosAsignados?.length || modoMenu !== 'por_miembro') return null; // null = sin alerta
+  const ings = getIngredientesActuales(nombrePlato) || [];
+  if (!ings.length) return null;
+
+  const alertas = [];
+  const asignados = miembrosAsignados.includes('todos')
+    ? miembrosHogar
+    : miembrosHogar.filter(m => miembrosAsignados.includes(m.uid));
+
+  asignados.forEach(m => {
+    const perfil = m.perfil || {};
+    const alergiasMiembro = [
+      ...(perfil.alergias || []),
+      ...(perfil.intolerancias || []),
+    ].map(a => a.toLowerCase());
+    if (!alergiasMiembro.length) return;
+
+    ings.forEach(ing => {
+      const ingLow = ing.toLowerCase();
+      alergiasMiembro.forEach(alergia => {
+        const keywords = ALERGENOS_MAP[alergia] || [alergia];
+        if (keywords.some(k => ingLow.includes(k))) {
+          alertas.push(m.nombre.split(' ')[0]);
+        }
+      });
+    });
+  });
+
+  const unicos = [...new Set(alertas)];
+  return unicos.length ? `⚠️ Alergia: ${unicos.join(', ')}` : null;
+}
+
 function filtrarPlatosSeguros(lista) {
   if (!perfilAlimentario.alergias.length && !perfilAlimentario.alergiasPersonalizadas.length) return lista;
   return lista.filter(p => !platoTieneAlergia(p));
@@ -1976,6 +2082,7 @@ function inicializar() {
   renderDias();
   renderSemanaLabel();
   seleccionarDia(diaSemanaActual());
+  cargarMiembrosMenu(); // modo por_miembro
   escucharMenu();
   escucharMercado();
 }
@@ -2022,6 +2129,8 @@ function escucharMenu() {
   let initialLoad = true;
   unsubMenu = onSnapshot(doc(db, 'hogares', hogarId, 'menus', semanaId), (snap) => {
     menuData = snap.exists() ? (snap.data() || {}) : {};
+    modoMenu  = menuData.modoMenu || 'compartido';
+    renderModoMenuUI();
     renderMenuDia();
     renderSemanaGrid();
     // Saltar la carga inicial para no sobreescribir items ya marcados como comprados
@@ -2102,6 +2211,10 @@ function renderMenuFamilia(contenedor, diaMenu, diaKey) {
             <div class="tiempo-plato ${tieneContenido ? '' : 'vacio'}">${plato.nombre || 'Toca para agregar plato...'}</div>
             <div class="tiempo-hora">${t.hora}</div>
             ${tieneContenido && platoTieneAlergia(plato.nombre) ? `<div class="alerta-alergia">⚠️ Contiene alergia del hogar</div>` : ''}
+            ${tieneContenido && modoMenu === 'por_miembro' ? (() => {
+              const alertaMiembro = platoTieneAlergiaParaMiembros(plato.nombre, plato.miembros || ['todos']);
+              return alertaMiembro ? `<div class="alerta-alergia" style="background:#FEF3C7;color:#92400E;">${alertaMiembro}</div>` : '';
+            })() : ''}
           </div>
           <div class="tiempo-actions">
             ${tieneContenido ? `<button class="btn-del" onclick="event.stopPropagation();eliminarPlato('${diaKey}','${t.id}')">✕</button>` : ''}
@@ -2110,6 +2223,7 @@ function renderMenuFamilia(contenedor, diaMenu, diaKey) {
             </button>
           </div>
         </div>
+        ${tieneContenido ? renderQuienCome(diaKey, t.id, plato) : ''}
 
         ${tieneContenido && plato.ingredientes?.length ? `
           <div class="ingredientes-wrap">
@@ -2202,16 +2316,25 @@ window.guardarPlato = async (diaKey, tiempoId) => {
   if (!nombre) return;
 
   if (!menuData[diaKey]) menuData[diaKey] = {};
-  if (!menuData[diaKey][tiempoId]) menuData[diaKey][tiempoId] = {};
-  menuData[diaKey][tiempoId].nombre = nombre;
+  // Preservar miembros asignados previamente — no sobreescribir
+  const existente = menuData[diaKey][tiempoId] || {};
+  const miembrosExistentes = existente.miembros || (modoMenu === 'por_miembro' ? ['todos'] : undefined);
 
-  // Auto-agregar ingredientes si existen
+  menuData[diaKey][tiempoId] = {
+    ...existente,                    // preservar todos los campos previos
+    nombre,
+  };
+
+  // Preservar asignación de miembros
+  if (miembrosExistentes) menuData[diaKey][tiempoId].miembros = miembrosExistentes;
+
+  // Auto-agregar ingredientes si existen en el diccionario
   const ings = getIngredientesActuales(nombre);
   if (ings) menuData[diaKey][tiempoId].ingredientes = [...ings];
-  // Si no hay en diccionario, limpiar los anteriores para no mostrar ingredientes del plato viejo
-  else if (menuData[diaKey][tiempoId].nombre !== nombre) menuData[diaKey][tiempoId].ingredientes = [];
+  else if (existente.nombre !== nombre) menuData[diaKey][tiempoId].ingredientes = [];
 
   await guardarMenu();
+  renderMenuDia();
   showToast(`🍽️ "${nombre}" guardado`);
   document.querySelectorAll('.form-plato').forEach(f => f.classList.remove('visible'));
 };
@@ -2224,6 +2347,237 @@ window.usarSugerencia = async (tiempoId, plato, diaKey) => {
   await guardarMenu();
   showToast(`✅ ${plato} seleccionado`);
 };
+
+// ══════════════════════════════════════════════════════
+//  SISTEMA DE MENÚ POR MIEMBRO
+// ══════════════════════════════════════════════════════
+
+const ALERGIAS_COMUNES    = ['Mariscos','Nueces','Gluten','Lácteos','Huevos','Soya','Maíz','Fresa'];
+const INTOLERANCIAS_COMUN = ['Lactosa','Fructosa','Gluten','Sorbitol'];
+const RESTRICCIONES_COMUN = ['Vegetariano','Vegano','Sin azúcar','Bajo en sal','Sin carne','Sin cerdo','Halal'];
+const OBJETIVOS_COMUN     = ['Alto en proteína','Bajo en carbohidratos','Alto en fibra','Bajo en grasa','Ganancia muscular','Control de peso'];
+
+let miembroActivo = 'todos'; // uid del miembro seleccionado o 'todos'
+let perfilEditandoData = {}; // datos del perfil en edición
+
+// Cargar miembros del hogar (con fallback desde participantes)
+async function cargarMiembrosMenu() {
+  if (!hogarId) return;
+  try {
+    const snap = await getDocs(collection(db, 'hogares', hogarId, 'miembros'));
+    if (!snap.empty) {
+      miembrosHogar = snap.docs
+        .map(d => ({ uid: d.id, ...d.data() }))
+        .filter(m => m.activo !== false);
+    } else {
+      // Fallback: construir desde participantes
+      const hogarSnap = await getDoc(doc(db, 'hogares', hogarId));
+      const uids = hogarSnap.exists() ? (hogarSnap.data().participantes || []) : [];
+      const COLORES = ['#1A6B52','#2B6CB0','#D97706','#DB2777','#7C3AED'];
+      const EMOJIS  = { mamá:'👩', papá:'👨', nana_fija:'👩‍🍳', hijo:'👦', hija:'👧', otro:'👤' };
+      const perfs = await Promise.all(uids.map((uid, i) =>
+        getDoc(doc(db, 'usuarios', uid)).then(d => d.exists() ? {
+          uid, nombre: d.data().nombre || 'Miembro',
+          rol: d.data().tipo === 'nana' ? 'nana_fija' : 'otro',
+          color: COLORES[i % COLORES.length],
+          avatarEmoji: EMOJIS[d.data().tipo === 'nana' ? 'nana_fija' : 'otro'],
+          activo: true, perfil: {}
+        } : null)
+      ));
+      miembrosHogar = perfs.filter(Boolean);
+    }
+    // Leer modoMenu desde menuData
+    modoMenu = menuData.modoMenu || 'compartido';
+    renderModoMenuUI();
+  } catch(e) { console.warn('cargarMiembrosMenu:', e); }
+}
+
+// Cambiar modo de menú
+window.cambiarModoMenu = async (modo) => {
+  modoMenu = modo;
+  menuData.modoMenu = modo;
+  await guardarMenu();
+  renderModoMenuUI();
+  renderMenuDia();
+};
+
+function renderModoMenuUI() {
+  const btnC = document.getElementById('modoBtnCompartido');
+  const btnM = document.getElementById('modoBtnMiembro');
+  const wrap  = document.getElementById('miembroSelectorWrap');
+
+  if (btnC) { btnC.classList.toggle('activo', modoMenu === 'compartido'); }
+  if (btnM) { btnM.classList.toggle('activo', modoMenu === 'por_miembro'); }
+
+  if (wrap) wrap.style.display = modoMenu === 'por_miembro' ? 'block' : 'none';
+
+  if (modoMenu === 'por_miembro') renderSelectorMiembros();
+}
+
+function renderSelectorMiembros() {
+  const row = document.getElementById('miembroSelectorRow');
+  if (!row) return;
+  const opciones = [{ uid:'todos', nombre:'Todos', avatarEmoji:'🏠', color:'#1A6B52' }, ...miembrosHogar];
+  row.innerHTML = opciones.map(m => `
+    <div class="miembro-chip ${miembroActivo === m.uid ? 'sel' : ''}"
+         onclick="seleccionarMiembro('${m.uid}')">
+      <span>${m.avatarEmoji || '👤'}</span>
+      <span>${m.nombre.split(' ')[0]}</span>
+    </div>
+    ${m.uid !== 'todos' ? `<button class="miembro-chip-perfil" onclick="abrirPerfilMiembro('${m.uid}')" title="Perfil alimentario">⚙️</button>` : ''}
+  `).join('');
+}
+
+window.seleccionarMiembro = (uid) => {
+  miembroActivo = uid;
+  renderSelectorMiembros();
+  renderMenuDia();
+};
+
+// ── Selector ¿Quiénes comen este plato? ──
+function renderQuienCome(diaKey, tiempoId, platoData) {
+  if (modoMenu !== 'por_miembro' || !miembrosHogar.length) return '';
+  const asignados = platoData.miembros || ['todos'];
+  const opciones  = [{ uid:'todos', nombre:'Todos', emoji:'🏠' },
+    ...miembrosHogar.map(m => ({ uid: m.uid, nombre: m.nombre.split(' ')[0], emoji: m.avatarEmoji || '👤' }))
+  ];
+  return `<div class="quien-come-wrap">
+    <span class="quien-come-label">¿Quiénes comen este plato?</span>
+    ${opciones.map(o => `
+      <button class="quien-chip ${asignados.includes(o.uid) ? 'sel' : ''}"
+              onclick="toggleMiembroPlato('${diaKey}','${tiempoId}','${o.uid}')">
+        ${o.emoji} ${o.nombre}
+      </button>`).join('')}
+  </div>`;
+}
+
+window.toggleMiembroPlato = async (diaKey, tiempoId, uid) => {
+  if (!menuData[diaKey]?.[tiempoId]) return;
+  let actual = menuData[diaKey][tiempoId].miembros || ['todos'];
+  if (uid === 'todos') {
+    actual = actual.includes('todos') ? [] : ['todos'];
+  } else {
+    actual = actual.filter(u => u !== 'todos');
+    if (actual.includes(uid)) actual = actual.filter(u => u !== uid);
+    else actual.push(uid);
+    if (!actual.length) actual = ['todos'];
+  }
+  menuData[diaKey][tiempoId].miembros = actual;
+  await guardarMenu();
+  renderMenuDia();
+  generarListaMercado();
+};
+
+// ── Perfil alimentario por miembro ──
+const PERFIL_DEFAULT = { tipo:'adulto', alergias:[], intolerancias:[], restricciones:[], objetivo:'', notas:'', participaCompartido:true };
+
+window.abrirPerfilMiembro = (uid) => {
+  const m = miembrosHogar.find(x => x.uid === uid);
+  if (!m) return;
+  miembroEditandoPerfil = uid;
+  const perfil = m.perfil || {};
+  document.getElementById('perfilMiembroTitulo').textContent = `Perfil · ${m.nombre.split(' ')[0]}`;
+
+  // Alergias
+  renderPerfilChips('perfilAlergiasGrid', ALERGIAS_COMUNES, perfil.alergias || [], 'alergias');
+  // Intolerancias
+  renderPerfilChips('perfilIntolerGrid', INTOLERANCIAS_COMUN, perfil.intolerancias || [], 'intolerancias');
+  // Restricciones
+  renderPerfilChips('perfilRestricGrid', RESTRICCIONES_COMUN, perfil.restricciones || [], 'restricciones');
+  // Objetivos
+  renderPerfilChips('perfilObjetivoGrid', OBJETIVOS_COMUN, [perfil.objetivo || ''], 'objetivo', true);
+  // Participación compartido
+  const si = document.getElementById('perfilPartSi');
+  const no = document.getElementById('perfilPartNo');
+  const participa = perfil.participaCompartido !== false;
+  if (si) si.classList.toggle('sel', participa);
+  if (no) no.classList.toggle('sel', !participa);
+  // Notas
+  const notasEl = document.getElementById('perfilNotas');
+  if (notasEl) notasEl.value = perfil.notas || '';
+
+  // Guardar estado temporal
+  perfilEditandoData = { ...PERFIL_DEFAULT, ...perfil };
+  document.getElementById('modalPerfilMiembro').classList.add('visible');
+};
+
+function renderPerfilChips(gridId, opciones, seleccionados, campo, unico = false) {
+  const grid = document.getElementById(gridId);
+  if (!grid) return;
+  const selArr = Array.isArray(seleccionados) ? seleccionados : [seleccionados];
+  grid.innerHTML = opciones.map(op => `
+    <button class="perfil-chip ${selArr.includes(op) ? 'sel' : ''}"
+            onclick="togglePerfilChip('${campo}','${op}',${unico})">
+      ${op}
+    </button>`).join('');
+}
+
+window.togglePerfilChip = (campo, valor, unico) => {
+  if (unico) {
+    perfilEditandoData[campo] = perfilEditandoData[campo] === valor ? '' : valor;
+  } else {
+    if (!perfilEditandoData[campo]) perfilEditandoData[campo] = [];
+    const arr = perfilEditandoData[campo];
+    const idx = arr.indexOf(valor);
+    if (idx >= 0) arr.splice(idx, 1); else arr.push(valor);
+  }
+  // Re-render el chip correcto
+  const gridMap = { alergias:'perfilAlergiasGrid', intolerancias:'perfilIntolerGrid',
+                    restricciones:'perfilRestricGrid', objetivo:'perfilObjetivoGrid' };
+  const opciones = { alergias:ALERGIAS_COMUNES, intolerancias:INTOLERANCIAS_COMUN,
+                     restricciones:RESTRICCIONES_COMUN, objetivo:OBJETIVOS_COMUN };
+  if (gridMap[campo]) {
+    const sel = unico ? [perfilEditandoData[campo]] : perfilEditandoData[campo];
+    renderPerfilChips(gridMap[campo], opciones[campo], sel, campo, unico);
+  }
+};
+
+window.agregarPerfilCustom = (campo) => {
+  const inputMap = { alergias:'perfilAlergiasCustom', intolerancias:'perfilIntolerCustom', restricciones:'perfilRestricCustom' };
+  const el = document.getElementById(inputMap[campo]);
+  const val = el?.value.trim();
+  if (!val) return;
+  if (!perfilEditandoData[campo]) perfilEditandoData[campo] = [];
+  if (!perfilEditandoData[campo].includes(val)) {
+    perfilEditandoData[campo].push(val);
+    ALERGIAS_COMUNES.includes(val) || campo !== 'alergias' || ALERGIAS_COMUNES.push(val);
+    const gridMap = { alergias:'perfilAlergiasGrid', intolerancias:'perfilIntolerGrid', restricciones:'perfilRestricGrid' };
+    const optMap  = { alergias:ALERGIAS_COMUNES, intolerancias:INTOLERANCIAS_COMUN, restricciones:RESTRICCIONES_COMUN };
+    renderPerfilChips(gridMap[campo], optMap[campo], perfilEditandoData[campo], campo);
+  }
+  el.value = '';
+};
+
+window.setPerfilParticipa = (val) => {
+  perfilEditandoData.participaCompartido = val;
+  document.getElementById('perfilPartSi')?.classList.toggle('sel', val);
+  document.getElementById('perfilPartNo')?.classList.toggle('sel', !val);
+};
+
+window.cerrarModalPerfil = () => {
+  document.getElementById('modalPerfilMiembro').classList.remove('visible');
+  miembroEditandoPerfil = null;
+};
+
+window.guardarPerfilMiembro = async () => {
+  if (!miembroEditandoPerfil) return;
+  const notas = document.getElementById('perfilNotas')?.value.trim() || '';
+  perfilEditandoData.notas = notas;
+  const m = miembrosHogar.find(x => x.uid === miembroEditandoPerfil);
+  if (!m) return;
+  m.perfil = { ...perfilEditandoData };
+  try {
+    await setDoc(doc(db, 'hogares', hogarId, 'miembros', miembroEditandoPerfil),
+      { perfil: m.perfil }, { merge: true });
+    cerrarModalPerfil();
+    showToast('✅ Perfil guardado');
+  } catch(e) { showToast('❌ Error al guardar'); }
+};
+
+// Cierre al click fuera del modal
+document.getElementById('modalPerfilMiembro')?.addEventListener('click', function(e) {
+  if (e.target === this) cerrarModalPerfil();
+});
 
 window.eliminarPlato = async (diaKey, tiempoId) => {
   if (!menuData[diaKey]) return;
@@ -2447,8 +2801,19 @@ function generarListaMercado() {
       const plato = diaMenu[t.id];
       if (!plato?.nombre) return;
 
-      let ingredientes = plato.ingredientes || [];
-      if (!ingredientes.length) ingredientes = getIngredientesActuales(plato.nombre) || [];
+      // Modo por_miembro: recopilar ingredientes de todos los miembros asignados
+      // Modo compartido: usar plato principal (compatibilidad total con menús existentes)
+      const platosAConsolidar = [];
+      if (modoMenu === 'por_miembro' && plato.miembros && plato.miembros.length) {
+        // Siempre incluir el plato base (asignado a todos)
+        platosAConsolidar.push(plato);
+      } else {
+        platosAConsolidar.push(plato);
+      }
+
+      platosAConsolidar.forEach(p => {
+      let ingredientes = p.ingredientes || [];
+      if (!ingredientes.length) ingredientes = getIngredientesActuales(p.nombre) || [];
 
       ingredientes.forEach(ing => {
         // Key limpio para deduplicar: primeras 2 palabras sin paréntesis
@@ -2474,7 +2839,8 @@ function generarListaMercado() {
             tieneAlergia: ingredienteTieneAlergia(ing),
           };
         }
-      });
+      }); // ing
+      }); // platosAConsolidar
     });
   });
 
