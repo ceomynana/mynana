@@ -632,26 +632,38 @@ service cloud.firestore {
 
       <div class="login-error" id="regError"></div>
 
-      <label class="form-label">Nombre completo</label>
-      <input type="text" class="form-input" id="regNombre" placeholder="Tu nombre" />
+      <!-- Nombre + Apellido en fila de 2 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div>
+          <label class="form-label">Nombre *</label>
+          <input type="text" class="form-input" id="regNombre" placeholder="Rosa" autocomplete="given-name" />
+        </div>
+        <div>
+          <label class="form-label">Apellido *</label>
+          <input type="text" class="form-input" id="regApellido" placeholder="Casanova" autocomplete="family-name" />
+        </div>
+      </div>
 
+      <!-- Campos adicionales nana -->
       <div id="regCamposNana" style="display:none;">
-        <label class="form-label">Apellido</label>
-        <input type="text" class="form-input" id="regApellido" placeholder="Tu apellido" />
         <label class="form-label">Cédula</label>
         <input type="text" class="form-input" id="regCedula" placeholder="8-123-4567" />
-        <label class="form-label">Teléfono</label>
-        <input type="tel" class="form-input" id="regTelefono" placeholder="6612-3456" />
         <label class="form-label">Código de la familia</label>
         <input type="text" class="form-input" id="regCodigo" placeholder="Código de 6 caracteres (ej: ABC123)" style="text-transform:uppercase;letter-spacing:4px;font-size:16px;text-align:center;" maxlength="6" />
         <div style="font-size:11px;color:var(--txt2);margin-top:-10px;margin-bottom:14px;">Pídele este código a la familia que te contrató</div>
       </div>
 
-      <label class="form-label">Correo electrónico</label>
-      <input type="email" class="form-input" id="regEmail" placeholder="tucorreo@email.com" />
+      <label class="form-label">Correo electrónico *</label>
+      <input type="email" class="form-input" id="regEmail" placeholder="tucorreo@email.com" autocomplete="email" />
 
-      <label class="form-label">Contraseña</label>
-      <input type="password" class="form-input" id="regPass" placeholder="Mínimo 6 caracteres" />
+      <label class="form-label">WhatsApp / Teléfono *</label>
+      <input type="tel" class="form-input" id="regTelefono" placeholder="Ej: 6000-0000" autocomplete="tel" />
+
+      <label class="form-label">Contraseña *</label>
+      <input type="password" class="form-input" id="regPass" placeholder="Mínimo 6 caracteres" autocomplete="new-password" />
+
+      <label class="form-label">Confirmar contraseña *</label>
+      <input type="password" class="form-input" id="regPass2" placeholder="Repite tu contraseña" autocomplete="new-password" />
 
       <div id="regCamposFamilia">
         <!-- Tipo de hogar -->
@@ -1715,14 +1727,22 @@ window.iniciarSesion = async () => {
 
 // ── REGISTRO ──
 window.registrarse = async () => {
-  const nombre = document.getElementById('regNombre').value.trim();
-  const email = document.getElementById('regEmail').value.trim();
-  const pass = document.getElementById('regPass').value;
-  const btn = document.getElementById('regBtn');
-  const err = document.getElementById('regError');
+  const nombre   = document.getElementById('regNombre').value.trim();
+  const apellido = document.getElementById('regApellido')?.value.trim() || '';
+  const email    = document.getElementById('regEmail').value.trim();
+  const telefono = document.getElementById('regTelefono')?.value.trim() || '';
+  const pass     = document.getElementById('regPass').value;
+  const pass2    = document.getElementById('regPass2')?.value || '';
+  const btn      = document.getElementById('regBtn');
+  const err      = document.getElementById('regError');
 
-  if (!nombre || !email || !pass) { mostrarError(err, 'Completa todos los campos'); return; }
-  if (pass.length < 6) { mostrarError(err, 'La contraseña debe tener mínimo 6 caracteres'); return; }
+  // Validaciones
+  if (!nombre)   { mostrarError(err, '⚠️ Escribe tu nombre.'); return; }
+  if (!apellido && tipoReg === 'familia') { mostrarError(err, '⚠️ Escribe tu apellido.'); return; }
+  if (!email)    { mostrarError(err, '⚠️ Escribe tu correo.'); return; }
+  if (!telefono && tipoReg === 'familia') { mostrarError(err, '⚠️ Agrega tu WhatsApp.'); return; }
+  if (pass.length < 6) { mostrarError(err, '⚠️ La contraseña debe tener mínimo 6 caracteres.'); return; }
+  if (tipoReg === 'familia' && pass2 && pass !== pass2) { mostrarError(err, '⚠️ Las contraseñas no coinciden.'); return; }
 
   btn.textContent = 'Creando cuenta...';
   btn.disabled = true;
@@ -1731,23 +1751,22 @@ window.registrarse = async () => {
   try {
     window._registrando = true;
     const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    const nombreCompleto = apellido ? (nombre + ' ' + apellido).trim() : nombre;
     const datos = {
-      nombre, email, tipo: tipoReg,
+      nombre, apellido: apellido || null, nombreCompleto,
+      email, tipo: tipoReg,
       uid: cred.user.uid,
       fecha: new Date().toISOString(),
+      creadoA: serverTimestamp(),
     };
     if (tipoReg === 'familia') {
-      // Recuperar teléfono guardado desde el registro en index.html
-      const telPendiente = localStorage.getItem('mynana_tel_pendiente');
-      if (telPendiente) {
-        datos.telefono = telPendiente;
-        localStorage.removeItem('mynana_tel_pendiente');
-      }
+      datos.telefono = telefono || localStorage.getItem('mynana_tel_pendiente') || null;
+      localStorage.removeItem('mynana_tel_pendiente');
     }
     if (tipoReg === 'nana') {
-      datos.apellido  = document.getElementById('regApellido').value.trim();
+      datos.apellido  = apellido || document.getElementById('regApellido')?.value.trim() || null;
       datos.cedula    = document.getElementById('regCedula').value.trim();
-      datos.telefono  = document.getElementById('regTelefono').value.trim();
+      datos.telefono  = telefono;
       // Subtipo: eventual (múltiples familias) o fija (1 familia)
       datos.subtipo = 'fija'; // default — se puede actualizar en perfil
 
