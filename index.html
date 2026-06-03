@@ -2416,7 +2416,7 @@ body.lang-es .es{display:initial !important;}
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getFirestore, doc, setDoc, addDoc, getDoc, collection, updateDoc, arrayUnion, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyDDJRJ8A8P507lllGRBOoXO30ESAH1GAnw",
@@ -2430,6 +2430,14 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+
+// Exponer para submitForm() que vive en <script> regular (no module)
+window.__fbCreateUser = (email, pass) => createUserWithEmailAndPassword(auth, email, pass);
+window.__fbSetDoc     = (ref, data)   => setDoc(ref, data);
+window.__fbAddDoc     = (col, data)   => addDoc(col, data);
+window.__fbDoc        = (...a)        => doc(db, ...a);
+window.__fbCol        = (...a)        => collection(db, ...a);
+window.__fbTs         = ()            => serverTimestamp();
 
 // Función para generar email interno si la nana no tiene
 function generarEmailInterno(nombre, apellido) {
@@ -2782,6 +2790,22 @@ window.unirseConCodigo = async function() {
         </div>
       </div>
 
+      <!-- Campo contraseña para crear cuenta en Firebase -->
+      <div style="margin-bottom:14px;">
+        <label style="font-size:12px;font-weight:600;color:var(--txt2);display:block;margin-bottom:6px;">
+          Crea tu contraseña de acceso
+        </label>
+        <input type="password" id="fieldPassword"
+               class="form-input"
+               placeholder="Mínimo 6 caracteres"
+               autocomplete="new-password"
+               style="font-size:14px;padding:12px 14px;border-radius:10px;border:1.5px solid var(--g4);width:100%;font-family:var(--font-body);">
+        <div id="passwordError" style="display:none;font-size:12px;color:#e05c5c;margin-top:5px;"></div>
+        <div style="font-size:11px;color:var(--txt2);margin-top:5px;">
+          Con esto entrarás a My Nana. Guárdala bien.
+        </div>
+      </div>
+
       <div style="display:flex;gap:10px;">
         <button onclick="volverAlPaso1()" style="flex:1;background:var(--cr);color:var(--txt2);font-family:var(--font-body);font-size:13px;padding:13px;border-radius:99px;border:1px solid var(--g4);cursor:pointer;"><span class="es">← Volver</span><span class="en">← Back</span></button>
         <button class="form-submit" id="btnPlanSubmit" onclick="submitForm()" style="flex:2;margin-top:0;">
@@ -2789,7 +2813,7 @@ window.unirseConCodigo = async function() {
         </button>
       </div>
       <div class="form-note" style="margin-top:12px;">
-        🔒 <span class="es">Tu tarjeta se registra hoy de forma segura vía PagueloFacil. El cargo inicia el día 16. Cancela antes si lo deseas.</span><span class="en">Your card is securely stored today via PagueloFacil. Billing starts on day 16. Cancel anytime before then.</span>
+        🔒 Acceso completo durante 15 días. Sin cobro hoy.
       </div>
     </div>
 
@@ -4887,98 +4911,126 @@ function volverAlPaso1() {
 }
 
 // ── SUBMIT FINAL ──
-function submitForm() {
-  const nombre = document.getElementById('fieldNombre').value.trim();
-  const correo = document.getElementById('fieldCorreo').value.trim();
-  const btn = document.getElementById('btnPlanSubmit');
+async function submitForm() {
+  const nombre   = document.getElementById('fieldNombre').value.trim();
+  const correo   = document.getElementById('fieldCorreo').value.trim();
+  const password = document.getElementById('fieldPassword')?.value || '';
+  const btn      = document.getElementById('btnPlanSubmit');
+  const passErr  = document.getElementById('passwordError');
 
-  btn.textContent = 'Activando prueba...';
+  // Validar contraseña
+  if (password.length < 6) {
+    if (passErr) { passErr.textContent = '⚠️ La contraseña debe tener al menos 6 caracteres.'; passErr.style.display = 'block'; }
+    document.getElementById('fieldPassword')?.focus();
+    return;
+  }
+  if (passErr) passErr.style.display = 'none';
+
+  btn.textContent = 'Creando tu cuenta...';
   btn.disabled = true;
 
   const _planMap = {
-    hogar:    { nombre: 'Plan Hogar ($4.99/mes)',       url: 'https://checkout.paguelofacil.com/mynana/586d0e75' },
-    eventual: { nombre: 'Nana Eventual ($6.99/mes)',    url: 'https://checkout.paguelofacil.com/mynana/586d0e75' },
-    fija:     { nombre: 'Nana Fija ($9.99/mes)',        url: 'https://checkout.paguelofacil.com/mynana/e089b39a' },
+    hogar:    { nombre: 'Plan Hogar',    url: 'https://checkout.paguelofacil.com/mynana/586d0e75' },
+    eventual: { nombre: 'Nana Eventual', url: 'https://checkout.paguelofacil.com/mynana/586d0e75' },
+    fija:     { nombre: 'Nana Fija',     url: 'https://checkout.paguelofacil.com/mynana/e089b39a' },
   };
   const _planInfo  = _planMap[planSeleccionado] || _planMap['fija'];
   const planNombre = _planInfo.nombre;
   const urlPago    = _planInfo.url;
 
-  const fechaPrueba = new Date();
-  fechaPrueba.setDate(fechaPrueba.getDate() + 15);
-  const fechaStr = fechaPrueba.toLocaleDateString('es-PA', { day: 'numeric', month: 'long', year: 'numeric' });
+  // Fechas del trial
+  const hoy      = new Date(); hoy.setHours(0,0,0,0);
+  const finTrial = new Date(hoy); finTrial.setDate(hoy.getDate() + 15);
+  const fmtFecha = d => d.toISOString().split('T')[0];
+  const fechaStr = finTrial.toLocaleDateString('es-PA', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  // Esperar a que el módulo de Firebase esté listo
+  let t = 0;
+  while (!window.__fbCreateUser && t < 30) { await new Promise(r => setTimeout(r, 100)); t++; }
+  if (!window.__fbCreateUser) {
+    btn.textContent = 'Empezar prueba gratis 🎉'; btn.disabled = false;
+    if (passErr) { passErr.textContent = '❌ Error de conexión. Recarga e intenta de nuevo.'; passErr.style.display = 'block'; }
+    return;
+  }
 
   try {
-    const registros = JSON.parse(localStorage.getItem('mynana_registros') || '[]');
-    registros.push({
-      nombre, correo,
-      telefono: telefonoRegistro,
-      tipoNana: tipoSeleccionado,
-      planElegido: planSeleccionado,
-      planNombre,
-      inicioPrueba: new Date().toISOString(),
-      finPrueba: fechaPrueba.toISOString(),
-      fecha: new Date().toISOString()
-    });
-    localStorage.setItem('mynana_registros', JSON.stringify(registros));
-    if (telefonoRegistro) localStorage.setItem('mynana_tel_pendiente', telefonoRegistro);
-
-    // Enviar correo de bienvenida a la familia
-    emailjs.send('mynana_service', 'bienvenida_familia', {
-      nombre: nombre,
-      correo: correo,
-      plan: planNombre,
-    }).catch(err => console.log('EmailJS error familia:', err));
-
-  } catch(e) {}
-
-  setTimeout(() => {
-    document.getElementById('modalPlan').style.display = 'none';
-    document.getElementById('successMsg').innerHTML =
-      `¡Registro exitoso! Tienes <strong>15 días gratis</strong> para explorar My Nana.<br><br>
-       El <strong>${fechaStr}</strong> comenzará tu plan <strong>${planNombre}</strong>.<br><br>
-       El siguiente paso es registrar tu tarjeta para activar la membresía:<br><br>
-       <span style="font-size:12px;background:#FAEEDA;color:#633806;padding:6px 10px;border-radius:8px;display:block;margin-top:4px;">📧 Te enviamos un correo de confirmación. Si no lo ves, revisa tu carpeta de <strong>spam o correo no deseado</strong>.</span>`;
-    document.getElementById('modalSuccess').classList.add('visible');
-
-    // Agregar botón de pago directo
-    const btnPago = document.createElement('a');
-    btnPago.href = urlPago;
-    btnPago.target = '_blank';
-    btnPago.rel = 'noopener noreferrer';
-    btnPago.style.cssText = `
-      display: block; margin-top: 16px; background: var(--g);
-      color: #fff; font-family: var(--font-body); font-size: 15px;
-      font-weight: 500; padding: 14px 24px; border-radius: 99px;
-      text-decoration: none; text-align: center;
-      box-shadow: 0 8px 24px rgba(26,107,82,.25);
-    `;
-    btnPago.textContent = '💳 Registrar mi tarjeta →';
-    btnPago.onmouseover = () => btnPago.style.background = 'var(--g2)';
-    btnPago.onmouseout = () => btnPago.style.background = 'var(--g)';
-
-    // Botón para ir al app
-    const btnApp = document.createElement('a');
-    btnApp.href = '/app.html';
-    btnApp.style.cssText = `
-      display: block; margin-top: 10px; background: transparent;
-      color: var(--g); font-family: var(--font-body); font-size: 14px;
-      font-weight: 500; padding: 12px 24px; border-radius: 99px;
-      text-decoration: none; text-align: center;
-      border: 1.5px solid var(--g4);
-    `;
-    btnApp.textContent = '→ Ir a mi plataforma';
-
-    const successDiv = document.getElementById('modalSuccess');
-    const waBtn = successDiv.querySelector('.success-whatsapp');
-    if (waBtn) {
-      successDiv.insertBefore(btnPago, waBtn);
-      successDiv.insertBefore(btnApp, waBtn);
-    } else {
-      successDiv.appendChild(btnPago);
-      successDiv.appendChild(btnApp);
+    // 1. Crear cuenta Firebase Auth
+    let cred;
+    try {
+      cred = await window.__fbCreateUser(correo, password);
+    } catch(authErr) {
+      btn.textContent = 'Empezar prueba gratis 🎉'; btn.disabled = false;
+      let msg = '❌ Error al crear la cuenta. Intenta de nuevo.';
+      if (authErr.code === 'auth/email-already-in-use') msg = '⚠️ Este correo ya tiene cuenta. Ve a mynana.app/app.html para entrar.';
+      if (authErr.code === 'auth/weak-password')       msg = '⚠️ Contraseña muy débil. Usa al menos 6 caracteres.';
+      if (authErr.code === 'auth/invalid-email')       msg = '⚠️ El correo no es válido.';
+      if (passErr) { passErr.textContent = msg; passErr.style.display = 'block'; }
+      return;
     }
-  }, 900);
+
+    const uid = cred.user.uid;
+
+    // 2. Guardar perfil + suscripcion (trial) en Firestore
+    await window.__fbSetDoc(window.__fbDoc('usuarios', uid), {
+      nombre, email: correo, tipo: 'familia',
+      telefono: telefonoRegistro || null,
+      uid, fecha: new Date().toISOString(),
+      creadoA: window.__fbTs(),
+      suscripcion: {
+        estado:           'trial',
+        plan:             planSeleccionado,
+        planNombre,
+        fechaInicioTrial: fmtFecha(hoy),
+        fechaFinTrial:    fmtFecha(finTrial),
+        pagoUrl:          urlPago,
+        pagoConfirmado:   null,
+        pagoReferencia:   null,
+        pagoMonto:        null,
+        actualizadoA:     window.__fbTs(),
+      },
+    });
+
+    // 3. Crear hogar
+    const tipoHogar = document.getElementById('regTipoHogar')?.value || 'con_nana_fija';
+    await window.__fbAddDoc(window.__fbCol('hogares'), {
+      participantes: [uid],
+      creadoPor: uid,
+      creado: window.__fbTs(),
+      tipoHogar,
+    });
+
+    // 4. localStorage
+    if (telefonoRegistro) localStorage.setItem('mynana_tel_pendiente', telefonoRegistro);
+    localStorage.setItem('mynana_tipoHogar', tipoHogar);
+
+    // 5. Email bienvenida
+    try { emailjs.send('mynana_service', 'bienvenida_familia', { nombre, correo, plan: planNombre }).catch(() => {}); } catch(e) {}
+
+  } catch(e) {
+    console.error('submitForm:', e);
+    btn.textContent = 'Empezar prueba gratis 🎉'; btn.disabled = false;
+    if (passErr) { passErr.textContent = '❌ Error inesperado. Intenta de nuevo.'; passErr.style.display = 'block'; }
+    return;
+  }
+
+  // 6. Mostrar éxito
+  document.getElementById('modalPlan').style.display = 'none';
+  document.getElementById('successMsg').innerHTML =
+    `¡Cuenta creada! Tienes <strong>15 días de acceso completo gratuito</strong>.<br><br>
+     Tu plan <strong>${planNombre}</strong> comenzará el <strong>${fechaStr}</strong>.<br><br>
+     <span style="font-size:12px;background:#E8F4EF;color:#0F4D3A;padding:8px 12px;border-radius:8px;display:block;margin-top:4px;">
+       ✅ Entra con <strong>${correo}</strong> y tu contraseña en mynana.app
+     </span>`;
+  document.getElementById('modalSuccess').classList.add('visible');
+
+  const btnApp = document.createElement('a');
+  btnApp.href = '/app.html';
+  btnApp.style.cssText = 'display:block;margin-top:16px;background:var(--g);color:#fff;font-family:var(--font-body);font-size:15px;font-weight:500;padding:14px 24px;border-radius:99px;text-decoration:none;text-align:center;box-shadow:0 8px 24px rgba(26,107,82,.25);';
+  btnApp.textContent = '→ Ir a mi plataforma';
+  const successDiv = document.getElementById('modalSuccess');
+  const waBtn = successDiv.querySelector('.success-whatsapp');
+  if (waBtn) successDiv.insertBefore(btnApp, waBtn);
+  else successDiv.appendChild(btnApp);
 }
 
 // ── MENÚ SEMANAL PANAMEÑO ──
