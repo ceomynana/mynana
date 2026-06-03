@@ -353,7 +353,7 @@ body.lang-es [data-en]{display:none !important;}
 <div class="toast" id="toast"></div>
 
 <!-- ══════════════════════ MODAL PAGO ══════════════════════ -->
-<div class="modal-pago-overlay" id="modalPagoOverlay">
+<div class="modal-pago-overlay" id="modalPagoOverlay" style="display:none!important;">
   <div class="modal-pago" style="position:relative;">
     <button onclick="cerrarModalPago()" style="position:absolute;top:14px;right:14px;background:rgba(255,255,255,.15);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px;z-index:10;">✕</button>
     <div class="modal-pago-header">
@@ -3049,7 +3049,8 @@ window.leerTareasVoz = () => {
 
 // ── NAVEGACIÓN ──
 window.irARegistro = () => {
-  document.getElementById('modalPagoOverlay').classList.add('visible');
+  // Ir directamente al formulario de registro — sin modal de pago
+  mostrarScreen('registro');
 };
 
 window.cerrarModalPago = () => {
@@ -3394,16 +3395,10 @@ window.selectPlanPago = (plan) => {
 };
 
 window.irAPagueloFacil = () => {
-  const url = _planPagoSeleccionado === 'fija'
-    ? 'https://checkout.paguelofacil.com/mynana/e089b39a'
-    : 'https://checkout.paguelofacil.com/mynana/586d0e75';
-  
-  // Cerrar modal y abrir registro después del pago
+  // Función desactivada — el pago ya no ocurre durante el registro.
+  // El trial de 15 días es gratuito. PagueloFácil se activa solo al vencer el trial.
   cerrarModalPago();
   mostrarScreen('registro');
-  
-  // Abrir PagueloFacil en nueva pestaña
-  window.open(url, '_blank');
 };
 window.irALogin = () => mostrarScreen('login');
 
