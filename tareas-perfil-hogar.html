@@ -582,6 +582,20 @@ const db   = getFirestore(app);
 let usuarioActual = null;
 let hogarId       = null;
 let perfilHogar   = null;
+let tipoHogarActual = 'con_nana'; // leído de hogares/{id}.tipoHogar
+
+// Resuelve a quién asignar tareas según el tipo de hogar
+function resolverAsignacion() {
+  const uid = usuarioActual?.uid || 'todos';
+  if (tipoHogarActual === 'sin_nana') {
+    return { asignadoA: uid, asignadoNombre: 'Familia', asignadoTipo: 'familia' };
+  }
+  if (tipoHogarActual === 'con_ayuda') {
+    return { asignadoA: 'ayuda', asignadoNombre: 'Ayuda ocasional', asignadoTipo: 'ayuda' };
+  }
+  // con_nana — fallback
+  return { asignadoA: uid, asignadoNombre: 'Nana', asignadoTipo: 'nana' };
+}
 let semanaActual  = {};   // { "Lunes": [{...}] }
 let semanaAnterior= {};
 let diaActivo     = '';
@@ -666,9 +680,34 @@ async function encontrarHogar() {
 async function cargarPerfilFirebase() {
   if (!hogarId) return;
   const hogarSnap = await getDoc(doc(db,'hogares',hogarId));
-  if (hogarSnap.exists() && hogarSnap.data().perfilHogar) {
-    perfilHogar = hogarSnap.data().perfilHogar;
-    mostrarConPerfil();
+  if (hogarSnap.exists()) {
+    const data = hogarSnap.data();
+    // Leer tipoHogar real del hogar (registrado en index.html / app.html)
+    tipoHogarActual = data.tipoHogar || 'con_nana';
+    if (data.perfilHogar) {
+      perfilHogar = data.perfilHogar;
+      // Sincronizar hayNana del wizard con tipoHogar real
+      if (tipoHogarActual === 'sin_nana')   perfilHogar.hayNana = 'no';
+      if (tipoHogarActual === 'con_ayuda')  perfilHogar.hayNana = 'eventual';
+      mostrarConPerfil();
+    } else {
+      // Crear perfil mínimo automático para no bloquear hogares sin_nana
+      if (tipoHogarActual === 'sin_nana') {
+        perfilHogar = {
+          nombreHogar: 'Mi Hogar', adultos: 2, ninos: 0,
+          hayNana: 'no', cuartos: 3, banos: 1,
+          mascotas: 0, tiposMascota: [],
+          horarios: { desayuno:'07:30', almuerzo:'12:30', merienda:'16:00', cena:'19:00',
+                      nanaLlegada:'08:00', nanaSalida:'17:00' },
+          diasTrabajo: ['Lunes','Martes','Miércoles','Jueves','Viernes'],
+          prioridades: ['cocina','limpieza','compras'],
+          estilo: 'balanceada',
+        };
+        mostrarConPerfil();
+      } else {
+        mostrarSinPerfil();
+      }
+    }
   } else {
     mostrarSinPerfil();
   }
@@ -708,20 +747,25 @@ async function guardarSemanaFirebase() {
       const tareas   = semanaActual[dia] || [];
       const fechaStr = diaIndexToFecha(lunesDeSemana, diaIdx);
       tareas.forEach(t => {
+        const asig = resolverAsignacion();
         writes.push(addDoc(collection(db,'hogares',hogarId,'tareas'), {
-          nombre:        t.nombre,
-          hora:          t.hora || '08:00',
-          cat:           t.cat,
-          prioridad:     t.prioridad || 'normal',
-          estado:        'pendiente',
-          fotoUrl:       null,
-          fecha:         fechaStr,
-          dia:           dia,
-          duracion:      t.duracion || '',
-          generadoPorIA: true,
-          creadoPor:     usuarioActual.uid,
-          creadoA:       serverTimestamp(),
-          completadaA:   null,
+          nombre:          t.nombre,
+          hora:            t.hora || '08:00',
+          cat:             t.cat,
+          prioridad:       t.prioridad || 'normal',
+          estado:          'pendiente',
+          fotoUrl:         null,
+          fecha:           fechaStr,
+          dia:             dia,
+          duracion:        t.duracion || '',
+          generadoPorIA:   true,
+          creadoPor:       usuarioActual.uid,
+          creadoA:         serverTimestamp(),
+          completadaA:     null,
+          asignadoA:       asig.asignadoA,
+          asignadoNombre:  asig.asignadoNombre,
+          asignadoTipo:    asig.asignadoTipo,
+          tipoHogar:       tipoHogarActual,
         }));
       });
     });
@@ -1569,11 +1613,16 @@ window.generarSemana = async (modo) => {
     DIAS.forEach(dia => { semanaAnterior[dia] = [...(semanaActual[dia] || [])]; });
 
     // Insight personalizado
+    const insightBase = {
+      sin_nana:  `El plan está organizado para que tu familia distribuya el trabajo. Cada tarea está asignada a todos los miembros.`,
+      con_ayuda: `El plan está ajustado para los días que llega tu ayuda. El resto lo gestiona la familia.`,
+      con_nana:  `El plan está ajustado para que la nana llegue a las ${p.horarios?.nanaLlegada||'08:00'} y todo quede listo antes de las comidas.`,
+    }[tipoHogarActual] || `El plan está ajustado para que la nana llegue a las ${p.horarios?.nanaLlegada||'08:00'}.`;
     const insights = [
       `Con ${p.adultos} adulto${p.adultos>1?'s':''} y ${p.cuartos} cuartos, distribuí el trabajo para que nada se acumule.`,
       p.mascotas > 0 ? `Incluí ${p.mascotas} tarea${p.mascotas>1?'s':''} diaria${p.mascotas>1?'s':''} para tus mascotas — así nunca se olvidan.` : null,
       p.ninos > 0   ? `Las tareas de los niños están programadas cerca del almuerzo para que todo esté listo a tiempo.` : null,
-      `El plan está ajustado para que la nana llegue a las ${p.horarios?.nanaLlegada||'08:00'} y todo quede listo antes de las comidas.`,
+      insightBase,
       modo === 'rapida' ? `Semana ocupada: solo lo esencial. Mascotas y niños siempre incluidos.` : null,
     ].filter(Boolean);
     const insight = insights[Math.floor(Math.random() * insights.length)];
