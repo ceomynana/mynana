@@ -244,6 +244,33 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
 .proxima-tarea-btn{display:block;background:var(--g);color:#fff;text-align:center;padding:14px;font-size:15px;font-weight:600;text-decoration:none;transition:background .2s;}
 .proxima-tarea-btn:hover{background:var(--g2);}
 
+/* ── TRIAL BANNER ── */
+.trial-banner{display:none;padding:10px 16px;display:flex;align-items:center;
+              justify-content:space-between;gap:10px;flex-wrap:wrap;
+              font-size:13px;font-weight:500;}
+.trial-banner.verde{background:#E8F4EF;color:#0F4D3A;}
+.trial-banner.amarillo{background:#FEFCE8;color:#713F12;}
+.trial-banner.rojo{background:#FEF2F2;color:#7F1D1D;}
+.trial-banner-btn{background:#fff;border:1.5px solid currentColor;border-radius:99px;
+                  padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;
+                  font-family:'DM Sans',sans-serif;white-space:nowrap;color:inherit;text-decoration:none;}
+/* ── PAYWALL ── */
+.paywall{display:none;position:fixed;inset:0;background:#fff;z-index:999;
+         flex-direction:column;align-items:center;justify-content:center;
+         padding:32px 20px;text-align:center;}
+.paywall.visible{display:flex;}
+.paywall-emoji{font-size:56px;margin-bottom:16px;}
+.paywall-title{font-family:'Cormorant Garamond',serif;font-size:28px;color:#1A1A1A;
+               margin-bottom:10px;line-height:1.2;}
+.paywall-sub{font-size:14px;color:#6B7280;margin-bottom:24px;line-height:1.6;max-width:360px;}
+.paywall-btn{display:block;background:#1A6B52;color:#fff;border-radius:99px;
+             padding:16px 32px;font-size:15px;font-weight:600;text-decoration:none;
+             font-family:'DM Sans',sans-serif;margin-bottom:10px;width:100%;max-width:320px;}
+.paywall-btn-sec{display:block;background:transparent;color:#6B7280;border:1px solid #E5E7EB;
+                 border-radius:99px;padding:12px 24px;font-size:13px;font-weight:500;
+                 text-decoration:none;font-family:'DM Sans',sans-serif;
+                 cursor:pointer;width:100%;max-width:320px;}
+
 /* ── SELECTOR DE HOGAR — nana eventual ── */
 .modal-hogar-sel{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.55);align-items:flex-end;justify-content:center;}
 .modal-hogar-sel.visible{display:flex;}
@@ -736,6 +763,27 @@ service cloud.firestore {
       <div class="dash-stat-n" id="statScore">—</div>
       <div class="dash-stat-l" id="labelStatScore">Confianza</div>
     </div>
+  </div>
+
+  <!-- Trial banner — se muestra/oculta por verificarSuscripcion() -->
+  <div class="trial-banner" id="trialBanner">
+    <span id="trialBannerMsg">🌿 Tu período de prueba está activo</span>
+    <a href="#" class="trial-banner-btn" id="trialBannerBtn"
+       onclick="mostrarPaywall();return false;">Ver planes</a>
+  </div>
+
+  <!-- Paywall — aparece cuando el trial vence -->
+  <div class="paywall" id="paywallScreen">
+    <div class="paywall-emoji">🏠</div>
+    <div class="paywall-title">Tu prueba gratuita terminó</div>
+    <div class="paywall-sub" id="paywallSub">
+      Activa tu plan para seguir organizando tu hogar con My Nana.
+      Tu historial y datos están guardados.
+    </div>
+    <a href="#" class="paywall-btn" id="paywallBtn">Activar mi plan →</a>
+    <button class="paywall-btn-sec" onclick="cerrarSesionPaywall()">
+      Cerrar sesión
+    </button>
   </div>
 
   <div class="dash-content">
@@ -1890,9 +1938,11 @@ async function cargarDashboardFamilia() {
     const _hogarDoc    = await getDoc(doc(db, 'hogares', hogarId));
     const _tipoHogar   = _hogarDoc.exists() ? (_hogarDoc.data().tipoHogar || 'con_nana') : 'con_nana';
     window._tipoHogar  = _tipoHogar;
-    window._hogarId    = hogarId; // disponible para paneles eventuales
+    window._hogarId    = hogarId;
     localStorage.setItem('mynana_tipoHogar', _tipoHogar);
     aplicarModoHogar(_tipoHogar);
+    // Verificar trial — no bloquea el render del dashboard
+    verificarSuscripcion(user).catch(e => console.warn('trial check:', e));
 
     // Iniciar sistema de notificaciones
     iniciarNotificaciones(user.uid, hogarId);
@@ -3016,6 +3066,126 @@ let _planPagoSeleccionado = 'fija';
 // ══════════════════════════════════════════════════════
 //  DASHBOARD INTELIGENTE — visibilidad por tipo de hogar
 // ══════════════════════════════════════════════════════
+
+// ══════════════════════════════════════════════════════
+//  SISTEMA DE TRIAL — verificación y UI
+// ══════════════════════════════════════════════════════
+
+/*
+ * Estructura suscripcion en usuarios/{uid}:
+ * {
+ *   estado: 'trial' | 'activa' | 'vencida' | 'cancelada',
+ *   plan, planNombre, fechaInicioTrial, fechaFinTrial,
+ *   pagoUrl, pagoConfirmado, pagoReferencia, pagoMonto
+ * }
+ *
+ * TODO: Cuando PagueloFácil provea webhook:
+ * - Crear netlify/functions/pago-confirmado.js
+ * - Verificar firma del webhook
+ * - Actualizar suscripcion.estado = 'activa'
+ * - Guardar pagoConfirmado, pagoReferencia, pagoMonto
+ */
+
+async function verificarSuscripcion(user) {
+  try {
+    const snap = await getDoc(doc(db, 'usuarios', user.uid));
+    if (!snap.exists()) return;
+
+    const datos = snap.data();
+    const sus   = datos.suscripcion;
+
+    // Usuarios existentes sin campo suscripcion → acceso completo permanente
+    if (!sus) return;
+
+    const hoy       = new Date(); hoy.setHours(0,0,0,0);
+    const finTrial  = sus.fechaFinTrial ? new Date(sus.fechaFinTrial + 'T00:00:00') : null;
+
+    if (sus.estado === 'activa') {
+      // Acceso completo — ocultar banner
+      ocultarBannerTrial();
+      return;
+    }
+
+    if (sus.estado === 'trial' && finTrial) {
+      const diffMs   = finTrial - hoy;
+      const diasRest = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+      if (diasRest > 0) {
+        // Trial activo — mostrar banner con días restantes
+        mostrarBannerTrial(diasRest, sus.pagoUrl);
+      } else {
+        // Trial vencido — marcar en Firestore y mostrar paywall
+        await updateDoc(doc(db, 'usuarios', user.uid), {
+          'suscripcion.estado':      'vencida',
+          'suscripcion.actualizadoA': serverTimestamp(),
+        });
+        mostrarPaywall(sus.pagoUrl, sus.planNombre);
+      }
+      return;
+    }
+
+    if (sus.estado === 'vencida' || sus.estado === 'cancelada') {
+      mostrarPaywall(sus.pagoUrl, sus.planNombre);
+    }
+
+  } catch(e) {
+    console.warn('verificarSuscripcion:', e);
+    // Si falla la verificación → no bloquear (fail open)
+  }
+}
+
+function mostrarBannerTrial(diasRestantes, pagoUrl) {
+  const banner = document.getElementById('trialBanner');
+  const msg    = document.getElementById('trialBannerMsg');
+  const btn    = document.getElementById('trialBannerBtn');
+  if (!banner || !msg) return;
+
+  let color, texto;
+  if (diasRestantes > 7) {
+    color = 'verde';
+    texto = `🌿 Te quedan <strong>${diasRestantes} días</strong> de prueba gratuita`;
+  } else if (diasRestantes > 3) {
+    color = 'amarillo';
+    texto = `⏰ Te quedan <strong>${diasRestantes} días</strong> de prueba — activa tu plan`;
+  } else {
+    color = 'rojo';
+    texto = `⚠️ Solo te quedan <strong>${diasRestantes} día${diasRestantes > 1 ? 's' : ''}</strong> — activa ahora`;
+  }
+
+  banner.className   = `trial-banner ${color}`;
+  banner.style.display = 'flex';
+  msg.innerHTML        = texto;
+  if (btn && pagoUrl) {
+    btn.href = pagoUrl;
+    btn.target = '_blank';
+    btn.textContent = 'Activar plan →';
+  }
+}
+
+function ocultarBannerTrial() {
+  const banner = document.getElementById('trialBanner');
+  if (banner) banner.style.display = 'none';
+}
+
+window.mostrarPaywall = (pagoUrl, planNombre) => {
+  const pw     = document.getElementById('paywallScreen');
+  const btn    = document.getElementById('paywallBtn');
+  const sub    = document.getElementById('paywallSub');
+  if (!pw) return;
+  if (btn && pagoUrl) {
+    btn.href   = pagoUrl;
+    btn.target = '_blank';
+    btn.textContent = `Activar ${planNombre || 'mi plan'} →`;
+  }
+  if (sub && planNombre) {
+    sub.textContent = `Activa tu plan ${planNombre} para continuar organizando tu hogar. Tu historial y datos están guardados.`;
+  }
+  pw.classList.add('visible');
+};
+
+window.cerrarSesionPaywall = () => {
+  auth.signOut().then(() => { location.href = '/index.html'; });
+};
 
 window.aplicarModoHogar = (tipoHogar) => {
   const tipo = tipoHogar || 'con_nana'; // fallback hogares existentes
