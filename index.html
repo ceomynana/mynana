@@ -2431,13 +2431,21 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Exponer para submitForm() que vive en <script> regular (no module)
-window.__fbCreateUser = (email, pass) => createUserWithEmailAndPassword(auth, email, pass);
-window.__fbSetDoc     = (ref, data)   => setDoc(ref, data);
-window.__fbAddDoc     = (col, data)   => addDoc(col, data);
-window.__fbDoc        = (...a)        => doc(db, ...a);
-window.__fbCol        = (...a)        => collection(db, ...a);
-window.__fbTs         = ()            => serverTimestamp();
+// Exponer funciones para submitForm() en <script> regular
+window.__fbCreateUser = (e,p) => createUserWithEmailAndPassword(auth,e,p);
+window.__fbSetDoc  = (r,d)   => setDoc(r,d);
+window.__fbAddDoc  = (c,d)   => addDoc(c,d);
+window.__fbDoc     = (...a)  => doc(db,...a);
+window.__fbCol     = (...a)  => collection(db,...a);
+window.__fbTs      = ()      => serverTimestamp();
+
+// Exponer para submitForm (vive en <script> regular, no module)
+window.__fbCreateUser = (e,p) => createUserWithEmailAndPassword(auth,e,p);
+window.__fbSetDoc  = (r,d) => setDoc(r,d);
+window.__fbAddDoc  = (c,d) => addDoc(c,d);
+window.__fbDoc     = (...a) => doc(db,...a);
+window.__fbCol     = (...a) => collection(db,...a);
+window.__fbTs      = () => serverTimestamp();
 
 // Función para generar email interno si la nana no tiene
 function generarEmailInterno(nombre, apellido) {
@@ -2593,30 +2601,32 @@ window.unirseConCodigo = async function() {
       <div class="modal-sub"><span class="es">Prueba My Nana completo. Después del período de prueba, continúa con el plan que elijas.</span><span class="en">Try My Nana in full. After the trial period, continue with the plan of your choice.</span></div>
     </div>
 
-    <!-- PASO 1: DATOS -->
+    <!-- REGISTRO: FORMULARIO ÚNICO -->
     <div class="modal-body" id="modalForm">
 
-      <!-- BARRA DE PROGRESO -->
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;">
-        <div style="flex:1;height:3px;background:var(--g);border-radius:99px;"></div>
-        <div style="flex:1;height:3px;background:var(--g4);border-radius:99px;" id="barStep2"></div>
-        <div style="font-size:11px;color:var(--txt2);white-space:nowrap;"><span class="es">Paso 1 de 2</span><span class="en">Step 1 of 2</span></div>
+      <div style="font-size:13px;font-weight:600;color:var(--txt);margin-bottom:16px;">
+        <span class="es">Crea tu cuenta gratis</span><span class="en">Create your free account</span>
       </div>
-
-      <div style="font-size:13px;font-weight:600;color:var(--txt);margin-bottom:14px;"><span class="es">Tus datos</span><span class="en">Your details</span></div>
 
       <div class="form-group">
         <label class="form-label"><span class="es">Tu nombre</span><span class="en">Your name</span></label>
-        <input type="text" class="form-input" id="fieldNombre" placeholder="¿Cómo te llamas?" />
+        <input type="text" class="form-input" id="fieldNombre" placeholder="¿Cómo te llamas?" autocomplete="name" />
       </div>
       <div class="form-group">
         <label class="form-label"><span class="es">Correo electrónico</span><span class="en">Email address</span></label>
-        <input type="email" class="form-input" id="fieldCorreo" placeholder="tucorreo@email.com" />
+        <input type="email" class="form-input" id="fieldCorreo" placeholder="tucorreo@email.com" autocomplete="email" />
       </div>
       <div class="form-group">
         <label class="form-label"><span class="es">WhatsApp / Teléfono</span><span class="en">WhatsApp / Phone</span></label>
-        <input type="tel" class="form-input" id="fieldTelefono" placeholder="Ej: 6000-0000" />
-        <div style="font-size:11px;color:var(--txt2);margin-top:4px;"><span class="es">Para enviarte la lista del mercado directo a tu WhatsApp</span><span class="en">So we can send your grocery list directly to your WhatsApp</span></div>
+        <input type="tel" class="form-input" id="fieldTelefono" placeholder="Ej: 6000-0000" autocomplete="tel" />
+      </div>
+      <div class="form-group">
+        <label class="form-label"><span class="es">Contraseña</span><span class="en">Password</span></label>
+        <input type="password" class="form-input" id="fieldPassword" placeholder="Mínimo 6 caracteres" autocomplete="new-password" />
+      </div>
+      <div class="form-group">
+        <label class="form-label"><span class="es">Confirmar contraseña</span><span class="en">Confirm password</span></label>
+        <input type="password" class="form-input" id="fieldPassword2" placeholder="Repite tu contraseña" autocomplete="new-password" />
       </div>
       <div class="form-group">
         <label class="form-label"><span class="es">¿Cómo es tu hogar?</span><span class="en">What's your home setup?</span></label>
@@ -2639,30 +2649,31 @@ window.unirseConCodigo = async function() {
         </div>
       </div>
 
-      <!-- PRUEBA GRATIS BANNER -->
-      <div style="background:var(--g3);border-radius:10px;padding:12px 14px;margin-bottom:16px;display:flex;gap:10px;align-items:center;border:1px solid var(--g4);">
-        <div style="font-size:22px;flex-shrink:0;">🎁</div>
+      <!-- Banner plan / trial -->
+      <div style="background:var(--g3);border-radius:10px;padding:10px 14px;margin-bottom:14px;display:flex;gap:10px;align-items:center;border:1px solid var(--g4);">
+        <div style="font-size:20px;flex-shrink:0;">🎁</div>
         <div>
-          <div style="font-size:13px;font-weight:600;color:var(--g);margin-bottom:2px;"><span class="es">15 días de prueba gratis</span><span class="en">15-day free trial</span></div>
-          <div style="font-size:12px;color:var(--txt2);"><span class="es">Acceso completo durante 15 días. Sin cobro hoy.</span><span class="en">Full access for 15 days. No charge today.</span></div>
+          <div style="font-size:12px;font-weight:600;color:var(--g);margin-bottom:1px;"><span class="es">15 días de acceso completo gratis</span><span class="en">15 days full access free</span></div>
+          <div style="font-size:11px;color:var(--txt2);"><span class="es">Sin cobro hoy. Activa tu plan después del trial.</span><span class="en">No charge today. Activate after your trial.</span></div>
         </div>
       </div>
 
-      <button class="form-submit" id="btnSubmit" onclick="irAlPaso2()">
-        <span class="es">Continuar → Elegir mi plan</span><span class="en">Continue → Choose my plan</span>
+      <div id="regError" style="display:none;font-size:12px;color:#e05c5c;margin-bottom:10px;padding:8px 12px;background:#FEF2F2;border-radius:8px;"></div>
+
+      <button class="form-submit" id="btnSubmit" onclick="submitForm()">
+        <span class="es">Crear cuenta y empezar 15 días gratis 🎉</span><span class="en">Create account &amp; start free 🎉</span>
       </button>
       <div class="form-note">
-        🔒 <span class="es">Sin cobro hoy. Al finalizar los 15 días podrás activar el plan que elegiste.</span><span class="en">No charge today. After 15 days you can activate your chosen plan.</span>
+        🔒 <span class="es">Sin cobro hoy. Al finalizar los 15 días podrás activar tu plan.</span><span class="en">No charge today. After 15 days you can activate your plan.</span>
       </div>
 
-      <!-- ACCESO CON CÓDIGO FAMILIAR -->
+      <!-- Código familiar -->
       <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--g4);">
         <button onclick="toggleCodigoFamiliar()" id="btnToggleCodigo"
           style="width:100%;background:transparent;border:1.5px solid var(--g4);border-radius:99px;padding:12px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--txt2);cursor:pointer;transition:all .2s;">
           <span class="es">👨‍👩‍👧 ¿Tienes un código familiar? Únete sin plan</span>
           <span class="en">👨‍👩‍👧 Have a family code? Join without a plan</span>
         </button>
-
         <div id="formCodigoFamiliar" style="display:none;margin-top:14px;">
           <div style="font-size:12px;color:var(--txt2);margin-bottom:14px;background:var(--g3);padding:10px 12px;border-radius:8px;">
             <span class="es">Un miembro de tu familia compartió este hogar contigo. Ingresa tus datos y el código para unirte.</span>
@@ -2682,13 +2693,8 @@ window.unirseConCodigo = async function() {
           </div>
           <div class="form-group">
             <label class="form-label"><span class="es">Código familiar</span><span class="en">Family code</span></label>
-            <input type="text" class="form-input" id="cfCodigo"
-              placeholder="Ej: FG2QD0"
+            <input type="text" class="form-input" id="cfCodigo" placeholder="Ej: FG2QD0"
               style="text-transform:uppercase;letter-spacing:.1em;font-weight:600;font-size:16px;" />
-            <div style="font-size:11px;color:var(--txt2);margin-top:4px;">
-              <span class="es">El código lo comparte quien creó el hogar. Solo para familiares, no para la nana.</span>
-              <span class="en">The code is shared by whoever created the home. Family members only, not for the nana.</span>
-            </div>
           </div>
           <div id="cfError" style="display:none;font-size:12px;color:#e05c5c;margin-bottom:10px;padding:8px 12px;background:#FEF2F2;border-radius:8px;"></div>
           <button onclick="unirseConCodigo()"
@@ -2700,8 +2706,8 @@ window.unirseConCodigo = async function() {
       </div>
     </div><!-- /modalForm -->
 
-    <!-- PASO 2: PLAN -->
-    <div class="modal-body" id="modalPlan" style="display:none;">
+    <!-- Paso 2 desactivado — ya no se usa en el flujo de registro -->
+    <div class="modal-body" id="modalPlan" style="display:none!important;">
 
       <!-- BARRA DE PROGRESO -->
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;">
@@ -2711,7 +2717,7 @@ window.unirseConCodigo = async function() {
       </div>
 
       <div style="font-size:13px;font-weight:600;color:var(--txt);margin-bottom:4px;"><span class="es">¿Qué plan quieres después de los 15 días?</span><span class="en">Which plan do you want after 15 days?</span></div>
-      <div style="font-size:12px;color:var(--txt2);margin-bottom:16px;"><span class="es">Sin cobro hoy. Al finalizar la prueba podrás activar el plan que elegiste.</span><span class="en">No charge today. After your trial you can activate your chosen plan.</span></div>
+      <div style="font-size:12px;color:var(--txt2);margin-bottom:16px;"><span class="es">El cobro comienza automáticamente al finalizar tu prueba gratuita. Cancela cuando quieras.</span><span class="en">Billing starts automatically after your free trial ends. Cancel anytime.</span></div>
 
       <!-- PLANES -->
       <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
@@ -2786,38 +2792,27 @@ window.unirseConCodigo = async function() {
       <div style="background:#FAEEDA;border-radius:10px;padding:12px 14px;margin-bottom:16px;display:flex;gap:10px;align-items:center;">
         <div style="font-size:20px;flex-shrink:0;">⏰</div>
         <div style="font-size:12px;color:#633806;line-height:1.5;">
-          <span class="es"><strong>Acceso completo durante 15 días, sin cobro hoy.</strong> Al finalizar la prueba podrás activar el plan que elegiste.</span><span class="en"><strong>Full access for 15 days, no charge today.</strong> After your trial you can activate your chosen plan.</span>
+          <span class="es"><strong>Tu prueba gratuita dura 15 días.</strong> El día 16 comenzará el cobro automático de tu plan seleccionado. Te avisaremos por correo 3 días antes.</span><span class="en"><strong>Your free trial lasts 15 days.</strong> On day 16, automatic billing begins for your selected plan. We'll notify you by email 3 days before.</span>
         </div>
       </div>
 
-      <!-- Contraseña y confirmación -->
       <div style="margin-bottom:10px;">
-        <label style="font-size:12px;font-weight:600;color:var(--txt2);display:block;margin-bottom:5px;">Contraseña</label>
-        <input type="password" id="fieldPassword"
-               class="form-input"
-               placeholder="Mínimo 6 caracteres"
-               autocomplete="new-password"
-               style="font-size:14px;padding:12px 14px;border-radius:10px;border:1.5px solid var(--g4);width:100%;font-family:var(--font-body);">
+        <label style="font-size:12px;font-weight:600;color:var(--txt2);display:block;margin-bottom:5px;"><span class="es">Contraseña</span><span class="en">Password</span></label>
+        <input type="password" class="form-input" id="fieldPassword" placeholder="Mínimo 6 caracteres" autocomplete="new-password" style="padding:11px 14px;">
       </div>
-      <div style="margin-bottom:14px;">
-        <label style="font-size:12px;font-weight:600;color:var(--txt2);display:block;margin-bottom:5px;">Confirmar contraseña</label>
-        <input type="password" id="fieldPassword2"
-               class="form-input"
-               placeholder="Repite tu contraseña"
-               autocomplete="new-password"
-               style="font-size:14px;padding:12px 14px;border-radius:10px;border:1.5px solid var(--g4);width:100%;font-family:var(--font-body);">
-        <div id="passwordError" style="display:none;font-size:12px;color:#e05c5c;margin-top:5px;"></div>
-        <div style="font-size:11px;color:var(--txt2);margin-top:5px;">Con esto entrarás a My Nana. Guárdala bien.</div>
+      <div style="margin-bottom:16px;">
+        <label style="font-size:12px;font-weight:600;color:var(--txt2);display:block;margin-bottom:5px;"><span class="es">Confirmar contraseña</span><span class="en">Confirm password</span></label>
+        <input type="password" class="form-input" id="fieldPassword2" placeholder="Repite tu contraseña" autocomplete="new-password" style="padding:11px 14px;">
+        <div id="passErr" style="display:none;font-size:12px;color:#e05c5c;margin-top:5px;"></div>
       </div>
-
       <div style="display:flex;gap:10px;">
         <button onclick="volverAlPaso1()" style="flex:1;background:var(--cr);color:var(--txt2);font-family:var(--font-body);font-size:13px;padding:13px;border-radius:99px;border:1px solid var(--g4);cursor:pointer;"><span class="es">← Volver</span><span class="en">← Back</span></button>
         <button class="form-submit" id="btnPlanSubmit" onclick="submitForm()" style="flex:2;margin-top:0;">
-          <span class="es">Crear cuenta y empezar gratis 🎉</span><span class="en">Create account &amp; start free 🎉</span>
+          <span class="es">Crear cuenta gratis 🎉</span><span class="en">Create free account 🎉</span>
         </button>
       </div>
       <div class="form-note" style="margin-top:12px;">
-        🔒 Acceso completo durante 15 días. Sin cobro hoy.
+        🔒 <span class="es">Sin cobro hoy. Al finalizar los 15 días podrás activar tu plan.</span><span class="en">No charge today. After 15 days you can activate your plan.</span>
       </div>
     </div>
 
@@ -3419,7 +3414,7 @@ window.unirseConCodigo = async function() {
           <li class="pricing-feat">✓ <span class="es">Cambio entre familias</span><span class="en">Switch between families</span></li>
           <li class="pricing-feat">✓ <span class="es">Recordatorios para visitas</span><span class="en">Visit reminders</span></li>
         </ul>
-        <a href="#" onclick="abrirRegistro('eventual');return false;" class="pricing-btn"><span class="es">Gestionar ayuda ocasional →</span><span class="en">Manage occasional help →</span></a>
+        <a href="#" onclick="abrirFormWithPlan('eventual');return false;" class="pricing-btn"><span class="es">Gestionar ayuda ocasional →</span><span class="en">Manage occasional help →</span></a>
       </div>
 
       <!-- PLAN HOGAR COMPLETO — DESTACADO -->
@@ -3439,7 +3434,7 @@ window.unirseConCodigo = async function() {
           <li class="pricing-feat">✓ <span class="es">Contratos digitales · Ley panameña</span><span class="en">Digital contracts · Panamanian law</span></li>
           <li class="pricing-feat">✓ <span class="es">Evaluación de desempeño</span><span class="en">Performance evaluation</span></li>
         </ul>
-        <a href="#" onclick="abrirRegistro('fija');return false;" class="pricing-btn"><span class="es">Gestionar mi nana →</span><span class="en">Manage my nana →</span></a>
+        <a href="#" onclick="abrirFormWithPlan('fija');return false;" class="pricing-btn"><span class="es">Gestionar mi nana →</span><span class="en">Manage my nana →</span></a>
       </div>
 
     </div>
@@ -4365,7 +4360,7 @@ window.unirseConCodigo = async function() {
           <span class="nana-tag">Niños</span>
           <span class="nana-tag">Limpieza</span>
         </div>
-        <button class="nana-contactar" onclick="abrirRegistro('fija')"><span class="es">Ver perfil completo</span><span class="en">View full profile</span></button>
+        <button class="nana-contactar" onclick="openModal()"><span class="es">Ver perfil completo</span><span class="en">View full profile</span></button>
         <div class="nana-lock">🔒 <span class="es">Requiere cuenta activa</span><span class="en">Active account required</span></div>
       </div>
       <div class="nana-card">
@@ -4378,7 +4373,7 @@ window.unirseConCodigo = async function() {
           <span class="nana-tag">Niños</span>
           <span class="nana-tag">Limpieza</span>
         </div>
-        <button class="nana-contactar" onclick="abrirRegistro('fija')"><span class="es">Ver perfil completo</span><span class="en">View full profile</span></button>
+        <button class="nana-contactar" onclick="openModal()"><span class="es">Ver perfil completo</span><span class="en">View full profile</span></button>
         <div class="nana-lock">🔒 <span class="es">Requiere cuenta activa</span><span class="en">Active account required</span></div>
       </div>
       <div class="nana-card">
@@ -4392,13 +4387,13 @@ window.unirseConCodigo = async function() {
           <span class="nana-tag">Cocina</span>
           <span class="nana-tag">Interna</span>
         </div>
-        <button class="nana-contactar" onclick="abrirRegistro('fija')"><span class="es">Ver perfil completo</span><span class="en">View full profile</span></button>
+        <button class="nana-contactar" onclick="openModal()"><span class="es">Ver perfil completo</span><span class="en">View full profile</span></button>
         <div class="nana-lock">🔒 <span class="es">Requiere cuenta activa</span><span class="en">Active account required</span></div>
       </div>
     </div>
     <div class="reveal" style="text-align:center;margin-top:32px;">
       <p style="font-size:14px;color:var(--txt2);margin-bottom:16px;"><span class="es">¿Eres una familia verificada? Regístrate para ver los perfiles completos.</span><span class="en">Are you a verified family? Sign up to see full profiles.</span></p>
-      <button onclick="abrirRegistro('fija')" style="background:var(--g);color:#fff;font-family:var(--font-body);font-size:14px;font-weight:500;padding:13px 32px;border-radius:99px;border:none;cursor:pointer;transition:all .3s;" onmouseover="this.style.background='var(--g2)'" onmouseout="this.style.background='var(--g)'"><span class="es">Crear cuenta gratis →</span><span class="en">Create free account →</span></button>
+      <button onclick="openModal()" style="background:var(--g);color:#fff;font-family:var(--font-body);font-size:14px;font-weight:500;padding:13px 32px;border-radius:99px;border:none;cursor:pointer;transition:all .3s;" onmouseover="this.style.background='var(--g2)'" onmouseout="this.style.background='var(--g)'"><span class="es">Crear cuenta gratis →</span><span class="en">Create free account →</span></button>
     </div>
   </div>
 </section>
@@ -4772,29 +4767,19 @@ let tipoSeleccionado = 'fija';
 let planSeleccionado = 'fija';
 let telefonoRegistro = '';
 
-// ── Función única de apertura de registro ──────────────────────────────
-// Todos los CTAs de la landing deben llamar esta función
-window.abrirRegistro = (plan) => {
-  plan = plan || 'fija';
+// ── Pre-seleccionar plan desde botón de la landing ──
+window.abrirFormWithPlan = (plan) => {
   planSeleccionado = plan;
   actualizarPlanVisual();
-  // Limpiar campos
-  ['fieldPassword','fieldPassword2','passwordError'].forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    if (el.tagName === 'INPUT') el.value = '';
-    else el.style.display = 'none';
-  });
-  // Siempre abrir desde el paso 1 (formulario de datos)
-  const form = document.getElementById('modalForm');
-  const plan2 = document.getElementById('modalPlan');
-  if (form)  form.style.display  = 'block';
-  if (plan2) plan2.style.display = 'none';
   openModal();
+  // Saltar al paso 2 si viene de pricing
+  setTimeout(() => {
+    if (document.getElementById('paso2') && document.getElementById('paso1')) {
+      document.getElementById('paso1').style.display = 'none';
+      document.getElementById('paso2').style.display = 'block';
+    }
+  }, 100);
 };
-
-// Alias para compatibilidad con CTAs existentes que ya usan abrirFormWithPlan
-window.abrirFormWithPlan = (plan) => abrirRegistro(plan);
 
 function openModal() {
   overlay.classList.add('active');
@@ -4925,200 +4910,136 @@ function volverAlPaso1() {
 }
 
 // ── SUBMIT FINAL ──
+// ── SUBMIT FINAL — crea cuenta Firebase + trial ──
+// ── SUBMIT — formulario único, crea Firebase Auth + trial ──
 async function submitForm() {
-  const nombre   = document.getElementById('fieldNombre').value.trim();
-  const correo   = document.getElementById('fieldCorreo').value.trim();
-  const password = document.getElementById('fieldPassword')?.value || '';
-  const btn      = document.getElementById('btnPlanSubmit');
-  const passErr  = document.getElementById('passwordError');
+  const nombre   = (document.getElementById('fieldNombre')?.value  || '').trim();
+  const correo   = (document.getElementById('fieldCorreo')?.value  || '').trim();
+  const telefono = (document.getElementById('fieldTelefono')?.value|| '').trim();
+  const pass1    =  document.getElementById('fieldPassword')?.value || '';
+  const pass2    =  document.getElementById('fieldPassword2')?.value|| '';
+  const btn      =  document.getElementById('btnSubmit');
+  const errEl    =  document.getElementById('regError');
 
-  const password2 = document.getElementById('fieldPassword2')?.value || '';
-
-  // Validar contraseña
-  if (password.length < 6) {
-    if (passErr) { passErr.textContent = '⚠️ La contraseña debe tener al menos 6 caracteres.'; passErr.style.display = 'block'; }
-    document.getElementById('fieldPassword')?.focus();
-    return;
-  }
-  if (password !== password2) {
-    if (passErr) { passErr.textContent = '⚠️ Las contraseñas no coinciden.'; passErr.style.display = 'block'; }
-    document.getElementById('fieldPassword2')?.focus();
-    return;
-  }
-  if (passErr) passErr.style.display = 'none';
-
-  btn.textContent = 'Creando tu cuenta...';
-  btn.disabled = true;
-
-  const _planMap = {
-    hogar:    { nombre: 'Plan Hogar',    url: 'https://checkout.paguelofacil.com/mynana/4b6eced6' },
-    eventual: { nombre: 'Nana Eventual', url: 'https://checkout.paguelofacil.com/mynana/586d0e75' },
-    fija:     { nombre: 'Nana Fija',     url: 'https://checkout.paguelofacil.com/mynana/e089b39a' },
+  const showErr = (msg) => {
+    if (errEl) { errEl.textContent = msg; errEl.style.display = 'block'; }
+    if (btn)   { btn.disabled = false; if (btn.querySelector('.es')) btn.querySelector('.es').textContent = 'Crear cuenta y empezar 15 días gratis 🎉'; }
   };
-  const _planInfo  = _planMap[planSeleccionado] || _planMap['fija'];
-  const planNombre = _planInfo.nombre;
-  const urlPago    = _planInfo.url;
 
-  // Fechas del trial
-  const hoy      = new Date(); hoy.setHours(0,0,0,0);
-  const finTrial = new Date(hoy); finTrial.setDate(hoy.getDate() + 15);
-  const fmtFecha = d => d.toISOString().split('T')[0];
-  const fechaStr = finTrial.toLocaleDateString('es-PA', { day: 'numeric', month: 'long', year: 'numeric' });
+  if (!nombre)           return showErr('\u26a0\ufe0f Escribe tu nombre.');
+  if (!correo || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) return showErr('\u26a0\ufe0f Correo inválido.');
+  if (pass1.length < 6) return showErr('\u26a0\ufe0f La contraseña debe tener mínimo 6 caracteres.');
+  if (pass1 !== pass2)  return showErr('\u26a0\ufe0f Las contraseñas no coinciden.');
+  if (errEl) errEl.style.display = 'none';
+  if (btn)  { btn.disabled = true; if (btn.querySelector('.es')) btn.querySelector('.es').textContent = 'Creando cuenta...'; }
 
-  // Esperar a que el módulo de Firebase esté listo
+  const planMap = {
+    hogar:    { nombre:'Plan Hogar',    url:'https://checkout.paguelofacil.com/mynana/4b6eced6' },
+    eventual: { nombre:'Hogar Flexible',url:'https://checkout.paguelofacil.com/mynana/586d0e75' },
+    fija:     { nombre:'Hogar Completo',url:'https://checkout.paguelofacil.com/mynana/e089b39a' },
+  };
+  const plan = planMap[planSeleccionado] || planMap['fija'];
+  const hoy  = new Date(); hoy.setHours(0,0,0,0);
+  const fin  = new Date(hoy); fin.setDate(hoy.getDate()+15);
+  const fmt  = d => d.toISOString().split('T')[0];
+  const fechaStr = fin.toLocaleDateString('es-PA',{day:'numeric',month:'long',year:'numeric'});
+
   let t = 0;
-  while (!window.__fbCreateUser && t < 30) { await new Promise(r => setTimeout(r, 100)); t++; }
-  if (!window.__fbCreateUser) {
-    btn.textContent = 'Empezar prueba gratis 🎉'; btn.disabled = false;
-    if (passErr) { passErr.textContent = '❌ Error de conexión. Recarga e intenta de nuevo.'; passErr.style.display = 'block'; }
-    return;
+  while (!window.__fbCreateUser && t<30) { await new Promise(r=>setTimeout(r,100)); t++; }
+  if (!window.__fbCreateUser) return showErr('\u274c Error de conexión. Recarga e intenta.');
+
+  let uid;
+  try {
+    uid = (await window.__fbCreateUser(correo, pass1)).user.uid;
+  } catch(e) {
+    if (e.code==='auth/email-already-in-use') return showErr('\u26a0\ufe0f Este correo ya tiene cuenta. Entra en mynana.app/app.html');
+    if (e.code==='auth/weak-password')        return showErr('\u26a0\ufe0f Contraseña muy débil.');
+    if (e.code==='auth/invalid-email')        return showErr('\u26a0\ufe0f Correo inválido.');
+    return showErr('\u274c ' + (e.message||'Error al crear cuenta.'));
   }
 
   try {
-    // 1. Crear cuenta Firebase Auth
-    let cred;
-    try {
-      cred = await window.__fbCreateUser(correo, password);
-    } catch(authErr) {
-      btn.textContent = 'Empezar prueba gratis 🎉'; btn.disabled = false;
-      let msg = '❌ Error al crear la cuenta. Intenta de nuevo.';
-      if (authErr.code === 'auth/email-already-in-use') msg = '⚠️ Este correo ya tiene cuenta. Ve a mynana.app/app.html para entrar.';
-      if (authErr.code === 'auth/weak-password')       msg = '⚠️ Contraseña muy débil. Usa al menos 6 caracteres.';
-      if (authErr.code === 'auth/invalid-email')       msg = '⚠️ El correo no es válido.';
-      if (passErr) { passErr.textContent = msg; passErr.style.display = 'block'; }
-      return;
-    }
-
-    const uid = cred.user.uid;
-
-    // 2. Guardar perfil + suscripcion (trial) en Firestore
-    await window.__fbSetDoc(window.__fbDoc('usuarios', uid), {
-      nombre, email: correo, tipo: 'familia',
-      telefono: telefonoRegistro || null,
-      uid, fecha: new Date().toISOString(),
-      creadoA: window.__fbTs(),
-      suscripcion: {
-        estado:           'trial',
-        plan:             planSeleccionado,
-        planNombre,
-        fechaInicioTrial: fmtFecha(hoy),
-        fechaFinTrial:    fmtFecha(finTrial),
-        pagoUrl:          urlPago,
-        pagoConfirmado:   null,
-        pagoReferencia:   null,
-        pagoMonto:        null,
-        actualizadoA:     window.__fbTs(),
+    await window.__fbSetDoc(window.__fbDoc('usuarios',uid),{
+      nombre, email:correo, tipo:'familia', telefono:telefono||null, uid,
+      fecha:new Date().toISOString(), creadoA:window.__fbTs(),
+      suscripcion:{
+        estado:'trial', plan:planSeleccionado, planNombre:plan.nombre,
+        fechaInicioTrial:fmt(hoy), fechaFinTrial:fmt(fin),
+        pagoUrl:plan.url, pagoConfirmado:null, pagoReferencia:null, pagoMonto:null,
+        actualizadoA:window.__fbTs(),
       },
     });
-
-    // 3. Crear hogar
-    const tipoHogar = document.getElementById('regTipoHogar')?.value || 'con_nana_fija';
-    await window.__fbAddDoc(window.__fbCol('hogares'), {
-      participantes: [uid],
-      creadoPor: uid,
-      creado: window.__fbTs(),
-      tipoHogar,
+    const tipoH = tipoSeleccionado||'fija';
+    await window.__fbAddDoc(window.__fbCol('hogares'),{
+      participantes:[uid], creadoPor:uid, creado:window.__fbTs(), tipoHogar:tipoH,
     });
-
-    // 4. localStorage
-    if (telefonoRegistro) localStorage.setItem('mynana_tel_pendiente', telefonoRegistro);
-    localStorage.setItem('mynana_tipoHogar', tipoHogar);
-
-    // 5. Email bienvenida
-    try { emailjs.send('mynana_service', 'bienvenida_familia', { nombre, correo, plan: planNombre }).catch(() => {}); } catch(e) {}
-
+    if (telefono) localStorage.setItem('mynana_tel_pendiente',telefono);
+    localStorage.setItem('mynana_tipoHogar', tipoH);
+    try { emailjs.send('mynana_service','bienvenida_familia',{nombre,correo,plan:plan.nombre}).catch(()=>{}); } catch(e){}
   } catch(e) {
-    console.error('submitForm:', e);
-    btn.textContent = 'Empezar prueba gratis 🎉'; btn.disabled = false;
-    if (passErr) { passErr.textContent = '❌ Error inesperado. Intenta de nuevo.'; passErr.style.display = 'block'; }
-    return;
+    console.error(e); return showErr('\u274c Error guardando datos. Intenta de nuevo.');
   }
 
-  // 6. Mostrar éxito
-  document.getElementById('modalPlan').style.display = 'none';
+  document.getElementById('modalForm').style.display = 'none';
   document.getElementById('successMsg').innerHTML =
-    `¡Cuenta creada! Tienes <strong>15 días de acceso completo gratuito</strong>.<br><br>
-     Tu plan <strong>${planNombre}</strong> comenzará el <strong>${fechaStr}</strong>.<br><br>
-     <span style="font-size:12px;background:#E8F4EF;color:#0F4D3A;padding:8px 12px;border-radius:8px;display:block;margin-top:4px;">
-       ✅ Entra con <strong>${correo}</strong> y tu contraseña en mynana.app
-     </span>`;
+    '\u00a1Cuenta creada! <strong>15 días de acceso gratis</strong>.<br><br>' +
+    'El plan <strong>'+plan.nombre+'</strong> comienza el <strong>'+fechaStr+'</strong>.<br><br>' +
+    '<span style="font-size:12px;background:#E8F4EF;color:#0F4D3A;padding:8px 12px;border-radius:8px;display:block;">' +
+    '\u2705 Entra con <strong>'+correo+'</strong> y tu contraseña</span>';
   document.getElementById('modalSuccess').classList.add('visible');
-
-  const btnApp = document.createElement('a');
-  btnApp.href = '/app.html';
-  btnApp.style.cssText = 'display:block;margin-top:16px;background:var(--g);color:#fff;font-family:var(--font-body);font-size:15px;font-weight:500;padding:14px 24px;border-radius:99px;text-decoration:none;text-align:center;box-shadow:0 8px 24px rgba(26,107,82,.25);';
-  btnApp.textContent = '→ Ir a mi plataforma';
-  const successDiv = document.getElementById('modalSuccess');
-  const waBtn = successDiv.querySelector('.success-whatsapp');
-  if (waBtn) successDiv.insertBefore(btnApp, waBtn);
-  else successDiv.appendChild(btnApp);
+  const lnk = document.createElement('a');
+  lnk.href='/app.html';
+  lnk.style.cssText='display:block;margin-top:16px;background:#1A6B52;color:#fff;font-family:var(--font-body);font-size:15px;font-weight:500;padding:14px;border-radius:99px;text-decoration:none;text-align:center;';
+  lnk.textContent='\u2192 Ir a mi plataforma';
+  const sw=document.getElementById('modalSuccess');
+  const wa=sw?.querySelector('.success-whatsapp');
+  if(wa) sw.insertBefore(lnk,wa); else sw?.appendChild(lnk);
 }
 
-// ── MENÚ SEMANAL PANAMEÑO ──
+// ── MENÚ SEMANAL — datos de la demo ──
 const MENU = [
-  { // Lunes
-    dia: 'Lunes', ingredientes: 9,
-    comidas: [
-      { tiempo: 'Desayuno', hora: '7:00 am', emoji: '🍳', plato: 'Tortillas con queso y huevos revueltos', familia: 'Tortillas con queso y café', personal: 'Mismo desayuno', estado: 'listo' },
-      { tiempo: 'Almuerzo', hora: '12:30 pm', emoji: '🍲', plato: 'Sancocho de gallina con arroz blanco', familia: 'Sancocho + patacones', personal: 'Sancocho', estado: 'pendiente' },
-      { tiempo: 'Merienda', hora: '3:30 pm', emoji: '🍌', plato: 'Fruta de temporada y jugo natural', familia: 'Piña y melón', personal: 'Fruta disponible', estado: 'pendiente' },
-      { tiempo: 'Cena', hora: '7:00 pm', emoji: '🥗', plato: 'Ensalada de pollo con aguacate', familia: 'Con pan integral', personal: 'Ensalada', estado: 'pendiente' },
-    ]
-  },
-  { // Martes
-    dia: 'Martes', ingredientes: 11,
-    comidas: [
-      { tiempo: 'Desayuno', hora: '7:00 am', emoji: '🥞', plato: 'Hojaldras con salchicha y café', familia: 'Hojaldras con café con leche', personal: 'Mismo desayuno', estado: 'listo' },
-      { tiempo: 'Almuerzo', hora: '12:30 pm', emoji: '🍛', plato: 'Arroz con pollo guisado y ensalada', familia: 'Con tajadas maduras', personal: 'Arroz con pollo', estado: 'pendiente' },
-      { tiempo: 'Merienda', hora: '3:30 pm', emoji: '🥤', plato: 'Chicheme frío y galletas', familia: 'Chicheme casero', personal: 'Mismo', estado: 'pendiente' },
-      { tiempo: 'Cena', hora: '7:00 pm', emoji: '🍝', plato: 'Pasta con salsa de carne molida', familia: 'Con pan de ajo', personal: 'Pasta sola', estado: 'pendiente' },
-    ]
-  },
-  { // Miércoles
-    dia: 'Miércoles', ingredientes: 8,
-    comidas: [
-      { tiempo: 'Desayuno', hora: '7:00 am', emoji: '🍞', plato: 'Pan tostado con mantequilla y jugo', familia: 'Con huevo frito', personal: 'Pan con café', estado: 'listo' },
-      { tiempo: 'Almuerzo', hora: '12:30 pm', emoji: '🐟', plato: 'Pescado frito con arroz y ensalada', familia: 'Con patacones y ají', personal: 'Pescado y arroz', estado: 'pendiente' },
-      { tiempo: 'Merienda', hora: '3:30 pm', emoji: '🍎', plato: 'Manzanas con mantequilla de maní', familia: 'Con jugo de naranja', personal: 'Fruta', estado: 'pendiente' },
-      { tiempo: 'Cena', hora: '7:00 pm', emoji: '🫕', plato: 'Sopa de lentejas con pan', familia: 'Sopa + queso blanco', personal: 'Sopa', estado: 'pendiente' },
-    ]
-  },
-  { // Jueves
-    dia: 'Jueves', ingredientes: 10,
-    comidas: [
-      { tiempo: 'Desayuno', hora: '7:00 am', emoji: '🥐', plato: 'Empanadas de maíz con queso', familia: 'Con chocolate caliente', personal: 'Empanadas y café', estado: 'listo' },
-      { tiempo: 'Almuerzo', hora: '12:30 pm', emoji: '🥩', plato: 'Carne guisada con yuca y arroz', familia: 'Con patacones', personal: 'Carne y arroz', estado: 'pendiente' },
-      { tiempo: 'Merienda', hora: '3:30 pm', emoji: '🧃', plato: 'Jugos naturales y galletas de soda', familia: 'Jugo de maracuyá', personal: 'Mismo', estado: 'pendiente' },
-      { tiempo: 'Cena', hora: '7:00 pm', emoji: '🍗', plato: 'Pollo asado con puré de papas', familia: 'Con ensalada verde', personal: 'Pollo y puré', estado: 'pendiente' },
-    ]
-  },
-  { // Viernes
-    dia: 'Viernes', ingredientes: 7,
-    comidas: [
-      { tiempo: 'Desayuno', hora: '7:00 am', emoji: '🫓', plato: 'Bollos de maíz con mantequilla', familia: 'Con café con leche', personal: 'Bollos y café', estado: 'listo' },
-      { tiempo: 'Almuerzo', hora: '12:30 pm', emoji: '🦐', plato: 'Camarones al ajillo con arroz', familia: 'Con patacones y limón', personal: 'Arroz con camarones', estado: 'pendiente' },
-      { tiempo: 'Merienda', hora: '3:30 pm', emoji: '🍦', plato: 'Raspado de tamarindo o nance', familia: 'Raspado a elección', personal: 'Fruta', estado: 'pendiente' },
-      { tiempo: 'Cena', hora: '7:00 pm', emoji: '🍕', plato: 'Pizza casera con vegetales', familia: 'Con refresco', personal: 'Pizza', estado: 'pendiente' },
-    ]
-  },
-  { // Sábado
-    dia: 'Sábado', ingredientes: 12,
-    comidas: [
-      { tiempo: 'Desayuno', hora: '8:00 am', emoji: '🥓', plato: 'Desayuno completo panameño', familia: 'Tortillas, huevos, salchicha y café', personal: 'Mismo desayuno', estado: 'listo' },
-      { tiempo: 'Almuerzo', hora: '1:00 pm', emoji: '🫔', plato: 'Tamal de olla con arroz', familia: 'Con chicha de piña', personal: 'Tamal y arroz', estado: 'pendiente' },
-      { tiempo: 'Merienda', hora: '4:00 pm', emoji: '🎂', plato: 'Bienmesabe con galletas', familia: 'Bienmesabe casero', personal: 'Mismo', estado: 'pendiente' },
-      { tiempo: 'Cena', hora: '7:30 pm', emoji: '🥘', plato: 'Ropa vieja con arroz y platanitos', familia: 'Con ensalada y refresco', personal: 'Ropa vieja y arroz', estado: 'pendiente' },
-    ]
-  },
-  { // Domingo
-    dia: 'Domingo', ingredientes: 6,
-    comidas: [
-      { tiempo: 'Desayuno', hora: '9:00 am', emoji: '🍳', plato: 'Desayuno tardío en familia', familia: 'Pancakes con sirope y frutas', personal: 'Tortillas con queso', estado: 'pendiente' },
-      { tiempo: 'Almuerzo', hora: '2:00 pm', emoji: '🍖', plato: 'Pernil de cerdo con arroz con guandú', familia: 'Plato completo dominical', personal: 'Pernil y arroz', estado: 'pendiente' },
-      { tiempo: 'Merienda', hora: '5:00 pm', emoji: '☕', plato: 'Café y pan dulce', familia: 'Café con leche y rosquillas', personal: 'Mismo', estado: 'pendiente' },
-      { tiempo: 'Cena', hora: '7:00 pm', emoji: '🥗', plato: 'Cena ligera — sobras del almuerzo', familia: 'Recalentado con ensalada', personal: 'Lo disponible', estado: 'pendiente' },
-    ]
-  }
+  { dia: 'Lunes', ingredientes: 9, comidas: [
+    { tiempo:'Desayuno', hora:'7:00 am',  emoji:'🍳', plato:'Tortillas con queso y huevos revueltos', familia:'Tortillas con queso y café', personal:'Mismo desayuno', estado:'listo' },
+    { tiempo:'Almuerzo', hora:'12:30 pm', emoji:'🍲', plato:'Sancocho de gallina con arroz blanco',  familia:'Sancocho + patacones', personal:'Sancocho', estado:'pendiente' },
+    { tiempo:'Merienda', hora:'3:30 pm',  emoji:'🍌', plato:'Fruta de temporada y jugo natural',     familia:'Piña y melón', personal:'Fruta disponible', estado:'pendiente' },
+    { tiempo:'Cena',     hora:'7:00 pm',  emoji:'🥗', plato:'Ensalada de pollo con aguacate',        familia:'Con pan integral', personal:'Ensalada', estado:'pendiente' },
+  ]},
+  { dia: 'Martes', ingredientes: 11, comidas: [
+    { tiempo:'Desayuno', hora:'7:00 am',  emoji:'🥞', plato:'Hojaldras con salchicha y café',       familia:'Hojaldras con café con leche', personal:'Mismo desayuno', estado:'listo' },
+    { tiempo:'Almuerzo', hora:'12:30 pm', emoji:'🍛', plato:'Arroz con pollo guisado y ensalada',   familia:'Con tajadas maduras', personal:'Arroz con pollo', estado:'pendiente' },
+    { tiempo:'Merienda', hora:'3:30 pm',  emoji:'🥤', plato:'Chicheme frío y galletas',             familia:'Chicheme casero', personal:'Mismo', estado:'pendiente' },
+    { tiempo:'Cena',     hora:'7:00 pm',  emoji:'🍝', plato:'Pasta con salsa de carne molida',      familia:'Con pan de ajo', personal:'Pasta sola', estado:'pendiente' },
+  ]},
+  { dia: 'Miércoles', ingredientes: 8, comidas: [
+    { tiempo:'Desayuno', hora:'7:00 am',  emoji:'🍞', plato:'Pan tostado con mantequilla y jugo',  familia:'Con huevo frito', personal:'Pan con café', estado:'listo' },
+    { tiempo:'Almuerzo', hora:'12:30 pm', emoji:'🐟', plato:'Pescado frito con arroz y ensalada',  familia:'Con patacones y ají', personal:'Pescado y arroz', estado:'pendiente' },
+    { tiempo:'Merienda', hora:'3:30 pm',  emoji:'🍎', plato:'Manzanas con mantequilla de maní',    familia:'Con jugo de naranja', personal:'Fruta', estado:'pendiente' },
+    { tiempo:'Cena',     hora:'7:00 pm',  emoji:'🫕', plato:'Sopa de lentejas con pan',            familia:'Sopa + queso blanco', personal:'Sopa', estado:'pendiente' },
+  ]},
+  { dia: 'Jueves', ingredientes: 10, comidas: [
+    { tiempo:'Desayuno', hora:'7:00 am',  emoji:'🥐', plato:'Empanadas de maíz con queso',        familia:'Con chocolate caliente', personal:'Empanadas y café', estado:'listo' },
+    { tiempo:'Almuerzo', hora:'12:30 pm', emoji:'🥩', plato:'Carne guisada con yuca y arroz',     familia:'Con patacones', personal:'Carne y arroz', estado:'pendiente' },
+    { tiempo:'Merienda', hora:'3:30 pm',  emoji:'🧃', plato:'Jugos naturales y galletas de soda', familia:'Jugo de maracuyá', personal:'Mismo', estado:'pendiente' },
+    { tiempo:'Cena',     hora:'7:00 pm',  emoji:'🍗', plato:'Pollo asado con puré de papas',     familia:'Con ensalada verde', personal:'Pollo y puré', estado:'pendiente' },
+  ]},
+  { dia: 'Viernes', ingredientes: 7, comidas: [
+    { tiempo:'Desayuno', hora:'7:00 am',  emoji:'🫓', plato:'Bollos de maíz con mantequilla',     familia:'Con café con leche', personal:'Bollos y café', estado:'listo' },
+    { tiempo:'Almuerzo', hora:'12:30 pm', emoji:'🦐', plato:'Camarones al ajillo con arroz',      familia:'Con patacones y limón', personal:'Arroz con camarones', estado:'pendiente' },
+    { tiempo:'Merienda', hora:'3:30 pm',  emoji:'🍦', plato:'Raspado de tamarindo o nance',       familia:'Raspado a elección', personal:'Fruta', estado:'pendiente' },
+    { tiempo:'Cena',     hora:'7:00 pm',  emoji:'🍕', plato:'Pizza casera con vegetales',         familia:'Con refresco', personal:'Pizza', estado:'pendiente' },
+  ]},
+  { dia: 'Sábado', ingredientes: 12, comidas: [
+    { tiempo:'Desayuno', hora:'8:00 am',  emoji:'🥓', plato:'Desayuno completo panameño',              familia:'Tortillas, huevos, salchicha y café', personal:'Mismo desayuno', estado:'listo' },
+    { tiempo:'Almuerzo', hora:'1:00 pm',  emoji:'🫔', plato:'Tamal de olla con arroz',                  familia:'Con chicha de piña', personal:'Tamal y arroz', estado:'pendiente' },
+    { tiempo:'Merienda', hora:'4:00 pm',  emoji:'🎂', plato:'Bienmesabe con galletas',                  familia:'Bienmesabe casero', personal:'Mismo', estado:'pendiente' },
+    { tiempo:'Cena',     hora:'7:30 pm',  emoji:'🥘', plato:'Ropa vieja con arroz y platanitos',        familia:'Con ensalada y refresco', personal:'Ropa vieja y arroz', estado:'pendiente' },
+  ]},
+  { dia: 'Domingo', ingredientes: 6, comidas: [
+    { tiempo:'Desayuno', hora:'9:00 am',  emoji:'🍳', plato:'Desayuno tardío en familia',              familia:'Pancakes con sirope y frutas', personal:'Tortillas con queso', estado:'pendiente' },
+    { tiempo:'Almuerzo', hora:'2:00 pm',  emoji:'🍖', plato:'Pernil de cerdo con arroz con guandú',    familia:'Plato completo dominical', personal:'Pernil y arroz', estado:'pendiente' },
+    { tiempo:'Merienda', hora:'5:00 pm',  emoji:'☕', plato:'Café y pan dulce',                         familia:'Café con leche y rosquillas', personal:'Mismo', estado:'pendiente' },
+    { tiempo:'Cena',     hora:'7:00 pm',  emoji:'🥗', plato:'Cena ligera — sobras del almuerzo',       familia:'Recalentado con ensalada', personal:'Lo disponible', estado:'pendiente' },
+  ]},
 ];
 
 let diaActual = 0;
@@ -5792,7 +5713,7 @@ function mostrarFeat(key, btn) {
               <span style="font-size:13px;color:var(--txt2);">${p}</span>
             </div>`).join('')}
         </div>
-        <button onclick="abrirRegistro('fija')" style="background:var(--g);color:#fff;font-family:var(--font-body);font-size:14px;font-weight:500;padding:12px 24px;border-radius:99px;border:none;cursor:pointer;transition:all .3s;" onmouseover="this.style.background='var(--g2)'" onmouseout="this.style.background='var(--g)'">
+        <button onclick="openModal()" style="background:var(--g);color:#fff;font-family:var(--font-body);font-size:14px;font-weight:500;padding:12px 24px;border-radius:99px;border:none;cursor:pointer;transition:all .3s;" onmouseover="this.style.background='var(--g2)'" onmouseout="this.style.background='var(--g)'">
           ${btnLabel}
         </button>
       `;
