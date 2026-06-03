@@ -2229,6 +2229,9 @@ window.eliminarPlato = async (diaKey, tiempoId) => {
   if (!menuData[diaKey]) return;
   delete menuData[diaKey][tiempoId];
   await guardarMenu();
+  renderMenuDia();          // 1. actualizar pantalla inmediatamente
+  generarListaMercado();    // 2. recalcular lista del mercado sin ese plato
+  renderMercado();          // 3. refrescar UI del mercado
   showToast('🗑 Plato eliminado');
 };
 
