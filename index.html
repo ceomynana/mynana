@@ -2608,16 +2608,22 @@ window.unirseConCodigo = async function() {
         <span class="es">Crea tu cuenta gratis</span><span class="en">Create your free account</span>
       </div>
 
-      <div class="form-group">
-        <label class="form-label"><span class="es">Tu nombre</span><span class="en">Your name</span></label>
-        <input type="text" class="form-input" id="fieldNombre" placeholder="¿Cómo te llamas?" autocomplete="name" />
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="form-group">
+          <label class="form-label"><span class="es">Nombre *</span><span class="en">First name *</span></label>
+          <input type="text" class="form-input" id="fieldNombre" placeholder="Rosa" autocomplete="given-name" />
+        </div>
+        <div class="form-group">
+          <label class="form-label"><span class="es">Apellido *</span><span class="en">Last name *</span></label>
+          <input type="text" class="form-input" id="fieldApellido" placeholder="Casanova" autocomplete="family-name" />
+        </div>
       </div>
       <div class="form-group">
-        <label class="form-label"><span class="es">Correo electrónico</span><span class="en">Email address</span></label>
+        <label class="form-label"><span class="es">Correo electrónico *</span><span class="en">Email *</span></label>
         <input type="email" class="form-input" id="fieldCorreo" placeholder="tucorreo@email.com" autocomplete="email" />
       </div>
       <div class="form-group">
-        <label class="form-label"><span class="es">WhatsApp / Teléfono</span><span class="en">WhatsApp / Phone</span></label>
+        <label class="form-label"><span class="es">WhatsApp / Teléfono *</span><span class="en">WhatsApp / Phone *</span></label>
         <input type="tel" class="form-input" id="fieldTelefono" placeholder="Ej: 6000-0000" autocomplete="tel" />
       </div>
       <div class="form-group">
@@ -4913,11 +4919,12 @@ function volverAlPaso1() {
 // ── SUBMIT FINAL — crea cuenta Firebase + trial ──
 // ── SUBMIT — formulario único, crea Firebase Auth + trial ──
 async function submitForm() {
-  const nombre   = (document.getElementById('fieldNombre')?.value  || '').trim();
-  const correo   = (document.getElementById('fieldCorreo')?.value  || '').trim();
-  const telefono = (document.getElementById('fieldTelefono')?.value|| '').trim();
-  const pass1    =  document.getElementById('fieldPassword')?.value || '';
-  const pass2    =  document.getElementById('fieldPassword2')?.value|| '';
+  const nombre   = (document.getElementById('fieldNombre')?.value   || '').trim();
+  const apellido = (document.getElementById('fieldApellido')?.value  || '').trim();
+  const correo   = (document.getElementById('fieldCorreo')?.value    || '').trim();
+  const telefono = (document.getElementById('fieldTelefono')?.value  || '').trim();
+  const pass1    =  document.getElementById('fieldPassword')?.value  || '';
+  const pass2    =  document.getElementById('fieldPassword2')?.value || '';
   const btn      =  document.getElementById('btnSubmit');
   const errEl    =  document.getElementById('regError');
 
@@ -4926,10 +4933,12 @@ async function submitForm() {
     if (btn)   { btn.disabled = false; if (btn.querySelector('.es')) btn.querySelector('.es').textContent = 'Crear cuenta y empezar 15 días gratis 🎉'; }
   };
 
-  if (!nombre)           return showErr('\u26a0\ufe0f Escribe tu nombre.');
-  if (!correo || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) return showErr('\u26a0\ufe0f Correo inválido.');
-  if (pass1.length < 6) return showErr('\u26a0\ufe0f La contraseña debe tener mínimo 6 caracteres.');
-  if (pass1 !== pass2)  return showErr('\u26a0\ufe0f Las contraseñas no coinciden.');
+  if (!nombre)            return showErr('⚠️ Escribe tu nombre.');
+  if (!apellido)          return showErr('⚠️ Escribe tu apellido.');
+  if (!correo || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) return showErr('⚠️ Correo inválido.');
+  if (!telefono)          return showErr('⚠️ Agrega tu número de WhatsApp.');
+  if (pass1.length < 6)  return showErr('⚠️ La contraseña debe tener mínimo 6 caracteres.');
+  if (pass1 !== pass2)   return showErr('⚠️ Las contraseñas no coinciden.');
   if (errEl) errEl.style.display = 'none';
   if (btn)  { btn.disabled = true; if (btn.querySelector('.es')) btn.querySelector('.es').textContent = 'Creando cuenta...'; }
 
@@ -4959,8 +4968,10 @@ async function submitForm() {
   }
 
   try {
+    const nombreCompleto = (nombre + ' ' + apellido).trim();
     await window.__fbSetDoc(window.__fbDoc('usuarios',uid),{
-      nombre, email:correo, tipo:'familia', telefono:telefono||null, uid,
+      nombre, apellido, nombreCompleto,
+      email:correo, tipo:'familia', telefono:telefono||null, uid,
       fecha:new Date().toISOString(), creadoA:window.__fbTs(),
       suscripcion:{
         estado:'trial', plan:planSeleccionado, planNombre:plan.nombre,
