@@ -128,16 +128,17 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
 .notif-empty-icon{font-size:36px;margin-bottom:8px;}
 .notif-toast{
   position:fixed;
-  bottom:calc(68px + env(safe-area-inset-bottom, 0px) + 10px);
+  /* Mobile: above bottom-nav + safe area */
+  bottom:calc(68px + env(safe-area-inset-bottom, 0px) + 12px);
   left:50%;
-  transform:translateX(-50%) translateY(120px);
+  transform:translateX(-50%) translateY(160px);
   background:#fff;
   border-radius:16px;
   padding:14px 16px;
   display:flex;
   align-items:flex-start;
   gap:12px;
-  box-shadow:0 8px 32px rgba(0,0,0,.16), 0 0 0 1px rgba(26,107,82,.07);
+  box-shadow:0 8px 32px rgba(0,0,0,.18), 0 0 0 1px rgba(26,107,82,.08);
   z-index:600;
   transition:transform .35s cubic-bezier(.34,1.56,.64,1);
   max-width:360px;
@@ -149,8 +150,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
   transform:translateX(-50%) translateY(0);
   pointer-events:all;
 }
+/* Desktop / tablet: appear from top instead */
+@media(min-width:600px){
+  .notif-toast{
+    top:calc(env(safe-area-inset-top,0px) + 80px);
+    bottom:auto;
+    transform:translateX(-50%) translateY(-160px);
+  }
+  .notif-toast.visible{transform:translateX(-50%) translateY(0);}
+}
+/* Very short viewports */
 @media(max-height:500px){
-  .notif-toast{top:16px;bottom:auto;transform:translateX(-50%) translateY(-120px);}
+  .notif-toast{top:12px;bottom:auto;transform:translateX(-50%) translateY(-120px);}
   .notif-toast.visible{transform:translateX(-50%) translateY(0);}
 }
 .notif-toast-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;margin-top:1px;}
@@ -868,7 +879,7 @@ service cloud.firestore {
       <div class="notif-toast-titulo" id="notifToastTitulo"></div>
       <div class="notif-toast-desc" id="notifToastDesc"></div>
     </div>
-    <button class="notif-toast-close" onclick="cerrarNotifToast()">✕</button>
+    <button class="notif-toast-close" onclick="document.getElementById('notifToast').classList.remove('visible');clearTimeout(window._toastTimer);">✕</button>
   </div>
 
   <div class="dash-hero">
@@ -1041,21 +1052,25 @@ service cloud.firestore {
     </div>
 
     <!-- Banner buscar nana -->
-    <div id="wrapBannerBuscar" style="background:var(--g);border-radius:var(--r);padding:16px 20px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
-      <div style="flex:1;min-width:0;">
-        <div id="bannerBuscarNana" style="font-size:13px;font-weight:600;color:#fff;margin-bottom:4px;">👩 ¿Buscas una nana?</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.7);line-height:1.4;">Encuentra personal doméstico de confianza</div>
+    <div id="wrapBannerBuscar" style="background:linear-gradient(135deg,var(--g2),var(--g));border-radius:var(--r);padding:16px 18px;margin-bottom:12px;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:120px;">
+          <div id="bannerBuscarNana" style="font-size:13px;font-weight:700;color:#fff;margin-bottom:3px;">👩 ¿Buscas una nana?</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.75);line-height:1.4;">Encuentra personal doméstico de confianza</div>
+        </div>
+        <a href="/index.html#buscar" style="background:#fff;color:var(--g);font-size:12px;font-weight:700;padding:8px 14px;border-radius:99px;text-decoration:none;white-space:nowrap;flex-shrink:0;display:inline-block;margin-top:2px;">Buscar →</a>
       </div>
-      <a href="/index.html#buscar" style="background:#fff;color:var(--g);font-size:13px;font-weight:600;padding:9px 16px;border-radius:99px;text-decoration:none;white-space:nowrap;flex-shrink:0;align-self:flex-end;margin-top:4px;">Buscar →</a>
     </div>
 
     <!-- Banner compartir nana -->
-    <div id="wrapBannerCompartir" style="background:var(--g);border-radius:var(--r);padding:16px 20px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-      <div style="flex:1;min-width:0;">
-        <div id="bannerCompartirNana" style="font-size:13px;font-weight:600;color:#fff;margin-bottom:4px;">🔗 Comparte el acceso con tu nana</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.7);line-height:1.4;">mynana.app/app.html</div>
+    <div id="wrapBannerCompartir" style="background:linear-gradient(135deg,var(--g2),var(--g));border-radius:var(--r);padding:16px 18px;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:120px;">
+          <div id="bannerCompartirNana" style="font-size:13px;font-weight:700;color:#fff;margin-bottom:3px;">🔗 Comparte el acceso con tu nana</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.75);line-height:1.4;">mynana.app/app.html</div>
+        </div>
+        <a href="https://wa.me/?text=Hola%2C%20te%20invito%20a%20My%20Nana%20%F0%9F%8F%A0%0Amynana.app%2Fapp.html" target="_blank" style="background:#25D366;color:#fff;font-size:12px;font-weight:700;padding:8px 14px;border-radius:99px;text-decoration:none;white-space:nowrap;flex-shrink:0;display:inline-block;margin-top:2px;">💬 WhatsApp</a>
       </div>
-      <a href="https://wa.me/?text=Hola%2C%20te%20invito%20a%20My%20Nana%20%F0%9F%8F%A0%0Amynana.app%2Fapp.html" target="_blank" style="background:#25D366;color:#fff;font-size:13px;font-weight:500;padding:9px 16px;border-radius:99px;text-decoration:none;white-space:nowrap;flex-shrink:0;align-self:flex-end;margin-top:4px;">💬 WhatsApp</a>
     </div>
 
     <!-- TARJETA MIEMBRO FAMILIAR -->
@@ -1122,7 +1137,7 @@ service cloud.firestore {
       <div class="notif-toast-titulo" id="nanaNotifToastTitulo"></div>
       <div class="notif-toast-desc" id="nanaNotifToastDesc"></div>
     </div>
-    <button class="notif-toast-close" onclick="cerrarNanaNotifToast()">✕</button>
+    <button class="notif-toast-close" onclick="document.getElementById('nanaNotifToast').classList.remove('visible');clearTimeout(window._nanaToastTimer);">✕</button>
   </div>
 
   <div class="dash-hero" style="background:linear-gradient(150deg,var(--b2) 0%,#D4917F 50%,var(--b) 100%);">
