@@ -2403,11 +2403,12 @@ function cargarMenuDash(hogarId) {
   const hoy = new Date();
   const diaSemana = hoy.getDay() === 0 ? 6 : hoy.getDay() - 1;
 
-  // Calcular semanaId con fecha LOCAL (no UTC) — igual que getSemanaId() en menu.html
+  // semanaId IDÉNTICO a getSemanaId() de menu.html:
+  // formato "YYYY-WXX" donde XX = Math.ceil(lunes.getDate() / 7)
   const lunes = new Date(hoy);
   lunes.setDate(hoy.getDate() - diaSemana);
   lunes.setHours(0,0,0,0);
-  const semanaId = `${lunes.getFullYear()}-${String(lunes.getMonth()+1).padStart(2,'0')}-${String(lunes.getDate()).padStart(2,'0')}`;
+  const semanaId = `${lunes.getFullYear()}-W${String(Math.ceil(lunes.getDate() / 7)).padStart(2,'0')}`;
 
   const TIEMPOS = [
     { id:'desayuno', hora:'7:00 am',  emoji:'🍳' },
