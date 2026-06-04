@@ -1,4 +1,4 @@
-\<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -171,7 +171,7 @@ body{font-family:'DM Sans',sans-serif;background:#F0F4F0;color:var(--txt);
 
 <nav class="nav">
   <div class="nav-inner">
-    <button class="nav-back" onclick="history.back()">← Inicio</button>
+    <button class="nav-back" onclick="history.back()">&larr; Inicio</button>
     <div class="nav-title">Mantenimiento del hogar</div>
     <button class="nav-add" onclick="abrirModal()">+ Nuevo</button>
   </div>
@@ -189,9 +189,9 @@ body{font-family:'DM Sans',sans-serif;background:#F0F4F0;color:var(--txt);
   <div class="panel activo" id="panel-calendario">
     <div class="cal-wrap">
       <div class="cal-nav">
-        <button class="cal-btn" onclick="navMes(-1)">←</button>
+        <button class="cal-btn" onclick="navMes(-1)">&larr;</button>
         <div class="cal-mes" id="calLabel">—</div>
-        <button class="cal-btn" onclick="navMes(1)">→</button>
+        <button class="cal-btn" onclick="navMes(1)">&rarr;</button>
       </div>
       <div class="cal-grid" id="calGrid"></div>
     </div>
