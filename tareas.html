@@ -646,18 +646,31 @@ function actualizarSemanaNav() {
 }
 
 window.navegarSemana = (delta) => {
+  // Guardar qué día de la semana (0=lunes…6=domingo) estaba seleccionado
+  const lunesAnterior = getLunesConOffset(semanaOffset);
+  const diaIndexAnterior = Math.round(
+    (new Date(fechaSeleccionada + 'T12:00:00') - lunesAnterior) / (1000 * 60 * 60 * 24)
+  );
+  const diaIndex = (diaIndexAnterior >= 0 && diaIndexAnterior <= 6) ? diaIndexAnterior : 0;
+
   semanaOffset += delta;
   const lunes = getLunesConOffset(semanaOffset);
-  fechaSeleccionada = getFechaStr(lunes);
+
+  // Fix 1: mantener el mismo día de la semana, no fijar siempre en lunes
+  const nuevaFecha = new Date(lunes);
+  nuevaFecha.setDate(lunes.getDate() + diaIndex);
+  fechaSeleccionada = getFechaStr(nuevaFecha);
+
+  // Fix 2 & 3: renderDiaSelector lee fechaSeleccionada → resaltará el día correcto
   renderDiaSelector();
   actualizarSemanaNav();
   renderTareas();
   actualizarProgreso();
   actualizarStats();
   renderEventosDia();
-  // Generación lazy de tareas recurrentes al seleccionar el día
+  // Fix 3: usar fechaSeleccionada, no 'fecha' (variable indefinida)
   if (perfilActual?.tipo === 'familia') {
-    generarTareasRecurrentes(fecha).catch(e => console.warn('[Rutinas]', e));
+    generarTareasRecurrentes(fechaSeleccionada).catch(e => console.warn('[Rutinas]', e));
   }
 };
 
