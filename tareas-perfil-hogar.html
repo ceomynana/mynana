@@ -589,22 +589,23 @@ let nanaActivaCache = null;       // { uid, nombre } — nana fija del hogar
 async function cargarNanaActiva() {
   if (!hogarId) return null;
   try {
-    // Primero: buscar en hogares/{id}/miembros con rol nana_fija
+    // Un solo where para evitar índice compuesto en Firestore
+    // Filtramos activo === true en cliente
     const snapMiembros = await getDocs(
       query(collection(db, 'hogares', hogarId, 'miembros'),
-            where('rol', '==', 'nana_fija'),
-            where('activo', '==', true))
+            where('rol', '==', 'nana_fija'))
     );
-    if (!snapMiembros.empty) {
-      const d = snapMiembros.docs[0];
+    const activos = snapMiembros.docs.filter(d => d.data().activo !== false);
+    if (activos.length > 0) {
+      const d = activos[0];
       nanaActivaCache = { uid: d.id, nombre: d.data().nombre || 'Nana' };
       return nanaActivaCache;
     }
-    // Fallback: buscar en usuarios participantes con tipo=nana
+    // Fallback: buscar en usuarios participantes con tipo === 'nana'
     const hogarSnap2 = await getDoc(doc(db, 'hogares', hogarId));
     const participantes = hogarSnap2.data()?.participantes || [];
     for (const uid of participantes) {
-      if (uid === usuarioActual?.uid) continue; // saltar al dueño (familia)
+      if (uid === usuarioActual?.uid) continue;
       const uSnap = await getDoc(doc(db, 'usuarios', uid));
       if (uSnap.exists() && uSnap.data().tipo === 'nana') {
         nanaActivaCache = { uid, nombre: uSnap.data().nombre || 'Nana' };
@@ -657,13 +658,15 @@ async function resolverAsignacion() {
   if (tipoHogarActual === 'con_ayuda') {
     return { asignadoA: 'ayuda', asignadoNombre: 'Ayuda ocasional', asignadoTipo: 'ayuda' };
   }
-  // con_nana: asignar a la nana fija activa
-  const nana = nanaActivaCache || await cargarNanaActiva();
+  // con_nana: buscar nana activa siempre (no depender solo del cache del init)
+  const nana = await cargarNanaActiva();
   if (nana) {
+    console.log('[Asignación] Tareas → nana:', nana.nombre, '| uid:', nana.uid);
     return { asignadoA: nana.uid, asignadoNombre: nana.nombre, asignadoTipo: 'nana' };
   }
-  // Fallback si no hay nana registrada
-  return { asignadoA: uid, asignadoNombre: 'Nana', asignadoTipo: 'nana' };
+  // Fallback: hogar con_nana pero sin nana registrada → asignar a la familia
+  console.warn('[Asignación] No se encontró nana activa → asignando a familia');
+  return { asignadoA: uid, asignadoNombre: 'Familia', asignadoTipo: 'familia' };
 }
 let semanaActual  = {};   // { "Lunes": [{...}] }
 let semanaAnterior= {};
