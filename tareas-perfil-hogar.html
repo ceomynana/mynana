@@ -583,9 +583,73 @@ let usuarioActual = null;
 let hogarId       = null;
 let perfilHogar   = null;
 let tipoHogarActual = 'con_nana'; // leído de hogares/{id}.tipoHogar
+let nanaActivaCache = null;       // { uid, nombre } — nana fija del hogar
+
+// Busca la nana fija activa en la colección miembros del hogar
+async function cargarNanaActiva() {
+  if (!hogarId) return null;
+  try {
+    // Primero: buscar en hogares/{id}/miembros con rol nana_fija
+    const snapMiembros = await getDocs(
+      query(collection(db, 'hogares', hogarId, 'miembros'),
+            where('rol', '==', 'nana_fija'),
+            where('activo', '==', true))
+    );
+    if (!snapMiembros.empty) {
+      const d = snapMiembros.docs[0];
+      nanaActivaCache = { uid: d.id, nombre: d.data().nombre || 'Nana' };
+      return nanaActivaCache;
+    }
+    // Fallback: buscar en usuarios participantes con tipo=nana
+    const hogarSnap2 = await getDoc(doc(db, 'hogares', hogarId));
+    const participantes = hogarSnap2.data()?.participantes || [];
+    for (const uid of participantes) {
+      if (uid === usuarioActual?.uid) continue; // saltar al dueño (familia)
+      const uSnap = await getDoc(doc(db, 'usuarios', uid));
+      if (uSnap.exists() && uSnap.data().tipo === 'nana') {
+        nanaActivaCache = { uid, nombre: uSnap.data().nombre || 'Nana' };
+        return nanaActivaCache;
+      }
+    }
+  } catch(e) { console.warn('cargarNanaActiva:', e); }
+  return null;
+}
+
+// Migra tareas IA huérfanas (sin asignadoA o con asignadoA = uid familia)
+// asignándolas a la nana activa del hogar
+async function migrarTareasHuerfanas() {
+  if (!hogarId || !nanaActivaCache) return;
+  try {
+    const snap = await getDocs(
+      query(collection(db, 'hogares', hogarId, 'tareas'),
+            where('generadoPorIA', '==', true))
+    );
+    if (snap.empty) return;
+    const familiaUid = usuarioActual?.uid;
+    const batch = writeBatch(db);
+    let count = 0;
+    snap.docs.forEach(d => {
+      const t = d.data();
+      // Solo migrar si no tiene asignado O está asignado a la familia
+      const esHuerfana = !t.asignadoA || t.asignadoA === familiaUid || t.asignadoA === 'todos';
+      if (esHuerfana) {
+        batch.update(d.ref, {
+          asignadoA:     nanaActivaCache.uid,
+          asignadoNombre: nanaActivaCache.nombre,
+          asignadoTipo:  'nana',
+        });
+        count++;
+      }
+    });
+    if (count > 0) {
+      await batch.commit();
+      console.log(`Migración: ${count} tareas IA asignadas a ${nanaActivaCache.nombre}`);
+    }
+  } catch(e) { console.warn('migrarTareasHuerfanas:', e); }
+}
 
 // Resuelve a quién asignar tareas según el tipo de hogar
-function resolverAsignacion() {
+async function resolverAsignacion() {
   const uid = usuarioActual?.uid || 'todos';
   if (tipoHogarActual === 'sin_nana') {
     return { asignadoA: uid, asignadoNombre: 'Familia', asignadoTipo: 'familia' };
@@ -593,7 +657,12 @@ function resolverAsignacion() {
   if (tipoHogarActual === 'con_ayuda') {
     return { asignadoA: 'ayuda', asignadoNombre: 'Ayuda ocasional', asignadoTipo: 'ayuda' };
   }
-  // con_nana — fallback
+  // con_nana: asignar a la nana fija activa
+  const nana = nanaActivaCache || await cargarNanaActiva();
+  if (nana) {
+    return { asignadoA: nana.uid, asignadoNombre: nana.nombre, asignadoTipo: 'nana' };
+  }
+  // Fallback si no hay nana registrada
   return { asignadoA: uid, asignadoNombre: 'Nana', asignadoTipo: 'nana' };
 }
 let semanaActual  = {};   // { "Lunes": [{...}] }
@@ -661,7 +730,13 @@ onAuthStateChanged(auth, async (user) => {
   await encontrarHogar();
   iniciarFechas();
   await cargarPerfilFirebase();
+  // Cargar nana activa antes de que el planificador pueda correr
+  if (tipoHogarActual === 'con_nana') await cargarNanaActiva();
   await cargarSemanaExistente();   // ← carga plan guardado al entrar
+  // Migrar tareas IA huérfanas a la nana activa
+  if (tipoHogarActual === 'con_nana' && nanaActivaCache) {
+    migrarTareasHuerfanas().catch(e => console.warn('migración tareas:', e));
+  }
 });
 
 /* ── ENCONTRAR HOGAR (copia exacta de tareas.html) ── */
@@ -743,11 +818,12 @@ async function guardarSemanaFirebase() {
 
     // Escribir nuevas tareas
     const writes = [];
+    // Resolver asignación UNA vez para toda la semana (mismo valor para todas las tareas)
+    const asig = await resolverAsignacion();
     DIAS.forEach((dia, diaIdx) => {
       const tareas   = semanaActual[dia] || [];
       const fechaStr = diaIndexToFecha(lunesDeSemana, diaIdx);
       tareas.forEach(t => {
-        const asig = resolverAsignacion();
         writes.push(addDoc(collection(db,'hogares',hogarId,'tareas'), {
           nombre:          t.nombre,
           hora:            t.hora || '08:00',
