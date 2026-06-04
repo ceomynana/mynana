@@ -106,13 +106,25 @@ body{font-family:'DM Sans',sans-serif;background:#F0F4F0;color:var(--txt);min-he
        box-shadow:0 8px 24px rgba(26,107,82,.3);}
 .toast.visible{transform:translateX(-50%) translateY(0);}
 .empty-state{text-align:center;padding:32px 16px;color:var(--txt2);font-size:13px;}
-/* Print */
-@media print{
-  .nav,.tabs,.btn-primary,.btn-secondary,.form-group,.form-row-2{display:none!important;}
-  .panel{display:block!important;}
-  #panel-pagos,#panel-visitas,#panel-historial{display:none!important;}
-  body{background:#fff;} .card{border:1px solid #ccc;}
-}
+/* Botones navegación de mes */
+.btn-mes-nav{background:var(--g3);border:none;border-radius:99px;width:32px;height:32px;
+             cursor:pointer;font-size:14px;color:var(--g);display:flex;align-items:center;
+             justify-content:center;font-family:'DM Sans',sans-serif;transition:background .15s;}
+.btn-mes-nav:hover{background:var(--g4);}
+/* Días del calendario de asistencia */
+.cal-fija-dia{border-radius:8px;padding:6px 2px;text-align:center;cursor:pointer;
+              font-size:12px;font-weight:500;color:var(--txt);border:1px solid transparent;
+              transition:all .15s;min-height:36px;display:flex;flex-direction:column;
+              align-items:center;justify-content:center;gap:1px;position:relative;}
+.cal-fija-dia:hover{background:var(--g3);}
+.cal-fija-dia.trabajado{background:var(--g);color:#fff;border-color:var(--g2);}
+.cal-fija-dia.ausente{background:#FEF3C7;color:#92400E;border-color:#D97706;}
+.cal-fija-dia.extra{background:#EDE9FE;color:#5B21B6;border-color:#7C3AED;}
+.cal-fija-dia.hoy{outline:2px solid var(--g);outline-offset:1px;}
+.cal-fija-dia.otro-mes{opacity:.3;pointer-events:none;}
+.cal-fija-dia.tiene-nota::after{content:'•';position:absolute;bottom:2px;right:4px;
+                                 font-size:8px;color:inherit;opacity:.7;}
+@media(max-width:380px){.cal-fija-dia{padding:4px 1px;font-size:11px;min-height:30px;}}
 </style>
 </head>
 <body>
@@ -296,17 +308,83 @@ body{font-family:'DM Sans',sans-serif;background:#F0F4F0;color:var(--txt);min-he
 
   <!-- ══ TAB VISITAS ══ -->
   <div class="panel" id="panel-visitas">
-    <div class="sec-label">Registrar visita</div>
-    <div class="card">
-      <div class="card-body">
-        <div class="form-row-2">
-          <div>
-            <label class="form-label">Fecha de visita</label>
-            <input class="form-input" id="vFecha" type="date">
+
+    <!-- ── NANA FIJA: Calendario mensual de asistencia ── -->
+    <div id="vistaCalFija" style="display:none;">
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <button class="btn-mes-nav" onclick="navMesFija(-1)">&larr;</button>
+        <div id="calFijaMesLabel"
+             style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:var(--txt);">—</div>
+        <button class="btn-mes-nav" onclick="navMesFija(1)">&rarr;</button>
+      </div>
+
+      <!-- Resumen del mes -->
+      <div class="card" style="margin-bottom:12px;background:var(--g2);border:none;">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);text-align:center;padding:14px 8px;">
+          <div><div style="font-size:20px;font-weight:700;color:#fff;" id="resFijaTrab">0</div>
+               <div style="font-size:10px;color:rgba(255,255,255,.65);">Trabajados</div></div>
+          <div><div style="font-size:20px;font-weight:700;color:#fff;" id="resFijaAus">0</div>
+               <div style="font-size:10px;color:rgba(255,255,255,.65);">Ausencias</div></div>
+          <div><div style="font-size:20px;font-weight:700;color:#fff;" id="resFijaExtra">0</div>
+               <div style="font-size:10px;color:rgba(255,255,255,.65);">Extras</div></div>
+          <div><div style="font-size:15px;font-weight:700;color:#A8E6CF;" id="resFijaSalario">—</div>
+               <div style="font-size:10px;color:rgba(255,255,255,.65);">Estimado</div></div>
+        </div>
+      </div>
+
+      <!-- Calendario -->
+      <div class="card" style="margin-bottom:12px;">
+        <div style="padding:12px 14px 8px;">
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:6px;">
+            <div style="text-align:center;font-size:10px;font-weight:600;color:var(--txt2);">Lu</div>
+            <div style="text-align:center;font-size:10px;font-weight:600;color:var(--txt2);">Ma</div>
+            <div style="text-align:center;font-size:10px;font-weight:600;color:var(--txt2);">Mi</div>
+            <div style="text-align:center;font-size:10px;font-weight:600;color:var(--txt2);">Ju</div>
+            <div style="text-align:center;font-size:10px;font-weight:600;color:var(--txt2);">Vi</div>
+            <div style="text-align:center;font-size:10px;font-weight:600;color:var(--txt2);">Sá</div>
+            <div style="text-align:center;font-size:10px;font-weight:600;color:var(--txt2);">Do</div>
           </div>
-          <div>
-            <label class="form-label">Calificación</label>
-            <select class="form-input" id="vCalif">
+          <div id="calFijaGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;"></div>
+        </div>
+        <div style="display:flex;gap:10px;padding:8px 14px;border-top:1px solid var(--border);flex-wrap:wrap;">
+          <span style="font-size:11px;color:var(--txt2);display:flex;align-items:center;gap:4px;">
+            <span style="width:12px;height:12px;border-radius:3px;background:var(--g);display:inline-block;"></span>Trabajó
+          </span>
+          <span style="font-size:11px;color:var(--txt2);display:flex;align-items:center;gap:4px;">
+            <span style="width:12px;height:12px;border-radius:3px;background:#FEF3C7;border:1px solid #D97706;display:inline-block;"></span>Ausencia
+          </span>
+          <span style="font-size:11px;color:var(--txt2);display:flex;align-items:center;gap:4px;">
+            <span style="width:12px;height:12px;border-radius:3px;background:#EDE9FE;border:1px solid #7C3AED;display:inline-block;"></span>Extra
+          </span>
+        </div>
+      </div>
+
+      <!-- Modal nota por día -->
+      <div id="modalNotaDia" style="display:none;position:fixed;inset:0;z-index:300;
+           background:rgba(0,0,0,.45);align-items:flex-end;justify-content:center;">
+        <div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:480px;
+                    padding:20px 20px calc(20px + env(safe-area-inset-bottom,0px));overflow-y:auto;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div id="notaDiaTitulo"
+                 style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;"></div>
+            <button onclick="cerrarNotaDia()"
+                    style="background:var(--g3);border:none;border-radius:50%;width:30px;height:30px;cursor:pointer;">✕</button>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Incidencia</label>
+            <select class="form-input" id="notaIncidencia">
+              <option value="">— Sin incidencia (día normal)</option>
+              <option value="tarde">⏰ Llegó tarde</option>
+              <option value="ausente">❌ Ausente</option>
+              <option value="permiso">📋 Permiso</option>
+              <option value="extra">✨ Día extra</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Calificación (opcional)</label>
+            <select class="form-input" id="notaCalif">
+              <option value="">— Sin calificación</option>
               <option value="5">⭐⭐⭐⭐⭐ Excelente</option>
               <option value="4">⭐⭐⭐⭐ Muy buena</option>
               <option value="3">⭐⭐⭐ Buena</option>
@@ -314,29 +392,65 @@ body{font-family:'DM Sans',sans-serif;background:#F0F4F0;color:var(--txt);min-he
               <option value="1">⭐ Mala</option>
             </select>
           </div>
+          <div class="form-group">
+            <label class="form-label">Nota del día</label>
+            <textarea class="form-input" id="notaTexto" rows="2"
+                      placeholder="Ej: Llegó tarde, avisó con anticipación..."></textarea>
+          </div>
+          <button class="btn-primary" onclick="guardarNotaDia()">💾 Guardar nota</button>
+          <button class="btn-secondary" style="margin-top:8px;" onclick="eliminarVisitaDia()">
+            🗑 Eliminar este día
+          </button>
         </div>
-        <div class="form-group">
-          <label class="form-label">Tareas realizadas</label>
-          <input class="form-input" id="vTareas" placeholder="Ej: Limpieza general, lavandería, cocina">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Pago asociado ($)</label>
-          <input class="form-input" id="vPago" type="number" placeholder="25.00">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Notas (opcional)</label>
-          <input class="form-input" id="vNotas" placeholder="Observaciones de la visita">
-        </div>
-        <button class="btn-primary" onclick="registrarVisita()">📅 Registrar visita</button>
       </div>
-    </div>
 
-    <div class="sec-label">Visitas registradas</div>
-    <div class="card">
-      <div class="card-body" id="listaVisitas" style="padding:8px 16px;">
-        <div class="empty-state">Sin visitas registradas</div>
+    </div><!-- /vistaCalFija -->
+
+    <!-- ── EVENTUAL: formulario original ── -->
+    <div id="vistaFormEventual">
+      <div class="sec-label">Registrar visita</div>
+      <div class="card">
+        <div class="card-body">
+          <div class="form-row-2">
+            <div>
+              <label class="form-label">Fecha de visita</label>
+              <input class="form-input" id="vFecha" type="date">
+            </div>
+            <div>
+              <label class="form-label">Calificación</label>
+              <select class="form-input" id="vCalif">
+                <option value="5">⭐⭐⭐⭐⭐ Excelente</option>
+                <option value="4">⭐⭐⭐⭐ Muy buena</option>
+                <option value="3">⭐⭐⭐ Buena</option>
+                <option value="2">⭐⭐ Regular</option>
+                <option value="1">⭐ Mala</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tareas realizadas</label>
+            <input class="form-input" id="vTareas" placeholder="Ej: Limpieza general, lavandería, cocina">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Pago asociado ($)</label>
+            <input class="form-input" id="vPago" type="number" placeholder="25.00">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Notas (opcional)</label>
+            <input class="form-input" id="vNotas" placeholder="Observaciones de la visita">
+          </div>
+          <button class="btn-primary" onclick="registrarVisita()">📅 Registrar visita</button>
+        </div>
       </div>
-    </div>
+
+      <div class="sec-label">Visitas registradas</div>
+      <div class="card">
+        <div class="card-body" id="listaVisitas" style="padding:8px 16px;">
+          <div class="empty-state">Sin visitas registradas</div>
+        </div>
+      </div>
+    </div><!-- /vistaFormEventual -->
+
   </div>
 
   <!-- ══ TAB HISTORIAL ══ -->
@@ -464,7 +578,206 @@ function aplicarTipoHogar() {
     const vp = $('vPago'); if (vp && !vp.value) vp.value = contratoActual.tarifaPorVisita;
     const pp = $('pMonto'); if (pp && !pp.value) pp.value = contratoActual.tarifaPorVisita;
   }
+
+  // Bifurcar vista de visitas según tipoHogar
+  const calFija  = $('vistaCalFija');
+  const formEv   = $('vistaFormEventual');
+  if (calFija)  calFija.style.display  = esEventual ? 'none' : 'block';
+  if (formEv)   formEv.style.display   = esEventual ? 'block' : 'none';
+  if (!esEventual) iniciarCalFija();
 }
+
+// ══ CALENDARIO MENSUAL NANA FIJA ════════════════════════════════════════════
+let calFijaMes    = new Date();
+let visitasFija   = {};   // { 'YYYY-MM-DD': { id, incidencia, nota, calificacion } }
+let diaEditando   = null; // fecha string siendo editada en el modal
+
+function fmtLocal(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function hoyStr() { return fmtLocal(new Date()); }
+
+// Iniciar: cargar visitas fija del mes visible
+function iniciarCalFija() {
+  calFijaMes = new Date();
+  cargarVisitasFija();
+}
+
+async function cargarVisitasFija() {
+  if (!hogarId) return;
+  const primerDia = new Date(calFijaMes.getFullYear(), calFijaMes.getMonth(), 1);
+  const ultimoDia = new Date(calFijaMes.getFullYear(), calFijaMes.getMonth() + 1, 0);
+  const desde = fmtLocal(primerDia);
+  const hasta  = fmtLocal(ultimoDia);
+  try {
+    const snap = await getDocs(
+      query(collection(db, 'hogares', hogarId, 'visitas'),
+            where('tipo', '==', 'nana_fija'),
+            where('fecha', '>=', desde),
+            where('fecha', '<=', hasta))
+    );
+    visitasFija = {};
+    snap.docs.forEach(d => {
+      visitasFija[d.data().fecha] = { id: d.id, ...d.data() };
+    });
+    renderCalFija();
+  } catch(e) {
+    // Fallback: single where to avoid composite index
+    try {
+      const snap2 = await getDocs(
+        query(collection(db, 'hogares', hogarId, 'visitas'),
+              where('tipo', '==', 'nana_fija'))
+      );
+      visitasFija = {};
+      snap2.docs
+        .filter(d => d.data().fecha >= desde && d.data().fecha <= hasta)
+        .forEach(d => { visitasFija[d.data().fecha] = { id: d.id, ...d.data() }; });
+      renderCalFija();
+    } catch(e2) { console.warn('cargarVisitasFija:', e2); }
+  }
+}
+
+
+function renderCalFija() {
+  const lbl = $('calFijaMesLabel');
+  if (lbl) lbl.textContent = `${MESES_FULL[calFijaMes.getMonth()]} ${calFijaMes.getFullYear()}`;
+
+  const primerDia = new Date(calFijaMes.getFullYear(), calFijaMes.getMonth(), 1);
+  const ultimoDia = new Date(calFijaMes.getFullYear(), calFijaMes.getMonth() + 1, 0);
+  const hoy = hoyStr();
+
+  // Offset: lunes=0
+  let offset = primerDia.getDay() - 1;
+  if (offset < 0) offset = 6;
+
+  let html = '';
+  for (let i = 0; i < offset; i++) html += '<div></div>';
+
+  for (let d = 1; d <= ultimoDia.getDate(); d++) {
+    const fecha = `${calFijaMes.getFullYear()}-${String(calFijaMes.getMonth()+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const visita = visitasFija[fecha];
+    const incid  = visita?.incidencia || '';
+    let cls = 'cal-fija-dia';
+    if (visita && visita.trabajada)  cls += incid === 'ausente' ? ' ausente' : incid === 'extra' ? ' extra' : ' trabajado';
+    if (fecha === hoy) cls += ' hoy';
+    if (visita?.nota)  cls += ' tiene-nota';
+    const esFuturo = fecha > hoy;
+    const pointer  = esFuturo ? 'opacity:.4;cursor:default;' : 'cursor:pointer;';
+    html += `<div class="${cls}" style="${pointer}" onclick="${esFuturo ? '' : `toggleDiaFija('${fecha}')`}">
+      <span>${d}</span>
+      ${incid === 'ausente' ? '<span style="font-size:8px;">❌</span>' : incid === 'extra' ? '<span style="font-size:8px;">✨</span>' : ''}
+    </div>`;
+  }
+  const grid = $('calFijaGrid');
+  if (grid) grid.innerHTML = html;
+  renderResumenFija();
+}
+
+function renderResumenFija() {
+  const vals = Object.values(visitasFija);
+  const trab  = vals.filter(v => v.trabajada && v.incidencia !== 'ausente').length;
+  const aus   = vals.filter(v => v.incidencia === 'ausente').length;
+  const extra = vals.filter(v => v.incidencia === 'extra').length;
+  if ($('resFijaTrab'))   $('resFijaTrab').textContent  = trab;
+  if ($('resFijaAus'))    $('resFijaAus').textContent   = aus;
+  if ($('resFijaExtra'))  $('resFijaExtra').textContent = extra;
+  // Estimado: usar salario del contrato si existe
+  const salario = parseFloat(contratoActual?.salarioMensual || 0);
+  if (salario > 0) {
+    const diasHabiles = 26; // estimado estándar Panamá
+    const porDia = salario / diasHabiles;
+    const estimado = (trab * porDia).toFixed(2);
+    if ($('resFijaSalario')) $('resFijaSalario').textContent = `$${estimado}`;
+  } else {
+    if ($('resFijaSalario')) $('resFijaSalario').textContent = '—';
+  }
+}
+
+window.navMesFija = (delta) => {
+  calFijaMes = new Date(calFijaMes.getFullYear(), calFijaMes.getMonth() + delta, 1);
+  cargarVisitasFija();
+};
+
+// Toque en un día: si no existe visita → crear; si existe → abrir modal de nota
+window.toggleDiaFija = async (fecha) => {
+  if (!hogarId) return;
+  const visita = visitasFija[fecha];
+  if (!visita) {
+    // Crear visita "trabajó" directamente
+    try {
+      const ref = await addDoc(collection(db, 'hogares', hogarId, 'visitas'), {
+        fecha,
+        tipo:        'nana_fija',
+        trabajada:   true,
+        incidencia:  null,
+        nota:        '',
+        calificacion: null,
+        hogarId,
+        creadoA:     serverTimestamp(),
+        actualizadoA: serverTimestamp(),
+      });
+      visitasFija[fecha] = { id: ref.id, fecha, tipo:'nana_fija', trabajada:true, incidencia:null, nota:'' };
+      renderCalFija();
+      showToast('✅ Día marcado');
+    } catch(e) { showToast('❌ Error'); console.error(e); }
+  } else {
+    // Abrir modal para editar nota / eliminar
+    diaEditando = fecha;
+    const [y,m,d] = fecha.split('-');
+    const tit = $('notaDiaTitulo');
+    if (tit) tit.textContent = `${MESES_FULL[parseInt(m)-1]} ${parseInt(d)}, ${y}`;
+    const inc = $('notaIncidencia');
+    if (inc) inc.value = visita.incidencia || '';
+    const cal = $('notaCalif');
+    if (cal) cal.value = visita.calificacion || '';
+    const nota = $('notaTexto');
+    if (nota) nota.value = visita.nota || '';
+    const modal = $('modalNotaDia');
+    if (modal) { modal.style.display = 'flex'; }
+  }
+};
+
+window.cerrarNotaDia = () => {
+  const modal = $('modalNotaDia');
+  if (modal) modal.style.display = 'none';
+  diaEditando = null;
+};
+
+window.guardarNotaDia = async () => {
+  if (!diaEditando || !hogarId) return;
+  const visita = visitasFija[diaEditando];
+  if (!visita) return;
+  const inc  = $('notaIncidencia')?.value || null;
+  const cal  = $('notaCalif')?.value || null;
+  const nota = $('notaTexto')?.value.trim() || '';
+  try {
+    await updateDoc(doc(db, 'hogares', hogarId, 'visitas', visita.id), {
+      incidencia:   inc || null,
+      calificacion: cal ? parseInt(cal) : null,
+      nota,
+      trabajada:    inc !== 'ausente',
+      actualizadoA: serverTimestamp(),
+    });
+    visitasFija[diaEditando] = { ...visita, incidencia: inc||null, calificacion: cal?parseInt(cal):null, nota };
+    cerrarNotaDia();
+    renderCalFija();
+    showToast('💾 Nota guardada');
+  } catch(e) { showToast('❌ Error'); console.error(e); }
+};
+
+window.eliminarVisitaDia = async () => {
+  if (!diaEditando || !hogarId) return;
+  const visita = visitasFija[diaEditando];
+  if (!visita) return;
+  if (!confirm('¿Eliminar este día?')) return;
+  try {
+    await deleteDoc(doc(db, 'hogares', hogarId, 'visitas', visita.id));
+    delete visitasFija[diaEditando];
+    cerrarNotaDia();
+    renderCalFija();
+    showToast('🗑 Día eliminado');
+  } catch(e) { showToast('❌ Error'); console.error(e); }
+};
 
 // ── Cargar contrato ──
 async function cargarContrato() {
