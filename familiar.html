@@ -387,10 +387,13 @@ async function cargarTareasYRenderizar() {
 function statsParaMiembro(m) {
   const propias = tareas.filter(t =>
     t.asignadoA === m.uid ||
+    (t.asignadoTipo === 'nana' && m.rol === 'nana_fija') ||
     (t.asignadoNombre === 'Nana' && m.rol === 'nana_fija') ||
-    (t.asignadoNombre === 'Ayuda del día' && m.rol === 'ayuda_eventual')
+    (t.asignadoNombre === 'Ayuda del día' && m.rol === 'ayuda_eventual') ||
+    (t.asignadoTipo === 'ayuda' && m.rol === 'ayuda_eventual')
   );
-  const completadas = propias.filter(t => t.estado === 'completa').length;
+  // Compatibilidad: 'completa' (tareas.html) y 'completado' (mantenimiento/IA)
+  const completadas = propias.filter(t => t.estado === 'completa' || t.estado === 'completado').length;
   const total       = propias.length;
   const pct         = total > 0 ? Math.round((completadas / total) * 100) : 0;
   return { total, completadas, pendientes: total - completadas, pct };
