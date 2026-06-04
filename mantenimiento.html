@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+\<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -158,6 +158,12 @@ body{font-family:'DM Sans',sans-serif;background:#F0F4F0;color:var(--txt);
     <div class="fm-group">
       <label class="fm-label">Notas</label>
       <input class="fm-input" id="nNotas" placeholder="Instrucciones, teléfono...">
+    </div>
+    <div class="fm-group">
+      <label class="fm-label">Asignado a</label>
+      <select class="fm-input" id="nAsignado">
+        <option value="">Sin asignar</option>
+      </select>
     </div>
     <button class="btn-primary" onclick="guardarEvento()">🔧 Guardar evento</button>
   </div>
@@ -383,7 +389,16 @@ function selDiaCal(fecha) {
 
 window.navMes = (delta) => {
   calMes = new Date(calMes.getFullYear(), calMes.getMonth() + delta, 1);
+  // Actualizar diaSelCal al primer día visible del nuevo mes
+  diaSelCal = getFechaStr(calMes);
   renderCalendario();
+  // Si el mes navegado está fuera de la ventana ya cargada, recargar Firestore
+  const primerDia = getFechaStr(calMes);
+  const primerEvento = eventos[0]?.fecha || '';
+  const ultimoEvento = eventos[eventos.length-1]?.fecha || '';
+  if (primerDia < primerEvento || primerDia > ultimoEvento) {
+    cargarEventos();
+  }
 };
 
 function renderEventosDia(fecha) {
@@ -463,13 +478,15 @@ function renderHistorial() {
   const hace6m = new Date(); hace6m.setMonth(hace6m.getMonth() - 6);
   const hace6s = getFechaStr(hace6m);
 
+  // Incluir hoy (>=) — antes usaba < hoy y excluía eventos del día actual
   const hist = [...eventos]
-    .filter(e => e.fecha < hoy && e.fecha >= hace6s)
+    .filter(e => e.fecha <= hoy && e.fecha >= hace6s)
     .sort((a, b) => b.fecha.localeCompare(a.fecha));
 
   const total   = hist.length;
   const compl   = hist.filter(e => e.estado === 'completado').length;
-  const pend    = hist.filter(e => e.estado === 'pendiente').length;
+  const cancel  = hist.filter(e => e.estado === 'cancelado').length;
+  const pend    = total - compl - cancel;
 
   $('hTotal').textContent = total;
   $('hCompl').textContent = compl;
@@ -479,11 +496,13 @@ function renderHistorial() {
     ? hist.map(e => {
         const t = TIPOS[e.tipo] || TIPOS['otro'];
         const [y,m,d] = e.fecha.split('-');
+        const esHoy = e.fecha === hoy;
         return `<div class="hist-item">
           <div class="hist-emoji">${t.emoji}</div>
           <div class="hist-info">
             <div class="hist-titulo">${e.titulo}</div>
-            <div class="hist-meta">${parseInt(d)} ${MESES_C[parseInt(m)-1]} ${y}${e.proveedor ? ' · ' + e.proveedor : ''}</div>
+            <div class="hist-meta">${esHoy ? 'Hoy' : `${parseInt(d)} ${MESES_C[parseInt(m)-1]} ${y}`}${e.proveedor ? ' · ' + e.proveedor : ''}</div>
+            ${e.asignadoNombre ? `<span style="font-size:11px;color:var(--g);">👤 ${e.asignadoNombre}</span>` : ''}
           </div>
           <div class="hist-estado">${e.estado === 'completado' ? '✅' : e.estado === 'cancelado' ? '❌' : '⏳'}</div>
         </div>`;
@@ -546,13 +565,35 @@ window.selTipo = (btn) => {
 window.abrirModal = () => {
   tipoNuevo = 'tecnico';
   buildTipoGrid('tecnico');
-  $('nTitulo').value   = '';
-  $('nFecha').value    = getFechaStr(new Date());
-  $('nHora').value     = '09:00';
+  $('nTitulo').value    = '';
+  $('nFecha').value     = getFechaStr(new Date());
+  $('nHora').value      = '09:00';
   $('nProveedor').value = '';
-  $('nNotas').value    = '';
+  $('nNotas').value     = '';
+  // Poblar selector de miembros desde Firestore
+  cargarMiembrosSelector();
   $('modalNuevo').classList.add('visible');
 };
+
+// ── Cargar miembros del hogar en el selector del modal ──────────────────────
+async function cargarMiembrosSelector() {
+  const sel = $('nAsignado');
+  if (!sel || !hogarId) return;
+  try {
+    const snap = await getDocs(
+      query(collection(db, 'hogares', hogarId, 'miembros'), where('activo', '==', true))
+    );
+    const opciones = ['<option value="">Sin asignar</option>'];
+    snap.docs.forEach(d => {
+      const m = d.data();
+      opciones.push(`<option value="${d.id}" data-nombre="${m.nombre}">${m.avatarEmoji || '👤'} ${m.nombre}</option>`);
+    });
+    sel.innerHTML = opciones.join('');
+  } catch(e) {
+    // Si no hay colección miembros, dejar solo "Sin asignar"
+    sel.innerHTML = '<option value="">Sin asignar</option>';
+  }
+}
 
 window.cerrarModal = () => $('modalNuevo').classList.remove('visible');
 
@@ -562,6 +603,14 @@ window.guardarEvento = async () => {
   const hora   = $('nHora').value;
   if (!titulo) { showToast('⚠️ Escribe un título'); return; }
   if (!fecha)  { showToast('⚠️ Selecciona la fecha'); return; }
+
+  // Leer asignado del selector
+  const selEl        = $('nAsignado');
+  const asignadoA    = selEl?.value || null;
+  const asignadoNombre = asignadoA
+    ? (selEl.selectedOptions[0]?.dataset?.nombre || null)
+    : null;
+
   try {
     const ref = await addDoc(collection(db, 'hogares', hogarId, 'eventos'), {
       tipo:     tipoNuevo,
@@ -570,7 +619,8 @@ window.guardarEvento = async () => {
       hora,
       proveedor:   $('nProveedor').value.trim(),
       notas:       $('nNotas').value.trim(),
-      asignadoA:   null,
+      asignadoA:   asignadoA   || null,
+      asignadoNombre: asignadoNombre || null,
       estado:      'pendiente',
       creadoPor:   userUid,
       creadoA:     serverTimestamp(),
@@ -581,7 +631,9 @@ window.guardarEvento = async () => {
       id: ref.id, tipo: tipoNuevo, titulo, fecha, hora,
       proveedor: $('nProveedor').value.trim(),
       notas: $('nNotas').value.trim(),
-      estado: 'pendiente', asignadoA: null,
+      estado: 'pendiente',
+      asignadoA: asignadoA || null,
+      asignadoNombre: asignadoNombre || null,
     };
     eventos.push(nuevo);
     eventos.sort((a,b) => a.fecha.localeCompare(b.fecha));
