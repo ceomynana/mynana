@@ -284,7 +284,10 @@ function showToast(m) {
   t.classList.add('visible');
   setTimeout(() => t.classList.remove('visible'), 2600);
 }
-function getFechaStr(d) { return d.toISOString().split('T')[0]; }
+function getFechaStr(d) {
+  // Local date — NOT toISOString() which returns UTC and breaks in Panama after 7pm
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
 function formatHora12(h) {
   if (!h) return ''; const [hh,mm] = h.split(':').map(Number);
   return `${hh % 12 || 12}:${String(mm).padStart(2,'0')} ${hh >= 12 ? 'pm' : 'am'}`;
@@ -308,13 +311,20 @@ async function cargarEventos() {
   const hace6m = new Date(hoy); hace6m.setMonth(hoy.getMonth() - 6);
   const en3m   = new Date(hoy); en3m.setMonth(hoy.getMonth() + 3);
   try {
+    // orderBy solo por 'fecha' — evita requerir índice compuesto (fecha+hora)
+    // La ordenación por hora se hace en cliente
     const snap = await getDocs(
       query(collection(db, 'hogares', hogarId, 'eventos'),
             where('fecha', '>=', getFechaStr(hace6m)),
             where('fecha', '<=', getFechaStr(en3m)),
-            orderBy('fecha','asc'), orderBy('hora','asc'))
+            orderBy('fecha','asc'))
     );
-    eventos = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+    eventos = snap.docs
+      .map(d => ({ id:d.id, ...d.data() }))
+      .sort((a,b) => {
+        if (a.fecha !== b.fecha) return a.fecha.localeCompare(b.fecha);
+        return (a.hora||'').localeCompare(b.hora||'');
+      });
     renderCalendario();
     renderCronograma();
     renderHistorial();
@@ -484,6 +494,7 @@ function renderHistorial() {
 // ── Vista de eventos del día (calendar) ─────────────────────────────────────
 function eventoHTML(e, conAcciones) {
   const t = TIPOS[e.tipo] || TIPOS['otro'];
+  const asignado = e.asignadoNombre ? `<span style="font-size:11px;color:var(--g);background:var(--g3);padding:2px 8px;border-radius:99px;margin-top:4px;display:inline-block;">👤 ${e.asignadoNombre}</span>` : '';
   return `<div class="crono-item">
     <div class="crono-fecha">
       <div style="font-size:22px;">${t.emoji}</div>
@@ -491,6 +502,7 @@ function eventoHTML(e, conAcciones) {
     <div class="crono-body">
       <div class="crono-titulo">${e.titulo}</div>
       <div class="crono-meta">${formatHora12(e.hora)}${e.proveedor ? ' · ' + e.proveedor : ''}${e.notas ? ' · ' + e.notas : ''}</div>
+      ${asignado}
       ${conAcciones && e.estado === 'pendiente' ? `<div class="crono-actions">
         <button class="btn-crono" onclick="cambiarEstado('${e.id}','completado')">✅ Completado</button>
         <button class="btn-crono cancel" onclick="cambiarEstado('${e.id}','cancelado')">✕ Cancelar</button>
