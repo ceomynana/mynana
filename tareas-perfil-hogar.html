@@ -359,12 +359,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
           <div class="horario-item"><div class="horario-name">☕ Merienda</div><input type="time" class="horario-time" id="hMerienda" value="16:00"></div>
           <div class="horario-item"><div class="horario-name">🌙 Cena</div><input type="time" class="horario-time" id="hCena" value="19:00"></div>
         </div>
-        <label class="w-label">Horario de la nana</label>
-        <div class="horario-grid">
+        <label class="w-label" id="labelHorarioNana">Horario de la nana</label>
+        <div class="horario-grid" id="bloqueHorarioNana">
           <div class="horario-item"><div class="horario-name">🕐 Llegada</div><input type="time" class="horario-time" id="hNanaLlegada" value="08:00"></div>
           <div class="horario-item"><div class="horario-name">🚪 Salida</div><input type="time" class="horario-time" id="hNanaSalida" value="17:00"></div>
         </div>
-        <label class="w-label">Días de trabajo de la nana</label>
+        <label class="w-label" id="labelDiasTrabajo">Días de trabajo de la nana</label>
         <div class="chip-grid" id="diasChips">
           <span class="chip sel" data-val="Lunes" onclick="toggleChip(this)">Lun</span>
           <span class="chip sel" data-val="Martes" onclick="toggleChip(this)">Mar</span>
@@ -892,9 +892,34 @@ window.abrirWizard = () => {
   wizardPaso = 0;
   document.getElementById('wizardOverlay').classList.remove('oculto');
   renderWizardStep();
+  adaptarWizardPorTipoHogar();  // adaptar textos según tipo
   if (perfilHogar) precargarWizard();
 };
 function cerrarWizard() { document.getElementById('wizardOverlay').classList.add('oculto'); }
+
+// Adapta el wizard según tipoHogar: oculta/muestra horario nana y cambia etiquetas
+function adaptarWizardPorTipoHogar() {
+  const tipo = tipoHogarActual || 'con_nana';
+  const labelDias    = document.getElementById('labelDiasTrabajo');
+  const labelHorario = document.getElementById('labelHorarioNana');
+  const bloqueHorario= document.getElementById('bloqueHorarioNana');
+
+  if (tipo === 'sin_nana') {
+    if (labelDias)    labelDias.textContent    = '¿Qué días quieres organizar tu hogar?';
+    if (labelHorario) labelHorario.style.display = 'none';
+    if (bloqueHorario)bloqueHorario.style.display = 'none';
+  } else if (tipo === 'con_ayuda') {
+    if (labelDias)    labelDias.textContent    = '¿Qué días viene tu ayuda?';
+    if (labelHorario) labelHorario.textContent = 'Horario de la ayuda';
+    if (labelHorario) labelHorario.style.display = 'block';
+    if (bloqueHorario)bloqueHorario.style.display = 'grid';
+  } else {
+    if (labelDias)    labelDias.textContent    = 'Días de trabajo de la nana';
+    if (labelHorario) labelHorario.textContent = 'Horario de la nana';
+    if (labelHorario) labelHorario.style.display = 'block';
+    if (bloqueHorario)bloqueHorario.style.display = 'grid';
+  }
+}
 
 window.wizardNext = () => {
   if (wizardPaso < 4) { wizardPaso++; renderWizardStep(); }
@@ -1451,7 +1476,12 @@ window.generarSemana = async (modo) => {
 
   try {
     const p          = perfilHogar;
-    const diasTrabajo= p.diasTrabajo || ['Lunes','Martes','Miércoles','Jueves','Viernes'];
+    const diasTrabajoBrutos = p.diasTrabajo || [];
+    // Fallback seguro: si no hay días marcados, usar todos según tipoHogar
+    const FALLBACK_DIAS = tipoHogarActual === 'con_ayuda'
+      ? ['Lunes','Miércoles','Viernes']                                 // ayuda 3 días
+      : ['Lunes','Martes','Miércoles','Jueves','Viernes'];              // sin_nana / con_nana
+    const diasTrabajo = diasTrabajoBrutos.length > 0 ? diasTrabajoBrutos : FALLBACK_DIAS;
     const h          = p.horarios || {};
     // FIX: semana ocupada = 5 tareas máx (no 3), mascotas/niños siempre presentes
     const esRapida   = modo === 'rapida';
@@ -1637,7 +1667,14 @@ window.generarSemana = async (modo) => {
     renderDias();
     renderTareasDelDia();
     actualizarStats();
-    showToast(modo === 'rapida' ? '⚡ Semana express lista' : '✨ Plan personalizado generado');
+
+    // Solo mostrar éxito si realmente se crearon tareas
+    const totalGeneradas = Object.values(semanaActual).flat().length;
+    if (totalGeneradas > 0) {
+      showToast(modo === 'rapida' ? '⚡ Semana express lista' : '✨ Plan personalizado generado');
+    } else {
+      showToast('⚠️ No se generaron tareas. Revisa los días activos del hogar.');
+    }
 
     // Push a los otros participantes (nana recibe "tienes tareas nuevas")
     if (hogarId && usuarioActual) {
