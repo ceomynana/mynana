@@ -873,11 +873,21 @@ async function cargarSemanaExistente() {
       return f >= lunesStr && f <= domingoStr;
     });
 
-    if (!docs.length) return;
-
-    // Reconstruir semanaActual desde Firebase
+    // Limpiar semanaActual SIEMPRE antes de cargar la nueva semana
+    // (si se deja el valor anterior, se muestran las tareas de la semana pasada)
     semanaActual = {};
     DIAS.forEach(d => { semanaActual[d] = []; });
+
+    if (!docs.length) {
+      // Sin tareas para esta semana — mostrar estado vacío
+      semanaAnterior = {};
+      DIAS.forEach(d => { semanaAnterior[d] = []; });
+      document.getElementById('emptyState').style.display    = 'block';
+      document.getElementById('tareasContent').style.display = 'none';
+      renderDias();
+      return;
+    }
+
     docs.forEach(d => {
       const t   = { id: d.id, ...d.data() };
       const dia = t.dia || DIAS[0];
@@ -896,10 +906,8 @@ async function cargarSemanaExistente() {
     renderDias();
     renderTareasDelDia();
     actualizarStats();
-    showToast('📋 Plan de la semana cargado');
   } catch(e) {
     console.error('Error cargando semana:', e);
-    // Mostrar el error real para debug
     showToast('⚠️ Error cargando: ' + e.message.slice(0,60));
   }
 }
