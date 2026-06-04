@@ -2402,7 +2402,8 @@ function cargarTareasDash(hogarId, uid) {
 function cargarMenuDash(hogarId) {
   const hoy = new Date();
   const diaSemana = hoy.getDay() === 0 ? 6 : hoy.getDay() - 1;
-  // semanaId idéntico a getSemanaId() de menu.html
+
+  // Calcular semanaId con fecha LOCAL (no UTC) — igual que getSemanaId() en menu.html
   const lunes = new Date(hoy);
   lunes.setDate(hoy.getDate() - diaSemana);
   lunes.setHours(0,0,0,0);
@@ -2431,18 +2432,19 @@ function cargarMenuDash(hogarId) {
           (conPlato.length > 3 ? `<div style="font-size:12px;color:#bbb;text-align:center;margin-top:8px;">+${conPlato.length-3} más →</div>` : '')
       : `<div style="text-align:center;padding:16px;">
           <div style="font-size:28px;margin-bottom:6px;">🍽️</div>
-          <div style="font-size:13px;color:var(--txt2);">No hay menú para hoy</div>
+          <div style="font-size:13px;color:var(--txt2);">Sin menú planificado hoy</div>
           <div style="font-size:12px;color:#bbb;margin-top:2px;">Toca aquí para planificar</div>
         </div>`;
     ['bodyMenu','bodyMenuNana'].forEach(id => { const el=document.getElementById(id); if(el) el.innerHTML=html; });
   }
 
-  // Escuchar la colección completa — más robusto que adivinar el semanaId exacto
-  onSnapshot(collection(db, 'hogares', hogarId, 'menus'), (snap) => {
-    if (snap.empty) { renderMenu({}); return; }
-    // Preferir el doc de esta semana; si no hay, usar el más reciente
-    const weekDoc = snap.docs.find(d => d.id === semanaId)
-      || snap.docs.sort((a,b) => b.id.localeCompare(a.id))[0];
+  // Escuchar SOLO el documento de esta semana — misma ruta que menu.html
+  // Nunca usar documentos de otras semanas como fallback
+  onSnapshot(doc(db, 'hogares', hogarId, 'menus', semanaId), (weekDoc) => {
+    if (!weekDoc.exists()) {
+      renderMenu({});
+      return;
+    }
     renderMenu(weekDoc.data()[`dia_${diaSemana}`] || {});
   });
 }
