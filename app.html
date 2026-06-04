@@ -22,10 +22,19 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Cormorant+Garamond:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
-  --g:#1A6B52; --g2:#0F4A38; --g3:#F0F7F4; --g4:#E1F0EB;
-  --b:#D4A5A5; --b2:#BF9090; --b3:#F7EFEF;
-  --cr:#F9F5F0; --txt:#1A2E25; --txt2:#4A6358;
-  --white:#fff; --r:14px; --shadow:0 4px 24px rgba(15,74,56,.10);
+  /* ── Brand greens ── */
+  --g:#1A6B52; --g2:#0F4A38; --g3:#EAF5EE; --g4:#D6EDDF;
+  /* ── Rosa / blush ── */
+  --b:#E8BFB5; --b2:#C9907E; --b3:#FDF0EC; --b4:#F5D9D2;
+  /* ── Dorado suave ── */
+  --gold:#C9A84C; --gold2:#F5E6C0; --gold3:#FBF3DC;
+  /* ── Fondo crema ── */
+  --cr:#FAF7F3; --cr2:#F3EDE6;
+  /* ── Texto ── */
+  --txt:#1A2E25; --txt2:#5A7060; --txt3:#8FA396;
+  /* ── Misc ── */
+  --white:#fff; --r:18px; --shadow:0 4px 28px rgba(15,74,56,.10);
+  --shadow-card:0 2px 16px rgba(26,107,82,.07), 0 0 0 1px rgba(26,107,82,.05);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html{scroll-behavior:smooth;}
@@ -146,9 +155,33 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
 .dash-logout:hover{background:rgba(255,255,255,.2);}
 
 /* HERO MEJORADO */
-.dash-hero{background:linear-gradient(135deg,var(--g2) 0%,var(--g) 100%);padding:28px 24px 48px;position:relative;overflow:hidden;}
-.dash-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.04);}
-.dash-hero::after{content:'';position:absolute;bottom:-60px;left:-30px;width:160px;height:160px;border-radius:50%;background:rgba(212,165,165,.08);}
+.dash-hero{
+  background:linear-gradient(150deg,var(--g2) 0%,var(--g) 60%,#2E8B6A 100%);
+  padding:28px 24px 52px;
+  position:relative;
+  overflow:hidden;
+}
+.dash-hero::before{
+  content:'';
+  position:absolute;top:-50px;right:-50px;
+  width:220px;height:220px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(201,168,76,.18) 0%,transparent 70%);
+}
+.dash-hero::after{
+  content:'';
+  position:absolute;bottom:-70px;left:-40px;
+  width:200px;height:200px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(232,191,181,.14) 0%,transparent 70%);
+}
+/* Subtle botanical decorative element */
+.dash-hero-leaf{
+  position:absolute;top:18px;right:20px;
+  font-size:36px;opacity:.18;
+  transform:rotate(20deg);
+  pointer-events:none;
+}
 .dash-hero-greeting{font-size:12px;color:rgba(255,255,255,.6);margin-bottom:4px;letter-spacing:.04em;text-transform:uppercase;}
 .dash-hero-name{font-family:'Cormorant Garamond',serif;font-size:32px;color:#fff;margin-bottom:6px;font-weight:500;}
 .dash-hero-sub{font-size:13px;color:rgba(255,255,255,.55);}
@@ -168,36 +201,76 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
 @media(max-width:640px){.dash-grid{grid-template-columns:1fr;}}
 
 /* TARJETA MEJORADA */
-.dash-card{background:#fff;border-radius:18px;overflow:hidden;cursor:pointer;transition:all .25s cubic-bezier(.34,1.56,.64,1);box-shadow:0 2px 12px rgba(0,0,0,.06);border:1px solid rgba(0,0,0,.04);animation:cardEntrada .4s ease both;}
-@keyframes cardEntrada{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
-.dash-card:nth-child(1){animation-delay:.05s;}
-.dash-card:nth-child(2){animation-delay:.1s;}
-.dash-card:nth-child(3){animation-delay:.15s;}
-.dash-card:nth-child(4){animation-delay:.2s;}
-.dash-card:nth-child(5){animation-delay:.25s;}
-.dash-card:nth-child(6){animation-delay:.3s;}
-.dash-card:nth-child(7){animation-delay:.35s;}
-.dash-card:hover{transform:translateY(-4px) scale(1.01);box-shadow:0 12px 32px rgba(26,107,82,.14);}
-.dash-card:active{transform:scale(.98);}
+.dash-card{
+  background:#fff;
+  border-radius:22px;
+  overflow:hidden;
+  cursor:pointer;
+  transition:all .28s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:var(--shadow-card);
+  border:1px solid rgba(26,107,82,.07);
+  animation:cardEntrada .45s ease both;
+  position:relative;
+}
+@keyframes cardEntrada{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+.dash-card:nth-child(1){animation-delay:.04s;}
+.dash-card:nth-child(2){animation-delay:.09s;}
+.dash-card:nth-child(3){animation-delay:.14s;}
+.dash-card:nth-child(4){animation-delay:.19s;}
+.dash-card:nth-child(5){animation-delay:.24s;}
+.dash-card:nth-child(6){animation-delay:.29s;}
+.dash-card:nth-child(7){animation-delay:.34s;}
+.dash-card:hover{transform:translateY(-5px) scale(1.012);box-shadow:0 16px 40px rgba(26,107,82,.16);}
+.dash-card:active{transform:scale(.975);}
+
+/* Franja superior de color por módulo */
+.dash-card::before{
+  content:'';
+  position:absolute;
+  top:0; left:0; right:0;
+  height:3px;
+  background:var(--card-accent, var(--g));
+  border-radius:0;
+  opacity:.7;
+}
+
+/* Colores de acento por módulo */
+#cardTareas{--card-accent: var(--g);}
+#cardMenu{--card-accent: var(--gold);}
+#cardMercado{--card-accent: #6BAE7F;}
+#cardPlanificacion{--card-accent: #7BA7BC;}
+#cardFamiliar{--card-accent: var(--b2);}
+#cardChatNana{--card-accent: var(--g);}
+#cardScoreNana{--card-accent: var(--gold);}
+#cardNomina{--card-accent: #9B7EBD;}
+#cardVideosNana{--card-accent: var(--b2);}
 
 /* HEADER TARJETA */
-.dash-card-header{padding:16px 18px 12px;display:flex;align-items:center;gap:12px;}
-.dash-card-icon{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;position:relative;}
-.dash-card-icon::after{content:'';position:absolute;inset:0;border-radius:14px;opacity:.15;}
-.dash-card-title{font-size:15px;font-weight:600;color:var(--txt);letter-spacing:-.01em;}
-.dash-card-sub{font-size:12px;color:var(--txt2);margin-top:2px;}
+.dash-card-header{padding:18px 18px 12px;display:flex;align-items:center;gap:14px;}
+.dash-card-icon{
+  width:52px;height:52px;
+  border-radius:16px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;
+  flex-shrink:0;
+  position:relative;
+  box-shadow:0 4px 12px rgba(0,0,0,.07);
+}
+.dash-card-icon::after{content:'';position:absolute;inset:0;border-radius:16px;background:inherit;filter:blur(8px);opacity:.2;z-index:-1;transform:scale(.9) translateY(4px);}
+.dash-card-title{font-size:15px;font-weight:700;color:var(--txt);letter-spacing:-.02em;line-height:1.2;}
+.dash-card-sub{font-size:12px;color:var(--txt2);margin-top:3px;line-height:1.4;}
 
 /* CUERPO TARJETA */
 .dash-card-body{padding:0 18px 16px;}
-.dash-card-divider{height:1px;background:var(--g4);margin:0 18px 12px;opacity:.5;}
+.dash-card-divider{height:1px;background:linear-gradient(90deg,transparent,var(--g4),transparent);margin:0 18px 12px;}
 
 /* ITEMS */
-.task-item{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:.5px solid var(--g4);}
+.task-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:.5px solid rgba(26,107,82,.07);}
 .task-item:last-child{border-bottom:none;}
 .task-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
 .task-name{flex:1;font-size:13px;color:var(--txt);}
-.task-hora{font-size:11px;color:#bbb;}
-.task-check{width:20px;height:20px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;}
+.task-hora{font-size:11px;color:var(--txt3);}
+.task-check{width:22px;height:22px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;}
 .chat-msg-out{align-self:flex-end;background:var(--g);color:#fff;border-radius:12px 12px 4px 12px;padding:7px 11px;font-size:12px;max-width:82%;}
 .chat-msg-in{align-self:flex-start;background:var(--cr);border:1px solid var(--g4);border-radius:12px 12px 12px 4px;padding:7px 11px;font-size:12px;max-width:82%;color:var(--txt);}
 .menu-item{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:.5px solid var(--g4);}
@@ -248,9 +321,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
 .trial-banner{display:none;padding:10px 16px;display:flex;align-items:center;
               justify-content:space-between;gap:10px;flex-wrap:wrap;
               font-size:13px;font-weight:500;}
-.trial-banner.verde{background:#E8F4EF;color:#0F4D3A;}
-.trial-banner.amarillo{background:#FEFCE8;color:#713F12;}
-.trial-banner.rojo{background:#FEF2F2;color:#7F1D1D;}
+.trial-banner.verde{background:linear-gradient(135deg,#E8F4EF,#EAF5EE);color:#0F4D3A;border-bottom:1px solid var(--g4);}
+.trial-banner.amarillo{background:linear-gradient(135deg,#FEFCE8,#FBF3DC);color:#713F12;border-bottom:1px solid var(--gold2);}
+.trial-banner.rojo{background:linear-gradient(135deg,#FEF2F2,#FDF0EC);color:#7F1D1D;border-bottom:1px solid var(--b4);}
 .trial-banner-btn{background:#fff;border:1.5px solid currentColor;border-radius:99px;
                   padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;
                   font-family:'DM Sans',sans-serif;white-space:nowrap;color:inherit;text-decoration:none;}
@@ -756,6 +829,7 @@ service cloud.firestore {
   </div>
 
   <div class="dash-hero">
+    <div class="dash-hero-leaf">🌿</div>
     <div class="dash-hero-greeting">Tu hogar te espera</div>
     <div class="dash-hero-name" id="famHeroNombre">Tu hogar</div>
     <div class="dash-hero-sub">Todo en orden. Aquí tienes tu resumen de hoy.</div>
@@ -802,9 +876,9 @@ service cloud.firestore {
     <div class="dash-grid">
 
       <!-- Estado del Hogar -->
-      <div class="dash-card" style="border:2px solid var(--g4);grid-column:1/-1;">
+      <div class="dash-card" style="grid-column:1/-1;background:linear-gradient(150deg,#FAFDF9 0%,#EEF7F2 100%);border:1.5px solid var(--g4);">
         <div class="dash-card-header">
-          <div class="dash-card-icon" style="background:var(--g3);">🏠</div>
+          <div class="dash-card-icon" style="background:linear-gradient(135deg,var(--g3),var(--g4));box-shadow:0 4px 14px rgba(26,107,82,.15);ar(--g3);">🏠</div>
           <div><div class="dash-card-title">Estado del Hogar</div><div class="dash-card-sub" id="subEstadoFam">Cargando resumen...</div></div>
           <div style="margin-left:auto;font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;background:var(--g3);color:var(--g);" id="pctEstadoFam">—</div>
         </div>
@@ -819,7 +893,7 @@ service cloud.firestore {
       <!-- Tareas -->
       <div class="dash-card" id="cardTareas" onclick="location.href='/tareas.html'" style="cursor:pointer;">
         <div class="dash-card-header">
-          <div class="dash-card-icon" style="background:var(--g3);">✅</div>
+          <div class="dash-card-icon" style="background:linear-gradient(135deg,#E8F5EE,#D0EBDB);">✅</div>
           <div><div class="dash-card-title">Tareas de hoy</div><div class="dash-card-sub" id="subTareas">Cargando...</div></div>
         </div>
         <div class="dash-card-body" id="bodyTareas">
@@ -830,7 +904,7 @@ service cloud.firestore {
       <!-- Mantenimiento del hogar -->
       <div class="dash-card" id="cardPlanificacion" onclick="location.href='/mantenimiento.html'" style="cursor:pointer;">
         <div class="dash-card-header">
-          <div class="dash-card-icon" style="background:#FEF3C7;">🔧</div>
+          <div class="dash-card-icon" style="background:linear-gradient(135deg,#E8F4FA,#D0E8F2);">🔧</div>
           <div><div class="dash-card-title">Mantenimiento del hogar</div><div class="dash-card-sub" id="subEventosFam">Cargando...</div></div>
         </div>
         <div class="dash-card-body" id="bodyEventosFam" style="padding:0;">
@@ -841,7 +915,7 @@ service cloud.firestore {
       <!-- Menú -->
       <div class="dash-card" id="cardMenu" onclick="location.href='/menu.html'" style="cursor:pointer;">
         <div class="dash-card-header">
-          <div class="dash-card-icon" style="background:var(--g3);">🍽️</div>
+          <div class="dash-card-icon" style="background:linear-gradient(135deg,#FBF3DC,#F5E6C0);">🍽️</div>
           <div><div class="dash-card-title">Menú de hoy</div><div class="dash-card-sub" id="subMenu">Cargando...</div></div>
         </div>
         <div class="dash-card-body" id="bodyMenu">
@@ -852,7 +926,7 @@ service cloud.firestore {
       <!-- Chat -->
       <div class="dash-card" id="cardChatNana" onclick="location.href='/chat.html'" style="cursor:pointer;">
         <div class="dash-card-header">
-          <div class="dash-card-icon" style="background:var(--b3);">💬</div>
+          <div class="dash-card-icon" style="background:linear-gradient(135deg,#E8F5EE,#D0EBDB);">💬</div>
           <div><div class="dash-card-title">Chat con tu nana</div><div class="dash-card-sub" id="subChat">Cargando...</div></div>
         </div>
         <div class="dash-card-body" id="bodyChat">
@@ -874,7 +948,7 @@ service cloud.firestore {
       <!-- Mercado -->
       <div class="dash-card" id="cardMercado" onclick="location.href='/menu.html'" style="cursor:pointer;">
         <div class="dash-card-header">
-          <div class="dash-card-icon" style="background:var(--g3);">🛒</div>
+          <div class="dash-card-icon" style="background:linear-gradient(135deg,#E3F4E8,#C8E8D2);">🛒</div>
           <div><div class="dash-card-title">Lista del mercado</div><div class="dash-card-sub" id="subMercado">Cargando...</div></div>
         </div>
         <div class="dash-card-body" id="bodyMercado">
@@ -885,7 +959,7 @@ service cloud.firestore {
       <!-- Centro Familiar -->
       <div class="dash-card" id="cardFamiliar" onclick="location.href='/familiar.html'" style="cursor:pointer;">
         <div class="dash-card-header">
-          <div class="dash-card-icon" style="background:#FEF3C7;">👨‍👩‍👧</div>
+          <div class="dash-card-icon" style="background:linear-gradient(135deg,#FDF0EC,#F5D9D2);">👨‍👩‍👧</div>
           <div><div class="dash-card-title">Centro familiar</div><div class="dash-card-sub" id="subFamiliar">Responsabilidades y ranking</div></div>
         </div>
         <div class="dash-card-body" id="bodyFamiliar">
@@ -913,7 +987,7 @@ service cloud.firestore {
       <!-- Contratos -->
       <div class="dash-card" id="cardNomina" onclick="location.href='/nomina.html'" style="cursor:pointer;">
         <div class="dash-card-header">
-          <div class="dash-card-icon" style="background:var(--g3);">📋</div>
+          <div class="dash-card-icon" style="background:linear-gradient(135deg,#F3EDFB,#E5D6F5);">📋</div>
           <div><div class="dash-card-title">Contratos y nómina</div><div class="dash-card-sub" id="subNomina">Según ley panameña</div></div>
         </div>
         <div class="dash-card-body" id="bodyNomina">
@@ -1008,7 +1082,8 @@ service cloud.firestore {
     <button class="notif-toast-close" onclick="cerrarNanaNotifToast()">✕</button>
   </div>
 
-  <div class="dash-hero" style="background:linear-gradient(135deg,var(--b2) 0%,var(--b) 100%);">
+  <div class="dash-hero" style="background:linear-gradient(150deg,var(--b2) 0%,#D4917F 50%,var(--b) 100%);">
+    <div class="dash-hero-leaf" style="opacity:.15;">🌸</div>
     <div class="dash-hero-greeting" id="nanaGreeting">Buenos días</div>
     <div class="dash-hero-name" id="nanaHeroNombre">Tu día</div>
     <div class="dash-hero-sub" id="nanaFecha"></div>
@@ -2903,7 +2978,7 @@ function renderTarjetasNana(tareas, hogarId) {
     </div>
     <div class="dash-card" onclick="location.href='/menu.html'" style="cursor:pointer;">
       <div class="dash-card-header">
-        <div class="dash-card-icon" style="background:var(--b3);">🍽️</div>
+        <div class="dash-card-icon" style="background:linear-gradient(135deg,#FBF3DC,#F5E6C0);">🍽️</div>
         <div><div class="dash-card-title">Qué cocinar hoy</div><div class="dash-card-sub" id="subMenuNana">Cargando...</div></div>
       </div>
       <div class="dash-card-body" id="bodyMenuNana"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Cargando...</div></div>
