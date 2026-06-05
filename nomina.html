@@ -495,7 +495,8 @@ body{font-family:'DM Sans',sans-serif;background:#F0F4F0;color:var(--txt);min-he
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import { getFirestore, doc, setDoc, getDoc, collection, addDoc,
-         query, where, getDocs, orderBy, serverTimestamp, onSnapshot
+         query, where, getDocs, orderBy, serverTimestamp, onSnapshot,
+         updateDoc, deleteDoc
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 const firebaseConfig = {
