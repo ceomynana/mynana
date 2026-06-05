@@ -79,7 +79,7 @@ exports.handler = async (event) => {
           <tr>
             <td style="background:#0F4A38;border-radius:0 0 16px 16px;padding:20px 40px;text-align:center;">
               <p style="color:rgba(255,255,255,0.5);font-size:12px;margin:0;">
-                © 2026 My Nana Panama ·
+                © 2025 My Nana Panama ·
                 <a href="https://mynana.app" style="color:rgba(255,255,255,0.5);text-decoration:none;">mynana.app</a>
               </p>
             </td>
