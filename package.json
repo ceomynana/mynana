@@ -10,6 +10,10 @@
     "firebase-admin": "^12.0.0",
     "web-push": "^3.6.7"
   },
+  "dependencies": {
+  "web-push": "^3.6.7",
+  "@netlify/functions": "^2.0.0"
+}
   "engines": {
     "node": ">=20"
   }
