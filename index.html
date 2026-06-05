@@ -2409,10 +2409,7 @@ body.lang-es .es{display:initial !important;}
   #guiaNana > div:first-child{grid-template-columns:1fr !important;}
 }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-<script>emailjs.init('kOUjYu--I41X0xjeR');</script>
-
-<!-- Firebase SDK -->
+<script src="https://cdn.jsdelivr<!-- Firebase SDK -->
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
@@ -4986,7 +4983,13 @@ async function submitForm() {
     });
     if (telefono) localStorage.setItem('mynana_tel_pendiente',telefono);
     localStorage.setItem('mynana_tipoHogar', tipoH);
-    try { emailjs.send('mynana_service','bienvenida_familia',{nombre,correo,plan:plan.nombre}).catch(()=>{}); } catch(e){}
+    try {
+      await fetch('/.netlify/functions/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tipo: 'familia', nombre: nombre + ' ' + (apellido||''), email: correo, plan: plan.nombre })
+      });
+    } catch(e) { console.log('Email bienvenida no enviado:', e); }
   } catch(e) {
     console.error(e); return showErr('\u274c Error guardando datos. Intenta de nuevo.');
   }
