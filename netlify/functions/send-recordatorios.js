@@ -22,7 +22,7 @@ const FS_BASE     = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/
 const API_KEY     = process.env.FIREBASE_API_KEY;
 const VAPID_PUB   = process.env.VAPID_PUBLIC_KEY;
 const VAPID_PRIV  = process.env.VAPID_PRIVATE_KEY;
-const VAPID_SUB   = process.env.VAPID_SUBJECT || 'mailto:ceo@mynanaapp.com';
+const VAPID_SUB   = process.env.VAPID_EMAIL || process.env.VAPID_SUBJECT || 'mailto:ceo@mynanaapp.com';
 
 // ── Helpers de fecha ─────────────────────────────────────────────────────────
 function getFechaStr(d) {
