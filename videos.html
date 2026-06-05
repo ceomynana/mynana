@@ -2,691 +2,1304 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>My Nana — Ayudas para el Hogar</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Cormorant+Garamond:wght@500&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>My Nana — Centro de Conocimiento</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <style>
-:root{--g:#1A6B52;--g2:#0F4A38;--g3:#F0F7F4;--g4:#E1F0EB;--b:#D4A5A5;--b2:#BF9090;--b3:#F7EFEF;--cr:#F9F5F0;--txt:#1A2E25;--txt2:#4A6358;--r:14px;}
+:root{
+  --g:#1A6B52;--g2:#0F4A38;--g3:#F0F7F4;--g4:#E1F0EB;
+  --b:#D4A5A5;--b2:#BF9090;--b3:#F7EFEF;
+  --cr:#F9F5F0;--txt:#1A2E25;--txt2:#4A6358;
+  --r:14px;--r2:20px;--r3:99px;
+  --shadow:0 2px 12px rgba(26,107,82,.08);
+  --shadow-md:0 4px 24px rgba(26,107,82,.12);
+}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);overflow-x:hidden;min-height:100vh;min-height:100dvh;}
+body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);overflow-x:hidden;min-height:100dvh;padding-bottom:80px;}
 
-/* SPLASH */
+/* ── SPLASH ── */
 #splash{position:fixed;inset:0;background:var(--g2);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;transition:opacity .4s;}
-#splash.oculto{opacity:0;pointer-events:none;}
+#splash.out{opacity:0;pointer-events:none;}
+.splash-logo{font-family:'Cormorant Garamond',serif;font-size:32px;color:#fff;}
+.splash-logo em{color:var(--b);font-style:normal;}
+.splash-sub{font-size:13px;color:rgba(255,255,255,.5);letter-spacing:.08em;text-transform:uppercase;}
 
-/* HEADER */
-.header{background:var(--g2);padding:48px 20px 16px;position:sticky;top:0;z-index:50;}
-@media(min-width:768px){.header{padding-top:16px;}}
-.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
-.header-logo{font-family:'Cormorant Garamond',serif;font-size:20px;color:#fff;}
-.header-logo em{color:var(--b);font-style:normal;}
-.header-back{background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.7);font-size:13px;padding:7px 14px;border-radius:99px;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;}
+/* ── HEADER ── */
+.header{background:var(--g2);padding:env(safe-area-inset-top,48px) 20px 0;position:sticky;top:0;z-index:50;}
+.header-top{display:flex;align-items:center;justify-content:space-between;padding:12px 0 14px;}
+.header-back{background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.75);font-size:13px;padding:7px 14px;border-radius:var(--r3);cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;display:inline-flex;align-items:center;gap:5px;}
+.header-title{font-family:'Cormorant Garamond',serif;font-size:17px;color:#fff;font-weight:500;}
+.header-fav-btn{background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.75);width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;}
 
-/* BÚSQUEDA */
-.buscar-wrap{padding:0 20px 14px;}
-.buscar-input{width:100%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:99px;padding:10px 18px;font-family:'DM Sans',sans-serif;font-size:14px;color:#fff;outline:none;}
-.buscar-input::placeholder{color:rgba(255,255,255,.4);}
-.buscar-input:focus{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.3);}
+/* ── SEARCH ── */
+.search-wrap{padding:0 0 14px;}
+.search-row{display:flex;gap:8px;align-items:center;}
+.search-box{flex:1;position:relative;}
+.search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:15px;color:rgba(255,255,255,.4);pointer-events:none;}
+.search-input{width:100%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:var(--r3);padding:10px 16px 10px 38px;font-family:'DM Sans',sans-serif;font-size:14px;color:#fff;outline:none;transition:all .2s;}
+.search-input::placeholder{color:rgba(255,255,255,.35);}
+.search-input:focus{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.3);}
+.search-clear{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.2);border:none;color:#fff;width:20px;height:20px;border-radius:50%;font-size:11px;cursor:pointer;display:none;align-items:center;justify-content:center;}
+.filter-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:var(--r3);padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:13px;color:rgba(255,255,255,.75);cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:6px;}
+.filter-btn.active{background:var(--b);border-color:var(--b);color:#fff;}
 
-/* CATEGORÍAS */
-.cats{display:flex;gap:8px;overflow-x:auto;padding:0 20px 14px;-ms-overflow-style:none;scrollbar-width:none;}
-.cats::-webkit-scrollbar{display:none;}
-.cat-pill{flex-shrink:0;padding:7px 16px;border-radius:99px;border:1.5px solid rgba(255,255,255,.2);background:transparent;font-size:13px;font-weight:500;color:rgba(255,255,255,.7);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+/* ── CATEGORY PILLS ── */
+.cats-scroll{display:flex;gap:8px;overflow-x:auto;padding:0 0 14px;-ms-overflow-style:none;scrollbar-width:none;}
+.cats-scroll::-webkit-scrollbar{display:none;}
+.cat-pill{flex-shrink:0;padding:7px 14px;border-radius:var(--r3);border:1.5px solid rgba(255,255,255,.2);background:transparent;font-size:13px;font-weight:500;color:rgba(255,255,255,.7);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;white-space:nowrap;}
 .cat-pill.activa{background:var(--b);border-color:var(--b);color:#fff;}
 .cat-pill:hover{background:rgba(255,255,255,.1);}
 
-/* CONTENIDO */
-.contenido{padding:20px;}
-.seccion-titulo{font-size:12px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+/* ── FILTER PANEL ── */
+.filter-panel{display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.5);}
+.filter-panel.visible{display:flex;align-items:flex-end;}
+.filter-sheet{background:#fff;border-radius:var(--r2) var(--r2) 0 0;width:100%;padding:20px 20px 40px;max-height:80vh;overflow-y:auto;}
+.filter-handle{width:36px;height:4px;background:var(--g4);border-radius:var(--r3);margin:0 auto 20px;}
+.filter-section-title{font-size:11px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;}
+.filter-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;}
+.filter-chip{padding:7px 14px;border-radius:var(--r3);border:1.5px solid var(--g4);background:#fff;font-size:13px;font-weight:500;color:var(--txt2);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.filter-chip.sel{background:var(--g);border-color:var(--g);color:#fff;}
+.filter-actions{display:flex;gap:10px;margin-top:4px;}
+.filter-clear{flex:1;background:#fff;border:1.5px solid var(--g4);border-radius:var(--r3);padding:13px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;color:var(--txt2);cursor:pointer;}
+.filter-apply{flex:1;background:var(--g);border:none;border-radius:var(--r3);padding:13px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;color:#fff;cursor:pointer;}
 
-/* VIDEO DESTACADO */
-.video-featured{background:var(--g2);border-radius:20px;overflow:hidden;margin-bottom:20px;cursor:pointer;transition:transform .2s;}
-.video-featured:active{transform:scale(.98);}
-.video-featured-thumb{height:200px;display:flex;align-items:center;justify-content:center;position:relative;}
-.video-featured-overlay{position:absolute;inset:0;background:rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;}
-.play-btn-big{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;font-size:24px;}
-.video-featured-info{padding:16px 18px;}
-.video-featured-cat{font-size:11px;font-weight:600;color:var(--b);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
-.video-featured-titulo{font-family:'Cormorant Garamond',serif;font-size:22px;color:#fff;margin-bottom:6px;line-height:1.3;}
-.video-featured-meta{font-size:12px;color:rgba(255,255,255,.55);display:flex;align-items:center;gap:8px;}
+/* ── MAIN CONTENT ── */
+.content{padding:20px;}
 
-/* VIDEO CARDS GRID */
-.videos-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}
-@media(min-width:768px){.videos-grid{grid-template-columns:repeat(3,1fr);}}
-.video-card{background:#fff;border-radius:14px;overflow:hidden;cursor:pointer;border:1px solid var(--g4);transition:all .2s;}
-.video-card:active{transform:scale(.97);}
-.video-card:hover{box-shadow:0 4px 16px rgba(26,107,82,.12);transform:translateY(-2px);}
-.video-thumb{aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
-.video-thumb-emoji{font-size:36px;z-index:1;}
-.video-play-overlay{position:absolute;inset:0;background:rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;}
-.play-btn-sm{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;font-size:14px;}
-.video-info{padding:10px 12px;}
-.video-titulo{font-size:13px;font-weight:500;color:var(--txt);line-height:1.4;margin-bottom:5px;}
-.video-meta{font-size:11px;color:#bbb;display:flex;align-items:center;gap:6px;}
-.video-cat-tag{font-size:10px;background:var(--g3);color:var(--g);padding:2px 8px;border-radius:99px;font-weight:500;}
-.video-visto{font-size:10px;color:var(--b2);display:flex;align-items:center;gap:3px;}
-
-/* LISTA HORIZONTAL */
-.videos-row{display:flex;gap:12px;overflow-x:auto;padding-bottom:4px;-ms-overflow-style:none;scrollbar-width:none;margin-bottom:20px;}
-.videos-row::-webkit-scrollbar{display:none;}
-.video-row-card{flex-shrink:0;width:160px;background:#fff;border-radius:14px;overflow:hidden;cursor:pointer;border:1px solid var(--g4);}
-.video-row-thumb{height:100px;display:flex;align-items:center;justify-content:center;font-size:32px;position:relative;}
-.video-row-info{padding:8px 10px;}
-.video-row-titulo{font-size:12px;font-weight:500;color:var(--txt);line-height:1.4;margin-bottom:3px;}
-.video-row-meta{font-size:10px;color:#bbb;}
-
-/* MODAL VIDEO */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;opacity:0;pointer-events:none;transition:opacity .3s;}
-.modal-overlay.visible{opacity:1;pointer-events:all;}
-.modal-box{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;transform:translateY(40px);transition:transform .3s;}
-.modal-overlay.visible .modal-box{transform:translateY(0);}
-@media(min-width:768px){.modal-overlay{align-items:center;justify-content:center;}.modal-box{border-radius:20px;max-height:80vh;}}
-.modal-video-area{position:relative;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;overflow:hidden;}
-.modal-video-emoji{font-size:80px;z-index:1;}
-.modal-video-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.3);}
-.modal-play-btn{width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,.95);display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;transition:transform .2s;}
-.modal-play-btn:hover{transform:scale(1.08);}
-.modal-info{padding:20px;}
-.modal-cat{font-size:11px;font-weight:600;color:var(--b2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
-.modal-titulo{font-family:'Cormorant Garamond',serif;font-size:24px;color:var(--txt);margin-bottom:8px;line-height:1.3;}
-.modal-meta{display:flex;align-items:center;gap:12px;font-size:12px;color:#bbb;margin-bottom:14px;}
-.modal-desc{font-size:14px;color:var(--txt2);line-height:1.75;margin-bottom:20px;}
-.modal-pasos{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
-.modal-paso{display:flex;gap:12px;align-items:flex-start;}
-.paso-num{width:28px;height:28px;border-radius:50%;background:var(--g);color:#fff;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
-.paso-texto{font-size:13px;color:var(--txt2);line-height:1.6;padding-top:4px;}
-.modal-close{width:100%;background:var(--cr);border:1px solid var(--g4);border-radius:99px;padding:13px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;color:var(--txt2);cursor:pointer;}
-.modal-visto-btn{width:100%;background:var(--g);color:#fff;border:none;border-radius:99px;padding:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;margin-bottom:10px;transition:all .2s;}
-.modal-visto-btn:hover{background:var(--g2);}
-.modal-visto-btn.visto{background:var(--g3);color:var(--g);}
-
-/* PROGRESO */
-.progreso-card{background:var(--g2);border-radius:16px;padding:16px 18px;margin-bottom:20px;display:flex;align-items:center;gap:16px;}
-.prog-circle{width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;border:2px solid var(--b);}
+/* ── PROGRESS CARD ── */
+.prog-card{background:var(--g2);border-radius:var(--r2);padding:18px;margin-bottom:20px;position:relative;overflow:hidden;}
+.prog-card::before{content:'';position:absolute;top:-20px;right:-20px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.04);}
+.prog-card::after{content:'';position:absolute;bottom:-30px;right:20px;width:80px;height:80px;border-radius:50%;background:rgba(212,165,165,.08);}
+.prog-top{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+.prog-circle{width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.08);border:2px solid var(--b);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;}
 .prog-n{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:#fff;line-height:1;}
-.prog-l{font-size:9px;color:rgba(255,255,255,.5);margin-top:1px;}
+.prog-l{font-size:9px;color:rgba(255,255,255,.45);margin-top:1px;letter-spacing:.04em;}
 .prog-info{flex:1;}
-.prog-titulo{font-size:14px;font-weight:500;color:#fff;margin-bottom:4px;}
-.prog-sub{font-size:12px;color:rgba(255,255,255,.55);}
-.prog-barra{height:5px;background:rgba(255,255,255,.15);border-radius:99px;overflow:hidden;margin-top:8px;}
-.prog-fill{height:100%;background:var(--b);border-radius:99px;transition:width .5s;}
+.prog-titulo{font-size:14px;font-weight:500;color:#fff;margin-bottom:3px;}
+.prog-sub{font-size:12px;color:rgba(255,255,255,.5);}
+.prog-badges{display:flex;gap:6px;flex-wrap:wrap;}
+.prog-badge{background:rgba(255,255,255,.1);border-radius:var(--r3);padding:4px 10px;font-size:11px;color:rgba(255,255,255,.75);display:flex;align-items:center;gap:4px;}
+.prog-barra-wrap{margin-top:12px;}
+.prog-barra-label{display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,.45);margin-bottom:5px;}
+.prog-barra{height:5px;background:rgba(255,255,255,.12);border-radius:var(--r3);overflow:hidden;}
+.prog-fill{height:100%;background:var(--b);border-radius:var(--r3);transition:width .6s;}
 
-/* TOAST */
-.toast{position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--g);color:#fff;font-size:13px;font-weight:500;padding:10px 20px;border-radius:99px;z-index:300;transition:transform .3s;white-space:nowrap;box-shadow:0 4px 16px rgba(26,107,82,.3);}
-.toast.visible{transform:translateX(-50%) translateY(0);}
+/* ── SECTION ── */
+.sec-label{font-size:11px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.sec-label::after{content:'';flex:1;height:1px;background:var(--g4);}
+.sec-count{background:var(--g4);color:var(--g);font-size:10px;font-weight:600;padding:2px 8px;border-radius:var(--r3);}
 
-/* NAV INFERIOR */
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--g4);padding:8px 0 20px;display:flex;z-index:50;}
+/* ── GUIA FEATURED ── */
+.guia-featured{background:var(--g2);border-radius:var(--r2);overflow:hidden;margin-bottom:20px;cursor:pointer;transition:transform .15s;position:relative;}
+.guia-featured:active{transform:scale(.98);}
+.guia-featured-img{height:160px;display:flex;align-items:center;justify-content:center;font-size:72px;position:relative;}
+.guia-featured-overlay{position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(15,74,56,.8));}
+.guia-featured-badge{position:absolute;top:12px;left:12px;background:var(--b);color:#fff;font-size:10px;font-weight:600;padding:4px 10px;border-radius:var(--r3);letter-spacing:.04em;text-transform:uppercase;}
+.guia-featured-fav{position:absolute;top:10px;right:12px;background:rgba(255,255,255,.15);border:none;color:#fff;width:30px;height:30px;border-radius:50%;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.guia-featured-fav.saved{color:#f9a825;}
+.guia-featured-info{padding:14px 16px 16px;}
+.guia-featured-cat{font-size:10px;font-weight:600;color:var(--b);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
+.guia-featured-title{font-family:'Cormorant Garamond',serif;font-size:22px;color:#fff;margin-bottom:6px;line-height:1.25;}
+.guia-featured-meta{display:flex;align-items:center;gap:12px;font-size:11px;color:rgba(255,255,255,.5);}
+
+/* ── GUIAS GRID ── */
+.guias-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}
+.guia-card{background:#fff;border-radius:var(--r);overflow:hidden;cursor:pointer;border:1px solid var(--g4);transition:all .2s;display:flex;flex-direction:column;}
+.guia-card:active{transform:scale(.97);}
+.guia-thumb{aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;font-size:40px;position:relative;background:var(--g3);}
+.guia-nivel-badge{position:absolute;bottom:6px;left:6px;border-radius:var(--r3);padding:2px 8px;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;}
+.nivel-basico{background:#E8F5E9;color:#2E7D32;}
+.nivel-intermedio{background:#FFF3E0;color:#E65100;}
+.nivel-avanzado{background:#FCE4EC;color:#AD1457;}
+.guia-fav{position:absolute;top:6px;right:6px;background:rgba(255,255,255,.9);border:none;width:26px;height:26px;border-radius:50%;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#ccc;}
+.guia-fav.saved{color:#f9a825;}
+.guia-info{padding:10px 11px 12px;flex:1;display:flex;flex-direction:column;}
+.guia-cat-tag{font-size:10px;background:var(--g3);color:var(--g);padding:2px 7px;border-radius:var(--r3);font-weight:500;display:inline-block;margin-bottom:5px;align-self:flex-start;}
+.guia-title{font-size:13px;font-weight:500;color:var(--txt);line-height:1.4;margin-bottom:auto;padding-bottom:7px;}
+.guia-meta{display:flex;align-items:center;gap:6px;font-size:11px;color:#bbb;margin-top:auto;}
+.guia-completada-mark{font-size:13px;}
+
+/* ── GUIAS LIST (favoritos) ── */
+.guia-list-item{background:#fff;border-radius:var(--r);border:1px solid var(--g4);display:flex;align-items:center;gap:12px;padding:12px;cursor:pointer;margin-bottom:8px;transition:all .2s;}
+.guia-list-item:active{transform:scale(.98);}
+.guia-list-thumb{width:56px;height:56px;border-radius:10px;background:var(--g3);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;}
+.guia-list-info{flex:1;min-width:0;}
+.guia-list-title{font-size:13px;font-weight:500;color:var(--txt);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.guia-list-meta{font-size:11px;color:#bbb;display:flex;gap:8px;align-items:center;}
+.guia-list-fav{background:none;border:none;color:#f9a825;font-size:16px;cursor:pointer;flex-shrink:0;}
+
+/* ── EMPTY STATE ── */
+.empty-state{text-align:center;padding:48px 20px;}
+.empty-emoji{font-size:48px;margin-bottom:12px;}
+.empty-title{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--txt);margin-bottom:6px;}
+.empty-sub{font-size:14px;color:var(--txt2);line-height:1.6;}
+
+/* ── MODAL DETALLE ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;opacity:0;pointer-events:none;transition:opacity .25s;}
+.modal-overlay.visible{opacity:1;pointer-events:all;}
+.modal-box{background:#fff;border-radius:var(--r2) var(--r2) 0 0;width:100%;max-width:600px;max-height:92dvh;overflow-y:auto;transform:translateY(40px);transition:transform .25s;-webkit-overflow-scrolling:touch;}
+.modal-overlay.visible .modal-box{transform:translateY(0);}
+@media(min-width:640px){.modal-overlay{justify-content:center;}.modal-box{border-radius:var(--r2);max-height:85vh;}}
+.modal-handle{width:36px;height:4px;background:var(--g4);border-radius:var(--r3);margin:14px auto 0;}
+.modal-hero{height:200px;display:flex;align-items:center;justify-content:center;font-size:88px;position:relative;}
+.modal-hero-actions{position:absolute;top:12px;right:12px;display:flex;gap:8px;}
+.modal-close-btn{background:rgba(255,255,255,.9);border:none;width:34px;height:34px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.modal-fav-btn{background:rgba(255,255,255,.9);border:none;width:34px;height:34px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#ccc;}
+.modal-fav-btn.saved{color:#f9a825;}
+.modal-body{padding:18px 20px 24px;}
+.modal-badges{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+.modal-badge-cat{background:var(--g3);color:var(--g);font-size:11px;font-weight:600;padding:4px 11px;border-radius:var(--r3);}
+.modal-badge-nivel{font-size:11px;font-weight:600;padding:4px 11px;border-radius:var(--r3);}
+.modal-badge-tiempo{background:var(--b3);color:var(--b2);font-size:11px;font-weight:500;padding:4px 11px;border-radius:var(--r3);}
+.modal-titulo{font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--txt);margin-bottom:8px;line-height:1.25;}
+.modal-resumen{font-size:14px;color:var(--txt2);line-height:1.75;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--g4);}
+.modal-section-lbl{font-size:11px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.modal-section-lbl::after{content:'';flex:1;height:1px;background:var(--g4);}
+.pasos-list{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
+.paso{display:flex;gap:12px;align-items:flex-start;}
+.paso-num{width:28px;height:28px;border-radius:50%;background:var(--g);color:#fff;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.paso-texto{font-size:14px;color:var(--txt2);line-height:1.65;padding-top:4px;}
+.consejo-box{background:var(--g3);border-left:3px solid var(--g);border-radius:0 var(--r) var(--r) 0;padding:14px 16px;margin-bottom:14px;}
+.consejo-label{font-size:11px;font-weight:600;color:var(--g);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;}
+.consejo-txt{font-size:13px;color:var(--txt2);line-height:1.65;}
+.error-box{background:var(--b3);border-left:3px solid var(--b2);border-radius:0 var(--r) var(--r) 0;padding:14px 16px;margin-bottom:14px;}
+.error-label{font-size:11px;font-weight:600;color:var(--b2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;}
+.info-box{background:#FFF8E1;border-left:3px solid #F9A825;border-radius:0 var(--r) var(--r) 0;padding:14px 16px;margin-bottom:20px;}
+.info-label{font-size:11px;font-weight:600;color:#E65100;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;}
+.modal-footer{border-top:1px solid var(--g4);padding-top:16px;}
+.completar-btn{width:100%;background:var(--g);border:none;border-radius:var(--r3);padding:15px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;color:#fff;cursor:pointer;transition:all .2s;margin-bottom:10px;}
+.completar-btn.done{background:var(--g3);color:var(--g);}
+.cerrar-btn{width:100%;background:#fff;border:1.5px solid var(--g4);border-radius:var(--r3);padding:13px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;color:var(--txt2);cursor:pointer;}
+.modal-date{font-size:11px;color:#bbb;text-align:center;margin-top:10px;}
+
+/* ── TOAST ── */
+.toast{position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--g);color:#fff;font-size:13px;font-weight:500;padding:10px 20px;border-radius:var(--r3);z-index:400;transition:transform .3s;white-space:nowrap;box-shadow:0 4px 16px rgba(26,107,82,.3);}
+.toast.show{transform:translateX(-50%) translateY(0);}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--g4);padding:8px 0 env(safe-area-inset-bottom,16px);display:flex;z-index:50;}
 .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 0;}
-.nav-icon{font-size:22px;}
+.nav-icon{font-size:20px;}
 .nav-label{font-size:10px;color:#bbb;font-weight:500;}
 .nav-item.activo .nav-label{color:var(--g);}
-.contenido{padding-bottom:100px;}
+
+/* ── TABS ── */
+.tabs{display:flex;background:var(--g3);border-radius:var(--r3);padding:3px;margin-bottom:20px;gap:2px;}
+.tab{flex:1;text-align:center;padding:8px 4px;border-radius:var(--r3);font-size:13px;font-weight:500;color:var(--txt2);cursor:pointer;transition:all .2s;border:none;background:transparent;font-family:'DM Sans',sans-serif;}
+.tab.activo{background:#fff;color:var(--g);box-shadow:0 1px 4px rgba(26,107,82,.1);}
+
+/* ── VIEWS ── */
+.view{display:none;}
+.view.activa{display:block;}
+
+/* ── CERT CARD ── */
+.cert-card{background:var(--g2);border-radius:var(--r2);padding:20px;margin-bottom:12px;position:relative;overflow:hidden;}
+.cert-card::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.04);}
+.cert-emoji{font-size:32px;margin-bottom:8px;}
+.cert-title{font-family:'Cormorant Garamond',serif;font-size:20px;color:#fff;margin-bottom:4px;}
+.cert-sub{font-size:12px;color:rgba(255,255,255,.5);margin-bottom:14px;}
+.cert-barra{height:5px;background:rgba(255,255,255,.12);border-radius:var(--r3);overflow:hidden;}
+.cert-fill{height:100%;background:var(--b);border-radius:var(--r3);}
+.cert-meta{display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,.4);margin-top:6px;}
+
+.insig-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px;}
+.insig-card{background:#fff;border-radius:var(--r);border:1px solid var(--g4);padding:12px 8px;text-align:center;}
+.insig-emoji{font-size:28px;margin-bottom:6px;}
+.insig-name{font-size:11px;font-weight:500;color:var(--txt);line-height:1.3;margin-bottom:3px;}
+.insig-estado{font-size:10px;color:#bbb;}
+.insig-card.earned{border-color:var(--g);background:var(--g3);}
+.insig-card.earned .insig-estado{color:var(--g);}
+
+/* No results */
+.no-results{text-align:center;padding:40px 20px;}
 </style>
 </head>
 <body>
 
-<!-- SPLASH -->
 <div id="splash">
-  <div style="width:72px;height:72px;border-radius:50%;background:var(--g);border:3px solid var(--b);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:24px;color:#fff;">MN</div>
-  <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:#fff;">NANA</div>
-  <div style="font-size:13px;color:rgba(255,255,255,.5);">Cargando videos...</div>
+  <div class="splash-logo">My <em>Nana</em></div>
+  <div class="splash-sub">Centro de Conocimiento</div>
 </div>
 
-<!-- MODAL VIDEO -->
-<div class="modal-overlay" id="modalVideo">
-  <div class="modal-box">
-    <div class="modal-video-area" id="modalThumb">
-      <div class="modal-video-emoji" id="modalEmoji">🍲</div>
-      <div class="modal-video-play">
-        <div class="modal-play-btn" onclick="reproducirVideo()">▶</div>
+<!-- HEADER -->
+<div class="header">
+  <div class="header-top">
+    <a href="/app.html" class="header-back">← Inicio</a>
+    <span class="header-title">📚 Conocimiento</span>
+    <button class="header-fav-btn" onclick="switchTab('favoritos')" title="Ver favoritos">♡</button>
+  </div>
+  <div class="search-wrap">
+    <div class="search-row">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input class="search-input" id="searchInput" type="text" placeholder="Buscar guías..." autocomplete="off" oninput="onSearch()">
+        <button class="search-clear" id="searchClear" onclick="clearSearch()">✕</button>
+      </div>
+      <button class="filter-btn" id="filterBtn" onclick="openFilter()">⚙ Filtrar</button>
+    </div>
+  </div>
+  <div class="cats-scroll" id="catsScroll"></div>
+</div>
+
+<!-- TABS -->
+<div class="content" id="mainContent">
+  <div class="tabs">
+    <button class="tab activo" id="tab-inicio" onclick="switchTab('inicio')">Inicio</button>
+    <button class="tab" id="tab-favoritos" onclick="switchTab('favoritos')">♡ Guardadas</button>
+    <button class="tab" id="tab-progreso" onclick="switchTab('progreso')">Mi Progreso</button>
+  </div>
+
+  <!-- VIEW: INICIO -->
+  <div class="view activa" id="view-inicio">
+    <!-- progreso card -->
+    <div class="prog-card">
+      <div class="prog-top">
+        <div class="prog-circle">
+          <div class="prog-n" id="progN">0</div>
+          <div class="prog-l">guías</div>
+        </div>
+        <div class="prog-info">
+          <div class="prog-titulo">Tu aprendizaje</div>
+          <div class="prog-sub" id="progSub">Empieza leyendo tu primera guía</div>
+        </div>
+      </div>
+      <div class="prog-badges" id="progBadges"></div>
+      <div class="prog-barra-wrap">
+        <div class="prog-barra-label"><span>Progreso general</span><span id="progPct">0%</span></div>
+        <div class="prog-barra"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
       </div>
     </div>
-    <div class="modal-info">
-      <div class="modal-cat" id="modalCat">Cocina</div>
-      <div class="modal-titulo" id="modalTitulo">Sancocho de gallina</div>
-      <div class="modal-meta">
-        <span id="modalDur">⏱ 22 min</span>
-        <span id="modalNivel">📊 Básico</span>
-        <span id="modalVistas">👁 Sin ver</span>
-      </div>
-      <div class="modal-desc" id="modalDesc"></div>
-      <div style="font-size:13px;font-weight:600;color:var(--txt);margin-bottom:12px;">Pasos principales:</div>
-      <div class="modal-pasos" id="modalPasos"></div>
-      <button class="modal-visto-btn" id="btnVisto" onclick="marcarVisto()">✅ Marcar como visto</button>
-      <button class="modal-close" onclick="cerrarModal()">← Volver a las ayudas</button>
+
+    <!-- Destacada -->
+    <div class="sec-label">Guía destacada</div>
+    <div id="guiaFeatured"></div>
+
+    <!-- Grid de categorias destacadas -->
+    <div class="sec-label">Explorar <span class="sec-count" id="secCount">80</span></div>
+    <div class="guias-grid" id="guiasGrid"></div>
+  </div>
+
+  <!-- VIEW: FAVORITOS -->
+  <div class="view" id="view-favoritos">
+    <div id="favContent"></div>
+  </div>
+
+  <!-- VIEW: PROGRESO -->
+  <div class="view" id="view-progreso">
+    <div id="progresoContent"></div>
+  </div>
+</div>
+
+<!-- FILTER PANEL -->
+<div class="filter-panel" id="filterPanel" onclick="closeFilterOutside(event)">
+  <div class="filter-sheet">
+    <div class="filter-handle"></div>
+    <div class="filter-section-title">Nivel</div>
+    <div class="filter-chips">
+      <button class="filter-chip" data-filter="nivel" data-val="Básico" onclick="toggleFilter(this)">Básico</button>
+      <button class="filter-chip" data-filter="nivel" data-val="Intermedio" onclick="toggleFilter(this)">Intermedio</button>
+      <button class="filter-chip" data-filter="nivel" data-val="Avanzado" onclick="toggleFilter(this)">Avanzado</button>
     </div>
+    <div class="filter-section-title">Tiempo de lectura</div>
+    <div class="filter-chips">
+      <button class="filter-chip" data-filter="tiempo" data-val="1" onclick="toggleFilter(this)">1 min</button>
+      <button class="filter-chip" data-filter="tiempo" data-val="2" onclick="toggleFilter(this)">2 min</button>
+      <button class="filter-chip" data-filter="tiempo" data-val="3" onclick="toggleFilter(this)">3 min</button>
+      <button class="filter-chip" data-filter="tiempo" data-val="5" onclick="toggleFilter(this)">5 min</button>
+    </div>
+    <div class="filter-section-title">Estado</div>
+    <div class="filter-chips">
+      <button class="filter-chip" data-filter="estado" data-val="completada" onclick="toggleFilter(this)">✅ Completadas</button>
+      <button class="filter-chip" data-filter="estado" data-val="pendiente" onclick="toggleFilter(this)">⏳ Pendientes</button>
+      <button class="filter-chip" data-filter="estado" data-val="guardada" onclick="toggleFilter(this)">♡ Guardadas</button>
+    </div>
+    <div class="filter-actions">
+      <button class="filter-clear" onclick="clearFilters()">Limpiar</button>
+      <button class="filter-apply" onclick="applyFilters()">Aplicar filtros</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETALLE -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal-box" id="modalBox">
+    <div class="modal-handle"></div>
+    <div id="modalContent"></div>
   </div>
 </div>
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<!-- HEADER -->
-<div class="header">
-  <div class="header-top">
-    <div class="header-logo">My <em>Nana</em> — Ayudas para el Hogar</div>
-    <a href="/app.html" class="header-back">← Inicio</a>
-  </div>
-  <div class="buscar-wrap">
-    <input class="buscar-input" id="buscarInput" placeholder="🔍  Buscar ayuda..." oninput="buscarVideos(this.value)" />
-  </div>
-  <div class="cats">
-    <button class="cat-pill activa" onclick="filtrarCat('todos',this)">Todos</button>
-    <button class="cat-pill" onclick="filtrarCat('Cocina',this)">🍳 Cocina</button>
-    <button class="cat-pill" onclick="filtrarCat('Limpieza',this)">🧹 Limpieza</button>
-    <button class="cat-pill" onclick="filtrarCat('Lavandería',this)">👕 Lavandería</button>
-    <button class="cat-pill" onclick="filtrarCat('Niños',this)">🎒 Niños</button>
-    <button class="cat-pill" onclick="filtrarCat('Organización',this)">📦 Organización</button>
-  </div>
-</div>
-
-<!-- CONTENIDO -->
-<div class="contenido" id="contenido"></div>
-
-<!-- NAV INFERIOR -->
+<!-- BOTTOM NAV -->
 <div class="bottom-nav">
-  <div class="nav-item" onclick="location.href='/tareas.html'"><div class="nav-icon">✅</div><div class="nav-label">Mis tareas</div></div>
-  <div class="nav-item" onclick="location.href='/menu.html'"><div class="nav-icon">🍽️</div><div class="nav-label">Qué cocinar</div></div>
-  <div class="nav-item" onclick="location.href='/chat.html'"><div class="nav-icon">💬</div><div class="nav-label">Hablar</div></div>
-  <div class="nav-item activo"><div class="nav-icon">📹</div><div class="nav-label">Aprender</div></div>
+  <div class="nav-item activo" onclick="location.href='/app.html'">
+    <div class="nav-icon">🏠</div><div class="nav-label">Inicio</div>
+  </div>
+  <div class="nav-item" onclick="location.href='/tareas.html'">
+    <div class="nav-icon">✅</div><div class="nav-label">Tareas</div>
+  </div>
+  <div class="nav-item" onclick="location.href='/menu.html'">
+    <div class="nav-icon">🍽️</div><div class="nav-label">Menú</div>
+  </div>
+  <div class="nav-item" onclick="location.href='/chat.html'">
+    <div class="nav-icon">💬</div><div class="nav-label">Chat</div>
+  </div>
 </div>
 
 <script>
-// ── BASE DE DATOS DE VIDEOS ──
-const VIDEOS = [
-  {
-    id: 'sancocho',
-    titulo: 'Sancocho de gallina panameño',
-    cat: 'Cocina',
-    dur: '22 min',
-    nivel: 'Básico',
-    emoji: '🍲',
-    bg: '#0F4A38',
-    desc: 'Aprende a preparar el sancocho perfecto paso a paso. El plato más tradicional de Panamá, con el punto exacto de sazón y los ingredientes correctos.',
-    tags: ['sancocho', 'gallina', 'sopa', 'panameño', 'cocina'],
-    destacado: true,
-    pasos: [
-      'Lava bien la gallina y córtala en piezas. Sazónala con ajo, culantro y sal.',
-      'Sofríe la gallina en aceite caliente hasta dorar por todos lados.',
-      'Agrega agua y lleva a hervir. Quita la espuma que sube.',
-      'Añade el ñame, otoe, maíz y papas peladas y cortadas.',
-      'Cocina a fuego medio por 45 minutos hasta que todo esté blando.',
-      'Rectifica la sal y sirve caliente con arroz blanco.',
-    ],
-    youtubeId: null
-  },
-  {
-    id: 'arroz_pollo',
-    titulo: 'Arroz con pollo guisado',
-    cat: 'Cocina',
-    dur: '35 min',
-    nivel: 'Básico',
-    emoji: '🍛',
-    bg: '#3A6B8A',
-    desc: 'El arroz con pollo panameño perfecto — suave, sabroso y con el color y sazón correctos. Receta tradicional que toda la familia amará.',
-    tags: ['arroz', 'pollo', 'guisado', 'panameño', 'cocina'],
-    destacado: false,
-    pasos: [
-      'Corta el pollo en piezas y sazónalo con ajo, sal, comino y achiote.',
-      'Sofríe el pollo hasta dorar. Retira y reserva.',
-      'En la misma olla sofríe cebolla, pimiento y tomate picados.',
-      'Agrega el arroz y sofríe 2 minutos. Vuelve a poner el pollo.',
-      'Cubre con agua o caldo en proporción 2:1. Tapa y cocina a fuego bajo.',
-      'Cuando el arroz esté listo, esponja con un tenedor y sirve.',
-    ],
-    youtubeId: null
-  },
-  {
-    id: 'hojaldras',
-    titulo: 'Hojaldras panameñas tradicionales',
-    cat: 'Cocina',
-    dur: '20 min',
-    nivel: 'Básico',
-    emoji: '🥞',
-    bg: '#7A5A20',
-    desc: 'Las hojaldras son el desayuno más querido de Panamá. Aprende la masa perfecta para que queden esponjosas por dentro y doradas por fuera.',
-    tags: ['hojaldras', 'desayuno', 'masa', 'panameño', 'frito'],
-    destacado: false,
-    pasos: [
-      'Mezcla harina, sal, azúcar y polvo de hornear en un bol.',
-      'Agrega mantequilla y mezcla con los dedos hasta obtener migas.',
-      'Añade agua tibia poco a poco hasta formar una masa suave.',
-      'Amasa por 5 minutos. Deja reposar 10 minutos cubierta.',
-      'Estira la masa y corta círculos o cuadrados.',
-      'Fríe en aceite caliente hasta que doren. Escurre en papel.',
-    ],
-    youtubeId: null
-  },
-  {
-    id: 'limpieza_banos',
-    titulo: 'Cómo limpiar baños correctamente',
-    cat: 'Limpieza',
-    dur: '15 min',
-    nivel: 'Básico',
-    emoji: '🧹',
-    bg: '#D4A5A5',
-    desc: 'Técnica correcta para limpiar baños de forma higiénica y eficiente. Productos recomendados y el orden correcto para mejores resultados.',
-    tags: ['baño', 'limpieza', 'higiene', 'desinfectar'],
-    destacado: true,
-    pasos: [
-      'Aplica el limpiador en el interior del inodoro y deja actuar 5 min.',
-      'Limpia el espejo con limpiavidrios y papel periódico o microfibra.',
-      'Limpia el lavamanos con esponja y detergente. No olvides la llave.',
-      'Frota el inodoro con el cepillo. Limpia la tapa, los lados y el exterior.',
-      'Limpia las paredes de la ducha/tina con limpiador multiusos.',
-      'Trapea el piso con agua y desinfectante. Deja secar con ventilación.',
-    ],
-    youtubeId: null
-  },
-  {
-    id: 'limpieza_cocina',
-    titulo: 'Limpiar la cocina paso a paso',
-    cat: 'Limpieza',
-    dur: '18 min',
-    nivel: 'Básico',
-    emoji: '✨',
-    bg: '#1A6B52',
-    desc: 'Cómo mantener la cocina limpia e higiénica todos los días. Desde la estufa hasta el refrigerador, con los productos correctos.',
-    tags: ['cocina', 'limpieza', 'estufa', 'refrigerador', 'grasa'],
-    destacado: false,
-    pasos: [
-      'Remoja los platos y ollas primero para facilitar el lavado.',
-      'Limpia la estufa con desengrasante. Deja actuar 5 minutos.',
-      'Lava las ollas y platos. Sécalos bien antes de guardar.',
-      'Limpia las superficies con multiusos. No olvides detrás de los objetos.',
-      'Limpia el interior del microondas con agua y vinagre caliente.',
-      'Barre y trapea el piso de la cocina. Termina siempre por el piso.',
-    ],
-    youtubeId: null
-  },
-  {
-    id: 'lavanderia',
-    titulo: 'Lavandería sin dañar la ropa',
-    cat: 'Lavandería',
-    dur: '12 min',
-    nivel: 'Básico',
-    emoji: '👕',
-    bg: '#5A3F85',
-    desc: 'Cómo separar la ropa, usar la temperatura correcta y tratar manchas difíciles sin arruinar las prendas.',
-    tags: ['ropa', 'lavandería', 'lavar', 'manchas', 'planchado'],
-    destacado: false,
-    pasos: [
-      'Separa la ropa: blanca, de color clara y de color oscura.',
-      'Revisa las etiquetas para ver la temperatura de lavado recomendada.',
-      'Trata las manchas antes de lavar con jabón o quitamanchas.',
-      'No sobrecargues la lavadora — deja espacio para que la ropa se mueva.',
-      'Usa la cantidad correcta de detergente — más no es mejor.',
-      'Tiende o seca inmediatamente para evitar mal olor.',
-    ],
-    youtubeId: null
-  },
-  {
-    id: 'planchado',
-    titulo: 'Planchar ropa sin arruinarla',
-    cat: 'Lavandería',
-    dur: '10 min',
-    nivel: 'Básico',
-    emoji: '🧺',
-    bg: '#854F0B',
-    desc: 'Técnica correcta de planchado para cada tipo de tela. Cómo evitar quemas y dejar la ropa perfecta.',
-    tags: ['planchar', 'ropa', 'planchado', 'telas'],
-    destacado: false,
-    pasos: [
-      'Revisa la etiqueta de cada prenda para saber la temperatura.',
-      'Empieza con las prendas que requieren temperatura baja.',
-      'Plancha en movimientos continuos — nunca dejes el hierro quieto.',
-      'Las camisas: primero el cuello, luego mangas y por último el cuerpo.',
-      'Los pantalones: alinea las costuras para crear el pliegue correcto.',
-      'Cuelga inmediatamente para que no se arruguen de nuevo.',
-    ],
-    youtubeId: null
-  },
-  {
-    id: 'ninos_cuidado',
-    titulo: 'Cuidado de niños — lo básico',
-    cat: 'Niños',
-    dur: '20 min',
-    nivel: 'Básico',
-    emoji: '🎒',
-    bg: '#E8593C',
-    desc: 'Guía práctica para cuidar niños de forma segura. Rutinas, seguridad, alimentación y cómo manejar situaciones del día a día.',
-    tags: ['niños', 'cuidado', 'bebés', 'seguridad', 'rutinas'],
-    destacado: false,
-    pasos: [
-      'Mantén siempre visualmente al niño — nunca lo dejes solo.',
-      'Conoce las alergias y restricciones alimentarias del niño.',
-      'Sigue el horario de comidas y siestas que la familia estableció.',
-      'Ten el número de la familia y médico a mano siempre.',
-      'Para conflictos entre niños: calma, escucha y media sin tomar partido.',
-      'Reporta cualquier caída o incidente a la familia inmediatamente.',
-    ],
-    youtubeId: null
-  },
-  {
-    id: 'patacones',
-    titulo: 'Patacones perfectamente crujientes',
-    cat: 'Cocina',
-    dur: '15 min',
-    nivel: 'Básico',
-    emoji: '🍌',
-    bg: '#BA7517',
-    desc: 'El secreto para que los patacones queden perfectamente crujientes por fuera y suaves por dentro. La guarnición favorita de Panamá.',
-    tags: ['patacones', 'plátano', 'frito', 'guarnición', 'panameño'],
-    destacado: false,
-    pasos: [
-      'Pela el plátano verde y córtalo en rodajas de 2-3 cm.',
-      'Fríe en aceite caliente hasta que estén blandos pero no dorados.',
-      'Retira y aplasta con un pataconero o plato plano.',
-      'Sumerge brevemente en agua con sal para que queden crujientes.',
-      'Vuelve a freír hasta que estén dorados y crujientes.',
-      'Escurre en papel absorbente y sirve con ají o guacamole.',
-    ],
-    youtubeId: null
-  },
-  {
-    id: 'organizacion',
-    titulo: 'Organización del hogar',
-    cat: 'Organización',
-    dur: '16 min',
-    nivel: 'Básico',
-    emoji: '📦',
-    bg: '#4A6358',
-    desc: 'Cómo mantener el hogar ordenado y organizado todos los días. Técnicas simples para que todo tenga su lugar.',
-    tags: ['organización', 'orden', 'hogar', 'limpieza', 'armario'],
-    destacado: false,
-    pasos: [
-      'Cada cosa tiene su lugar — devuélvela ahí después de usarla.',
-      'Haz la cama al levantarte — marca el tono del día.',
-      'Limpia de arriba hacia abajo y de adentro hacia afuera.',
-      'Organiza los armarios por categorías — ropa, juguetes, utensilios.',
-      'Revisa fechas de vencimiento en la nevera semanalmente.',
-      'Al final del día, deja todo en su lugar para el día siguiente.',
-    ],
-    youtubeId: null
-  },
-  {
-    id: 'ropa_vieja',
-    titulo: 'Ropa vieja panameña',
-    cat: 'Cocina',
-    dur: '45 min',
-    nivel: 'Intermedio',
-    emoji: '🥩',
-    bg: '#633806',
-    desc: 'La ropa vieja es un plato tradicional hecho con carne deshebrada y un sofrito de vegetales. Rico, económico y lleno de sabor panameño.',
-    tags: ['ropa vieja', 'carne', 'deshebrada', 'panameño', 'cocina'],
-    destacado: false,
-    pasos: [
-      'Cocina la carne en agua con sal, ajo y culantro hasta que esté blanda.',
-      'Retira la carne, deja enfriar y deshébrala con las manos.',
-      'En aceite caliente sofríe cebolla, pimiento rojo y tomate.',
-      'Agrega la carne deshebrada y mezcla bien con el sofrito.',
-      'Añade un poco del caldo de cocción. Sazona con sal y comino.',
-      'Cocina 10 minutos más. Sirve con arroz y patacones.',
-    ],
-    youtubeId: null
-  },
-  {
-    id: 'limpieza_sala',
-    titulo: 'Limpiar sala y comedor',
-    cat: 'Limpieza',
-    dur: '20 min',
-    nivel: 'Básico',
-    emoji: '🛋️',
-    bg: '#2A5A7A',
-    desc: 'Cómo limpiar la sala y el comedor de forma eficiente. Desde los muebles hasta los pisos y las áreas menos visibles.',
-    tags: ['sala', 'comedor', 'muebles', 'piso', 'limpieza'],
-    destacado: false,
-    pasos: [
-      'Quita y sacude los cojines del sofá. Aspira o barre debajo.',
-      'Limpia las superficies — mesas, estantes — con paño húmedo.',
-      'Limpia el televisor y electrónicos con paño de microfibra seco.',
-      'Barre bien los rincones y detrás de los muebles.',
-      'Trapea el piso con agua y limpiador. En dirección a la puerta.',
-      'Ordena los cojines y decora todo como le gusta a la familia.',
-    ],
-    youtubeId: null
-  },
+// ═══════════════════════════════════════════════
+// BASE DE DATOS DE GUÍAS — 80 guías completas
+// ═══════════════════════════════════════════════
+const CATS = [
+  { id:'todas',    emoji:'✨', label:'Todas'             },
+  { id:'hogar',    emoji:'🏠', label:'Hogar'             },
+  { id:'limpieza', emoji:'🧹', label:'Limpieza'          },
+  { id:'lavanderia',emoji:'🧺',label:'Lavandería'        },
+  { id:'cocina',   emoji:'🍳', label:'Cocina'            },
+  { id:'ninos',    emoji:'👶', label:'Niños'             },
+  { id:'mascotas', emoji:'🐶', label:'Mascotas'          },
+  { id:'organizacion',emoji:'📦',label:'Organización'   },
+  { id:'adulto',   emoji:'❤️', label:'Adulto Mayor'      },
+  { id:'emergencias',emoji:'⚠️',label:'Emergencias'      },
 ];
 
-let videoActual = null;
-let vistos = JSON.parse(localStorage.getItem('mynana_videos_vistos') || '[]');
-let catActual = 'todos';
-let busqueda = '';
-
-// ── RENDER PRINCIPAL ──
-function renderContenido() {
-  const c = document.getElementById('contenido');
-  let lista = VIDEOS;
-
-  if (catActual !== 'todos') lista = lista.filter(v => v.cat === catActual);
-  if (busqueda) lista = lista.filter(v =>
-    v.titulo.toLowerCase().includes(busqueda) ||
-    v.tags.some(t => t.includes(busqueda))
-  );
-
-  if (!lista.length) {
-    c.innerHTML = `<div style="text-align:center;padding:48px 20px;">
-      <div style="font-size:40px;margin-bottom:12px;">🔍</div>
-      <div style="font-size:16px;font-weight:500;color:var(--txt);margin-bottom:6px;">Sin resultados</div>
-      <div style="font-size:13px;color:var(--txt2);">Intenta con otra búsqueda</div>
-    </div>`;
-    return;
-  }
-
-  const totalVistos = vistos.length;
-  const pct = Math.round((totalVistos / VIDEOS.length) * 100);
-
-  let html = '';
-
-  // Progreso personal
-  html += `<div class="progreso-card">
-    <div class="prog-circle">
-      <div class="prog-n">${totalVistos}</div>
-      <div class="prog-l">vistos</div>
-    </div>
-    <div class="prog-info">
-      <div class="prog-titulo">Tu progreso de aprendizaje</div>
-      <div class="prog-sub">${totalVistos} de ${VIDEOS.length} videos completados · ${pct}%</div>
-      <div class="prog-barra"><div class="prog-fill" style="width:${pct}%"></div></div>
-    </div>
-  </div>`;
-
-  if (catActual === 'todos' && !busqueda) {
-    // Video destacado
-    const destacados = lista.filter(v => v.destacado);
-    if (destacados.length) {
-      const v = destacados[0];
-      const visto = vistos.includes(v.id);
-      html += `<div class="seccion-titulo">⭐ Video del día</div>
-      <div class="video-featured" onclick="abrirVideo('${v.id}')">
-        <div class="video-featured-thumb" style="background:${v.bg};">
-          <div style="font-size:64px;z-index:1;">${v.emoji}</div>
-          <div class="video-featured-overlay">
-            <div class="play-btn-big">▶</div>
-          </div>
-        </div>
-        <div class="video-featured-info">
-          <div class="video-featured-cat">${v.cat} ${visto ? '· ✅ Visto' : ''}</div>
-          <div class="video-featured-titulo">${v.titulo}</div>
-          <div class="video-featured-meta">
-            <span>⏱ ${v.dur}</span>
-            <span>📊 ${v.nivel}</span>
-            <span>${v.pasos.length} pasos</span>
-          </div>
-        </div>
-      </div>`;
-    }
-
-    // Por categoría
-    const cats = ['Cocina','Limpieza','Lavandería','Niños','Organización'];
-    cats.forEach(cat => {
-      const catVideos = lista.filter(v => v.cat === cat);
-      if (!catVideos.length) return;
-      const emojis = { 'Cocina':'🍳','Limpieza':'🧹','Lavandería':'👕','Niños':'🎒','Organización':'📦' };
-      html += `<div class="seccion-titulo">${emojis[cat] || '📹'} ${cat}</div>
-      <div class="videos-row">
-        ${catVideos.map(v => {
-          const visto = vistos.includes(v.id);
-          return `<div class="video-row-card" onclick="abrirVideo('${v.id}')">
-            <div class="video-row-thumb" style="background:${v.bg};">
-              <span style="font-size:32px;z-index:1;">${v.emoji}</span>
-              <div style="position:absolute;inset:0;background:rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;">
-                <div style="width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;font-size:12px;">▶</div>
-              </div>
-              ${visto ? '<div style="position:absolute;top:6px;right:6px;background:var(--g);color:#fff;font-size:10px;padding:2px 6px;border-radius:99px;">✅</div>' : ''}
-            </div>
-            <div class="video-row-info">
-              <div class="video-row-titulo">${v.titulo}</div>
-              <div class="video-row-meta">⏱ ${v.dur}</div>
-            </div>
-          </div>`;
-        }).join('')}
-      </div>`;
-    });
-
-  } else {
-    // Vista de grilla filtrada
-    html += `<div class="seccion-titulo">📹 ${catActual === 'todos' ? 'Resultados' : catActual} (${lista.length})</div>
-    <div class="videos-grid">
-      ${lista.map(v => {
-        const visto = vistos.includes(v.id);
-        return `<div class="video-card" onclick="abrirVideo('${v.id}')">
-          <div class="video-thumb" style="background:${v.bg};">
-            <div class="video-thumb-emoji" style="position:relative;z-index:1;">${v.emoji}</div>
-            <div class="video-play-overlay">
-              <div class="play-btn-sm">▶</div>
-            </div>
-            ${visto ? '<div style="position:absolute;top:8px;right:8px;background:var(--g);color:#fff;font-size:10px;padding:2px 8px;border-radius:99px;">✅ Visto</div>' : ''}
-          </div>
-          <div class="video-info">
-            <div class="video-titulo">${v.titulo}</div>
-            <div class="video-meta">
-              <span class="video-cat-tag">${v.cat}</span>
-              <span>⏱ ${v.dur}</span>
-            </div>
-          </div>
-        </div>`;
-      }).join('')}
-    </div>`;
-  }
-
-  c.innerHTML = html;
-}
-
-// ── ABRIR VIDEO ──
-window.abrirVideo = (id) => {
-  const v = VIDEOS.find(v => v.id === id);
-  if (!v) return;
-  videoActual = v;
-
-  document.getElementById('modalEmoji').textContent = v.emoji;
-  document.getElementById('modalThumb').style.background = v.bg;
-  document.getElementById('modalCat').textContent = v.cat;
-  document.getElementById('modalTitulo').textContent = v.titulo;
-  document.getElementById('modalDur').textContent = `⏱ ${v.dur}`;
-  document.getElementById('modalNivel').textContent = `📊 ${v.nivel}`;
-
-  const visto = vistos.includes(v.id);
-  document.getElementById('modalVistas').textContent = visto ? '✅ Ya lo viste' : '👁 Sin ver';
-
-  document.getElementById('modalDesc').textContent = v.desc;
-  document.getElementById('modalPasos').innerHTML = v.pasos.map((p, i) => `
-    <div class="modal-paso">
-      <div class="paso-num">${i+1}</div>
-      <div class="paso-texto">${p}</div>
-    </div>`).join('');
-
-  const btnVisto = document.getElementById('btnVisto');
-  if (visto) {
-    btnVisto.textContent = '✅ Ya viste este video';
-    btnVisto.classList.add('visto');
-  } else {
-    btnVisto.textContent = '✅ Marcar como visto';
-    btnVisto.classList.remove('visto');
-  }
-
-  document.getElementById('modalVideo').classList.add('visible');
-  document.body.style.overflow = 'hidden';
+const CAT_COLORS = {
+  hogar:'#E8F5E9',limpieza:'#E3F2FD',lavanderia:'#F3E5F5',
+  cocina:'#FFF3E0',ninos:'#FFF8E1',mascotas:'#FBE9E7',
+  organizacion:'#E8EAF6',adulto:'#FCE4EC',emergencias:'#FFEBEE',
 };
 
-window.cerrarModal = () => {
-  document.getElementById('modalVideo').classList.remove('visible');
-  document.body.style.overflow = '';
-  videoActual = null;
-};
+const GUIAS = [
+  // ── HOGAR (10) ──────────────────────────────
+  {id:1,cat:'hogar',emoji:'🏠',titulo:'Ventilación diaria del hogar',nivel:'Básico',min:2,
+   resumen:'Ventilar bien la casa cada mañana es uno de los hábitos más simples y beneficiosos para la salud del hogar. Elimina humedad, malos olores y renueva el oxígeno interior.',
+   pasos:['Abre ventanas y puertas de extremo a extremo para crear corriente de aire cruzada.','Ventila durante al menos 10 minutos cada mañana, incluso si hay frío.','Empieza por los cuartos donde durmieron las personas.','Ventila el baño después de cada ducha para evitar humedad.','Cierra antes de que entre humedad exterior si llueve o hay viento fuerte.'],
+   consejo:'La mejor hora para ventilar es entre 6 y 9 de la mañana, cuando el aire exterior está más limpio y fresco.',
+   errores:'No ventilar creyendo que entra suciedad. El aire estancado acumula más bacterias que el aire exterior.',
+   info:'En Panamá, la ventilación también ayuda a reducir la sensación de calor sin necesidad de usar el aire acondicionado todo el día.'},
+  {id:2,cat:'hogar',emoji:'💡',titulo:'Revisar focos y electricidad mensualmente',nivel:'Básico',min:1,
+   resumen:'Una revisión mensual básica del sistema eléctrico del hogar previene accidentes y ahorra dinero en la factura de luz.',
+   pasos:['Revisa que ningún foco esté parpadeando — puede indicar conexión suelta.','Verifica que los tomacorrientes no estén calientes al tacto.','Cambia los focos quemados antes de que fallen más tomacorrientes.','Revisa que los cables no estén expuestos o pelados.','Si hay un interruptor que se dispara frecuentemente, llama a un electricista.'],
+   consejo:'Los focos LED duran hasta 10 veces más que los convencionales y usan 80% menos electricidad.',
+   errores:'No usar regletas sobrecargadas ni enchufar muchos equipos en el mismo tomacorriente.',
+   info:'Si un tomacorriente huele a quemado o hay chispas, desconéctalo inmediatamente y llama a un electricista.'},
+  {id:3,cat:'hogar',emoji:'🪴',titulo:'Cuidado básico de plantas de interior',nivel:'Básico',min:2,
+   resumen:'Las plantas de interior purifican el aire y decoran el hogar. Con pocos cuidados semanales se mantienen saludables por años.',
+   pasos:['Riega solo cuando la tierra superior esté seca al tacto — el exceso de agua es el error más común.','Limpia las hojas con un paño húmedo para quitar el polvo y que respiren mejor.','Rota las plantas cada semana para que todos los lados reciban luz por igual.','Revisa si hay hojas amarillas o caídas — señal de riego inadecuado.','Agrega fertilizante líquido una vez al mes durante la época de crecimiento.'],
+   consejo:'Si no sabes cada cuánto regar, introduce un palillo de madera en la tierra. Si sale limpio, es hora de regar.',
+   errores:'No colocar plantas tropicales bajo aire acondicionado directo ni en rincones sin luz natural.',
+   info:'Plantas como el pothos, sansevieria y paz lili son ideales para interiores panameños por su resistencia al calor.'},
+  {id:4,cat:'hogar',emoji:'🪟',titulo:'Limpieza de ventanas y persianas',nivel:'Básico',min:3,
+   resumen:'Las ventanas limpias cambian visualmente cualquier espacio. Con la técnica correcta se limpian sin rayaduras ni manchas.',
+   pasos:['Quita el polvo de la persiana con un paño seco o aspiradora antes de mojar.','Prepara agua tibia con unas gotas de limpiavidrios o vinagre blanco.','Usa un paño de microfibra o papel periódico — nunca toalla de tela.','Limpia en movimiento en S de arriba hacia abajo para evitar rayaduras.','Seca con el mismo paño en movimiento circular para evitar marcas.'],
+   consejo:'Limpia las ventanas en un día nublado. Con sol directo el líquido se seca muy rápido y deja manchas.',
+   errores:'No usar esponjas de cocina ni toallas — dejan pelusa. No mojar las persianas de madera o aluminio en exceso.',
+   info:'Las persianas de tela deben aspirarse semanalmente y lavarse solo cuando el fabricante lo indique.'},
+  {id:5,cat:'hogar',emoji:'🔧',titulo:'Mantenimiento básico del sistema de agua',nivel:'Intermedio',min:2,
+   resumen:'Revisar la presión del agua, los grifos y las llaves de paso periódicamente previene goteras y daños costosos en el hogar.',
+   pasos:['Revisa mensualmente que ningún grifo gotee — incluso una gota por segundo desperdicia 3,000 litros al año.','Verifica que el calentador de agua no tenga óxido ni ruidos extraños.','Abre y cierra las llaves de paso principales cada 3 meses para que no se agarroten.','Limpia los aireadores de los grifos (la malla en la punta) cada 2 meses.','Si hay presión baja, revisa si hay llaves abiertas en toda la casa.'],
+   consejo:'Instala un medidor de agua o revisa el medidor mensualmente para detectar fugas invisibles.',
+   errores:'No ignorar manchas de humedad en paredes o techos — siempre indican una fuga activa.',
+   info:'En caso de rotura de tubería: cierra inmediatamente la llave de paso principal y llama a un plomero.'},
+  {id:6,cat:'hogar',emoji:'🛋️',titulo:'Cuidado y limpieza de muebles de sala',nivel:'Básico',min:2,
+   resumen:'Los muebles de tela y cuero requieren cuidados distintos. Un mantenimiento regular los mantiene como nuevos por muchos años.',
+   pasos:['Aspira los muebles de tela semanalmente incluyendo los cojines y ranuras.','Para cuero, usa una crema hidratante especial cada 3 meses para evitar que se agriete.','Las manchas de tela: toca (no frotes) con un paño húmedo limpio inmediatamente.','Rota los cojines semanalmente para que se desgasten de forma pareja.','Mantén los muebles alejados de la luz solar directa para evitar decoloración.'],
+   consejo:'Para manchas difíciles en tela, una mezcla de agua tibia con jabón neutro y una gota de vinagre funciona muy bien.',
+   errores:'No usar cloro ni productos abrasivos en ningún mueble. No frotar manchas — siempre toca suavemente.',
+   info:'Para muebles de ratán o mimbre, pásales un cepillo suave y limpia con agua jabonosa sin mojar en exceso.'},
+  {id:7,cat:'hogar',emoji:'🛏️',titulo:'Rutina de cambio y aireado de camas',nivel:'Básico',min:2,
+   resumen:'Cambiar y airear las camas correctamente reduce ácaros, mejora el sueño y mantiene el colchón en mejor estado por más tiempo.',
+   pasos:['Cambia sábanas al menos una vez por semana.','Al cambiar, airea el colchón doblando las sábanas hacia abajo por 20 minutos.','Aspira el colchón cada 2 semanas usando el accesorio plano de la aspiradora.','Rota el colchón 180 grados cada 3 meses para desgaste parejo.','Lava las almohadas en lavadora cada 2 meses con agua caliente.'],
+   consejo:'Espolvorea bicarbonato sobre el colchón, deja 30 minutos y aspira. Elimina olores y mata ácaros de forma natural.',
+   errores:'No hacer la cama inmediatamente al levantarse — los ácaros se reproducen con el calor atrapado.',
+   info:'Un colchón se cambia cada 8-10 años. Si tiene hundimientos visibles o manchas profundas, es hora de renovarlo.'},
+  {id:8,cat:'hogar',emoji:'🪣',titulo:'Limpieza del tanque de agua',nivel:'Intermedio',min:3,
+   resumen:'El tanque de agua es la fuente de toda el agua del hogar. Limpiarlo cada 6 meses garantiza agua segura para toda la familia.',
+   pasos:['Cierra la llave de entrada de agua al tanque.','Vacía el tanque dejando salir el agua por el grifo más bajo.','Friega las paredes internas con cepillo y solución de cloro (1 cucharada por 10 litros de agua).','Enjuaga abundantemente con agua limpia hasta que no quede olor a cloro.','Vuelve a abrir la entrada de agua y llena el tanque.'],
+   consejo:'El mejor momento para limpiar el tanque es temprano en la mañana, cuando el consumo de agua es menor.',
+   errores:'No usar jabón ni detergente — el cloro es suficiente y más seguro para el agua potable.',
+   info:'Si el agua tiene olor o color extraño, limpia el tanque de inmediato sin esperar los 6 meses.'},
+  {id:9,cat:'hogar',emoji:'🐜',titulo:'Prevención de plagas en el hogar',nivel:'Intermedio',min:2,
+   resumen:'La prevención es más eficaz y económica que el control de plagas. Con hábitos simples se evita la entrada de cucarachas, hormigas y ratones.',
+   pasos:['Sella grietas en paredes, puertas y ventanas con silicona o espuma expansiva.','No dejes comida expuesta — guárdala en recipientes herméticos.','Limpia migajas y derrames inmediatamente, especialmente en la cocina.','Revisa mensualmente detrás de la nevera y la cocina — son zonas favoritas.','Usa trampas preventivas si ya has tenido plagas anteriores.'],
+   consejo:'El laurel seco colocado en gabinetes de cocina ahuyenta a las cucarachas de forma natural.',
+   errores:'No acumular cajas de cartón — son el escondite favorito de cucarachas y ratones.',
+   info:'Si detectas infestación activa, llama a un servicio de fumigación profesional — el control casero no es suficiente.'},
+  {id:10,cat:'hogar',emoji:'🌡️',titulo:'Control de humedad en el hogar',nivel:'Intermedio',min:2,
+   resumen:'En Panamá, la humedad alta es constante. Controlarla dentro del hogar previene moho, malos olores y daños a muebles y paredes.',
+   pasos:['Ventila diariamente — es la herramienta más económica contra la humedad.','Usa extractores en baños y cocina mientras se cocina o ducha.','Revisa detrás de muebles pegados a la pared — el moho crece primero ahí.','Si hay manchas de humedad en paredes, trátalas con pintura antimanchas antes de repintar.','Coloca plantas que absorben humedad como la sansevieria o el helecho.'],
+   consejo:'El bicarbonato de sodio en una taza abierta dentro de un armario absorbe humedad y malos olores.',
+   errores:'No dejar ropa húmeda dentro de la casa — duplica la humedad ambiental.',
+   info:'La humedad ideal dentro del hogar es entre 40% y 60%. Por encima de 70% favorece el crecimiento de moho.'},
 
-window.marcarVisto = () => {
-  if (!videoActual) return;
-  if (!vistos.includes(videoActual.id)) {
-    vistos.push(videoActual.id);
-    localStorage.setItem('mynana_videos_vistos', JSON.stringify(vistos));
-    showToast('✅ Video marcado como visto');
-  }
-  const btn = document.getElementById('btnVisto');
-  btn.textContent = '✅ Ya viste este video';
-  btn.classList.add('visto');
-  document.getElementById('modalVistas').textContent = '✅ Ya lo viste';
-  renderContenido();
-};
+  // ── LIMPIEZA (12) ────────────────────────────
+  {id:11,cat:'limpieza',emoji:'🧹',titulo:'Rutina de limpieza rápida diaria',nivel:'Básico',min:2,
+   resumen:'Una rutina de 20 minutos diarios mantiene la casa ordenada sin necesidad de hacer grandes limpiezas semanales agotadoras.',
+   pasos:['Recoge todo lo que está fuera de lugar primero — no limpies alrededor del desorden.','Barre o pasa la aspiradora en las áreas de mayor tráfico.','Limpia las superficies de cocina y baño con un paño húmedo.','Vacía los basureros que estén llenos.','Reorganiza los cojines y mantas de sala.'],
+   consejo:'La regla de los 2 minutos: si algo tarda menos de 2 minutos en hacerse, hazlo ahora mismo.',
+   errores:'No intentar limpiar y organizar al mismo tiempo — son tareas diferentes. Primero organiza, luego limpia.',
+   info:'Una rutina diaria consistente reduce a la mitad el tiempo de la limpieza profunda semanal.'},
+  {id:12,cat:'limpieza',emoji:'🚿',titulo:'Limpieza profunda del baño',nivel:'Básico',min:3,
+   resumen:'El baño requiere limpieza profunda al menos una vez por semana. Con los productos y el orden correcto se hace eficientemente.',
+   pasos:['Aplica el limpiador de inodoro y deja actuar 5 minutos antes de frotar.','Limpia espejos y superficies de vidrio con limpiavidrios.','Frota paredes y piso de ducha con cepillo y desengrasante.','Limpia lavamanos, grifo y bordes con un paño húmedo con desinfectante.','Termina con el piso — siempre de adentro hacia afuera.'],
+   consejo:'Rocía vinagre blanco sobre las juntas de la ducha, deja 30 minutos y frota. Elimina el sarro y el moho.',
+   errores:'No mezclar nunca cloro con amoníaco o vinagre — genera gases tóxicos.',
+   info:'El cepillo del inodoro debe desinfectarse después de cada uso. Cámbialo cada 6 meses.'},
+  {id:13,cat:'limpieza',emoji:'🍽️',titulo:'Desengrasado de cocina',nivel:'Intermedio',min:3,
+   resumen:'La grasa acumulada en la cocina es la fuente principal de malos olores y riesgo de incendio. Un desengrasado semanal mantiene todo seguro.',
+   pasos:['Apaga y desconecta la cocina antes de limpiar.','Aplica desengrasante en quemadores, parrillas y superficies. Deja actuar 5 minutos.','Frota con esponja de doble cara — el lado abrasivo para incrustaciones.','Limpia el rango de la campana extractora con papel húmedo y desengrasante.','Termina con agua limpia y seca bien para evitar óxido.'],
+   consejo:'Para grasa muy adherida, pon papel húmedo con desengrasante sobre la zona y cúbrelo con plástico. Deja 15 minutos y frota fácilmente.',
+   errores:'No usar objetos metálicos ni estropajos de acero en superficies de vidrio — las rayan permanentemente.',
+   info:'El filtro de la campana extractora debe lavarse cada mes con agua caliente y desengrasante.'},
+  {id:14,cat:'limpieza',emoji:'🪴',titulo:'Limpieza de pisos según el tipo',nivel:'Básico',min:2,
+   resumen:'Cada tipo de piso tiene su método y producto correcto. Usar el producto equivocado puede dañar permanentemente el material.',
+   pasos:['Identifica el tipo de piso: cerámica, mármol, vinilo, madera o cemento.','Barre o aspira siempre antes de fregar para no empujar la suciedad.','Cerámica: agua con cloro diluido. Mármol: solo agua tibia neutra — nunca ácidos.','Madera o laminado: paño casi seco — el exceso de agua los arruina.','Friegue siempre desde el fondo hacia la salida.'],
+   consejo:'Para brillar cerámica sin productos químicos, pasa el trapeador con agua tibia y unas gotas de aceite de bebé.',
+   errores:'No usar vinagre en mármol ni piedra natural — los corroe. No saturar de agua pisos de madera.',
+   info:'Los pisos de madera deben encerarse cada 6 meses con cera específica para madera para protegerlos.'},
+  {id:15,cat:'limpieza',emoji:'🪟',titulo:'Limpieza de cortinas y toldos',nivel:'Intermedio',min:3,
+   resumen:'Las cortinas acumulan polvo, alérgenos y olores. Su limpieza regular mejora la calidad del aire del hogar.',
+   pasos:['Lee la etiqueta de la cortina para saber si es lavable a máquina o solo en seco.','Aspira las cortinas primero con el accesorio de tapizado.','Si es lavable, usa ciclo delicado y temperatura baja.','Los toldos exteriores: cepillo suave con agua jabonosa y manguera.','Coloca mientras están ligeramente húmedas para que queden bien estiradas.'],
+   consejo:'Lava cortinas de baño semanalmente — acumulan moho rápidamente por la humedad constante.',
+   errores:'No meter telas delicadas en secadora — encogen. No usar blanqueador en cortinas de colores.',
+   info:'Las cortinas muy pesadas o de grandes dimensiones requieren servicio de lavandería profesional.'},
+  {id:16,cat:'limpieza',emoji:'🧊',titulo:'Limpieza y descongelamiento del refrigerador',nivel:'Básico',min:3,
+   resumen:'Un refrigerador limpio funciona mejor, consume menos energía y conserva mejor los alimentos. Debe limpiarse al menos una vez al mes.',
+   pasos:['Desconecta o sube la temperatura al mínimo antes de limpiar.','Saca todos los alimentos y colócalos en una hielera o lugar fresco.','Retira los cajones y repisas y lávalos con agua tibia y jabón neutro.','Limpia el interior con agua tibia y bicarbonato (no jabón — deja olor).','Limpia la goma de la puerta con un paño húmedo y un poco de vinagre.'],
+   consejo:'Coloca un trozo de carbón activo o media taza de bicarbonato en el interior para absorber olores permanentemente.',
+   errores:'No usar objetos afilados para descongelar — perforan el sistema de refrigeración.',
+   info:'La parte trasera del refrigerador acumula polvo en las bobinas. Limpia con brocha cada 6 meses para mejorar eficiencia.'},
+  {id:17,cat:'limpieza',emoji:'🏡',titulo:'Limpieza de terraza o balcón',nivel:'Básico',min:2,
+   resumen:'Las terrazas acumulan polvo, hojas y moho rápidamente en clima tropical. Una limpieza semanal las mantiene en óptimo estado.',
+   pasos:['Barre primero todas las hojas y polvo.','Retira muebles de exterior para limpiar el piso completamente.','Frota el piso con agua, jabón y cepillo de cerdas duras.','Enjuaga con manguera o balde de agua limpia.','Limpia los muebles de exterior con paño húmedo o manguera según el material.'],
+   consejo:'Para quitar manchas verdes de moho en el piso de concreto, aplica cloro diluido, deja 10 minutos y frota con cepillo.',
+   errores:'No dejes charcos de agua estancada — crían mosquitos. No laves muebles de madera con manguera.',
+   info:'Los muebles de exterior deben guardarse o cubrirse durante la temporada de lluvias para prolongar su vida útil.'},
+  {id:18,cat:'limpieza',emoji:'🌀',titulo:'Limpieza del lavarropas y lavadero',nivel:'Básico',min:2,
+   resumen:'El lavarropas necesita limpieza mensual para funcionar bien y no transmitir olores a la ropa.',
+   pasos:['Pasa un ciclo de lavado vacío con agua caliente y 2 tazas de vinagre blanco.','Limpia el tambor con un paño húmedo con vinagre para quitar residuos de jabón.','Limpia el dispensador de detergente con agua tibia y cepillo viejo.','Deja la puerta abierta entre lavadas para que se seque y no haga moho.','Limpia la goma de la puerta con vinagre y paño seco cada semana.'],
+   consejo:'Para lavarropas con mal olor, añade 1 cucharada de bicarbonato al tambor y corre ciclo de enjuague.',
+   errores:'No usar más detergente del indicado — el exceso genera moho y deteriora el motor.',
+   info:'Los filtros de pelusa de la lavadora deben revisarse y limpiarse cada 3 lavados.'},
+  {id:19,cat:'limpieza',emoji:'✨',titulo:'Limpieza de electrodomésticos pequeños',nivel:'Básico',min:2,
+   resumen:'La licuadora, tostadora, microondas y cafetería acumulan residuos que afectan el sabor de los alimentos y la salud.',
+   pasos:['Tostadora: vacía el cajón de migas después de cada uso. Agita boca abajo mensualmente.','Microondas: coloca un vaso con agua y limón 5 minutos al máximo. El vapor afloja los residuos.','Licuadora: llena con agua y jabón y enciende 30 segundos. Enjuaga.','Cafetera: pasa ciclo de agua con vinagre blanco. Enjuaga 2 veces con agua sola.','Todos: desconecta antes de limpiar el exterior con paño húmedo.'],
+   consejo:'Para eliminar olores del microondas, deja media limón adentro durante 2 horas con la puerta cerrada.',
+   errores:'Nunca sumerjas la base de la licuadora, cafetera ni tostadora en agua.',
+   info:'La cafetera debe descalcificarse con vinagre cada mes si se usa a diario. El sarro reduce su vida útil.'},
+  {id:20,cat:'limpieza',emoji:'🪑',titulo:'Limpieza de alfombras y tapetes',nivel:'Intermedio',min:3,
+   resumen:'Las alfombras son los elementos que más polvo y ácaros acumulan en el hogar. Su limpieza regular es clave para la salud respiratoria.',
+   pasos:['Aspira en dos direcciones — primero paralelo y luego perpendicular a las fibras.','Para manchas frescas: absorbe con paño limpio sin frotar. Aplica agua tibia con jabón neutro.','Para olores: espolvorea bicarbonato, deja 30 minutos y aspira.','Para limpieza profunda mensual: lava con champú para alfombras y cepillo suave.','Seca completamente al sol o con ventilador antes de colocar de vuelta.'],
+   consejo:'Coloca un tapete limpiapies en cada entrada. Evita que el 70% del polvo exterior entre a la casa.',
+   errores:'No saturar de agua una alfombra — el exceso no seca bien y genera moho desde adentro.',
+   info:'Las alfombras muy grandes o antiguas requieren limpieza profesional con aspirado industrial al menos una vez al año.'},
+  {id:21,cat:'limpieza',emoji:'🗂️',titulo:'Limpieza de la zona de estudio u oficina',nivel:'Básico',min:1,
+   resumen:'Un espacio de trabajo limpio y organizado mejora la concentración, reduce el estrés y protege los equipos electrónicos.',
+   pasos:['Apaga todos los equipos antes de limpiar.','Limpia el monitor con paño de microfibra seco — nunca líquido directo.','Limpia el teclado volteándolo y agitando, luego pasa entre teclas con brocha suave.','Desinfecta el mouse y superficies con paño húmedo con alcohol isopropílico.','Organiza cables con amarras o cajas organizadoras para evitar polvo acumulado.'],
+   consejo:'Un humidificador cerca del área de trabajo reduce la estática que atrae polvo a las pantallas.',
+   errores:'No usar sprays directamente sobre pantallas ni teclados. No limpiar con toallas húmedas para bebé — dejan residuos.',
+   info:'Los ventiladores y disipadores de las computadoras deben limpiarse con aire comprimido cada 3 meses.'},
+  {id:22,cat:'limpieza',emoji:'🛁',titulo:'Eliminación de sarro y moho en baños',nivel:'Intermedio',min:3,
+   resumen:'El sarro y el moho son los enemigos principales del baño. Con los productos correctos y la técnica adecuada se eliminan sin dañar las superficies.',
+   pasos:['Para sarro en grifo: envuelve con papel húmedo empapado en vinagre. Deja 1 hora.','Para moho en juntas: aplica cloro con cepillo de dientes viejo. Deja 15 minutos.','Para manchas de sarro en ducha: mezcla bicarbonato y vinagre hasta formar pasta. Aplica y frota.','Enjuaga con agua caliente para activar la remoción.','Seca las superficies después de la ducha para prevenir nueva formación.'],
+   consejo:'Aplica aceite de árbol de té (tea tree oil) en las juntas después de limpiar. Es antifúngico natural.',
+   errores:'No mezclar cloro con ácido — genera gas tóxico. No usar cloro sobre mármol ni superficies naturales.',
+   info:'Si el moho cubre más de 1 m², puede indicar problema estructural de humedad. Consultar a un especialista.'},
 
-window.reproducirVideo = () => {
-  if (!videoActual) return;
-  if (videoActual.youtubeId) {
-    window.open(`https://www.youtube.com/watch?v=${videoActual.youtubeId}`, '_blank');
-  } else {
-    showToast('📹 Video de demostración — próximamente real');
-    marcarVisto();
-  }
-};
+  // ── LAVANDERÍA (10) ──────────────────────────
+  {id:23,cat:'lavanderia',emoji:'🧺',titulo:'Separar ropa correctamente antes de lavar',nivel:'Básico',min:1,
+   resumen:'Separar la ropa es el primer paso para cuidarla. Un error al mezclar colores o tejidos puede arruinar prendas completas.',
+   pasos:['Separa por color: blancos, claros y oscuros siempre por separado.','Separa por tipo de tejido: delicados (seda, encaje) del resto.','Separa por suciedad: ropa muy sucia o manchada en un grupo aparte.','Revisa los bolsillos antes de meter en la lavadora.','Lee la etiqueta de lavado antes de incluir una prenda nueva.'],
+   consejo:'Compra 3 cestas de ropa sucia distintas: una para blancos, una para colores, una para delicados.',
+   errores:'Nunca lavar toallas con ropa de colores delgados — las pelusas se adhieren.',
+   info:'La ropa de trabajo (uniformes de cocina, overoles) debe lavarse siempre separada de la ropa personal.'},
+  {id:24,cat:'lavanderia',emoji:'📋',titulo:'Leer etiquetas de ropa correctamente',nivel:'Básico',min:2,
+   resumen:'Las etiquetas de la ropa contienen instrucciones de lavado en símbolos universales. Entenderlas es fundamental para no arruinar prendas.',
+   pasos:['Símbolo de bañera: indica lavado. Número adentro = temperatura máxima.','Mano en bañera: solo lavar a mano.','Triángulo: blanqueador. Con X = nunca usar cloro.','Cuadrado: secado. Con puntos = temperatura del secador.','Plancha: temperatura según puntos (1=baja, 2=media, 3=alta).'],
+   consejo:'Fotografía las etiquetas de tus prendas más delicadas para consultarlas rápidamente sin quitarlas del closet.',
+   errores:'No ignorar las etiquetas aunque "parezca" ropa resistente. Una prenda de lana a 60° encoge permanentemente.',
+   info:'La X sobre cualquier símbolo significa prohibido. Es el símbolo más importante de recordar.'},
+  {id:25,cat:'lavanderia',emoji:'🌡️',titulo:'Temperatura correcta para cada tipo de ropa',nivel:'Básico',min:1,
+   resumen:'La temperatura del agua afecta tanto la limpieza como la durabilidad de la ropa. Usar la temperatura correcta alarga la vida de las prendas.',
+   pasos:['30°C — Ropa delicada, colores oscuros, sintéticos y lana (ciclo delicado).','40°C — Ropa de uso diario, algodón, mezclas, toallas de colores.','60°C — Ropa de cama, toallas blancas, ropa de bebé, textiles sucios.','90°C — Solo para blancos de algodón muy sucios o artículos médicos.','Agua fría — Para colores muy intensos que pueden soltar tinte.'],
+   consejo:'El 90% de la ropa cotidiana se limpia perfectamente a 30-40°C. Usar más temperatura solo gasta más energía.',
+   errores:'No lavar ropa de color oscuro a más de 40°C — se decolora progresivamente.',
+   info:'Agua fría no equivale a mala limpieza. Los detergentes modernos son efectivos desde los 20°C.'},
+  {id:26,cat:'lavanderia',emoji:'🧼',titulo:'Cantidad correcta de detergente',nivel:'Básico',min:1,
+   resumen:'Usar más detergente del necesario es uno de los errores más comunes. No limpia mejor y daña la lavadora y la ropa.',
+   pasos:['Lee las instrucciones del detergente para saber la dosis por carga.','Para carga estándar: usa la medida indicada, nunca más.','Para agua dura o ropa muy sucia: aumenta el 20%, no dobles la dosis.','Para ropa delicada: usa la mitad de la dosis normal.','Los detergentes concentrados requieren mucho menos cantidad que los tradicionales.'],
+   consejo:'El exceso de detergente se queda en la ropa como residuo y puede causar irritación de piel.',
+   errores:'No añadir detergente directamente sobre la ropa — puede manchar. Siempre al dispensador.',
+   info:'Si la lavadora forma mucha espuma, has usado demasiado detergente. Corre ciclo de enjuague extra.'},
+  {id:27,cat:'lavanderia',emoji:'🩺',titulo:'Cómo quitar manchas antes de lavar',nivel:'Intermedio',min:2,
+   resumen:'Actuar rápido es la clave para eliminar manchas. Cuanto más tiempo pasa, más difícil es removerlas.',
+   pasos:['Absorbe el líquido inmediatamente con paño limpio — nunca frotar.','Identifica el tipo de mancha antes de aplicar cualquier producto.','Grasa: aplica talco o sal para absorber, luego desengrasante.','Sangre fresca: agua fría (nunca caliente) y jabón neutro.','Vino, café, jugo: agua con sal inmediatamente, luego lavar normalmente.'],
+   consejo:'El quitamanchas más efectivo para ropa blanca es el sol directo. Moja la mancha con jugo de limón y déjala al sol.',
+   errores:'El agua caliente fija las manchas de proteína (sangre, huevo, leche). Siempre agua fría para estas.',
+   info:'Para manchas de tinta de bolígrafo: aplica alcohol isopropílico con algodón antes de lavar.'},
+  {id:28,cat:'lavanderia',emoji:'✂️',titulo:'Cuidado de ropa delicada a mano',nivel:'Intermedio',min:2,
+   resumen:'La seda, el encaje, la lana fina y ciertos sintéticos delicados requieren lavado a mano para conservar su forma y textura.',
+   pasos:['Prepara agua fría o tibia (máximo 30°C) con detergente para delicados.','Sumerge la prenda completamente y mueve suavemente — sin frotar ni torcer.','Enjuaga con agua limpia del mismo temperatura para no producir choque térmico.','Exprime suavemente envolviendo en una toalla seca — nunca escurrir.','Tiende en horizontal sobre una toalla o rejilla — nunca en gancho (se deforma).'],
+   consejo:'Añade unas gotas de acondicionador de cabello al agua de enjuague para suavizar la lana.',
+   errores:'No frotar, retorcer ni exprimir con fuerza ropa delicada. No dejar empapada más de 15 minutos.',
+   info:'Lana mojada pesa mucho y se deforma fácilmente. Nunca cuelgues sweaters de lana en ganchos.'},
+  {id:29,cat:'lavanderia',emoji:'☀️',titulo:'Secado correcto de ropa',nivel:'Básico',min:1,
+   resumen:'El secado incorrecto es responsable de la deformación, encogimiento y decoloración de muchas prendas.',
+   pasos:['Lee la etiqueta antes de usar secadora o tender al sol.','Ropa delicada y de color: secar a la sombra — el sol directo decolora.','Blancos de algodón: el sol directo blanquea y desinfecta.','En secadora: no sobre-secar — saca la ropa ligeramente húmeda.','Cuelga la ropa bien extendida para que no quede arrugada.'],
+   consejo:'Sacude cada prenda antes de colgar para estirar las fibras y reducir las arrugas.',
+   errores:'No tender ropa amontonada en el tendedero — no seca parejo y huele mal.',
+   info:'La ropa de cama se seca mejor extendida en dos tendederos en paralelo para maximizar la circulación de aire.'},
+  {id:30,cat:'lavanderia',emoji:'🔧',titulo:'Planchar correctamente sin dañar la ropa',nivel:'Intermedio',min:2,
+   resumen:'Planchar con la temperatura incorrecta puede arruinar una prenda permanentemente. Con la técnica adecuada se plancha eficientemente.',
+   pasos:['Organiza la ropa por temperatura: primero la que requiere menos calor, luego más.','Consulta la etiqueta: 1 punto=baja, 2=media, 3=alta temperatura.','Plancha la ropa ligeramente húmeda para mejores resultados.','Mueve la plancha siempre en el sentido de las fibras, no en circular.','Para telas delicadas, usa un paño de algodón húmedo entre la plancha y la tela.'],
+   consejo:'Para prendas sin arrugas rápido: cuélgalas en el baño mientras te duchas. El vapor las alisa.',
+   errores:'No planchar terciopelo, cuero, telas plásticas ni ropa húmeda oscura directamente sin paño.',
+   info:'Limpia la suela de la plancha mensualmente con sal gruesa o limpiador especial para planchas.'},
+  {id:31,cat:'lavanderia',emoji:'🧸',titulo:'Lavado de peluches y juguetes de tela',nivel:'Básico',min:2,
+   resumen:'Los peluches acumulan ácaros y bacterias. Lavarlos correctamente elimina alérgenos y los mantiene seguros para los niños.',
+   pasos:['Revisa la etiqueta — muchos peluches son lavables a máquina en bolsa de tela.','Usa ciclo delicado, agua fría y detergente suave.','Para peluches no lavables: mételos en una bolsa hermética y congélalos 48 horas para matar ácaros.','Sécalos a temperatura baja en secadora o al aire libre a la sombra.','Verifica que el relleno esté distribuido parejo antes de devolverlos al niño.'],
+   consejo:'Agrega una media vuelta de secado con una pelota de tenis en la secadora para que el peluche quede esponjoso.',
+   errores:'No secar peluches grandes directamente al sol — el color se decolora y el relleno se apelmaza.',
+   info:'Los peluches de niños menores de 3 años deben lavarse cada semana para evitar acumulación de gérmenes.'},
+  {id:32,cat:'lavanderia',emoji:'👟',titulo:'Lavado de zapatos y calzado',nivel:'Intermedio',min:2,
+   resumen:'Los zapatos sucios son fuente de malos olores y bacterias. Lavarlos correctamente los limpia sin dañarlos.',
+   pasos:['Quita los cordones y las plantillas — lávalos por separado a mano.','Retira el barro grueso con cepillo seco antes de mojar.','Tenis de tela: lavadora en bolsa, ciclo delicado, agua fría.','Cuero: solo limpieza en seco con crema específica — nunca sumergir en agua.','Sécalos rellenos con papel periódico para que mantengan la forma.'],
+   consejo:'Espolvorea bicarbonato dentro de los zapatos y déjalo toda la noche para eliminar el olor.',
+   errores:'No secar zapatos de tela en secadora o al sol directo — se deforman y endurecen.',
+   info:'Los zapatos de cuero deben hidratarse con crema cada 3 meses para evitar que se agrieten.'},
 
-// ── FILTROS ──
-window.filtrarCat = (cat, btn) => {
-  catActual = cat;
-  busqueda = '';
-  document.getElementById('buscarInput').value = '';
-  document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('activa'));
-  btn.classList.add('activa');
-  renderContenido();
-};
+  // ── COCINA (12) ──────────────────────────────
+  {id:33,cat:'cocina',emoji:'🍳',titulo:'Mise en place: preparar antes de cocinar',nivel:'Básico',min:2,
+   resumen:'Mise en place (tenerlo todo listo antes de cocinar) es el hábito que separa a las cocineras organizadas de las estresadas.',
+   pasos:['Lee la receta completa antes de empezar — de inicio a fin.','Saca todos los ingredientes y utensilios necesarios.','Lava, pela y corta todos los ingredientes antes de encender el fuego.','Organiza los ingredientes en el orden que los usarás.','Prepara los condimentos y salsas que usarás durante la cocción.'],
+   consejo:'Usa pequeños tazones para tener cada ingrediente listo. La cocina se hace más rápida y ordenada.',
+   errores:'No empezar a cocinar con la nevera abierta buscando ingredientes — el tiempo y la concentración se pierden.',
+   info:'Los chefs profesionales dedican hasta el 60% del tiempo a la preparación y solo el 40% a la cocción.'},
+  {id:34,cat:'cocina',emoji:'🔪',titulo:'Técnicas básicas de corte seguro',nivel:'Básico',min:2,
+   resumen:'Un buen corte hace que los alimentos se cocinen parejo y la cocina sea más segura. La técnica correcta previene accidentes.',
+   pasos:['Usa siempre una tabla de cortar estable — coloca un paño húmedo debajo para que no resbale.','Sujeta los alimentos con la mano en garra: dedos doblados, nudillos hacia adelante.','El cuchillo guía contra los nudillos — nunca expone los dedos.','Corta siempre lejos del cuerpo, con movimiento hacia adelante.','Mantén el cuchillo afilado — los cuchillos opacos requieren más fuerza y son más peligrosos.'],
+   consejo:'Para cortar cebolla sin llorar: enfríala 30 minutos en el congelador antes de cortar.',
+   errores:'Nunca agarres un cuchillo que cae — déjalo caer. Nunca pongas cuchillos en el fregadero con agua.',
+   info:'Un cuchillo chef bien afilado es el utensilio más importante de cualquier cocina. Afílalo cada 2 semanas.'},
+  {id:35,cat:'cocina',emoji:'🌡️',titulo:'Temperatura correcta para cocinar carnes',nivel:'Intermedio',min:2,
+   resumen:'Cocinar carnes a la temperatura correcta garantiza seguridad alimentaria. Las carnes poco cocidas pueden contener bacterias peligrosas.',
+   pasos:['Pollo y aves: temperatura interna mínima de 74°C — el jugo debe salir claro.','Res (bien cocida): 71°C. Término medio: 63°C con 3 min de reposo.','Cerdo: mínimo 63°C temperatura interna.','Pescado: se deshace en capas, color opaco uniforme.','Usa termómetro de cocina para medir — no confíes solo en el color.'],
+   consejo:'Deja reposar las carnes 5 minutos después de cocinar. La temperatura sigue subiendo y los jugos se redistribuyen.',
+   errores:'No cortar la carne inmediatamente al sacarla del fuego — pierdes todos los jugos.',
+   info:'El pollo rosado o con jugos rosados NUNCA es seguro para comer, independientemente del tiempo de cocción.'},
+  {id:36,cat:'cocina',emoji:'🫙',titulo:'Conservación correcta de alimentos',nivel:'Básico',min:2,
+   resumen:'Almacenar los alimentos correctamente evita el desperdicio, las intoxicaciones y los malos olores en la nevera.',
+   pasos:['Zona más fría de la nevera (parte trasera inferior): carnes y pescados crudos.','Zona central: sobras, embutidos, lácteos, huevos.','Zona más cálida (puerta): condimentos, jugos, mantequilla.','Frutas y verduras: en el cajón del fondo — separadas entre sí.','Nunca guardes comida caliente directamente en la nevera.'],
+   consejo:'La regla de los 2 días: las sobras cocinadas duran máximo 2 días refrigeradas. Después congela o desecha.',
+   errores:'No guardar tomate, plátano, aguacate ni papa en la nevera — se dañan antes.',
+   info:'Los alimentos cocinados deben bajar de 60°C a menos de 20°C en menos de 2 horas para ser seguros.'},
+  {id:37,cat:'cocina',emoji:'🍚',titulo:'Cocinar arroz perfecto siempre',nivel:'Básico',min:2,
+   resumen:'El arroz es la base de la comida panameña. Con la proporción y técnica correctas sale suelto y en su punto.',
+   pasos:['Lava el arroz hasta que el agua salga clara — elimina el exceso de almidón.','Proporción: 1 taza de arroz por 1.5-2 tazas de agua (según la variedad).','Agrega sal, aceite y condimentos al agua fría antes de encender.','Hierve a fuego alto, luego baja al mínimo y tapa herméticamente.','No abras la tapa mientras cocina. Apaga al terminar el agua y deja reposar 5 minutos.'],
+   consejo:'Para arroz más suelto, fríe el arroz en aceite caliente con ajo antes de agregar el agua.',
+   errores:'No revolver el arroz mientras cocina — suelta almidón y queda pegajoso.',
+   info:'El arroz blanco cocinado dura 3-4 días en la nevera bien tapado. Congela en porciones para tener siempre listo.'},
+  {id:38,cat:'cocina',emoji:'🫕',titulo:'Cómo hacer un buen guiso/guisado',nivel:'Intermedio',min:3,
+   resumen:'El guiso es la preparación más versátil de la cocina latina. Con la técnica correcta se hace en 30 minutos con cualquier proteína.',
+   pasos:['Sofríe primero la cebolla, el ajo y el tomate en aceite caliente — esta base (sofrito) es fundamental.','Agrega la proteína y séllala sin moverla durante 2 minutos por lado.','Añade el agua o caldo suficiente para cubrir a la mitad.','Condimenta: sal, pimienta, comino, culantro al gusto.','Tapa y cocina a fuego medio-bajo hasta que la proteína esté tierna.'],
+   consejo:'El culantro fresco picado agregado al final, fuera del fuego, transforma cualquier guiso panameño.',
+   errores:'No agregar el agua fría a la proteína caliente — endurece la carne. Usa agua caliente o caldo.',
+   info:'Para guisos más ricos, sustituye la mitad del agua por el líquido de una lata de tomates o caldo de pollo.'},
+  {id:39,cat:'cocina',emoji:'🥗',titulo:'Higiene e inocuidad alimentaria',nivel:'Básico',min:2,
+   resumen:'Preparar alimentos con correctas prácticas de higiene previene intoxicaciones que pueden ser graves, especialmente en niños y adultos mayores.',
+   pasos:['Lávate las manos con agua y jabón mínimo 20 segundos antes de tocar alimentos.','Usa tablas de cortar distintas para carnes crudas y vegetales.','Nunca pongas alimentos cocinados en el mismo plato que tuvo carne cruda.','Lava frutas y verduras bajo agua corriente antes de cortar o consumir.','Si tienes dudas sobre si un alimento está en buen estado, deséchalo.'],
+   consejo:'El limón y el vinagre son buenos desinfectantes para frutas y verduras — deja remojando 10 minutos.',
+   errores:'No descongelar carnes a temperatura ambiente — usa la nevera o agua fría corriente.',
+   info:'Las intoxicaciones alimentarias más comunes son por Salmonella (pollo crudo) y E. coli (carne molida mal cocida).'},
+  {id:40,cat:'cocina',emoji:'🍵',titulo:'Preparación de infusiones y bebidas calientes',nivel:'Básico',min:1,
+   resumen:'Las infusiones de hierbas tienen propiedades medicinales que se han usado por generaciones en el hogar latinoamericano.',
+   pasos:['Hierve el agua, luego apaga y espera 1 minuto — el agua hirviendo destruye propiedades de las hierbas.','Usa 1 cucharadita de hierba seca o 1 ramita fresca por taza.','Tapa la taza o tetera durante la infusión para no perder los aceites esenciales.','Tiempo de infusión: 5-10 minutos según la hierba.','No endulces con azúcar — usa miel natural para no alterar las propiedades.'],
+   consejo:'Manzanilla para el sueño y la digestión. Jengibre con limón para gripe y defensas. Toronjil para el estrés.',
+   errores:'No hervir las hierbas directamente — pierden sus principios activos. Solo infusionar.',
+   info:'El agua de panela con jengibre y limón es el remedio casero panameño más efectivo para el catarro.'},
+  {id:41,cat:'cocina',emoji:'🧊',titulo:'Uso correcto del congelador',nivel:'Básico',min:2,
+   resumen:'El congelador bien usado reduce el desperdicio de comida a la mitad y siempre tener opciones listas para cocinar.',
+   pasos:['Congela en porciones del tamaño que vas a usar — no congeles bloques grandes.','Etiqueta todo con nombre y fecha. La memoria falla.','Duración: carnes crudas 3-6 meses, cocinadas 2-3 meses, pan 2 meses.','Descongela siempre en la nevera, nunca a temperatura ambiente.','No vuelvas a congelar algo que ya fue descongelado.'],
+   consejo:'Aplana las bolsas de congelador antes de guardar — ocupan menos espacio y se descongelan más rápido.',
+   errores:'No congelar ensaladas, papas cocidas, huevos con cáscara ni alimentos con crema.',
+   info:'El congelador funciona mejor cuando está al 70-80% de su capacidad. Demasiado lleno o vacío reduce la eficiencia.'},
+  {id:42,cat:'cocina',emoji:'🧄',titulo:'Cómo aprovechar sobras creativamente',nivel:'Básico',min:1,
+   resumen:'Las sobras bien aprovechadas reducen el gasto en comida hasta en un 30%. Con creatividad se convierten en platos completamente distintos.',
+   pasos:['Arroz sobrante: tortillas de arroz, arroz frito, croquetas.','Pollo sobrante: caldo, sándwiches, quesadillas, ensalada de pollo.','Vegetales sobrantes: sopas, frittatas, rellenos.','Pan duro: crotones, migas, bread pudding.','Planifica cocinar el doble en cada preparación para tener base para el día siguiente.'],
+   consejo:'El "cocinar una vez, comer dos veces" es el hábito que más tiempo y dinero ahorra en la cocina.',
+   errores:'No mezcles sobras sin verificar que siguen en buen estado — huele, revisa textura y color.',
+   info:'En Panamá, el arroz sobrante frito con huevo y vegetales (arroz chino) es uno de los platos más populares.'},
+  {id:43,cat:'cocina',emoji:'🧽',titulo:'Orden y limpieza mientras se cocina',nivel:'Básico',min:1,
+   resumen:'Limpiar mientras se cocina hace que la cocina no se convierta en un caos y reduce el tiempo de limpieza posterior a la mitad.',
+   pasos:['Lava los utensilios que ya no necesitas mientras algo hierve o se hornea.','Limpia derrames inmediatamente — en frío son mucho más fáciles de remover.','Ten un paño húmedo siempre a mano sobre la encimera.','Coloca la basura orgánica en un tazón o bolsa en la encimera mientras cocinas.','Al terminar, deja la cocina limpia antes de sentarte a comer.'],
+   consejo:'La regla de oro: "si lo sacaste, vuélvelo a su lugar cuando termines de usarlo".',
+   errores:'No dejes platos sucios en remojo más de una hora — generan mal olor y bacterias.',
+   info:'Una cocina limpia antes de empezar a cocinar hace que la experiencia sea más placentera y creativa.'},
+  {id:44,cat:'cocina',emoji:'🏺',titulo:'Organización del gabinete y despensa',nivel:'Básico',min:2,
+   resumen:'Una despensa organizada evita comprar lo que ya tienes, reduciendo el gasto semanal y el desperdicio de alimentos.',
+   pasos:['Principio FIFO: los alimentos más nuevos van atrás, los más viejos adelante.','Agrupa por categoría: granos, enlatados, condimentos, snacks.','Los artículos de uso diario (aceite, sal, azúcar) en el nivel más accesible.','Revisa fechas de vencimiento mensualmente y coloca los próximos a vencer adelante.','Etiqueta recipientes transparentes con el nombre del alimento y fecha de apertura.'],
+   consejo:'Haz un inventario de la despensa antes de cada compra del mercado — reduces compras duplicadas.',
+   errores:'No guardar papas y cebollas juntas — se pudren más rápido. No guardar cereal abierto sin bolsa cerrada.',
+   info:'Los alimentos almacenados en recipientes herméticos de vidrio o plástico duran el doble que en sus empaques originales.'},
 
-window.buscarVideos = (texto) => {
-  busqueda = texto.toLowerCase().trim();
-  catActual = 'todos';
-  document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('activa'));
-  document.querySelector('.cat-pill').classList.add('activa');
-  renderContenido();
-};
+  // ── NIÑOS (10) ───────────────────────────────
+  {id:45,cat:'ninos',emoji:'👶',titulo:'Rutina de sueño para bebés 0-12 meses',nivel:'Básico',min:2,
+   resumen:'Una rutina de sueño consistente ayuda a los bebés a desarrollar su reloj biológico y a dormir mejor para toda la familia.',
+   pasos:['Establece el mismo horario de inicio de rutina cada noche (ej: 7:00 PM).','Secuencia: baño tibio → masaje suave → pijama → alimentación → canción o cuento breve.','Oscurece el cuarto y baja el nivel de ruido 30 minutos antes.','Coloca al bebé soñoliento pero despierto para que aprenda a dormirse solo.','Evita el teléfono o pantallas durante la rutina — el bebé necesita tu presencia total.'],
+   consejo:'La "hora mágica" para iniciar la rutina del bebé es cuando empieza a frotarse los ojos o bostezan seguido.',
+   errores:'No cambiar la rutina de forma abrupta — toma 3 días establecer un nuevo hábito de sueño.',
+   info:'La OMS recomienda que los bebés hasta 1 año duerman boca arriba para reducir el riesgo de muerte súbita.'},
+  {id:46,cat:'ninos',emoji:'🍼',titulo:'Preparación segura de biberones',nivel:'Básico',min:2,
+   resumen:'Preparar y esterilizar biberones correctamente es fundamental para la salud del bebé, que aún no tiene defensas completamente desarrolladas.',
+   pasos:['Lava tus manos con agua y jabón antes de preparar cualquier biberón.','Esteriliza los biberones en agua hirviendo 5 minutos o en esterilizador eléctrico.','Prepara la fórmula con agua previamente hervida y enfriada a 70°C.','Mide el agua primero, luego el polvo en la proporción indicada por el fabricante.','Verifica la temperatura en tu muñeca — debe sentirse tibia, no caliente.'],
+   consejo:'Prepara los biberones del día en la mañana y guárdalos en la nevera. Caliéntalos al momento de usar.',
+   errores:'Nunca preparar la fórmula con más polvo del indicado — puede causar deshidratación.',
+   info:'Los biberones preparados duran máximo 24 horas en nevera y 2 horas a temperatura ambiente.'},
+  {id:47,cat:'ninos',emoji:'🛁',titulo:'Baño seguro para bebés y niños pequeños',nivel:'Básico',min:2,
+   resumen:'El baño del bebé es un momento de vínculo y estimulación. Hacerlo seguro y calmado marca la diferencia.',
+   pasos:['Prepara todo antes de llevar al bebé al baño — nunca lo dejes solo.','Temperatura del agua: 37°C. Prueba con el codo, no con la mano.','Sostén siempre la cabeza y cuello del bebé con una mano.','Limpia de adelante hacia atrás en la zona del pañal para evitar infecciones.','El cabello al final — así no se enfría durante el baño.'],
+   consejo:'Canta una canción durante el baño. Los bebés asocian el sonido con la rutina y se calman más rápido.',
+   errores:'Nunca dejar a un bebé solo en el baño ni un segundo — el riesgo de ahogamiento es real incluso con poca agua.',
+   info:'No es necesario bañar a los bebés todos los días. 3-4 veces por semana es suficiente hasta que empiezan a gatear.'},
+  {id:48,cat:'ninos',emoji:'🤒',titulo:'Fiebre en niños: cuándo actuar',nivel:'Intermedio',min:2,
+   resumen:'La fiebre es el mecanismo de defensa del cuerpo contra infecciones. Saber cuándo es preocupante evita visitas innecesarias al médico y situaciones de riesgo.',
+   pasos:['Mide la temperatura correctamente: termómetro digital rectal (bebés), axilar (niños mayores).','Fiebre leve (37.5-38.5°C): baño tibio, ropa ligera, mucho líquido.','Fiebre moderada (38.5-39.5°C): ibuprofeno o acetaminofén según peso indicado por el médico.','Aplica paños húmedos tibios (no fríos) en frente, cuello y axilas.','Observa otros síntomas: dificultad para respirar, rigidez de cuello, sarpullido.'],
+   consejo:'Nunca interrumpas el sueño de un niño con fiebre para darle medicina — el sueño es curativo.',
+   errores:'No uses aspirina en niños menores de 12 años — puede causar síndrome de Reye, una enfermedad grave.',
+   info:'Ve a urgencias inmediatamente si: bebé menor de 3 meses con fiebre, fiebre mayor a 40°C, convulsiones.'},
+  {id:49,cat:'ninos',emoji:'📚',titulo:'Espacio de estudio en casa',nivel:'Básico',min:1,
+   resumen:'Un espacio dedicado al estudio mejora la concentración, los hábitos y el rendimiento escolar de los niños.',
+   pasos:['Escoge un lugar fijo, con buena iluminación natural y alejado del televisor.','La silla y el escritorio deben ser del tamaño adecuado para el niño.','Organiza el material escolar en un sistema simple que el niño pueda mantener solo.','Establece un horario de estudio fijo todos los días — la rutina ayuda.','Silencia el teléfono y reduce interrupciones durante el tiempo de estudio.'],
+   consejo:'Usa temporizador de 25 minutos de estudio + 5 de descanso (técnica Pomodoro) para niños mayores de 8 años.',
+   errores:'No hacer las tareas por ellos — guía, no sustituyas. El esfuerzo desarrolla el aprendizaje.',
+   info:'Los niños necesitan al menos 30 minutos de actividad física antes de sentarse a estudiar para mejorar la concentración.'},
+  {id:50,cat:'ninos',emoji:'🧸',titulo:'Organización del cuarto de los niños',nivel:'Básico',min:2,
+   resumen:'Un cuarto organizado fomenta la autonomía y la responsabilidad en los niños desde temprana edad.',
+   pasos:['Usa etiquetas con fotos (no solo texto) para que los niños pequeños sepan dónde va cada cosa.','Organiza por zonas: juguetes, ropa, libros, materiales escolares.','El sistema de organización debe ser simple — si el niño no puede mantenerlo solo, es muy complejo.','Haz limpieza y descarte de juguetes con el niño cada 6 meses.','Enseña el hábito: "antes de sacar algo nuevo, guarda lo que estabas usando".'],
+   consejo:'Involucra al niño en la organización de su cuarto — sentirá el espacio como suyo y lo cuidará mejor.',
+   errores:'No organizar sin el niño presente — no sabrá dónde están las cosas y deshará el sistema en días.',
+   info:'La regla "un juguete entra, uno sale" ayuda a mantener la cantidad de juguetes manejable con el tiempo.'},
+  {id:51,cat:'ninos',emoji:'🍱',titulo:'Lonchera escolar nutritiva y equilibrada',nivel:'Básico',min:1,
+   resumen:'Una lonchera equilibrada mejora la concentración y el rendimiento escolar. Los niños que comen bien aprenden mejor.',
+   pasos:['Incluye siempre: proteína (huevo, pollo, queso), carbohidrato (pan, galletas integrales) y fruta.','Prepara la lonchera la noche anterior para ahorrar tiempo en la mañana.','Usa recipientes herméticos para evitar que los alimentos se humedezcan.','Incluye una botella de agua — nunca jugo de caja o refresco.','Varía el menú — pregunta al niño qué quiere para la semana.'],
+   consejo:'Un trozo de hielo en la lonchera mantiene los alimentos fríos y seguros por más de 4 horas.',
+   errores:'No incluir alimentos que no han sido probados en casa — el colegio no es el lugar para probar cosas nuevas.',
+   info:'Los alimentos perecederos (lácteos, carnes) solo son seguros 2-3 horas sin refrigeración.'},
+  {id:52,cat:'ninos',emoji:'🩹',titulo:'Primeros auxilios básicos para niños',nivel:'Intermedio',min:3,
+   resumen:'Saber qué hacer en los primeros minutos ante una emergencia con niños puede hacer la diferencia entre una lesión leve y una grave.',
+   pasos:['Herida leve: lava con agua y jabón, aplica antiséptico, cubre con curita limpia.','Sangrado moderado: presión directa con paño limpio mínimo 10 minutos sin levantar.','Golpe en la cabeza: hielo envuelto en tela, observa 24 horas.','Quemadura leve: agua fría corriente 10 minutos. Nunca mantequilla ni pasta dental.','Atragantamiento: 5 golpes en la espalda o maniobra de Heimlich según la edad.'],
+   consejo:'Aprende la maniobra de Heimlich y RCP básico. Hay cursos gratuitos en Cruz Roja Panameña.',
+   errores:'No aplicar alcohol directamente en heridas — irrita y daña el tejido. Solo agua y jabón.',
+   info:'Señales de alerta post-golpe en cabeza: vómito repetido, somnolencia extrema, pupila desigual. Ir a urgencias.'},
+  {id:53,cat:'ninos',emoji:'💊',titulo:'Administración segura de medicamentos a niños',nivel:'Intermedio',min:2,
+   resumen:'Dar medicamentos a niños requiere precisión en la dosis y el método. Un error puede ser peligroso.',
+   pasos:['Siempre verifica que el medicamento sea para la edad y el peso del niño.','Lee el prospecto completo antes de la primera dosis.','Usa la jeringa o cuchara dosificadora incluida — no use cucharas de cocina.','Registra la hora de cada dosis para no repetir accidentalmente.','Guarda todos los medicamentos en lugar seguro, fuera del alcance de los niños.'],
+   consejo:'Para niños que no quieren el medicamento: mezcla con una pequeña cantidad de miel o jugo (solo si el médico lo permite).',
+   errores:'Nunca dobles la dosis si el niño vomitó justo después — espera y consulta al médico.',
+   info:'El acetaminofén y el ibuprofeno no deben darse juntos sin instrucción médica. Consulta siempre las interacciones.'},
+  {id:54,cat:'ninos',emoji:'🌙',titulo:'Rutina de higiene dental infantil',nivel:'Básico',min:1,
+   resumen:'Los hábitos de higiene dental formados en la infancia duran toda la vida. La caries es la enfermedad crónica más común en niños.',
+   pasos:['Desde los primeros dientes: limpiar con gasa húmeda después de cada toma.','Desde 2 años: cepillo suave dos veces al día, pasta tamaño un guisante.','Desde 3 años: enseña a cepillar en movimiento circular y a escupir la pasta.','Hilo dental: desde que hay dos dientes que se tocan.','Primera visita al dentista: a los 12 meses o cuando aparece el primer diente.'],
+   consejo:'Usa un temporizador de 2 minutos o una canción corta para que el niño sepa cuánto tiempo debe cepillarse.',
+   errores:'No uses pasta con flúor en menores de 2 años. No dejes al niño dormirse con biberón de leche o jugo.',
+   info:'Los niños no pueden cepillarse solos con efectividad hasta los 6-7 años — necesitan supervisión o ayuda del adulto.'},
 
-// ── TOAST ──
-window.showToast = (msg) => {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('visible');
-  setTimeout(() => t.classList.remove('visible'), 3000);
-};
+  // ── MASCOTAS (10) ────────────────────────────
+  {id:55,cat:'mascotas',emoji:'🐶',titulo:'Alimentos tóxicos para perros',nivel:'Básico',min:2,
+   resumen:'Muchos alimentos del hogar son peligrosos o letales para los perros. Conocer la lista puede salvar la vida de tu mascota.',
+   pasos:['Chocolate: contiene teobromina, muy tóxica para perros. Nunca en ninguna cantidad.','Uvas y pasas: pueden causar insuficiencia renal aguda aunque sea en pequeña cantidad.','Cebolla y ajo: destruyen los glóbulos rojos y causan anemia.','Xilitol (edulcorante en chicles y dulces): causa hipoglucemia severa y daño hepático.','Aguacate, macadamia, alcohol y cafeína también son tóxicos.'],
+   consejo:'Guarda la basura en un lugar que el perro no pueda acceder — es donde más accidentes ocurren.',
+   errores:'No creer que "una pequeña cantidad no hace daño" — con el chocolate y el xilitol cualquier cantidad es peligrosa.',
+   info:'Si sospechas que tu perro ingirió algo tóxico: llama al veterinario inmediatamente. No induzcas el vómito sin instrucción.'},
+  {id:56,cat:'mascotas',emoji:'🐱',titulo:'Alimentos tóxicos para gatos',nivel:'Básico',min:2,
+   resumen:'Los gatos tienen metabolismos más sensibles que los perros. Muchos alimentos seguros para humanos son peligrosos para ellos.',
+   pasos:['Cebolla, ajo y cebollín: destruyen glóbulos rojos y causan anemia hemolítica.','Uvas y pasas: toxicidad renal grave.','Leche: los gatos adultos son intolerantes a la lactosa — causa diarrea.','Atún en exceso: causa deficiencia de vitamina E y problemas musculares.','Chocolate, cafeína, alcohol y xilitol son igualmente peligrosos para los gatos.'],
+   consejo:'Los gatos son muy buenos escondiendo el malestar. Cualquier cambio de comportamiento después de comer algo inusual requiere visita veterinaria.',
+   errores:'No dar comida de perro a los gatos — no tienen los nutrientes que los felinos necesitan.',
+   info:'Los gatos necesitan taurina (proteína animal) que no sintetizan solos. Una dieta vegetariana puede ser mortal para un gato.'},
+  {id:57,cat:'mascotas',emoji:'🦮',titulo:'Rutina de aseo del perro en casa',nivel:'Básico',min:3,
+   resumen:'Mantener limpio al perro en casa reduce los olores, las alergias y las visitas al groomer profesional.',
+   pasos:['Cepillado: diario para razas de pelo largo, 2-3 veces por semana para pelo corto.','Baño: cada 3-4 semanas o cuando esté notablemente sucio.','Usa shampoo específico para perros — el de humanos altera el pH de su piel.','Limpia las orejas mensualmente con solución específica y algodón (nunca hisopos).','Corta las uñas mensualmente o cuando escuches el ruido al caminar.'],
+   consejo:'Introduce el cepillo desde cachorro para que lo asocien con algo positivo. Un premio durante y después ayuda.',
+   errores:'No bañes al perro con agua muy caliente ni lo seques con secador en máxima potencia — los quema.',
+   info:'Si el perro sacude la cabeza frecuentemente o se rasca las orejas, puede tener infección. Visita veterinaria.'},
+  {id:58,cat:'mascotas',emoji:'🐾',titulo:'Limpieza del hogar con mascotas',nivel:'Básico',min:2,
+   resumen:'Tener mascotas en casa requiere rutinas de limpieza adicionales para mantener el hogar libre de pelo, olores y bacterias.',
+   pasos:['Aspira las áreas donde descansa la mascota al menos 3 veces por semana.','Lava la cama, cobija y juguetes de tela mensualmente con agua caliente.','Limpia los platos de comida y agua a diario con agua y jabón.','Para manchas de orina en alfombra: agua fría + enzimático. Nunca amoníaco — atrae al animal al mismo lugar.','Mantén el arenero del gato limpio diariamente y cambia la arena completamente semanalmente.'],
+   consejo:'Un robot aspirador programado para limpiar de noche reduce enormemente la acumulación de pelo.',
+   errores:'No usar cloro directamente donde la mascota accede — los pulmones y patas de los animales son muy sensibles.',
+   info:'El pelo de mascota en el aire puede agravar alergias y asma. Los filtros HEPA en aspiradoras son muy recomendados.'},
+  {id:59,cat:'mascotas',emoji:'🩺',titulo:'Señales de que tu mascota está enferma',nivel:'Intermedio',min:2,
+   resumen:'Las mascotas no pueden comunicar su malestar con palabras. Reconocer señales tempranas puede salvarles la vida.',
+   pasos:['Cambio en el apetito o el agua: comer o tomar mucho más o mucho menos de lo habitual.','Letargia: no quiere jugar ni moverse, permanece inactivo más de un día.','Cambios en las heces: diarrea, sangre, mucosa o muy duras.','Vómito: uno aislado no es grave, repetido o con sangre es urgente.','Cambios físicos: pelo opaco, pérdida de peso, ojos rojos o llorosos.'],
+   consejo:'Pesa a tu mascota mensualmente. La pérdida de peso es uno de los primeros signos de enfermedad.',
+   errores:'No esperar "a ver si mejora solo" más de 48 horas. Con animales, la demora puede ser fatal.',
+   info:'Los gatos son especialmente buenos ocultando dolor — cuando muestran señales ya suelen estar muy enfermos.'},
+  {id:60,cat:'mascotas',emoji:'💉',titulo:'Calendario de vacunas y desparasitación',nivel:'Básico',min:2,
+   resumen:'Mantener el calendario de vacunas y desparasitación al día protege a tu mascota y a toda la familia.',
+   pasos:['Perros: DHPP (moquillo, parvo, hepatitis) anual. Rabia cada 1-3 años según la ley local.','Gatos: Triple felina anual. Rabia según regulación local.','Desparasitación interna: cada 3 meses para mascotas que salen, cada 6 para las que no.','Desparasitación externa (pulgas y garrapatas): mensual o cada 3 meses según el producto.','Guarda todos los registros en una carpeta o app veterinaria.'],
+   consejo:'Coloca un recordatorio en el teléfono para cada vacuna y desparasitación — es fácil olvidar sin sistema.',
+   errores:'No comprar vacunas sin refrigeración adecuada ni aplicarlas sin experiencia — pueden perder efectividad.',
+   info:'En Panamá, la vacuna antirrábica es obligatoria por ley para perros y gatos. Es gratuita en el MIDA.'},
+  {id:61,cat:'mascotas',emoji:'🏃',titulo:'Ejercicio y estimulación mental para perros',nivel:'Básico',min:2,
+   resumen:'Un perro con suficiente ejercicio y estimulación mental no destruye cosas, no ladra en exceso y es más tranquilo en casa.',
+   pasos:['Camina mínimo 30 minutos dos veces al día, según la raza y edad del perro.','El olfateo es el ejercicio mental más agotador — deja que explore durante el paseo.','Juegos de inteligencia: buscar comida escondida, juguetes rellenos de snacks.','Entrenamiento de 10 minutos diarios — aprende comandos nuevos y se cansa mentalmente.','Socialización con otros perros: importante especialmente en cachorros.'],
+   consejo:'Un perro cansado es un perro tranquilo. El 80% de los problemas de comportamiento son por falta de ejercicio.',
+   errores:'No sacar al perro solo para hacer sus necesidades y entrar — necesita explorar y oler.',
+   info:'Las razas de trabajo (border collie, husky, pastor alemán) necesitan el doble de ejercicio que las razas de compañía.'},
+  {id:62,cat:'mascotas',emoji:'🐟',titulo:'Cuidado de peces y acuarios',nivel:'Intermedio',min:2,
+   resumen:'Los peces requieren mantenimiento constante del agua para vivir saludables. Un acuario mal mantenido puede perder todos sus peces en días.',
+   pasos:['Cambia el 20-25% del agua cada semana — nunca toda el agua a la vez.','El agua nueva debe ser tratada con acondicionador antes de agregar al acuario.','Alimenta pequeñas cantidades 2 veces al día — el exceso contamina el agua.','Limpia el filtro mensualmente con agua del mismo acuario (no del grifo).','Mantén la temperatura estable: tropicales 24-28°C, de agua fría 18-22°C.'],
+   consejo:'El test de agua (pH, amonio, nitratos) es la herramienta más importante del acuarista — hazlo semanalmente.',
+   errores:'No laves las piedras ni las plantas del acuario con jabón — eliminas las bacterias beneficiosas que limpian el agua.',
+   info:'El "síndrome del pez nuevo" o nuevo acuario puede matar peces en días. El acuario necesita ciclarse 2-4 semanas antes de añadir peces.'},
+  {id:63,cat:'mascotas',emoji:'🐹',titulo:'Cuidado de hamsters y roedores pequeños',nivel:'Básico',min:2,
+   resumen:'Los hamsters son animales de bajo mantenimiento pero con necesidades específicas que deben cubrirse para que vivan felices.',
+   pasos:['Jaula mínima: 60x40 cm para un hamster. Más grande siempre es mejor.','Limpieza de jaula: cada semana completa, sin dejar olor a limpiador.','Alimentación: mix de semillas, vegetales frescos (sin cebolla, ajo, citrus).','Ejercicio: rueda de al menos 20 cm de diámetro, sólida (sin rejillas).','Socialización: los hamsters sirios son solitarios — nunca juntes dos.'],
+   consejo:'Deja que el hamster se acostumbre al olor de tu mano antes de intentar cargarlo — lo morderá si se asusta.',
+   errores:'No despertes al hamster durante el día — son nocturnos y el estrés por despertar acorta su vida.',
+   info:'Los hamsters no hacen ningún ruido de dolor, solo chirrían cuando están muy asustados. Observa su comportamiento.'},
+  {id:64,cat:'mascotas',emoji:'🐢',titulo:'Cuidado de tortugas en casa',nivel:'Intermedio',min:2,
+   resumen:'Las tortugas pueden vivir más de 50 años con los cuidados correctos. Son mascotas de bajo mantenimiento pero con requisitos específicos.',
+   pasos:['Terrestres: necesitan terrario seco con zona de calor (35°C) y zona fresca (24°C).','Acuáticas: agua limpia con filtro, zona seca para asolearse (basking).','Alimentación variada: verduras de hoja oscura, insectos, frutas ocasionalmente.','Luz UVB: indispensable para sintetizar vitamina D3 y que no se rompan el caparazón.','Veterinario reptilólogo: no cualquier vet atiende tortugas — busca uno especialista.'],
+   consejo:'Las tortugas son lentas pero necesitan más espacio del que parece — su instinto es caminar kilómetros.',
+   errores:'No alimentes solo con lechuga iceberg — tiene muy poco valor nutricional y puede causar deficiencias.',
+   info:'Las tortugas no se deben separar de su hábitat natural. Las tortugas de río en Panamá están protegidas por ley.'},
 
-// Cerrar modal al tocar afuera
-document.getElementById('modalVideo').addEventListener('click', e => {
-  if (e.target === document.getElementById('modalVideo')) cerrarModal();
+  // ── ORGANIZACIÓN (6) ─────────────────────────
+  {id:65,cat:'organizacion',emoji:'📦',titulo:'Sistema KonMari para ordenar el hogar',nivel:'Intermedio',min:3,
+   resumen:'El método KonMari de Marie Kondo transforma el hogar de raíz organizando por categoría, no por cuarto.',
+   pasos:['Ordena en este orden: ropa → libros → papeles → komono (misceláneos) → artículos sentimentales.','Para cada objeto pregunta: ¿me produce alegría? Si no, agrádecelo y deshazte de él.','Dobla la ropa en posición vertical para verlo todo de un vistazo.','Todo debe tener un lugar específico. Lo que no tiene lugar, sobra.','Haz el proceso completo de una sola vez, no poco a poco.'],
+   consejo:'Empieza siempre por la ropa — es la categoría más fácil y da la motivación para seguir con el resto.',
+   errores:'No intentar organizar mientras hay caos — primero descarta, luego organiza.',
+   info:'El objetivo del KonMari no es tener poco, sino tener solo lo que realmente valoras y usa.'},
+  {id:66,cat:'organizacion',emoji:'📋',titulo:'Sistema de listas y tareas del hogar',nivel:'Básico',min:1,
+   resumen:'Un sistema de listas efectivo para el hogar reduce el estrés, los olvidos y las discusiones sobre quién hace qué.',
+   pasos:['Define una lista semanal de tareas con responsable y día asignado.','Usa una pizarra, una app o una libreta en un lugar visible para todos.','Diferencia tareas diarias (barrer, lavar platos) de semanales y mensuales.','Revisa el sistema cada mes y ajusta lo que no funciona.','Involucra a todos los miembros del hogar, incluyendo a los niños según su edad.'],
+   consejo:'My Nana App es la herramienta perfecta para gestionar y dar seguimiento a todas las tareas del hogar.',
+   errores:'No crear sistemas demasiado complejos que nadie va a mantener después de la primera semana.',
+   info:'Los estudios muestran que los hogares con distribución clara de tareas tienen menos conflictos y mayor satisfacción.'},
+  {id:67,cat:'organizacion',emoji:'🗃️',titulo:'Organización de documentos del hogar',nivel:'Básico',min:2,
+   resumen:'Tener los documentos del hogar organizados evita el pánico cuando los necesitas y protege la información importante de la familia.',
+   pasos:['Categorías básicas: identidades, médicos, seguros, contratos, garantías, finanzas.','Usa una carpeta acordeón o cajas de archivos etiquetadas por categoría.','Escanea los documentos más importantes y guárdalos en la nube.','Revisa y actualiza la carpeta una vez al año.','Guarda los originales en un lugar seguro, fuera del alcance de los niños.'],
+   consejo:'Una foto en el teléfono de cada documento importante es el backup más simple y efectivo.',
+   errores:'No guardar documentos en bolsas de plástico — la humedad los deteriora con el tiempo.',
+   info:'Los documentos importantes (escrituras, testamentos, actas) deben tener copia en lugar separado, idealmente con un familiar.'},
+  {id:68,cat:'organizacion',emoji:'🧳',titulo:'Organización de closets y armarios',nivel:'Básico',min:2,
+   resumen:'Un closet bien organizado hace que elegir ropa sea rápido y placentero, y permite ver exactamente lo que tienes.',
+   pasos:['Descarta primero: saca todo y devuelve solo lo que usas. El 80% de la ropa se usa el 20% del tiempo.','Agrupa por categoría: ropa de trabajo, casual, ejercicio, salidas.','Dentro de cada categoría, organiza por color de claro a oscuro.','Usa el mismo tipo de gancho para todo — el closet se ve más ordenado.','La ropa de temporada o de ocasiones especiales va en la parte menos accesible.'],
+   consejo:'Si no has usado una prenda en 12 meses y no hay razón especial (pérdida de peso, evento específico), dona.',
+   errores:'No colocar demasiadas cosas en los ganchos — la ropa se arruga y el closet se ve caótico.',
+   info:'Las bolsas de vacío para guardar ropa de cama y abrigos de temporada pueden liberar hasta el 70% de espacio.'},
+  {id:69,cat:'organizacion',emoji:'🍱',titulo:'Organización de la cocina para mayor eficiencia',nivel:'Básico',min:2,
+   resumen:'Una cocina organizada reduce el tiempo de preparación de comidas y hace que cocinar sea más fácil y placentero.',
+   pasos:['Zona de preparación: tabla, cuchillos y bowls cerca del área de corte.','Zona de cocción: condimentos, aceite y utensilios cerca de la estufa.','Zona de emplatado: platos, vasos y cubiertos cerca del comedor.','Los artículos más usados van en los gabinetes más accesibles (altura de la vista).','Lo que se usa menos de una vez al mes va en los gabinetes más altos o bajos.'],
+   consejo:'Etiqueta todos los recipientes hermét'+'icos de la nevera con nombre y fecha. Elimina la pregunta "¿qué es esto?".',
+   errores:'No guardar los cuchillos en un cajón sin protección — se desafilan y son peligrosos.',
+   info:'Una cocina organizada en triángulo de trabajo (nevera-fregadero-estufa) reduce el 40% los pasos durante la preparación.'},
+  {id:70,cat:'organizacion',emoji:'♻️',titulo:'Sistema de reciclaje en casa',nivel:'Básico',min:1,
+   resumen:'Reciclar en casa es más fácil de lo que parece con el sistema correcto. Reduce la basura y el impacto ambiental del hogar.',
+   pasos:['Instala 3 basureros en la cocina: orgánico, reciclable (plástico/vidrio/papel), no reciclable.','Etiqueta cada basurero con ejemplos visuales de qué va en cada uno.','Lava los recipientes plásticos y de vidrio antes de reciclar — la suciedad contamina el lote.','El cartón y el papel van separados del plástico y el vidrio.','Busca el centro de reciclaje más cercano en tu municipio para depósito semanal.'],
+   consejo:'Los supermercados como Riba Smith y El Rey en Panamá tienen puntos de reciclaje en sus parqueos.',
+   errores:'No recicles recipientes con residuos de comida — contamina todo el lote y termina en el relleno sanitario.',
+   info:'El vidrio y el aluminio se pueden reciclar infinitas veces sin pérdida de calidad. Son los materiales más valiosos para reciclar.'},
+
+  // ── ADULTO MAYOR (5) ─────────────────────────
+  {id:71,cat:'adulto',emoji:'❤️',titulo:'Prevención de caídas en adultos mayores',nivel:'Básico',min:2,
+   resumen:'Las caídas son la primera causa de accidentes graves en adultos mayores. La mayoría son prevenibles con cambios simples en el hogar.',
+   pasos:['Elimina alfombras sueltas o fija los bordes con cinta antideslizante.','Instala barras de apoyo en el baño (ducha y junto al inodoro).','Mejora la iluminación en pasillos y especialmente en el baño nocturno.','Despeja los pasillos — sin cables, muebles ni objetos en el suelo.','El calzado debe ser antideslizante, cerrado y de suela plana.'],
+   consejo:'Una lámpara de noche que se activa automáticamente puede prevenir caídas nocturnas.',
+   errores:'No dejes que el adulto mayor cargue cosas pesadas que le obliguen a inclinar el torso — pierde el equilibrio fácilmente.',
+   info:'Más del 90% de las fracturas de cadera en adultos mayores son consecuencia de una caída que pudo haberse prevenido.'},
+  {id:72,cat:'adulto',emoji:'💊',titulo:'Organización de medicamentos del adulto mayor',nivel:'Básico',min:2,
+   resumen:'Los adultos mayores suelen tomar varios medicamentos. Un sistema organizado evita olvidos, duplicaciones y errores peligrosos.',
+   pasos:['Usa un pastillero semanal con espacio para mañana, tarde y noche.','Llena el pastillero cada domingo para toda la semana.','Anota en una lista visible: nombre, dosis, horario y para qué sirve cada medicamento.','Establece alarmas en el teléfono para cada horario de medicación.','Revisa el stock semanalmente para pedir recetas con tiempo.'],
+   consejo:'Fotografía todas las cajas de medicamentos y guárdalas en el teléfono — en caso de emergencia el médico las necesitará.',
+   errores:'Nunca dejes de dar un medicamento sin consultar al médico, aunque el adulto mayor diga sentirse bien.',
+   info:'Las interacciones medicamentosas son más frecuentes a partir de los 65 años. Lleva siempre la lista completa a cada consulta médica.'},
+  {id:73,cat:'adulto',emoji:'🍽️',titulo:'Nutrición básica para adultos mayores',nivel:'Básico',min:2,
+   resumen:'Las necesidades nutricionales cambian con la edad. Una alimentación adecuada en adultos mayores previene enfermedades y mejora la calidad de vida.',
+   pasos:['Proteína en cada comida: huevo, pollo, pescado, legumbres — fundamental para mantener masa muscular.','Calcio y vitamina D: leche, queso, sardinas, exposición solar moderada (10-15 min) para huesos.','Hidratación: los adultos mayores sienten menos sed pero necesitan igual o más agua.','Fibra: frutas, verduras y cereales integrales para el estreñimiento frecuente en esta etapa.','Reduce el sodio (sal) y los azúcares simples — el metabolismo es más lento.'],
+   consejo:'Las comidas más pequeñas y frecuentes (5-6 al día) son mejor toleradas que 3 grandes.',
+   errores:'No saltarse comidas creyendo que "no tienen hambre" — la desnutrición en adultos mayores es silenciosa y grave.',
+   info:'La desnutrición en adultos mayores es más común de lo que parece y está asociada a mayor riesgo de infecciones y caídas.'},
+  {id:74,cat:'adulto',emoji:'🧠',titulo:'Estimulación cognitiva en casa',nivel:'Básico',min:2,
+   resumen:'Mantener el cerebro activo en la vejez retrasa el deterioro cognitivo. Hay actividades simples que pueden hacerse en casa todos los días.',
+   pasos:['Lectura diaria: periódico, libros, revistas — cualquier lectura mantiene activos los circuitos cerebrales.','Juegos de mesa: ajedrez, dominó, cartas, crucigramas — el entretenimiento es estímulo cognitivo.','Conversación activa: hablar, contar historias, participar en conversaciones de la familia.','Actividad física: caminar 30 minutos mejora el flujo sanguíneo cerebral.','Actividades manuales: costura, jardinería, cocina — coordinan cerebro y manos.'],
+   consejo:'Aprender algo nuevo (un idioma, un instrumento, un hobby) es el ejercicio cognitivo más potente disponible.',
+   errores:'No aislar al adulto mayor del ambiente familiar — el aislamiento social es uno de los factores de riesgo del Alzheimer.',
+   info:'La actividad física regular es el factor modificable más importante para mantener la salud cerebral en la vejez.'},
+  {id:75,cat:'adulto',emoji:'🚿',titulo:'Higiene personal para adultos con movilidad reducida',nivel:'Intermedio',min:2,
+   resumen:'Mantener la higiene personal en adultos con movilidad limitada requiere adaptaciones del hogar y técnicas específicas.',
+   pasos:['Instala silla de baño dentro de la ducha para bañarse sentado.','Usa manopla de baño en lugar de esponja — más fácil de manejar con movilidad reducida.','Para cama: limpieza con paños húmedos específicos comenzando por la cara y terminando en los pies.','Higiene oral: cepillo eléctrico y pasta fluorada — más eficiente con movilidad reducida de manos.','Crema hidratante diaria especialmente en codos, talones y espalda para prevenir escaras.'],
+   consejo:'Hacer del baño un momento de conversación y conexión — mejora el estado de ánimo y la cooperación.',
+   errores:'No omitir el baño por "no hacer el esfuerzo" — la falta de higiene lleva a infecciones graves en adultos mayores.',
+   info:'Las escaras (úlceras por presión) en adultos en cama se previenen con cambios de posición cada 2 horas y buena hidratación de la piel.'},
+
+  // ── EMERGENCIAS (5) ──────────────────────────
+  {id:76,cat:'emergencias',emoji:'⚠️',titulo:'Qué hacer en caso de incendio en casa',nivel:'Básico',min:2,
+   resumen:'En un incendio, los primeros 2-3 minutos son críticos. Saber qué hacer salva vidas.',
+   pasos:['Alerta a todos en la casa gritando ¡FUEGO! — no asumas que todos están enterados.','Sal inmediatamente — no busques objetos personales, ni siquiera el teléfono.','Cierra las puertas al salir — cada puerta cerrada retarda la propagación del fuego 3-5 minutos.','Si hay humo: gatear bajo el humo hasta la salida, el aire limpio está cerca del suelo.','Una vez fuera: llama al 911 desde la calle. Nunca vuelvas a entrar.'],
+   consejo:'Define y practica una ruta de evacuación con toda la familia incluyendo un punto de encuentro exterior.',
+   errores:'No perder tiempo buscando pertenencias. No usar el ascensor. No abrir puertas que estén calientes al tacto.',
+   info:'El humo mata más personas que las llamas. La mayoría de muertes en incendios son por inhalación de humo, no por quemaduras.'},
+  {id:77,cat:'emergencias',emoji:'💧',titulo:'Qué hacer ante una inundación en casa',nivel:'Básico',min:2,
+   resumen:'Las lluvias en Panamá pueden causar inundaciones en minutos. Saber actuar rápido protege a la familia y los bienes.',
+   pasos:['Si hay riesgo de inundación: mueve objetos valiosos y documentos al piso más alto.','Desconecta los aparatos eléctricos antes de que el agua llegue a los enchufes.','Cierra la llave de gas general si hay nivel de agua en riesgo.','No camines en agua de inundación — puede haber cables eléctricos sumergidos o corriente.','Si el agua sube rápido: ve al piso más alto y llama al 911.'],
+   consejo:'Ten siempre listo un "kit de emergencia": documentos, efectivo, medicamentos, linterna y agua para 72 horas.',
+   errores:'No conduzcas por calles inundadas — 30 cm de agua pueden mover un auto. "Dale la vuelta, no te ahoques".',
+   info:'En Panamá, el Sistema Nacional de Protección Civil (SINAPROC) gestiona emergencias: 507-232-5667.'},
+  {id:78,cat:'emergencias',titulo:'Corte eléctrico prolongado: qué hacer',emoji:'⚡',nivel:'Básico',min:1,
+   resumen:'Un apagón puede durar horas. Estar preparado evita pérdidas de alimentos, medicamentos y mantiene la seguridad del hogar.',
+   pasos:['Desconecta los aparatos eléctricos para protegerlos de la sobretensión al volver la luz.','Abre la nevera lo mínimo posible — mantiene la temperatura 4-6 horas si no la abres.','Si tienes medicamentos que requieren refrigeración, consigue hielo o lleva al vecino con luz.','Usa linternas — no velas, especialmente con niños (riesgo de incendio).','Si el apagón es de más de 24 horas, consulta el estado de los alimentos antes de consumir.'],
+   consejo:'Una batería portátil (powerbank) de gran capacidad cargada siempre es el mejor aliado de los apagones.',
+   errores:'No usar el generador eléctrico dentro de la casa — emite monóxido de carbono que puede ser mortal.',
+   info:'Alimentos refrigerados son seguros hasta 4 horas de apagón. Congelados hasta 48 horas si el congelador estaba lleno.'},
+  {id:79,cat:'emergencias',emoji:'🤕',titulo:'Botiquín de primeros auxilios del hogar',nivel:'Básico',min:2,
+   resumen:'Un botiquín bien equipado y organizado permite atender la mayoría de emergencias menores en casa sin necesidad de salir.',
+   pasos:['Contenedor: caja rígida con tapa, etiquetada, fuera del alcance de niños pero accesible para adultos.','Básicos obligatorios: vendas, gasas, esparadrapo, agua oxigenada, alcohol, tijeras, pinzas, termómetro.','Medicamentos: acetaminofén, ibuprofeno, antihistamínico, antidiarreico, suero oral.','Guarda también: crema para quemaduras, colirio, solución salina.','Revisa el botiquín cada 6 meses para reponer lo usado y desechar lo vencido.'],
+   consejo:'Pega en la parte interior del botiquín una lista de contactos de emergencia: médico familiar, pediatra, Cruz Roja.',
+   errores:'No guardar el botiquín bajo llave si hay adultos mayores en casa — pueden necesitarlo solos.',
+   info:'El número de emergencias médicas en Panamá es el 911. La Cruz Roja de Panamá: 507-228-2311.'},
+  {id:80,cat:'emergencias',emoji:'🐍',titulo:'Mordeduras de animales: qué hacer',nivel:'Intermedio',min:2,
+   resumen:'Panamá tiene diversas especies de serpientes, arañas y otros animales que pueden morder o picar. Saber actuar evita complicaciones graves.',
+   pasos:['Serpiente: inmoviliza el miembro afectado por debajo del nivel del corazón. No cortes ni chupes la herida. Ve al hospital inmediatamente.','Perro: lava la herida 15 minutos con agua y jabón. Ve al médico — puede requerir vacuna antirrábica.','Avispa/abeja: retira el aguijón raspando (no pellizques). Aplica hielo. Observa reacción alérgica.','Araña: lava la herida, aplica hielo. Si hay dolor intenso o área necrótica, ve al médico.','Cualquier mordedura: documenta la hora y el animal involucrado para informar al médico.'],
+   consejo:'Si no puedes identificar el animal, describe el color, tamaño y forma al médico — ayuda a determinar el tratamiento.',
+   errores:'No apliques torniquetes en mordeduras de serpiente — cortan la circulación y empeoran el daño.',
+   info:'El Hospital Santo Tomás y el SUME en Panamá tienen suero antiofídico disponible para mordeduras de serpiente.'},
+];
+
+// ═══════════════════════════════════════════════
+// ESTADO
+// ═══════════════════════════════════════════════
+let catActiva = 'todas';
+let busqueda  = '';
+let filtros   = { nivel:[], tiempo:[], estado:[] };
+let favoritos = JSON.parse(localStorage.getItem('mn_favs') || '[]');
+let completadas = JSON.parse(localStorage.getItem('mn_completadas') || '[]');
+let guiaActual  = null;
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => document.getElementById('splash').classList.add('out'), 900);
+  renderCats();
+  renderGrid();
+  renderFeatured();
+  actualizarProgreso();
 });
 
-// ── INIT ──
-document.getElementById('splash').classList.add('oculto');
+function renderCats() {
+  const scroll = document.getElementById('catsScroll');
+  scroll.innerHTML = CATS.map(c => `
+    <button class="cat-pill${c.id===catActiva?' activa':''}" onclick="selectCat('${c.id}')">
+      ${c.emoji} ${c.label}
+    </button>`).join('');
+}
 
-// Leer parámetro de URL para filtrar por categoría
-const urlParams = new URLSearchParams(window.location.search);
-const catParam = urlParams.get('cat');
-if (catParam) {
-  catActual = catParam;
-  const pills = document.querySelectorAll('.cat-pill');
-  pills.forEach(p => {
-    p.classList.remove('activa');
-    if (p.textContent.includes(catParam)) p.classList.add('activa');
+function selectCat(id) {
+  catActiva = id;
+  renderCats();
+  renderGrid();
+  renderFeatured();
+}
+
+function guiasFiltradas() {
+  return GUIAS.filter(g => {
+    if (catActiva !== 'todas' && g.cat !== catActiva) return false;
+    if (busqueda) {
+      const q = busqueda.toLowerCase();
+      if (!g.titulo.toLowerCase().includes(q) && !g.resumen.toLowerCase().includes(q)) return false;
+    }
+    if (filtros.nivel.length && !filtros.nivel.includes(g.nivel)) return false;
+    if (filtros.tiempo.length && !filtros.tiempo.includes(String(g.min))) return false;
+    if (filtros.estado.includes('guardada') && !favoritos.includes(g.id)) return false;
+    if (filtros.estado.includes('completada') && !completadas.includes(g.id)) return false;
+    if (filtros.estado.includes('pendiente') && completadas.includes(g.id)) return false;
+    return true;
   });
 }
 
-renderContenido();
+function nivelColor(n) {
+  return n==='Básico'?'nivel-basico':n==='Intermedio'?'nivel-intermedio':'nivel-avanzado';
+}
+
+function renderFeatured() {
+  const todas = catActiva==='todas'?GUIAS:GUIAS.filter(g=>g.cat===catActiva);
+  const featured = todas.find(g=>g.cat==='emergencias')||todas[Math.floor(Math.random()*todas.length)]||GUIAS[0];
+  const cat = CATS.find(c=>c.id===featured.cat);
+  const fav = favoritos.includes(featured.id);
+  const done = completadas.includes(featured.id);
+  document.getElementById('guiaFeatured').innerHTML = `
+    <div class="guia-featured" onclick="openGuia(${featured.id})">
+      <div class="guia-featured-img" style="background:${CAT_COLORS[featured.cat]||'#E8F5E9'}">
+        <span style="font-size:80px;">${featured.emoji}</span>
+        <div class="guia-featured-overlay"></div>
+        <span class="guia-featured-badge">${done?'✅ Completada':'⭐ Destacada'}</span>
+        <button class="guia-featured-fav${fav?' saved':''}" onclick="event.stopPropagation();toggleFav(${featured.id})" aria-label="Guardar">
+          ${fav?'♥':'♡'}
+        </button>
+      </div>
+      <div class="guia-featured-info">
+        <div class="guia-featured-cat">${cat?cat.emoji+' '+cat.label:''}</div>
+        <div class="guia-featured-title">${featured.titulo}</div>
+        <div class="guia-featured-meta">
+          <span>📖 ${featured.min} min</span>
+          <span>·</span>
+          <span>${featured.nivel}</span>
+          <span>·</span>
+          <span>${featured.pasos.length} pasos</span>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderGrid() {
+  const gfs = guiasFiltradas();
+  const cnt = document.getElementById('secCount');
+  if (cnt) cnt.textContent = gfs.length;
+  const grid = document.getElementById('guiasGrid');
+  if (!grid) return;
+  if (!gfs.length) {
+    grid.innerHTML = `<div class="no-results" style="grid-column:1/-1">
+      <div style="font-size:40px;margin-bottom:10px;">🔍</div>
+      <div style="font-size:15px;font-weight:500;color:var(--txt);margin-bottom:6px;">Sin resultados</div>
+      <div style="font-size:13px;color:var(--txt2);">Intenta con otro término o categoría</div>
+    </div>`; return;
+  }
+  grid.innerHTML = gfs.map(g => {
+    const fav = favoritos.includes(g.id);
+    const done = completadas.includes(g.id);
+    return `
+      <div class="guia-card" onclick="openGuia(${g.id})">
+        <div class="guia-thumb" style="background:${CAT_COLORS[g.cat]||'#F0F7F4'}">
+          <span>${g.emoji}</span>
+          <span class="guia-nivel-badge ${nivelColor(g.nivel)}">${g.nivel}</span>
+          <button class="guia-fav${fav?' saved':''}" onclick="event.stopPropagation();toggleFav(${g.id})" aria-label="Guardar">
+            ${fav?'♥':'♡'}
+          </button>
+        </div>
+        <div class="guia-info">
+          <span class="guia-cat-tag">${CATS.find(c=>c.id===g.cat)?.emoji||''} ${CATS.find(c=>c.id===g.cat)?.label||''}</span>
+          <div class="guia-title">${g.titulo}</div>
+          <div class="guia-meta">
+            <span>📖 ${g.min} min</span>
+            ${done?'<span class="guia-completada-mark">✅</span>':''}
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════
+// DETALLE GUÍA
+// ═══════════════════════════════════════════════
+function openGuia(id) {
+  guiaActual = GUIAS.find(g => g.id===id);
+  if (!guiaActual) return;
+  const g = guiaActual;
+  const fav = favoritos.includes(g.id);
+  const done = completadas.includes(g.id);
+  document.getElementById('modalContent').innerHTML = `
+    <div class="modal-hero" style="background:${CAT_COLORS[g.cat]||'#F0F7F4'}">
+      <span style="font-size:90px;">${g.emoji}</span>
+      <div class="modal-hero-actions">
+        <button class="modal-fav-btn${fav?' saved':''}" id="mFav" onclick="toggleFav(${g.id});updateModalFav()" aria-label="Guardar">${fav?'♥':'♡'}</button>
+        <button class="modal-close-btn" onclick="closeModal()" aria-label="Cerrar">✕</button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-badges">
+        <span class="modal-badge-cat">${CATS.find(c=>c.id===g.cat)?.emoji||''} ${CATS.find(c=>c.id===g.cat)?.label||''}</span>
+        <span class="modal-badge-nivel ${nivelColor(g.nivel)}">${g.nivel}</span>
+        <span class="modal-badge-tiempo">📖 ${g.min} min</span>
+      </div>
+      <div class="modal-titulo">${g.titulo}</div>
+      <div class="modal-resumen">${g.resumen}</div>
+
+      <div class="modal-section-lbl">Paso a paso</div>
+      <div class="pasos-list">
+        ${g.pasos.map((p,i)=>`
+          <div class="paso">
+            <div class="paso-num">${i+1}</div>
+            <div class="paso-texto">${p}</div>
+          </div>`).join('')}
+      </div>
+
+      <div class="modal-section-lbl">Consejo My Nana</div>
+      <div class="consejo-box">
+        <div class="consejo-label">💚 Consejo</div>
+        <div class="consejo-txt">${g.consejo}</div>
+      </div>
+
+      <div class="modal-section-lbl">Errores comunes</div>
+      <div class="error-box">
+        <div class="error-label">⚠️ Evita esto</div>
+        <div class="consejo-txt">${g.errores}</div>
+      </div>
+
+      <div class="modal-section-lbl">Información importante</div>
+      <div class="info-box">
+        <div class="info-label">ℹ️ Recuerda</div>
+        <div class="consejo-txt">${g.info}</div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="completar-btn${done?' done':''}" id="mCompletarBtn" onclick="toggleCompletar(${g.id})">
+          ${done?'✅ Guía completada — Desmarcar':'✓ Marcar como completada'}
+        </button>
+        <button class="cerrar-btn" onclick="closeModal()">← Volver al Centro de Conocimiento</button>
+        <div class="modal-date">Actualizado: Junio 2026</div>
+      </div>
+    </div>`;
+  document.getElementById('modalOverlay').classList.add('visible');
+  document.body.style.overflow = 'hidden';
+}
+
+function updateModalFav() {
+  if (!guiaActual) return;
+  const fav = favoritos.includes(guiaActual.id);
+  const btn = document.getElementById('mFav');
+  if (btn) { btn.textContent = fav?'♥':'♡'; btn.classList.toggle('saved', fav); }
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('visible');
+  document.body.style.overflow = '';
+  renderGrid();
+}
+
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+}
+
+// ═══════════════════════════════════════════════
+// FAVORITOS & COMPLETADAS
+// ═══════════════════════════════════════════════
+function toggleFav(id) {
+  if (favoritos.includes(id)) favoritos = favoritos.filter(f=>f!==id);
+  else favoritos.push(id);
+  localStorage.setItem('mn_favs', JSON.stringify(favoritos));
+  showToast(favoritos.includes(id)?'♥ Guardada en tus guías':'Eliminada de guardadas');
+  if (document.getElementById('view-favoritos').classList.contains('activa')) renderFavoritos();
+}
+
+function toggleCompletar(id) {
+  if (completadas.includes(id)) completadas = completadas.filter(c=>c!==id);
+  else completadas.push(id);
+  localStorage.setItem('mn_completadas', JSON.stringify(completadas));
+  const btn = document.getElementById('mCompletarBtn');
+  const done = completadas.includes(id);
+  if (btn) { btn.textContent = done?'✅ Guía completada — Desmarcar':'✓ Marcar como completada'; btn.classList.toggle('done', done); }
+  showToast(done?'✅ ¡Guía completada!':'Desmarcada como completada');
+  actualizarProgreso();
+}
+
+// ═══════════════════════════════════════════════
+// BÚSQUEDA Y FILTROS
+// ═══════════════════════════════════════════════
+function onSearch() {
+  busqueda = document.getElementById('searchInput').value.trim();
+  const clr = document.getElementById('searchClear');
+  clr.style.display = busqueda ? 'flex' : 'none';
+  renderGrid();
+}
+
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  busqueda = '';
+  document.getElementById('searchClear').style.display = 'none';
+  renderGrid();
+}
+
+function openFilter() {
+  document.getElementById('filterPanel').classList.add('visible');
+}
+
+function closeFilterOutside(e) {
+  if (e.target === document.getElementById('filterPanel')) closeFilter();
+}
+
+function closeFilter() {
+  document.getElementById('filterPanel').classList.remove('visible');
+}
+
+function toggleFilter(el) {
+  const tipo = el.dataset.filter;
+  const val  = el.dataset.val;
+  const arr  = filtros[tipo];
+  const idx  = arr.indexOf(val);
+  if (idx > -1) arr.splice(idx, 1); else arr.push(val);
+  el.classList.toggle('sel', arr.includes(val));
+  const activo = Object.values(filtros).some(a=>a.length>0);
+  document.getElementById('filterBtn').classList.toggle('active', activo);
+}
+
+function clearFilters() {
+  filtros = { nivel:[], tiempo:[], estado:[] };
+  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('sel'));
+  document.getElementById('filterBtn').classList.remove('active');
+}
+
+function applyFilters() {
+  closeFilter();
+  renderGrid();
+}
+
+// ═══════════════════════════════════════════════
+// TABS Y VISTAS
+// ═══════════════════════════════════════════════
+function switchTab(id) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('activo'));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('activa'));
+  document.getElementById('tab-'+id).classList.add('activo');
+  document.getElementById('view-'+id).classList.add('activa');
+  if (id==='favoritos') renderFavoritos();
+  if (id==='progreso') renderProgreso();
+}
+
+function renderFavoritos() {
+  const container = document.getElementById('favContent');
+  const favGuias = GUIAS.filter(g=>favoritos.includes(g.id));
+  if (!favGuias.length) {
+    container.innerHTML = `<div class="empty-state">
+      <div class="empty-emoji">♡</div>
+      <div class="empty-title">Sin guías guardadas</div>
+      <div class="empty-sub">Toca el ♡ en cualquier guía para guardarla aquí y acceder rápido.</div>
+    </div>`; return;
+  }
+  container.innerHTML = `<div style="margin-bottom:16px;">
+      <div class="sec-label">Tus guías guardadas <span class="sec-count">${favGuias.length}</span></div>
+    </div>`+
+    favGuias.map(g=>{
+      const cat = CATS.find(c=>c.id===g.cat);
+      const done = completadas.includes(g.id);
+      return `<div class="guia-list-item" onclick="openGuia(${g.id})">
+        <div class="guia-list-thumb" style="background:${CAT_COLORS[g.cat]}">${g.emoji}</div>
+        <div class="guia-list-info">
+          <div class="guia-list-title">${g.titulo}</div>
+          <div class="guia-list-meta">
+            <span>${cat?.emoji||''} ${cat?.label||''}</span>
+            <span>·</span>
+            <span>📖 ${g.min} min</span>
+            ${done?'<span>· ✅</span>':''}
+          </div>
+        </div>
+        <button class="guia-list-fav" onclick="event.stopPropagation();toggleFav(${g.id});renderFavoritos()">♥</button>
+      </div>`;
+    }).join('');
+}
+
+// ═══════════════════════════════════════════════
+// PROGRESO
+// ═══════════════════════════════════════════════
+const CERTIFICACIONES = [
+  { id:'limpieza',  label:'Limpieza Profesional', emoji:'🧹', cats:['limpieza'] },
+  { id:'cocina',    label:'Cocina My Nana',        emoji:'🍳', cats:['cocina'] },
+  { id:'ninos',     label:'Cuidado de Niños',      emoji:'👶', cats:['ninos'] },
+  { id:'mascotas',  label:'Cuidado de Mascotas',   emoji:'🐶', cats:['mascotas'] },
+  { id:'hogar',     label:'Hogar Completo',         emoji:'🏠', cats:['hogar','organizacion'] },
+  { id:'adulto',    label:'Cuidado del Adulto Mayor',emoji:'❤️', cats:['adulto'] },
+];
+
+const INSIGNIAS = [
+  { id:'primera',    emoji:'🌱', nombre:'Primera guía', cond:()=>completadas.length>=1 },
+  { id:'cinco',      emoji:'⭐', nombre:'5 guías leídas', cond:()=>completadas.length>=5 },
+  { id:'diez',       emoji:'🏆', nombre:'10 guías leídas', cond:()=>completadas.length>=10 },
+  { id:'veinte',     emoji:'💎', nombre:'20 guías leídas', cond:()=>completadas.length>=20 },
+  { id:'limpiadora', emoji:'🧹', nombre:'Experta en limpieza', cond:()=>GUIAS.filter(g=>g.cat==='limpieza').every(g=>completadas.includes(g.id)) },
+  { id:'chef',       emoji:'🍳', nombre:'Chef del hogar', cond:()=>GUIAS.filter(g=>g.cat==='cocina').every(g=>completadas.includes(g.id)) },
+  { id:'guardian',   emoji:'🛡️', nombre:'Guardiana del hogar', cond:()=>completadas.length>=40 },
+  { id:'maestra',    emoji:'🎓', nombre:'Maestra My Nana', cond:()=>completadas.length>=80 },
+  { id:'emergencias',emoji:'⚠️', nombre:'Preparada ante emergencias', cond:()=>GUIAS.filter(g=>g.cat==='emergencias').every(g=>completadas.includes(g.id)) },
+];
+
+function actualizarProgreso() {
+  const n = completadas.length;
+  const pct = Math.round((n/GUIAS.length)*100);
+  document.getElementById('progN').textContent = n;
+  document.getElementById('progFill').style.width = pct+'%';
+  document.getElementById('progPct').textContent = pct+'%';
+  const subs = ['Empieza leyendo tu primera guía','¡Buen inicio! Sigue aprendiendo','¡Ya eres experta en varios temas!','¡Increíble progreso! Casi completas todo','🎓 ¡Maestra My Nana!'];
+  const si = Math.min(Math.floor(pct/25), 4);
+  document.getElementById('progSub').textContent = subs[si];
+  const insigs = INSIGNIAS.filter(i=>i.cond());
+  document.getElementById('progBadges').innerHTML = insigs.slice(0,3).map(i=>
+    `<span class="prog-badge">${i.emoji} ${i.nombre}</span>`).join('');
+}
+
+function renderProgreso() {
+  const container = document.getElementById('progresoContent');
+  const n = completadas.length;
+  const pct = Math.round((n/GUIAS.length)*100);
+  let html = `<div class="sec-label" style="margin-bottom:16px;">Certificaciones My Nana</div>`;
+  html += CERTIFICACIONES.map(cert=>{
+    const catGuias = GUIAS.filter(g=>cert.cats.includes(g.cat));
+    const doneN = catGuias.filter(g=>completadas.includes(g.id)).length;
+    const certPct = catGuias.length ? Math.round((doneN/catGuias.length)*100) : 0;
+    const complete = certPct===100;
+    return `<div class="cert-card" style="${complete?'border:2px solid var(--b);':''}">
+      <div class="cert-emoji">${complete?'🎓':cert.emoji}</div>
+      <div class="cert-title">${cert.label}</div>
+      <div class="cert-sub">${complete?'¡Certificación completada! 🎉':`${doneN} de ${catGuias.length} guías completadas`}</div>
+      <div class="cert-barra"><div class="cert-fill" style="width:${certPct}%"></div></div>
+      <div class="cert-meta"><span>${certPct}% completado</span><span>${complete?'✅ Completada':'En progreso'}</span></div>
+    </div>`;
+  }).join('');
+
+  html += `<div class="sec-label" style="margin-top:24px;margin-bottom:16px;">Insignias</div>`;
+  html += `<div class="insig-grid">`;
+  html += INSIGNIAS.map(ins=>{
+    const earned = ins.cond();
+    return `<div class="insig-card${earned?' earned':''}">
+      <div class="insig-emoji" style="${earned?'':'filter:grayscale(1);opacity:.35;'}">${ins.emoji}</div>
+      <div class="insig-name">${ins.nombre}</div>
+      <div class="insig-estado">${earned?'✅ Obtenida':'Pendiente'}</div>
+    </div>`;
+  }).join('');
+  html += `</div>`;
+
+  html += `<div class="sec-label" style="margin-top:8px;margin-bottom:12px;">Resumen general</div>`;
+  html += `<div style="background:#fff;border-radius:var(--r);border:1px solid var(--g4);padding:16px;margin-bottom:20px;">`;
+  html += `<div style="display:flex;justify-content:space-between;margin-bottom:12px;">
+    <div style="text-align:center;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--g);font-weight:600;">${n}</div>
+      <div style="font-size:11px;color:var(--txt2);">Guías completadas</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--g);font-weight:600;">${favoritos.length}</div>
+      <div style="font-size:11px;color:var(--txt2);">Guías guardadas</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--g);font-weight:600;">${INSIGNIAS.filter(i=>i.cond()).length}</div>
+      <div style="font-size:11px;color:var(--txt2);">Insignias</div>
+    </div>
+  </div>`;
+  html += `<div style="font-size:12px;color:var(--txt2);text-align:center;padding-top:8px;border-top:1px solid var(--g4);">
+    Progreso general: ${pct}% de todas las guías</div></div>`;
+
+  html += `<div style="background:var(--b3);border-radius:var(--r);padding:16px;text-align:center;margin-bottom:20px;">
+    <div style="font-size:18px;margin-bottom:6px;">🎓</div>
+    <div style="font-size:14px;font-weight:500;color:var(--txt);margin-bottom:4px;">Certificación My Nana Maestra</div>
+    <div style="font-size:12px;color:var(--txt2);line-height:1.6;">Completa todas las guías para obtener tu certificación oficial y un badge verificado en tu perfil.</div>
+  </div>`;
+
+  container.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════
+let toastTimer = null;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
 </script>
 </body>
 </html>
