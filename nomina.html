@@ -407,7 +407,7 @@ body{font-family:'DM Sans',sans-serif;background:#F0F4F0;color:var(--txt);min-he
     </div><!-- /vistaCalFija -->
 
     <!-- ── EVENTUAL: formulario original ── -->
-    <div id="vistaFormEventual">
+    <div id="vistaFormEventual" style="display:none;">
       <div class="sec-label">Registrar visita</div>
       <div class="card">
         <div class="card-body">
@@ -550,6 +550,8 @@ window.cambiarTab = (tab, el) => {
   el.classList.add('activo');
   $('panel-' + tab).classList.add('activo');
   if (tab === 'historial') renderHistorial();
+  // Re-aplicar bifurcación al entrar a Visitas por si no se había inicializado
+  if (tab === 'visitas') aplicarTipoHogar();
 };
 
 // ── Aplicar tipo de hogar ──
