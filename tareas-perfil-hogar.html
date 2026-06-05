@@ -1573,14 +1573,8 @@ window.generarSemana = async (modo) => {
     // FIX: semana ocupada = 5 tareas máx (no 3), mascotas/niños siempre presentes
     const esRapida   = modo === 'rapida';
 
-    // FIX 2: Cargar menú semanal para usar nombres reales de platos
-    const menuSemanal = await cargarMenuSemanal();
-    const TIEMPOS_MAP = { desayuno:'desayuno', almuerzo:'almuerzo', cena:'cena', merienda:'merienda' };
-
-    function getNombreComida(diaIdx, tiempo) {
-      const key = `dia_${diaIdx}`;
-      return menuSemanal[key]?.[tiempo]?.nombre || null;
-    }
+    // Nota: los nombres de platos viven en menu.html únicamente.
+    // Las tareas de cocina usan nombres genéricos por tiempo de comida.
 
     semanaActual = {};
 
@@ -1654,23 +1648,24 @@ window.generarSemana = async (modo) => {
         }
       }
 
-      // ══ COCINA: usa nombres del menú semanal si existe ══
+      // ══ COCINA: siempre nombres genéricos por tiempo de comida ══
+      // Los platos reales viven únicamente en menu.html — nunca en el título de la tarea.
       if (!p.prioridades || p.prioridades.includes('cocina')) {
-        const platoDesayuno = getNombreComida(diaIdx, 'desayuno');
-        const platoAlmuerzo = getNombreComida(diaIdx, 'almuerzo');
-        const platoCena     = getNombreComida(diaIdx, 'cena');
-
         tareas.push(getTareaConHora(
-          platoDesayuno ? `Preparar: ${platoDesayuno}` : pick(TAREAS_DB.Cocina.desayuno),
+          'Preparar desayuno',
           'Cocina', horaAntes(h.desayuno, 30), 'normal', '30 min'
         ));
         tareas.push(getTareaConHora(
-          platoAlmuerzo ? `Cocinar: ${platoAlmuerzo}` : pick(TAREAS_DB.Cocina.almuerzo),
+          'Preparar almuerzo',
           'Cocina', horaAntes(h.almuerzo, 60), 'normal', '45 min'
+        ));
+        tareas.push(getTareaConHora(
+          'Preparar merienda',
+          'Cocina', horaAntes(h.merienda, 15) || horaAntes(h.cena, 90) || '15:45', 'normal', '15 min'
         ));
         if (!esRapida) {
           tareas.push(getTareaConHora(
-            platoCena ? `Preparar: ${platoCena}` : pick(TAREAS_DB.Cocina.cena),
+            'Preparar cena',
             'Cocina', horaAntes(h.cena, 30), 'normal', '20 min'
           ));
         }
