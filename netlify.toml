@@ -3,8 +3,6 @@
 
 [build]
   environment = { SECRETS_SCAN_OMIT_KEYS = "FIREBASE_API_KEY", SECRETS_SCAN_SMART_DETECTION_ENABLED = "false" }
-
-[build]
   functions = "netlify/functions"
 
 [functions."send-recordatorios"]
