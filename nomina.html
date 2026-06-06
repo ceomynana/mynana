@@ -255,8 +255,8 @@ body{font-family:'DM Sans',sans-serif;background:#F0F4F0;color:var(--txt);min-he
 
   <!-- ══ TAB PAGOS ══ -->
   <div class="panel" id="panel-pagos">
-    <div class="sec-label">Registrar pago</div>
-    <div class="card">
+    <div class="sec-label" id="secRegistroPago">Registrar pago</div>
+    <div class="card" id="cardRegistroPago">
       <div class="card-body">
         <div class="form-row-2">
           <div>
@@ -550,7 +550,10 @@ window.cambiarTab = (tab, el) => {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('activo'));
   el.classList.add('activo');
   $('panel-' + tab).classList.add('activo');
-  if (tab === 'historial') renderHistorial();
+  if (tab === 'historial') {
+    renderHistorial();
+    if (tipoHogar === 'con_nana') cargarTodasVisitasFija();
+  }
   // Re-aplicar bifurcación al entrar a Visitas por si no se había inicializado
   if (tab === 'visitas') aplicarTipoHogar();
 };
@@ -592,7 +595,8 @@ function aplicarTipoHogar() {
 
 // ══ CALENDARIO MENSUAL NANA FIJA ════════════════════════════════════════════
 let calFijaMes    = new Date();
-let visitasFija   = {};   // { 'YYYY-MM-DD': { id, incidencia, nota, calificacion } }
+let visitasFija   = {};   // { 'YYYY-MM-DD': { id, incidencia, nota, calificacion } } — solo mes visible
+let visitasFijaCompleta = {}; // todos los registros — para historial
 let diaEditando   = null; // fecha string siendo editada en el modal
 
 function fmtLocal(d) {
@@ -604,6 +608,29 @@ function hoyStr() { return fmtLocal(new Date()); }
 function iniciarCalFija() {
   calFijaMes = new Date();
   cargarVisitasFija();
+}
+
+// Carga TODOS los registros del calendario fija (para historial completo)
+async function cargarTodasVisitasFija() {
+  if (!hogarId) return;
+  try {
+    const snap = await getDocs(
+      query(collection(db, 'hogares', hogarId, 'asistencia_fija'), orderBy('fecha','asc'))
+    );
+    visitasFijaCompleta = {};
+    snap.forEach(d => { visitasFijaCompleta[d.data().fecha] = { id: d.id, ...d.data() }; });
+  } catch {
+    try {
+      const snap2 = await getDocs(
+        query(collection(db, 'hogares', hogarId, 'visitas'),
+              where('tipo','==','nana_fija'), orderBy('fecha','asc'))
+      );
+      visitasFijaCompleta = {};
+      snap2.forEach(d => { visitasFijaCompleta[d.data().fecha] = { id: d.id, ...d.data() }; });
+    } catch(e2) { console.warn('cargarTodasVisitasFija:', e2); }
+  }
+  // Re-renderizar historial ahora que tenemos datos completos
+  renderHistorial();
 }
 
 async function cargarVisitasFija() {
@@ -621,7 +648,9 @@ async function cargarVisitasFija() {
     );
     visitasFija = {};
     snap.docs.forEach(d => {
-      visitasFija[d.data().fecha] = { id: d.id, ...d.data() };
+      const dat = { id: d.id, ...d.data() };
+      visitasFija[dat.fecha] = dat;
+      visitasFijaCompleta[dat.fecha] = dat; // sync para historial global
     });
     renderCalFija();
   } catch(e) {
@@ -677,7 +706,12 @@ function renderCalFija() {
 }
 
 function renderResumenFija() {
-  const vals = Object.values(visitasFija);
+  // Solo contar días del mes actualmente visible en el calendario
+  const y = calFijaMes.getFullYear();
+  const m = String(calFijaMes.getMonth() + 1).padStart(2, '0');
+  const prefixMes = `${y}-${m}-`;
+
+  const vals = Object.values(visitasFija).filter(v => v.fecha && v.fecha.startsWith(prefixMes));
   const trab  = vals.filter(v => v.trabajada && v.incidencia !== 'ausente').length;
   const aus   = vals.filter(v => v.incidencia === 'ausente').length;
   const extra = vals.filter(v => v.incidencia === 'extra').length;
@@ -1036,7 +1070,16 @@ window.registrarVisita = async () => {
 // ── Historial ──
 function renderHistorial() {
   const totalPagado  = pagosCache.reduce((s,p) => s + (parseFloat(p.monto)||0), 0);
-  const totalVisitas = visitasCache.length;
+
+  // Para nana fija el conteo real viene del calendario visitasFija, no de visitasCache
+  const esFija = tipoHogar === 'con_nana';
+  let totalVisitas;
+  if (esFija) {
+    totalVisitas = Object.values(visitasFija).filter(v => v.trabajada && v.incidencia !== 'ausente').length;
+  } else {
+    totalVisitas = visitasCache.length;
+  }
+
   const promedio     = totalVisitas > 0 ? totalPagado / totalVisitas : 0;
   const califs       = visitasCache.map(v => parseInt(v.calificacion)||0).filter(n=>n>0);
   const califProm    = califs.length ? (califs.reduce((s,n)=>s+n,0)/califs.length).toFixed(1) : '—';
@@ -1046,7 +1089,7 @@ function renderHistorial() {
   $('histPromedio').textContent = promedio > 0 ? `$${Math.round(promedio)}` : '$0';
   $('histCalif').textContent    = califProm;
 
-  // Por mes
+  // Por mes — construir desde pagos + visitas reales
   const porMes = {};
   pagosCache.forEach(p => {
     const [y,m] = (p.fecha||'').split('-');
@@ -1055,12 +1098,25 @@ function renderHistorial() {
     if (!porMes[key]) porMes[key] = { y, m:parseInt(m), total:0, visitas:0 };
     porMes[key].total += parseFloat(p.monto)||0;
   });
-  visitasCache.forEach(v => {
-    const [y,m] = (v.fecha||'').split('-');
-    if (!y || !m) return;
-    const key = `${y}-${m}`;
-    if (porMes[key]) porMes[key].visitas++;
-  });
+
+  if (esFija) {
+    // Contar días trabajados reales del calendario por mes
+    Object.values(visitasFijaCompleta).forEach(v => {
+      if (!v.trabajada || v.incidencia === 'ausente') return;
+      const [y,m] = (v.fecha||'').split('-');
+      if (!y || !m) return;
+      const key = `${y}-${m}`;
+      if (!porMes[key]) porMes[key] = { y, m:parseInt(m), total:0, visitas:0 };
+      porMes[key].visitas++;
+    });
+  } else {
+    visitasCache.forEach(v => {
+      const [y,m] = (v.fecha||'').split('-');
+      if (!y || !m) return;
+      const key = `${y}-${m}`;
+      if (porMes[key]) porMes[key].visitas++;
+    });
+  }
 
   const mesesOrdenados = Object.values(porMes).sort((a,b)=>
     b.y !== a.y ? b.y - a.y : b.m - a.m);
@@ -1097,6 +1153,18 @@ onAuthStateChanged(auth, async user => {
     const guardado = localStorage.getItem('hogarActivoNana');
     const valido   = snap.docs.find(d => d.id === guardado);
     hogarId = valido ? guardado : snap.docs[0].id;
+
+    // Detectar si el usuario logueado es nana o familia
+    const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
+    const esNana  = userDoc.exists() && userDoc.data().tipo === 'nana';
+
+    // Ocultar formulario de registro de pagos para nanas
+    if (esNana) {
+      const secReg  = $('secRegistroPago');
+      const cardReg = $('cardRegistroPago');
+      if (secReg)  secReg.style.display  = 'none';
+      if (cardReg) cardReg.style.display = 'none';
+    }
 
     // Leer tipoHogar real de Firestore
     const hogarDoc = await getDoc(doc(db, 'hogares', hogarId));
