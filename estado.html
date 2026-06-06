@@ -198,6 +198,15 @@ function semanaId() {
   lunes.setDate(hoy.getDate() - dia);
   return `${lunes.getFullYear()}-${String(lunes.getMonth()+1).padStart(2,'0')}-${String(lunes.getDate()).padStart(2,'0')}`;
 }
+// getSemanaId — formato YYYY-WNN idéntico a menu.html
+function getSemanaId() {
+  const hoy = new Date();
+  const dia = hoy.getDay() === 0 ? 6 : hoy.getDay() - 1;
+  const lunes = new Date(hoy);
+  lunes.setDate(hoy.getDate() - dia);
+  lunes.setHours(0,0,0,0);
+  return `${lunes.getFullYear()}-W${String(Math.ceil(lunes.getDate()/7)).padStart(2,'0')}`;
+}
 function formatHora(h24) {
   if (!h24) return '';
   const [h, m] = h24.split(':').map(Number);
@@ -235,7 +244,7 @@ function escucharTareas() {
   onSnapshot(q, (snap) => {
     const hoy = hoyStr();
     estadoData.tareas = snap.docs.map(d => ({id:d.id,...d.data()}))
-      .filter(t => t.fecha ? t.fecha === hoy : true);
+      .filter(t => t.fecha === hoy); // solo tareas con fecha = hoy exacto; sin fecha = excluir
     renderTareas();
     actualizarEstadoGeneral();
   });
@@ -277,35 +286,22 @@ function renderTareas() {
   }).join('') + (tareas.length > 6 ? `<div style="font-size:12px;color:var(--txt2);text-align:center;padding:8px;">+${tareas.length-6} más · <a href="/tareas.html" style="color:var(--g);">Ver todas</a></div>` : '');
 }
 
-// ── SEMANA ID — mismo formato exacto que menu.html ──
-function diaSemanaActual() {
-  const d = new Date().getDay(); // 0=dom
-  return d === 0 ? 6 : d - 1;   // 0=lun…6=dom
-}
-function getSemanaId() {
-  const hoy = new Date();
-  const lunes = new Date(hoy);
-  lunes.setDate(hoy.getDate() - diaSemanaActual());
-  lunes.setHours(0,0,0,0);
-  return `${lunes.getFullYear()}-W${String(Math.ceil(lunes.getDate()/7)).padStart(2,'0')}`;
-}
-
+// ── MENÚ ──
 // ── MENÚ ──
 function cargarMenu() {
   const hoy = new Date();
-  const diaIdx = diaSemanaActual(); // 0=lun…6=dom
-  const semanaId = getSemanaId();
+  const diaIdx = hoy.getDay() === 0 ? 6 : hoy.getDay() - 1; // 0=lunes
+  const sid = getSemanaId();
 
   const tiempos = [
     { id:'desayuno', nombre:'Desayuno', emoji:'☀️',  hora:'7:00 am' },
     { id:'almuerzo', nombre:'Almuerzo', emoji:'🍽️', hora:'12:30 pm' },
-    { id:'merienda', nombre:'Merienda', emoji:'🍎', hora:'3:30 pm' },
+    { id:'merienda', nombre:'Merienda', emoji:'🍎',  hora:'3:30 pm' },
     { id:'cena',     nombre:'Cena',     emoji:'🌙',  hora:'7:00 pm' },
   ];
 
-  // Leer doc exacto con semanaId correcto (formato YYYY-WNN igual que menu.html)
-  onSnapshot(doc(db, 'hogares', hogarId, 'menus', semanaId), (snap) => {
-    const menuDia = snap.exists() ? (snap.data()[`dia_${diaIdx}`] || {}) : {};
+  onSnapshot(doc(db, 'hogares', hogarId, 'menus', sid), (weekDoc) => {
+    const menuDia = weekDoc.exists() ? (weekDoc.data()[`dia_${diaIdx}`] || {}) : {};
     const conPlato = tiempos.filter(t => menuDia[t.id]?.nombre);
 
     document.getElementById('badgeMenu').textContent = conPlato.length ? `${conPlato.length} comidas` : 'Sin planificar';
@@ -332,11 +328,10 @@ function cargarMenu() {
 
 // ── MERCADO ──
 function cargarMercado() {
-  const semanaId = getSemanaId(); // mismo formato que menu.html: YYYY-WNN
+  const sid = getSemanaId();
 
-  // Leer el doc exacto — igual que menu.html usa setDoc(doc(...,'mercado',semanaId))
-  onSnapshot(doc(db, 'hogares', hogarId, 'mercado', semanaId), (snap) => {
-    const items = snap.exists() ? (snap.data().items || []) : [];
+  onSnapshot(doc(db, 'hogares', hogarId, 'mercado', sid), (weekDoc) => {
+    const items = weekDoc.exists() ? (weekDoc.data().items || []) : [];
     const pendientes = items.filter(i => !i.comprado);
     const comprados  = items.filter(i => i.comprado);
 
@@ -440,8 +435,7 @@ function actualizarEstadoGeneral() {
   const hechas = tareas.filter(t => t.estado === 'completa').length;
   const pct    = total ? Math.round((hechas / total) * 100) : 100;
 
-  // Incluir mercado pendiente en el diagnóstico — si hay artículos sin comprar,
-  // el hogar no está completamente "al día"
+  // Mercado pendiente impide "Hogar al día"
   const mercadoPendiente = estadoData.alertas.some(a => a.tipo === 'mercado');
 
   document.getElementById('statusPct').textContent = pct + '%';
@@ -452,7 +446,10 @@ function actualizarEstadoGeneral() {
     emoji = '✨'; mensaje = 'Todas las tareas del día están listas. Tu hogar está funcionando perfecto.';
   } else if (pct === 100 && mercadoPendiente) {
     color = '#2D8A6A'; titulo = 'Tareas al día';
-    emoji = '🛒'; mensaje = 'Todas las tareas completadas. Aún tienes artículos pendientes en el mercado.';
+    emoji = '🛒'; mensaje = 'Todas las tareas completadas. Aún hay artículos pendientes en la lista del mercado.';
+  } else if (pct === 100 && total === 0 && mercadoPendiente) {
+    color = '#B45309'; titulo = 'Mercado pendiente';
+    emoji = '🛒'; mensaje = 'No hay tareas hoy, pero quedan artículos por comprar en el mercado.';
   } else if (pct >= 70) {
     color = '#2D8A6A'; titulo = 'Todo va bien';
     emoji = '🌿'; mensaje = `${total - hechas} tarea${total-hechas>1?'s':''} pendiente${total-hechas>1?'s':''}. Todo bajo control.`;
