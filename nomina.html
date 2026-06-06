@@ -677,7 +677,12 @@ function renderCalFija() {
 }
 
 function renderResumenFija() {
-  const vals = Object.values(visitasFija);
+  // Filtrar solo los días del mes actualmente visible en el calendario
+  const y = calFijaMes.getFullYear();
+  const m = String(calFijaMes.getMonth() + 1).padStart(2, '0');
+  const prefixMes = `${y}-${m}-`;
+
+  const vals  = Object.values(visitasFija).filter(v => v.fecha && v.fecha.startsWith(prefixMes));
   const trab  = vals.filter(v => v.trabajada && v.incidencia !== 'ausente').length;
   const aus   = vals.filter(v => v.incidencia === 'ausente').length;
   const extra = vals.filter(v => v.incidencia === 'extra').length;
