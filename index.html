@@ -2399,11 +2399,11 @@ body.lang-es .es{display:initial !important;}
 .guia-pasos{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
 .guia-paso{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--txt2);}
 .paso-num{width:22px;height:22px;border-radius:50%;background:var(--g3);color:var(--g);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.guia-card-mini{display:flex;align-items:center;gap:10px;background:var(--g3);border-radius:10px;padding:10px 12px;cursor:pointer;transition:background .15s;}
-.guia-card-mini:hover{background:var(--g4);}
+.guia-video-mini{display:flex;align-items:center;gap:10px;background:var(--g3);border-radius:10px;padding:10px 12px;cursor:pointer;transition:background .15s;}
+.guia-video-mini:hover{background:var(--g4);}
 .guia-play{width:32px;height:32px;border-radius:50%;background:var(--g);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
-.guia-card-titulo{font-size:12px;font-weight:500;color:var(--txt);}
-.guia-card-dur{font-size:11px;color:var(--txt2);margin-top:2px;}
+.guia-video-titulo{font-size:12px;font-weight:500;color:var(--txt);}
+.guia-video-dur{font-size:11px;color:var(--txt2);margin-top:2px;}
 @media(max-width:768px){
   #guiaFamilia > div:first-child,
   #guiaNana > div:first-child{grid-template-columns:1fr !important;}
@@ -2662,6 +2662,15 @@ window.unirseConCodigo = async function() {
       </div>
 
       <div id="regError" style="display:none;font-size:12px;color:#e05c5c;margin-bottom:10px;padding:8px 12px;background:#FEF2F2;border-radius:8px;"></div>
+
+      <!-- Consentimiento datos — requerido por Ley 81 de 2019 -->
+      <div id="consentFamiliaWrap" style="display:flex;align-items:flex-start;gap:10px;margin-bottom:14px;background:var(--g3);border:1px solid var(--g4);border-radius:10px;padding:12px 14px;">
+        <input type="checkbox" id="familiaConsentimiento" style="margin-top:3px;accent-color:var(--g);width:16px;height:16px;flex-shrink:0;" />
+        <label for="familiaConsentimiento" style="font-size:12px;color:var(--txt2);line-height:1.6;cursor:pointer;">
+          <span class="es">He leído y acepto la <a href="/privacidad.html" target="_blank" style="color:var(--g);text-decoration:underline;">Política de Privacidad</a> y los <a href="/terminos.html" target="_blank" style="color:var(--g);text-decoration:underline;">Términos de uso</a> de My Nana. Consiento el tratamiento de mis datos personales conforme a la Ley 81 de 2019 de Panamá.</span>
+          <span class="en">I have read and accept My Nana's <a href="/privacidad.html" target="_blank" style="color:var(--g);text-decoration:underline;">Privacy Policy</a> and <a href="/terminos.html" target="_blank" style="color:var(--g);text-decoration:underline;">Terms of use</a>. I consent to the processing of my personal data in accordance with Panama's Law 81 of 2019.</span>
+        </label>
+      </div>
 
       <button class="form-submit" id="btnSubmit" onclick="submitForm()">
         <span class="es">Crear cuenta y empezar 15 días gratis 🎉</span><span class="en">Create account &amp; start free 🎉</span>
@@ -2931,7 +2940,7 @@ window.unirseConCodigo = async function() {
             <div class="task-icon" style="background:#FEF7EE;">🍝</div>
             <div class="task-body">
               <div class="task-name"><span class="es">Almuerzo — sancocho</span><span class="en">Lunch — sancocho</span></div>
-              <div class="task-time"><span class="es">🕐 12:30 pm · Leer guía de cocina</span><span class="en">🕐 12:30 pm · Read cooking guide</span></div>
+              <div class="task-time"><span class="es">🕐 12:30 pm · Ver receta</span><span class="en">🕐 12:30 pm · See recipe</span></div>
             </div>
             <div class="task-check pend"></div>
           </div>
@@ -2939,7 +2948,7 @@ window.unirseConCodigo = async function() {
             <div class="task-icon" style="background:#F7EFEF;">🧹</div>
             <div class="task-body">
               <div class="task-name"><span class="es">Limpiar sala y comedor</span><span class="en">Clean living room and dining</span></div>
-              <div class="task-time"><span class="es">🕑 2:00 pm · Leer guía</span><span class="en">🕑 2:00 pm · Read guide</span></div>
+              <div class="task-time"><span class="es">🕑 2:00 pm · Ver video</span><span class="en">🕑 2:00 pm · See video</span></div>
             </div>
             <div class="task-check pend"></div>
           </div>
@@ -2966,8 +2975,8 @@ window.unirseConCodigo = async function() {
             <span><span class="es">Menú</span><span class="en">Menu</span></span>
           </div>
           <div class="phone-tab">
-            <div class="phone-tab-icon">📚</div>
-            <span><span class="es">Aprender</span><span class="en">Learn</span></span>
+            <div class="phone-tab-icon">▶️</div>
+            <span>Videos</span>
           </div>
         </div>
       </div>
@@ -3123,7 +3132,7 @@ window.unirseConCodigo = async function() {
         <button class="feat-tab" onclick="mostrarFeat('contrato',this)">📋 <span class="es">Contratos</span><span class="en">Contracts</span></button>
         <button class="feat-tab" onclick="mostrarFeat('nomina',this)">💰 <span class="es">Nómina</span><span class="en">Payroll</span></button>
         <button class="feat-tab" onclick="mostrarFeat('fotos',this)">📸 <span class="es">Fotos</span><span class="en">Photos</span></button>
-        <button class="feat-tab" onclick="mostrarFeat('ayudas',this)">📚 <span class="es">Centro de Conocimiento</span><span class="en">Knowledge Center</span></button>
+        <button class="feat-tab" onclick="mostrarFeat('ayudas',this)">🏠 <span class="es">Ayudas rápidas</span><span class="en">Quick guides</span></button>
         <button class="feat-tab" onclick="mostrarFeat('planificador',this)">✨ <span class="es">Planificador IA</span><span class="en">AI Planner</span></button>
         <button class="feat-tab" onclick="mostrarFeat('buscador',this)">🔍 <span class="es">Buscador</span><span class="en">Search</span></button>
       </div>
@@ -3735,8 +3744,8 @@ window.unirseConCodigo = async function() {
             <div class="tl-hora nana">3:00</div>
             <div class="tl-icono" style="background:var(--b3);">📹</div>
             <div class="tl-info">
-              <div class="tl-titulo"><span class="es">Lees una guía del Centro de Conocimiento</span><span class="en">You read a guide from the Knowledge Center</span></div>
-              <div class="tl-desc"><span class="es">Aprendes una técnica nueva de limpieza o una receta panameña paso a paso</span><span class="en">You learn a new cleaning technique or Panamanian recipe step by step</span></div>
+              <div class="tl-titulo"><span class="es">Ves un video de entrenamiento</span><span class="en">You watch a training video</span></div>
+              <div class="tl-desc"><span class="es">Aprendes una técnica nueva de limpieza o una receta panameña</span><span class="en">You learn a new cleaning technique or Panamanian recipe</span></div>
             </div>
           </div>
           <div class="tl-item" onclick="simular('nana-score')">
@@ -3943,9 +3952,9 @@ window.unirseConCodigo = async function() {
               </div>
             </div>
 
-            <!-- NANA: Centro de Conocimiento -->
+            <!-- NANA: Videos -->
             <div class="sim-panel" id="sim-nana-video">
-              <div class="sim-header" style="background:var(--b2);"><div class="sim-h-name">📚 <span class="es">Centro de Conocimiento</span><span class="en">Knowledge Center</span></div></div>
+              <div class="sim-header" style="background:var(--b2);"><div class="sim-h-name">📹 <span class="es">Videos</span><span class="en">Videos</span></div></div>
               <div class="sim-body">
                 <div style="background:#fff;border-radius:12px;overflow:hidden;margin-bottom:8px;box-shadow:0 1px 4px rgba(0,0,0,.06);">
                   <div style="background:var(--g2);height:70px;display:flex;align-items:center;justify-content:center;font-size:28px;">🍲</div>
@@ -4471,7 +4480,7 @@ window.unirseConCodigo = async function() {
       <div class="priv-card reveal">
         <div class="priv-icon">✋</div>
         <div class="priv-title"><span class="es">Consentimiento obligatorio</span><span class="en">Mandatory consent</span></div>
-        <div class="priv-desc"><span class="es">Toda nana firma digitalmente su consentimiento antes de aparecer en la plataforma. Sin ese consentimiento, el perfil permanece completamente privado.</span><span class="en">Every nana digitally signs their consent before appearing on the platform. Without that consent, the profile remains completely private.</span></div>
+        <div class="priv-desc"><span class="es">Tanto las familias como las nanas aceptan expresamente la Política de Privacidad y los Términos de uso al registrarse. Sin ese consentimiento, no es posible crear una cuenta. Los perfiles del personal permanecen completamente privados hasta que el consentimiento esté firmado.</span><span class="en">Both families and nanas explicitly accept the Privacy Policy and Terms of use at registration. Without that consent, no account can be created. Staff profiles remain completely private until consent is signed.</span></div>
       </div>
       <div class="priv-card reveal">
         <div class="priv-icon">🗑️</div>
@@ -4984,6 +4993,12 @@ async function submitForm() {
   if (!telefono)          return showErr('⚠️ Agrega tu número de WhatsApp.');
   if (pass1.length < 6)  return showErr('⚠️ La contraseña debe tener mínimo 6 caracteres.');
   if (pass1 !== pass2)   return showErr('⚠️ Las contraseñas no coinciden.');
+  const consentFamilia = document.getElementById('familiaConsentimiento');
+  if (consentFamilia && !consentFamilia.checked) {
+    consentFamilia.style.outline = '2px solid #e05c5c';
+    setTimeout(() => consentFamilia.style.outline = '', 2000);
+    return showErr('⚠️ Debes aceptar la Política de Privacidad y los Términos de uso para continuar.');
+  }
   if (errEl) errEl.style.display = 'none';
   if (btn)  { btn.disabled = true; if (btn.querySelector('.es')) btn.querySelector('.es').textContent = 'Creando cuenta...'; }
 
@@ -5314,12 +5329,12 @@ const FEATS = {
   },
   menu: {
     emoji: '🍽️',
-    titulo: 'Menú semanal panameño',
-    titulo_en: 'Panamanian weekly menu',
-    desc: 'Planifica los 4 tiempos de comida para toda la semana. La nana sugiere, la familia aprueba. Los ingredientes van directo al mercado.',
-    desc_en: 'Plan all 4 meals for the whole week. The nana suggests, the family approves. Ingredients go straight to the grocery list.',
-    puntos: ['Desayuno, almuerzo, merienda y cena', 'Platos panameños reales', 'Planificador IA sugiere el menú', 'Genera lista del mercado automáticamente'],
-    puntos_en: ['Breakfast, lunch, snack and dinner', 'Real Panamanian dishes', 'AI planner suggests the menu', 'Automatically generates grocery list'],
+    titulo: 'Menú semanal inteligente',
+    titulo_en: 'Smart weekly menu',
+    desc: 'Planifica los 4 tiempos de comida para toda la semana. La IA genera un menú personalizado según tus restricciones alimenticias, alergias, objetivos de salud y presupuesto. La familia aprueba y los ingredientes van directo al mercado.',
+    desc_en: 'Plan all 4 meals for the whole week. AI generates a personalized menu based on your dietary restrictions, allergies, health goals and budget. The family approves and ingredients go straight to your grocery list.',
+    puntos: ['Menú adaptado a alergias y restricciones alimenticias', 'Opciones: panameño, saludable, alto en proteína, económico', 'Planificador IA diseñado para tu hogar específico', 'Genera lista del mercado automáticamente'],
+    puntos_en: ['Menu adapted to allergies and dietary restrictions', 'Options: Panamanian, healthy, high-protein, budget-friendly', 'AI planner tailored to your specific household', 'Automatically generates your grocery list'],
     demo: () => {
       const esEN = idiomaActual === 'en';
       const dias = esEN ? ['M','T','W','T','F','S','S'] : ['L','M','X','J','V','S','D'];
@@ -5595,43 +5610,44 @@ const FEATS = {
     }
   },
   ayudas: {
-    emoji: '📚',
-    titulo: 'Centro de Conocimiento My Nana',
-    titulo_en: 'My Nana Knowledge Center',
-    desc: 'Una biblioteca de guías rápidas e ilustradas para aprender mejores prácticas del hogar: cocina, limpieza, lavandería, mascotas, niños, organización, adulto mayor y emergencias.',
-    desc_en: 'A library of quick illustrated guides to learn best home practices: cooking, cleaning, laundry, pets, kids, organization, senior care and emergencies.',
-    puntos: ['Guías de cocina panameña con pasos claros', 'Tutoriales de limpieza y lavandería ilustrados', 'Guías de cuidado de mascotas y niños', 'Progreso y certificaciones por categoría'],
-    puntos_en: ['Panamanian cooking guides with clear steps', 'Illustrated cleaning and laundry tutorials', 'Pet and children care guides', 'Progress tracking and category certifications'],
+    emoji: '🏠',
+    titulo: 'Ayudas rápidas del hogar',
+    titulo_en: 'Quick home guides',
+    desc: 'Biblioteca de videos grabados por expertos panameños. Cada tarea tiene su video tutorial — desde cómo limpiar hasta cómo cocinar el sancocho perfecto.',
+    desc_en: 'Video library recorded by Panamanian experts. Every task has its tutorial video — from cleaning to cooking the perfect sancocho.',
+    puntos: ['Videos de cocina panameña con recetas reales', 'Tutoriales de limpieza paso a paso', 'Videos de lavandería y planchado', 'Vinculados directamente a cada tarea del día'],
+    puntos_en: ['Panamanian cooking videos with real recipes', 'Step-by-step cleaning tutorials', 'Laundry and ironing videos', 'Linked directly to each daily task'],
     demo: () => {
       const esEN = idiomaActual === 'en';
       const cats = esEN ? ['Cooking','Cleaning','Laundry','Kids'] : ['Cocina','Limpieza','Lavandería','Niños'];
-      const guias = esEN ? [
-        ['🍲','Panamanian chicken sancocho','2 min read','Cooking · Basic · 5 steps','var(--g2)'],
-        ['🧹','How to deep clean bathrooms','3 min read','Cleaning · Step by step','var(--b)'],
-        ['👕','Delicate clothing care','1 min read','Laundry · Tips','var(--g)'],
-        ['🍳','Full Panamanian breakfast','2 min read','Cooking · Quick','#5A4080'],
+      const videos = esEN ? [
+        ['🍲','Panamanian chicken sancocho','22 min','Cooking · Basic level','var(--g2)'],
+        ['🧹','How to clean bathrooms correctly','8 min','Cleaning · Step by step','var(--b)'],
+        ['👕','Delicate clothing laundry','6 min','Laundry · Tips','var(--g)'],
+        ['🍳','Full Panamanian breakfast','12 min','Cooking · Quick','#5A4080'],
       ] : [
-        ['🍲','Sancocho de gallina panameño','2 min de lectura','Cocina · Básico · 5 pasos','var(--g2)'],
-        ['🧹','Cómo limpiar baños en profundidad','3 min de lectura','Limpieza · Paso a paso','var(--b)'],
-        ['👕','Cuidado de ropa delicada','1 min de lectura','Lavandería · Consejos','var(--g)'],
-        ['🍳','Desayuno panameño completo','2 min de lectura','Cocina · Rápido','#5A4080'],
+        ['🍲','Sancocho de gallina panameño','22 min','Cocina · Nivel básico','var(--g2)'],
+        ['🧹','Cómo limpiar baños correctamente','8 min','Limpieza · Paso a paso','var(--b)'],
+        ['👕','Lavandería ropa delicada','6 min','Lavandería · Consejos','var(--g)'],
+        ['🍳','Desayuno panameño completo','12 min','Cocina · Rápido','#5A4080'],
       ];
       return `
       <div style="background:var(--g);padding:12px 16px;">
-        <div style="font-family:Georgia,serif;font-size:15px;color:#fff;margin-bottom:8px;">${esEN ? 'Guide of the day' : 'Guía del día'}</div>
+        <div style="font-family:Georgia,serif;font-size:15px;color:#fff;margin-bottom:8px;">${esEN ? 'Today\'s videos' : 'Videos de hoy'}</div>
         <div style="display:flex;gap:6px;">
           ${cats.map((c,i)=>`<div style="padding:4px 10px;border-radius:99px;background:${i===0?'var(--b)':'rgba(255,255,255,.15)'};color:#fff;font-size:10px;font-weight:500;">${c}</div>`).join('')}
         </div>
       </div>
       <div style="padding:12px;display:flex;flex-direction:column;gap:10px;">
-        ${guias.map(([e,t,d,cat,bg])=>`
+        ${videos.map(([e,t,d,cat,bg])=>`
           <div style="background:#fff;border-radius:12px;overflow:hidden;border:1px solid var(--g4);display:flex;align-items:center;gap:0;">
-            <div style="width:72px;height:60px;background:${bg};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-              <span style="font-size:28px;">${e}</span>
+            <div style="width:72px;height:60px;background:${bg};display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;">
+              <span style="font-size:24px;">${e}</span>
+              <div style="position:absolute;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;">▶</div>
             </div>
             <div style="padding:8px 12px;flex:1;">
               <div style="font-size:12px;font-weight:500;color:var(--txt);margin-bottom:2px;">${t}</div>
-              <div style="font-size:10px;color:#bbb;">📖 ${d} · ${cat}</div>
+              <div style="font-size:10px;color:#bbb;">${d} · ${cat}</div>
             </div>
           </div>`).join('')}
       </div>`;
