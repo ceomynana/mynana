@@ -1024,11 +1024,11 @@ service cloud.firestore {
         </div>
       </div>
 
-      <!-- Centro de Conocimiento -->
-      <div class="dash-card" id="cardVideosNana" onclick="location.href='/videos.html'" style="cursor:pointer;">
+      <!-- Ayudas rápidas del hogar -->
+      <div class="dash-card" id="cardVideosNana" onclick="location.href='/tareas.html'" style="cursor:pointer;">
         <div class="dash-card-header">
-          <div class="dash-card-icon" style="background:var(--b3);">📚</div>
-          <div><div class="dash-card-title">Centro de Conocimiento</div><div class="dash-card-sub">Guías prácticas del hogar</div></div>
+          <div class="dash-card-icon" style="background:var(--g3);">💡</div>
+          <div><div class="dash-card-title">Ayudas rápidas del hogar</div><div class="dash-card-sub">Guías y consejos prácticos</div></div>
         </div>
         <div class="dash-card-body">
           <div class="task-item"><span style="font-size:14px;">🍲</span><span class="task-name">Recetas rápidas panameñas</span><span class="task-hora" style="color:var(--g);">Cocina</span></div>
@@ -2646,14 +2646,37 @@ async function cargarNominaDash(hogarId) {
       .sort((a, b) => (b.timestamp?.toMillis?.() || 0) - (a.timestamp?.toMillis?.() || 0));
 
     const totalPagado = pagos.reduce((s, p) => s + (p.monto || 0), 0);
-    const ultimoPago = pagos[0];
 
-    // Días trabajados este mes
-    const hoy = new Date();
+    // Días trabajados este mes — leer de visitas (misma fuente que el calendario)
+    const hoy    = new Date();
     const mesKey = `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,'0')}`;
-    const diasSnap = await getDoc(doc(db, 'hogares', hogarId, 'dias', mesKey));
-    const dias = diasSnap.exists() ? diasSnap.data().dias || {} : {};
-    const diasTrabajados = Object.values(dias).filter(v => v === 'trabajo').length;
+    const desde  = `${mesKey}-01`;
+    const hasta  = `${mesKey}-31`;
+    let diasTrabajados = 0;
+    try {
+      const visSnap = await getDocs(
+        query(collection(db, 'hogares', hogarId, 'visitas'),
+              where('tipo',  '==', 'nana_fija'),
+              where('fecha', '>=', desde),
+              where('fecha', '<=', hasta))
+      );
+      diasTrabajados = visSnap.docs
+        .filter(d => d.data().trabajada && d.data().incidencia !== 'ausente').length;
+    } catch {
+      // Fallback sin índice compuesto
+      try {
+        const visSnap2 = await getDocs(
+          query(collection(db, 'hogares', hogarId, 'visitas'),
+                where('tipo', '==', 'nana_fija'))
+        );
+        diasTrabajados = visSnap2.docs
+          .filter(d => {
+            const f = d.data().fecha || '';
+            return f >= desde && f <= hasta &&
+                   d.data().trabajada && d.data().incidencia !== 'ausente';
+          }).length;
+      } catch(e2) { console.warn('cargarNominaDash diasTrabajados:', e2); }
+    }
 
     document.getElementById('subNomina').textContent = pagos.length
       ? `${pagos.length} pago${pagos.length > 1 ? 's' : ''} · $${totalPagado.toFixed(2)} total`
@@ -3067,10 +3090,10 @@ function renderTarjetasNana(tareas, hogarId) {
       </div>
       <div class="dash-card-body" id="bodyMercadoNana"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Cargando...</div></div>
     </div>
-    <div class="dash-card" onclick="location.href='/videos.html'" style="cursor:pointer;">
+    <div class="dash-card" onclick="location.href='/tareas.html'" style="cursor:pointer;">
       <div class="dash-card-header">
-        <div class="dash-card-icon" style="background:var(--b3);">📚</div>
-        <div><div class="dash-card-title">Centro de Conocimiento</div><div class="dash-card-sub">Guías prácticas del hogar</div></div>
+        <div class="dash-card-icon" style="background:var(--b3);">📹</div>
+        <div><div class="dash-card-title">Aprende algo nuevo</div><div class="dash-card-sub">Videos de capacitación</div></div>
       </div>
       <div class="dash-card-body">
         <div class="task-item"><span style="font-size:14px;">🍲</span><span class="task-name">Sancocho de gallina</span><span class="task-hora" style="color:var(--g);">Cocina</span></div>
@@ -3139,13 +3162,6 @@ function renderTareasNanaDemo() {
         <div><div class="dash-card-title">Mis pagos</div><div class="dash-card-sub">Historial y nomina</div></div>
       </div>
       <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Ver historial</div></div>
-    </div>
-    <div class="dash-card" onclick="location.href='/videos.html'" style="cursor:pointer;">
-      <div class="dash-card-header">
-        <div class="dash-card-icon" style="background:var(--b3);">📚</div>
-        <div><div class="dash-card-title">Centro de Conocimiento</div><div class="dash-card-sub">Guías prácticas del hogar</div></div>
-      </div>
-      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:var(--txt2);font-size:13px;">Ver guías del hogar →</div></div>
     </div>
     <div class="dash-card" onclick="location.href='/score.html'" style="cursor:pointer;">
       <div class="dash-card-header">
@@ -3710,8 +3726,8 @@ window.enviarMensaje = ()=>{
 };
 
 function renderVideos(c){
-  c.innerHTML=`<div class="sec-titulo">Centro de Conocimiento</div>
-  <div style="background:var(--g3);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:var(--g);border:1px solid var(--g4);">📚 Guías prácticas para el hogar — paso a paso</div>`+
+  c.innerHTML=`<div class="sec-titulo">Videos de entrenamiento</div>
+  <div style="background:var(--g3);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:var(--g);border:1px solid var(--g4);">📹 Aprende con estos videos de expertos panameños</div>`+
   VIDEOS.map(v=>`<div class="video-card" onclick="abrirVideo('${v.id}')">
     <div class="video-thumb" style="background:${v.bg};">
       <div style="font-size:28px;">${v.emoji}</div>
