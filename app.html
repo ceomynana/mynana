@@ -2305,36 +2305,54 @@ async function cargarEventosDash(hogarId) {
 
 async function cargarEstadoDash(hogarId, uid) {
   const hoy = (() => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })();
+  // semanaId formato YYYY-WNN igual que menu.html
+  const getSemanaIdDash = () => {
+    const d = new Date(); const dia = d.getDay()===0?6:d.getDay()-1;
+    const lu = new Date(d); lu.setDate(d.getDate()-dia); lu.setHours(0,0,0,0);
+    return `${lu.getFullYear()}-W${String(Math.ceil(lu.getDate()/7)).padStart(2,'0')}`;
+  };
   try {
     const snap = await getDocs(query(collection(db, 'hogares', hogarId, 'tareas')));
-    const tareas = snap.docs.map(d => d.data()).filter(t => {
-        if (t.fecha) return t.fecha === hoy;
-        if (t.creadoA?.seconds) return getFechaStr2(new Date(t.creadoA.seconds * 1000)) === hoy;
-        return false;
-      });
+    const tareas = snap.docs.map(d => d.data()).filter(t => t.fecha === hoy);
     const hechas = tareas.filter(t => t.estado === 'completa').length;
     const total = tareas.length;
-    const pct = total ? Math.round((hechas/total)*100) : 100;
+    // Sin tareas → no es automáticamente 100% — verificar mercado antes de decidir
+    const pct = total ? Math.round((hechas/total)*100) : 0;
 
-    const pctEl = document.getElementById('pctEstadoFam') || document.getElementById('pctEstadoNana');
-    const subEl = document.getElementById('subEstadoFam') || document.getElementById('subEstadoNana');
-    const bodyEl = document.getElementById('bodyEstadoFam') || document.getElementById('bodyEstadoNana');
+    // Verificar mercado pendiente
+    let mercadoPendiente = false;
+    try {
+      const mSnap = await getDoc(doc(db, 'hogares', hogarId, 'mercado', getSemanaIdDash()));
+      if (mSnap.exists()) {
+        mercadoPendiente = (mSnap.data().items || []).some(i => !i.comprado);
+      }
+    } catch(em) { console.warn('mercado check:', em); }
+
+    const todoListo = total > 0 && pct === 100 && !mercadoPendiente;
+
     ['pctEstadoFam','pctEstadoNana'].forEach(id => {
       const el = document.getElementById(id);
-      if (el) el.textContent = pct + '%';
+      if (el) el.textContent = total ? pct + '%' : mercadoPendiente ? '🛒' : '—';
     });
     ['subEstadoFam','subEstadoNana'].forEach(id => {
       const el = document.getElementById(id);
-      if (el) el.textContent = total
-        ? pct === 100 ? '✨ Todo listo hoy' : `${hechas} de ${total} tareas · ${pct}% completado`
-        : 'Sin tareas asignadas hoy';
+      if (!el) return;
+      if (todoListo)                         el.textContent = '✨ Todo listo hoy';
+      else if (total && pct === 100)         el.textContent = mercadoPendiente ? '✅ Tareas listas · 🛒 Mercado pendiente' : '✨ Todo listo hoy';
+      else if (total)                        el.textContent = `${hechas} de ${total} tareas · ${pct}% completado`;
+      else if (mercadoPendiente)             el.textContent = '🛒 Mercado pendiente hoy';
+      else                                   el.textContent = 'Sin tareas asignadas hoy';
     });
     ['bodyEstadoFam','bodyEstadoNana'].forEach(id => {
       const el = document.getElementById(id);
       if (!el) return;
       const pendientes = tareas.filter(t => t.estado !== 'completa').slice(0,3);
-      if (!pendientes.length) {
-        el.innerHTML = `<div style="text-align:center;padding:12px;"><div style="font-size:20px;margin-bottom:4px;">🎉</div><div style="font-size:13px;color:var(--g);font-weight:500;">Hogar al día · Todo completado</div></div>`;
+      if (!pendientes.length && !mercadoPendiente) {
+        el.innerHTML = `<div style="text-align:center;padding:12px;"><div style="font-size:20px;margin-bottom:4px;">${total>0?'🎉':'📋'}</div><div style="font-size:13px;color:var(--g);font-weight:500;">${total>0?'Hogar al día · Todo completado':'Sin tareas hoy'}</div></div>`;
+        return;
+      }
+      if (!pendientes.length && mercadoPendiente) {
+        el.innerHTML = `<div style="text-align:center;padding:12px;"><div style="font-size:20px;margin-bottom:4px;">🛒</div><div style="font-size:13px;color:var(--b2);font-weight:500;">Tareas al día · Mercado pendiente</div></div>`;
         return;
       }
       el.innerHTML = pendientes.map(t => `
@@ -2595,10 +2613,8 @@ function cargarMercadoDash(hogarId) {
   lunes.setHours(0,0,0,0);
   const semanaId = `${lunes.getFullYear()}-W${String(Math.ceil(lunes.getDate() / 7)).padStart(2,'0')}`;
 
-  onSnapshot(collection(db, 'hogares', hogarId, 'mercado'), (snap) => {
-    // Solo el documento exacto de esta semana — sin fallback a semanas anteriores
-    const weekDoc  = snap.docs.find(d => d.id === semanaId);
-    const items    = weekDoc ? (weekDoc.data().items || []) : [];
+  onSnapshot(doc(db, 'hogares', hogarId, 'mercado', semanaId), (weekDoc) => {
+    const items    = weekDoc.exists() ? (weekDoc.data().items || []) : [];
     const pendientes = items.filter(i => !i.comprado);
     const comprados  = items.filter(i => i.comprado);
 
