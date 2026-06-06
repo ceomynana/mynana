@@ -277,28 +277,35 @@ function renderTareas() {
   }).join('') + (tareas.length > 6 ? `<div style="font-size:12px;color:var(--txt2);text-align:center;padding:8px;">+${tareas.length-6} más · <a href="/tareas.html" style="color:var(--g);">Ver todas</a></div>` : '');
 }
 
-// ── MENÚ ──
+// ── SEMANA ID — mismo formato exacto que menu.html ──
+function diaSemanaActual() {
+  const d = new Date().getDay(); // 0=dom
+  return d === 0 ? 6 : d - 1;   // 0=lun…6=dom
+}
+function getSemanaId() {
+  const hoy = new Date();
+  const lunes = new Date(hoy);
+  lunes.setDate(hoy.getDate() - diaSemanaActual());
+  lunes.setHours(0,0,0,0);
+  return `${lunes.getFullYear()}-W${String(Math.ceil(lunes.getDate()/7)).padStart(2,'0')}`;
+}
+
 // ── MENÚ ──
 function cargarMenu() {
   const hoy = new Date();
-  const diaIdx = hoy.getDay() === 0 ? 6 : hoy.getDay() - 1; // 0=lunes
-  const lunes = new Date(hoy);
-  lunes.setDate(hoy.getDate() - diaIdx);
-  lunes.setHours(0,0,0,0);
-  const sid = `${lunes.getFullYear()}-${String(lunes.getMonth()+1).padStart(2,'0')}-${String(lunes.getDate()).padStart(2,'0')}`;
+  const diaIdx = diaSemanaActual(); // 0=lun…6=dom
+  const semanaId = getSemanaId();
 
   const tiempos = [
     { id:'desayuno', nombre:'Desayuno', emoji:'☀️',  hora:'7:00 am' },
     { id:'almuerzo', nombre:'Almuerzo', emoji:'🍽️', hora:'12:30 pm' },
+    { id:'merienda', nombre:'Merienda', emoji:'🍎', hora:'3:30 pm' },
     { id:'cena',     nombre:'Cena',     emoji:'🌙',  hora:'7:00 pm' },
   ];
 
-  // Escuchar colección completa para encontrar el doc de esta semana
-  onSnapshot(collection(db, 'hogares', hogarId, 'menus'), (snap) => {
-    const weekDoc = snap.docs.find(d => d.id === sid)
-      || snap.docs.sort((a,b) => b.id.localeCompare(a.id))[0];
-    // menu.html guarda con claves dia_0..dia_6, NO 'lunes','martes'
-    const menuDia = weekDoc ? (weekDoc.data()[`dia_${diaIdx}`] || {}) : {};
+  // Leer doc exacto con semanaId correcto (formato YYYY-WNN igual que menu.html)
+  onSnapshot(doc(db, 'hogares', hogarId, 'menus', semanaId), (snap) => {
+    const menuDia = snap.exists() ? (snap.data()[`dia_${diaIdx}`] || {}) : {};
     const conPlato = tiempos.filter(t => menuDia[t.id]?.nombre);
 
     document.getElementById('badgeMenu').textContent = conPlato.length ? `${conPlato.length} comidas` : 'Sin planificar';
@@ -325,18 +332,11 @@ function cargarMenu() {
 
 // ── MERCADO ──
 function cargarMercado() {
-  const hoy = new Date();
-  const diaIdx = hoy.getDay() === 0 ? 6 : hoy.getDay() - 1;
-  const lunes = new Date(hoy);
-  lunes.setDate(hoy.getDate() - diaIdx);
-  lunes.setHours(0,0,0,0);
-  const sid = `${lunes.getFullYear()}-${String(lunes.getMonth()+1).padStart(2,'0')}-${String(lunes.getDate()).padStart(2,'0')}`;
+  const semanaId = getSemanaId(); // mismo formato que menu.html: YYYY-WNN
 
-  // Escuchar colección completa — igual que el menú
-  onSnapshot(collection(db, 'hogares', hogarId, 'mercado'), (snap) => {
-    const weekDoc = snap.docs.find(d => d.id === sid)
-      || snap.docs.sort((a,b) => b.id.localeCompare(a.id))[0];
-    const items = weekDoc ? (weekDoc.data().items || []) : [];
+  // Leer el doc exacto — igual que menu.html usa setDoc(doc(...,'mercado',semanaId))
+  onSnapshot(doc(db, 'hogares', hogarId, 'mercado', semanaId), (snap) => {
+    const items = snap.exists() ? (snap.data().items || []) : [];
     const pendientes = items.filter(i => !i.comprado);
     const comprados  = items.filter(i => i.comprado);
 
@@ -436,16 +436,23 @@ function renderAlertas() {
 // ── ESTADO GENERAL ──
 function actualizarEstadoGeneral() {
   const tareas = estadoData.tareas;
-  const total = tareas.length;
+  const total  = tareas.length;
   const hechas = tareas.filter(t => t.estado === 'completa').length;
-  const pct = total ? Math.round((hechas / total) * 100) : 100;
+  const pct    = total ? Math.round((hechas / total) * 100) : 100;
+
+  // Incluir mercado pendiente en el diagnóstico — si hay artículos sin comprar,
+  // el hogar no está completamente "al día"
+  const mercadoPendiente = estadoData.alertas.some(a => a.tipo === 'mercado');
 
   document.getElementById('statusPct').textContent = pct + '%';
 
   let color, titulo, emoji, mensaje;
-  if (pct === 100 && total > 0) {
+  if (pct === 100 && total > 0 && !mercadoPendiente) {
     color = '#1A6B52'; titulo = 'Hogar al día 🎉';
     emoji = '✨'; mensaje = 'Todas las tareas del día están listas. Tu hogar está funcionando perfecto.';
+  } else if (pct === 100 && mercadoPendiente) {
+    color = '#2D8A6A'; titulo = 'Tareas al día';
+    emoji = '🛒'; mensaje = 'Todas las tareas completadas. Aún tienes artículos pendientes en el mercado.';
   } else if (pct >= 70) {
     color = '#2D8A6A'; titulo = 'Todo va bien';
     emoji = '🌿'; mensaje = `${total - hechas} tarea${total-hechas>1?'s':''} pendiente${total-hechas>1?'s':''}. Todo bajo control.`;
