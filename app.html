@@ -253,6 +253,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
 /* GRID DE TARJETAS */
 .dash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:4px;}
 @media(max-width:640px){.dash-grid{grid-template-columns:1fr;}}
+/* nanaGrid: siempre 1 columna ancha — igual visual que familia en mobile */
+#nanaGrid{grid-template-columns:1fr !important;}
 
 /* TARJETA MEJORADA */
 .dash-card{
@@ -1176,37 +1178,39 @@ service cloud.firestore {
   </div>
 
   <div class="dash-content">
-    <!-- Tarjeta vincular -->
-    <div class="dash-card" id="cardVincularHogar" style="border:2px solid var(--b);">
-      <div class="dash-card-header">
-        <div class="dash-card-icon" style="background:var(--b3);font-size:20px;">&#x1F517;</div>
-        <div><div class="dash-card-title">Vincularme a un hogar</div><div class="dash-card-sub">Ingresa el codigo que te dio la familia</div></div>
-      </div>
-      <div class="dash-card-body">
-        <div style="display:flex;gap:8px;">
-          <input id="inputCodigoNana" type="text" placeholder="ABC123" maxlength="6"
-            style="flex:1;padding:12px;border:2px solid var(--b);border-radius:99px;font-size:16px;font-family:'DM Sans',sans-serif;text-transform:uppercase;letter-spacing:4px;text-align:center;outline:none;font-weight:600;" oninput="this.value=this.value.toUpperCase()" />
-          <button onclick="ingresarCodigoNana()" style="background:var(--b2);color:#fff;border:none;border-radius:99px;padding:12px 20px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Vincular</button>
+    <div class="dash-grid" id="nanaGrid" style="min-height:200px;">
+      <!-- Tarjeta vincular — se oculta cuando hay hogar -->
+      <div class="dash-card" id="cardVincularHogar" style="border:2px solid var(--b);grid-column:1/-1;">
+        <div class="dash-card-header">
+          <div class="dash-card-icon" style="background:var(--b3);font-size:20px;">&#x1F517;</div>
+          <div><div class="dash-card-title">Vincularme a un hogar</div><div class="dash-card-sub">Ingresa el codigo que te dio la familia</div></div>
+        </div>
+        <div class="dash-card-body">
+          <div style="display:flex;gap:8px;">
+            <input id="inputCodigoNana" type="text" placeholder="ABC123" maxlength="6"
+              style="flex:1;padding:12px;border:2px solid var(--b);border-radius:99px;font-size:16px;font-family:'DM Sans',sans-serif;text-transform:uppercase;letter-spacing:4px;text-align:center;outline:none;font-weight:600;" oninput="this.value=this.value.toUpperCase()" />
+            <button onclick="ingresarCodigoNana()" style="background:var(--b2);color:#fff;border:none;border-radius:99px;padding:12px 20px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Vincular</button>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Estado del Hogar nana -->
-    <div class="dash-card" style="border:1.5px solid var(--g4);">
-      <div class="dash-card-header">
-        <div class="dash-card-icon" style="background:var(--g3);">🏠</div>
-        <div><div class="dash-card-title">Estado del Hogar</div><div class="dash-card-sub" id="subEstadoNana">Tu resumen de hoy</div></div>
-        <div style="margin-left:auto;font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;background:var(--g3);color:var(--g);" id="pctEstadoNana">—</div>
+      <!-- Estado del Hogar nana — ancho completo -->
+      <div class="dash-card" style="border:1.5px solid var(--g4);grid-column:1/-1;">
+        <div class="dash-card-header">
+          <div class="dash-card-icon" style="background:var(--g3);">🏠</div>
+          <div><div class="dash-card-title">Estado del Hogar</div><div class="dash-card-sub" id="subEstadoNana">Tu resumen de hoy</div></div>
+          <div style="margin-left:auto;font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;background:var(--g3);color:var(--g);" id="pctEstadoNana">—</div>
+        </div>
+        <div class="dash-card-body" id="bodyEstadoNana">
+          <div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Cargando...</div>
+        </div>
+        <div onclick="location.href='/estado.html'" style="padding:10px 16px;border-top:1px solid var(--g4);font-size:12px;color:var(--g);font-weight:500;cursor:pointer;text-align:center;">
+          Ver estado completo del hogar →
+        </div>
       </div>
-      <div class="dash-card-body" id="bodyEstadoNana">
-        <div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Cargando...</div>
-      </div>
-      <div onclick="location.href='/estado.html'" style="padding:10px 16px;border-top:1px solid var(--g4);font-size:12px;color:var(--g);font-weight:500;cursor:pointer;text-align:center;">
-        Ver estado completo del hogar →
-      </div>
+      <!-- Los cards de módulos se inyectan aquí via JS (display:contents para heredar el grid) -->
+      <div id="nanaModulos" style="display:contents;"></div>
     </div>
-
-    <div class="dash-grid" id="nanaGrid"></div>
   </div>
 
 </div>
@@ -3056,7 +3060,7 @@ async function cargarTareasNana() {
 }
 
 function renderTarjetasNana(tareas, hogarId) {
-  const c = document.getElementById('nanaGrid');
+  const c = document.getElementById('nanaModulos');
   const pendientes = tareas.filter(t => t.estado !== 'completa');
   const statTareas = document.getElementById('statNanaTareas');
   if (statTareas) statTareas.textContent = tareas.length || '0';
@@ -3177,7 +3181,7 @@ function renderTareasNanaDemo() {
   const statTareas = document.getElementById('statNanaTareas');
   if (statTareas) statTareas.textContent = '0';
 
-  document.getElementById('nanaGrid').innerHTML = `
+  document.getElementById('nanaModulos').innerHTML = `
     <div class="dash-card" id="cardTareasNana" onclick="location.href='/tareas.html'" style="cursor:pointer;--card-accent:var(--g);">
       <div class="dash-card-header">
         <div class="dash-card-icon" style="background:linear-gradient(135deg,#E8F5EE,#D0EBDB);">✅</div>
@@ -3690,13 +3694,13 @@ window.cambiarTab = (tab) => {
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('activo'));
   document.getElementById(`tab-${tab}`).classList.add('activo');
   document.getElementById('chatInputWrap').style.display = tab==='chat' ? 'flex' : 'none';
-  const c = document.getElementById('nanaGrid');
+  const c = document.getElementById('nanaModulos');
   c.style.opacity='0';
   setTimeout(()=>{renderTab(tab);c.style.opacity='1';c.style.transition='opacity .2s';},150);
 };
 
 function renderTab(tab) {
-  const c = document.getElementById('nanaGrid');
+  const c = document.getElementById('nanaModulos');
   if(tab==='tareas') renderTareas(c);
   else if(tab==='menu') renderMenu(c);
   else if(tab==='chat') renderChat(c);
