@@ -1192,7 +1192,7 @@ service cloud.firestore {
     </div>
 
     <!-- Estado del Hogar nana -->
-    <div class="dash-card" style="border:2px solid var(--g4);width:100%;">
+    <div class="dash-card" style="border:1.5px solid var(--g4);">
       <div class="dash-card-header">
         <div class="dash-card-icon" style="background:var(--g3);">🏠</div>
         <div><div class="dash-card-title">Estado del Hogar</div><div class="dash-card-sub" id="subEstadoNana">Tu resumen de hoy</div></div>
@@ -1206,7 +1206,7 @@ service cloud.firestore {
       </div>
     </div>
 
-    <div class="dash-grid" id="nanaGrid"></div>
+    <div class="dash-grid" id="nanaGrid" style="grid-template-columns:1fr;"></div><!-- /nanaGrid -->
   </div>
 
 </div>
@@ -2646,14 +2646,37 @@ async function cargarNominaDash(hogarId) {
       .sort((a, b) => (b.timestamp?.toMillis?.() || 0) - (a.timestamp?.toMillis?.() || 0));
 
     const totalPagado = pagos.reduce((s, p) => s + (p.monto || 0), 0);
-    const ultimoPago = pagos[0];
 
-    // Días trabajados este mes
-    const hoy = new Date();
+    // Días trabajados este mes — leer de visitas (misma fuente que el calendario de nómina)
+    const hoy    = new Date();
     const mesKey = `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,'0')}`;
-    const diasSnap = await getDoc(doc(db, 'hogares', hogarId, 'dias', mesKey));
-    const dias = diasSnap.exists() ? diasSnap.data().dias || {} : {};
-    const diasTrabajados = Object.values(dias).filter(v => v === 'trabajo').length;
+    const desde  = `${mesKey}-01`;
+    const hasta  = `${mesKey}-31`;
+    let diasTrabajados = 0;
+    try {
+      const visSnap = await getDocs(
+        query(collection(db, 'hogares', hogarId, 'visitas'),
+              where('tipo',  '==', 'nana_fija'),
+              where('fecha', '>=', desde),
+              where('fecha', '<=', hasta))
+      );
+      diasTrabajados = visSnap.docs
+        .filter(d => d.data().trabajada && d.data().incidencia !== 'ausente').length;
+    } catch {
+      // Fallback sin índice compuesto
+      try {
+        const visSnap2 = await getDocs(
+          query(collection(db, 'hogares', hogarId, 'visitas'),
+                where('tipo', '==', 'nana_fija'))
+        );
+        diasTrabajados = visSnap2.docs
+          .filter(d => {
+            const f = d.data().fecha || '';
+            return f >= desde && f <= hasta &&
+                   d.data().trabajada && d.data().incidencia !== 'ausente';
+          }).length;
+      } catch(e2) { console.warn('cargarNominaDash diasTrabajados:', e2); }
+    }
 
     document.getElementById('subNomina').textContent = pagos.length
       ? `${pagos.length} pago${pagos.length > 1 ? 's' : ''} · $${totalPagado.toFixed(2)} total`
