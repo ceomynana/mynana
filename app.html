@@ -944,7 +944,7 @@ service cloud.firestore {
   <!-- Trial banner — se muestra/oculta por verificarSuscripcion() -->
   <div class="trial-banner" id="trialBanner">
     <span id="trialBannerMsg">🌿 Tu período de prueba está activo</span>
-    <a href="#" class="trial-banner-btn" id="trialBannerBtn"
+    <a href="javascript:void(0)" class="trial-banner-btn" id="trialBannerBtn"
        onclick="mostrarPaywall();return false;">Ver planes</a>
   </div>
 
@@ -956,7 +956,7 @@ service cloud.firestore {
       Activa tu plan para seguir organizando tu hogar con My Nana.
       Tu historial y datos están guardados.
     </div>
-    <a href="#" class="paywall-btn" id="paywallBtn">Activar mi plan →</a>
+    <a href="javascript:void(0)" class="paywall-btn" id="paywallBtn">Activar mi plan →</a>
     <button class="paywall-btn-sec" onclick="cerrarSesionPaywall()">
       Cerrar sesión
     </button>
@@ -3390,10 +3390,19 @@ function mostrarBannerTrial(diasRestantes, pagoUrl) {
   banner.className   = `trial-banner ${color}`;
   banner.style.display = 'flex';
   msg.innerHTML        = texto;
-  if (btn && pagoUrl) {
-    btn.href = pagoUrl;
-    btn.target = '_blank';
-    btn.textContent = 'Activar plan →';
+  if (btn) {
+    if (pagoUrl) {
+      btn.href        = pagoUrl;
+      btn.target      = '_blank';
+      btn.rel         = 'noopener';
+      btn.onclick     = null;
+      btn.textContent = 'Activar plan →';
+    } else {
+      // Fallback: mostrarPaywall lee pagoUrl de Firestore
+      btn.href        = 'javascript:void(0)';
+      btn.onclick     = (e) => { e.preventDefault(); mostrarPaywall(); };
+      btn.textContent = 'Activar plan →';
+    }
   }
 }
 
@@ -3402,20 +3411,52 @@ function ocultarBannerTrial() {
   if (banner) banner.style.display = 'none';
 }
 
-window.mostrarPaywall = (pagoUrl, planNombre) => {
-  const pw     = document.getElementById('paywallScreen');
-  const btn    = document.getElementById('paywallBtn');
-  const sub    = document.getElementById('paywallSub');
+window.mostrarPaywall = async (pagoUrl, planNombre) => {
+  const pw  = document.getElementById('paywallScreen');
+  const btn = document.getElementById('paywallBtn');
+  const sub = document.getElementById('paywallSub');
   if (!pw) return;
-  if (btn && pagoUrl) {
-    btn.href   = pagoUrl;
-    btn.target = '_blank';
-    btn.textContent = `Activar ${planNombre || 'mi plan'} →`;
+
+  // Mostrar el paywall inmediatamente mientras cargamos el pagoUrl
+  pw.classList.add('visible');
+  if (btn) btn.textContent = 'Cargando plan...';
+
+  // Si no recibimos pagoUrl, leerlo de Firestore con el uid autenticado
+  if (!pagoUrl) {
+    try {
+      const user = getAuth().currentUser;
+      if (user) {
+        const snap = await getDoc(doc(db, 'usuarios', user.uid));
+        if (snap.exists()) {
+          const sus = snap.data().suscripcion || {};
+          pagoUrl   = sus.pagoUrl   || null;
+          planNombre = planNombre || sus.planNombre || null;
+        }
+      }
+    } catch(e) {
+      console.error('[mostrarPaywall] Error leyendo pagoUrl:', e);
+    }
   }
+
+  // Actualizar el botón con el pagoUrl real
+  if (btn) {
+    if (pagoUrl) {
+      btn.textContent = `Activar ${planNombre || 'mi plan'} →`;
+      btn.href        = pagoUrl;
+      btn.target      = '_blank';
+      btn.rel         = 'noopener';
+      btn.onclick     = null; // asegurar que no haya onclick conflictivo
+    } else {
+      btn.textContent = 'Contactar soporte';
+      btn.href        = 'https://wa.me/50760243324';
+      btn.target      = '_blank';
+      console.error('[mostrarPaywall] pagoUrl no encontrado para este usuario');
+    }
+  }
+
   if (sub && planNombre) {
     sub.textContent = `Activa tu plan ${planNombre} para continuar organizando tu hogar. Tu historial y datos están guardados.`;
   }
-  pw.classList.add('visible');
 };
 
 window.cerrarSesionPaywall = () => {
