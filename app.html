@@ -3423,44 +3423,34 @@ window.cerrarSesionPaywall = () => {
 };
 
 window.aplicarModoHogar = (tipoHogar) => {
-  const tipo = tipoHogar || 'con_nana'; // fallback hogares existentes
+  // Normalizar: cualquier valor con nana → 'con_nana', cualquier valor eventual → 'con_ayuda'
+  let tipo = tipoHogar || 'con_nana';
+  if (tipo !== 'sin_nana' && tipo !== 'con_ayuda') tipo = 'con_nana';
 
-  // ── Visibilidad por ID ──────────────────────────────
-  // Formato: { id: { sin_nana, con_ayuda, con_nana } }  true=visible false=oculto
-  const VISIBILIDAD = {
-    // Siempre visibles
-    cardTareas:        { sin_nana: true,  con_ayuda: true,  con_nana: true  },
-    cardPlanificacion: { sin_nana: true,  con_ayuda: true,  con_nana: true  },
-    cardMenu:          { sin_nana: true,  con_ayuda: true,  con_nana: true  },
-    cardMercado:       { sin_nana: true,  con_ayuda: true,  con_nana: true  },
-    // Con nana o ayuda
-    cardChatNana:      { sin_nana: false, con_ayuda: true,  con_nana: true  },
-    cardScoreNana:     { sin_nana: false, con_ayuda: true,  con_nana: true  },
-    wrapStatScore:     { sin_nana: false, con_ayuda: true,  con_nana: true  },
-    // Nómina: visible para con_ayuda (renombrada), completa para con_nana
-    cardNomina:        { sin_nana: false, con_ayuda: true,  con_nana: true  },
-    // Solo nana fija
-    cardVideosNana:    { sin_nana: true,  con_ayuda: true,  con_nana: true  },
-    // Banners
-    wrapBannerBuscar:  { sin_nana: false, con_ayuda: true,  con_nana: true  },
-    wrapBannerCompartir:{ sin_nana: false, con_ayuda: true, con_nana: true  },
-  };
-
-  Object.entries(VISIBILIDAD).forEach(([id, regla]) => {
+  // ── TODOS los módulos visibles siempre ──────────────────────────────────────
+  // La vinculación de la nana NO es requisito para ver el dashboard.
+  // Los módulos que dependen de nana muestran empty state si no hay nana vinculada.
+  const SIEMPRE_VISIBLES = [
+    'cardTareas', 'cardPlanificacion', 'cardMenu', 'cardMercado',
+    'cardChatNana', 'cardScoreNana', 'cardNomina', 'cardVideosNana',
+    'wrapBannerBuscar', 'wrapBannerCompartir', 'wrapStatScore',
+  ];
+  SIEMPRE_VISIBLES.forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.style.display = regla[tipo] ? '' : 'none';
+    if (el) el.style.display = '';
   });
 
   // ── Textos dinámicos según tipo ─────────────────────
   const textos = {
     sin_nana: {
-      chatTitulo:     null, // oculto
-      chatSub:        null,
-      scoreTitulo:    null, // oculto
-      nominaTitulo:   null, // oculto
-      bannerBuscar:   null, // oculto
-      bannerCompartir:null, // oculto
-      panelSub:       'Organiza las tareas del hogar',
+      chatTitulo:      'Chat del hogar',
+      chatSub:         'Vincula una nana para chatear',
+      scoreTitulo:     'Confianza del hogar',
+      nominaTitulo:    'Contratos y nómina',
+      nominaSub:       'Vincula una nana para activar',
+      bannerBuscar:    '👩 ¿Buscas una nana?',
+      bannerCompartir: '🔗 Comparte el acceso con tu nana',
+      panelSub:        'Organiza las tareas del hogar',
     },
     con_ayuda: {
       chatTitulo:     'Chat con tu ayuda',
