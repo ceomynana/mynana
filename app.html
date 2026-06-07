@@ -351,10 +351,42 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
 
 /* TARJETA ACCIÓN RÁPIDA (nana) */
 .dash-grid-nana{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:0 16px;margin-bottom:4px;}
-/* Nana: todos los cards a ancho completo — misma estructura visual que familia */
-#nanaGrid .dash-card { grid-column: 1 / -1; }
-#cardEstadoNana { grid-column: 1 / -1; }
-#cardVincularHogar { grid-column: 1 / -1; }
+
+/* ── NANA DASHBOARD LAYOUT — estructura limpia ── */
+#screen-nana .dash-content {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+.nana-dashboard-stack {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.nana-static-cards {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+#nanaGrid.nana-modules-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+#screen-nana .dash-card {
+  width: 100%;
+  max-width: none;
+}
+@media (min-width: 768px) {
+  .nana-static-cards,
+  #nanaGrid.nana-modules-grid {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  }
+}
 .nana-action-card{border-radius:18px;padding:18px 12px;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;transition:all .25s cubic-bezier(.34,1.56,.64,1);animation:cardEntrada .4s ease both;}
 .nana-action-card:nth-child(1){animation-delay:.05s;}
 .nana-action-card:nth-child(2){animation-delay:.1s;}
@@ -1180,40 +1212,58 @@ service cloud.firestore {
   </div>
 
   <div class="dash-content">
+    <div class="nana-dashboard-stack">
 
-    <!-- Card vincular — solo visible si no hay hogar vinculado -->
-    <div class="dash-card" id="cardVincularHogar" style="border:2px solid var(--b);display:none;">
-      <div class="dash-card-header">
-        <div class="dash-card-icon" style="background:var(--b3);font-size:20px;">🔗</div>
-        <div><div class="dash-card-title">Vincularme a un hogar</div><div class="dash-card-sub">Ingresa el código que te dio la familia</div></div>
-      </div>
-      <div class="dash-card-body">
-        <div style="display:flex;gap:8px;">
-          <input id="inputCodigoNana" type="text" placeholder="ABC123" maxlength="6"
-            style="flex:1;padding:12px;border:2px solid var(--b);border-radius:99px;font-size:16px;font-family:'DM Sans',sans-serif;text-transform:uppercase;letter-spacing:4px;text-align:center;outline:none;font-weight:600;" oninput="this.value=this.value.toUpperCase()" />
-          <button onclick="ingresarCodigoNana()" style="background:var(--b2);color:#fff;border:none;border-radius:99px;padding:12px 20px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Vincular</button>
+      <!-- Cards estáticos — siempre visibles, nunca tocados por JS -->
+      <div id="nanaStaticCards" class="nana-static-cards">
+
+        <!-- Tarjeta vincular — JS la muestra/oculta con display -->
+        <div class="dash-card" id="cardVincularHogar" style="border:2px solid var(--b);display:none;">
+          <div class="dash-card-header">
+            <div class="dash-card-icon" style="background:var(--b3);font-size:20px;">🔗</div>
+            <div><div class="dash-card-title">Vincularme a un hogar</div><div class="dash-card-sub">Ingresa el código que te dio la familia</div></div>
+          </div>
+          <div class="dash-card-body">
+            <div style="display:flex;gap:8px;">
+              <input id="inputCodigoNana" type="text" placeholder="ABC123" maxlength="6"
+                style="flex:1;padding:12px;border:2px solid var(--b);border-radius:99px;font-size:16px;font-family:'DM Sans',sans-serif;text-transform:uppercase;letter-spacing:4px;text-align:center;outline:none;font-weight:600;" oninput="this.value=this.value.toUpperCase()" />
+              <button onclick="ingresarCodigoNana()" style="background:var(--b2);color:#fff;border:none;border-radius:99px;padding:12px 20px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Vincular</button>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Estado del Hogar nana — ancho completo, misma estructura que familia -->
-    <div class="dash-card" id="cardEstadoNana" onclick="location.href='/estado.html'" style="cursor:pointer;border:1.5px solid var(--g4);">
-      <div class="dash-card-header">
-        <div class="dash-card-icon" style="background:var(--g3);">🏠</div>
-        <div><div class="dash-card-title">Estado del Hogar</div><div class="dash-card-sub" id="subEstadoNana">Tu resumen de hoy</div></div>
-        <div style="margin-left:auto;font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;background:var(--g3);color:var(--g);" id="pctEstadoNana">—</div>
-      </div>
-      <div class="dash-card-body" id="bodyEstadoNana">
-        <div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Cargando...</div>
-      </div>
-      <div style="padding:10px 16px;border-top:1px solid var(--g4);font-size:12px;color:var(--g);font-weight:500;text-align:center;">
-        Ver estado completo del hogar →
-      </div>
-    </div>
+        <!-- Estado del Hogar -->
+        <div class="dash-card" id="cardEstadoNana" onclick="location.href='/estado.html'" style="background:linear-gradient(150deg,#FAFDF9 0%,#EEF7F2 100%);border:1.5px solid var(--g4);cursor:pointer;">
+          <div class="dash-card-header">
+            <div class="dash-card-icon" style="background:linear-gradient(135deg,var(--g3),var(--g4));box-shadow:0 4px 14px rgba(26,107,82,.15);">🏠</div>
+            <div><div class="dash-card-title">Estado del Hogar</div><div class="dash-card-sub" id="subEstadoNana">Tu resumen de hoy</div></div>
+            <div style="margin-left:auto;font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;background:var(--g3);color:var(--g);" id="pctEstadoNana">—</div>
+          </div>
+          <div class="dash-card-body" id="bodyEstadoNana">
+            <div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Cargando...</div>
+          </div>
+          <div style="padding:10px 16px;border-top:1px solid var(--g4);font-size:12px;color:var(--g);font-weight:500;text-align:center;">
+            Ver estado completo del hogar →
+          </div>
+        </div>
 
-    <!-- Grid de módulos — mismo dash-grid que familia, mismo CSS -->
-    <div class="dash-grid" id="nanaGrid"></div>
+        <!-- Mis tareas estático — el JS actualiza su contenido, no lo reemplaza -->
+        <div class="dash-card" id="cardMisTareasNana" onclick="location.href='/tareas.html'" style="border:1px solid var(--g4);cursor:pointer;">
+          <div class="dash-card-header">
+            <div class="dash-card-icon" style="background:linear-gradient(135deg,#E8F5EE,#D0EBDB);">✅</div>
+            <div><div class="dash-card-title">Mis tareas de hoy</div><div class="dash-card-sub" id="subTareasNana">Cargando...</div></div>
+          </div>
+          <div class="dash-card-body" id="bodyTareasNana">
+            <div style="text-align:center;padding:16px;color:#bbb;font-size:13px;">Cargando...</div>
+          </div>
+        </div>
 
+      </div><!-- /nanaStaticCards -->
+
+      <!-- Módulos dinámicos — JS usa innerHTML aquí, nunca toca nanaStaticCards -->
+      <div id="nanaGrid" class="dash-grid nana-modules-grid"></div>
+
+    </div><!-- /nana-dashboard-stack -->
   </div>
 
 </div>
@@ -3054,21 +3104,21 @@ async function cargarTareasNana() {
 }
 
 function renderTarjetasNana(tareas, hogarId) {
-  const c = document.getElementById('nanaGrid');
   const pendientes = tareas.filter(t => t.estado !== 'completa');
   const statTareas = document.getElementById('statNanaTareas');
   if (statTareas) statTareas.textContent = tareas.length || '0';
 
-  c.innerHTML = `
-    <div class="dash-card" onclick="location.href='/tareas.html'" style="cursor:pointer;">
-      <div class="dash-card-header">
-        <div class="dash-card-icon" style="background:var(--g3);">✅</div>
-        <div><div class="dash-card-title">Mis tareas</div><div class="dash-card-sub">${pendientes.length} pendientes hoy</div></div>
-      </div>
-      <div class="dash-card-body">
-        ${pendientes.slice(0,3).map(t => `<div class="task-item"><span style="font-size:14px;">${t.cat?.split(' ')[0]||'📋'}</span><span class="task-name">${t.nombre}</span><span class="task-hora">${formatHora12(t.hora)}</span></div>`).join('') || '<div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Sin tareas pendientes</div>'}
-      </div>
-    </div>
+  // Actualizar card estático "Mis tareas" via IDs — nunca con innerHTML en nanaStaticCards
+  const subT = document.getElementById('subTareasNana');
+  const bodyT = document.getElementById('bodyTareasNana');
+  if (subT) subT.textContent = pendientes.length ? `${pendientes.length} pendientes hoy` : 'Sin tareas pendientes';
+  if (bodyT) bodyT.innerHTML = pendientes.length
+    ? pendientes.slice(0,3).map(t => `<div class="task-item"><span style="font-size:14px;">${t.cat?.split(' ')[0]||'📋'}</span><span class="task-name">${t.nombre}</span><span class="task-hora">${formatHora12(t.hora)}</span></div>`).join('')
+      + (pendientes.length > 3 ? `<div style="font-size:12px;color:var(--g);text-align:center;margin-top:6px;padding-top:6px;border-top:1px solid var(--g4);">+${pendientes.length-3} más →</div>` : '')
+    : '<div style="text-align:center;padding:16px;color:#bbb;font-size:13px;">Sin tareas pendientes hoy ✅</div>';
+
+  // Módulos secundarios en nanaGrid — nunca borra nanaStaticCards
+  document.getElementById('nanaGrid').innerHTML = `
     <div class="dash-card" onclick="location.href='/menu.html'" style="cursor:pointer;">
       <div class="dash-card-header">
         <div class="dash-card-icon" style="background:linear-gradient(135deg,#FBF3DC,#F5E6C0);">🍽️</div>
@@ -3076,26 +3126,19 @@ function renderTarjetasNana(tareas, hogarId) {
       </div>
       <div class="dash-card-body" id="bodyMenuNana"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Cargando...</div></div>
     </div>
-    <div class="dash-card" onclick="location.href='/chat.html'" style="cursor:pointer;">
-      <div class="dash-card-header">
-        <div class="dash-card-icon" style="background:var(--g3);">💬</div>
-        <div><div class="dash-card-title">Hablar con la familia</div><div class="dash-card-sub">Chat en tiempo real</div></div>
-      </div>
-      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Abrir chat →</div></div>
-    </div>
-    <div class="dash-card" onclick="location.href='/score.html'" style="cursor:pointer;">
-      <div class="dash-card-header">
-        <div class="dash-card-icon" style="background:var(--b3);">🌟</div>
-        <div><div class="dash-card-title">Mi trayectoria</div><div class="dash-card-sub">Tu historial profesional</div></div>
-      </div>
-      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:var(--txt2);font-size:13px;">Ver tu consistencia y reconocimientos →</div></div>
-    </div>
     <div class="dash-card" onclick="location.href='/menu.html'" style="cursor:pointer;">
       <div class="dash-card-header">
-        <div class="dash-card-icon" style="background:var(--g3);">🛒</div>
+        <div class="dash-card-icon" style="background:linear-gradient(135deg,#E8F5EE,#C8E6D4);">🛒</div>
         <div><div class="dash-card-title">Lista del mercado</div><div class="dash-card-sub" id="subMercadoNana">Cargando...</div></div>
       </div>
       <div class="dash-card-body" id="bodyMercadoNana"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Cargando...</div></div>
+    </div>
+    <div class="dash-card" onclick="location.href='/chat.html'" style="cursor:pointer;">
+      <div class="dash-card-header">
+        <div class="dash-card-icon" style="background:linear-gradient(135deg,#E0F0FF,#C8E0FF);">💬</div>
+        <div><div class="dash-card-title">Chat con la familia</div><div class="dash-card-sub">Comunicación en tiempo real</div></div>
+      </div>
+      <div class="dash-card-body"><div style="text-align:center;padding:14px;color:var(--g);font-size:13px;font-weight:500;">Abrir chat →</div></div>
     </div>
     <div class="dash-card" onclick="location.href='/videos.html'" style="cursor:pointer;">
       <div class="dash-card-header">
@@ -3105,25 +3148,25 @@ function renderTarjetasNana(tareas, hogarId) {
       <div class="dash-card-body">
         <div class="task-item"><span style="font-size:14px;">🍲</span><span class="task-name">Sancocho de gallina</span><span class="task-hora" style="color:var(--g);">Cocina</span></div>
         <div class="task-item"><span style="font-size:14px;">🧹</span><span class="task-name">Limpiar baños</span><span class="task-hora" style="color:var(--g);">Limpieza</span></div>
+        <div style="font-size:12px;color:var(--b2);text-align:center;margin-top:8px;padding-top:6px;border-top:1px solid var(--g4);">Ver todas las guías →</div>
       </div>
     </div>
     <div class="dash-card" onclick="location.href='/nomina.html'" style="cursor:pointer;">
       <div class="dash-card-header">
-        <div class="dash-card-icon" style="background:var(--g3);">💰</div>
+        <div class="dash-card-icon" style="background:linear-gradient(135deg,#F3EDFB,#E5D6F5);">💰</div>
         <div><div class="dash-card-title">Mis pagos</div><div class="dash-card-sub">Historial y nómina</div></div>
       </div>
-      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Ver historial de pagos →</div></div>
+      <div class="dash-card-body"><div style="text-align:center;padding:14px;color:var(--txt2);font-size:13px;">Ver historial de pagos →</div></div>
     </div>
     <div class="dash-card" onclick="location.href='/score.html'" style="cursor:pointer;">
       <div class="dash-card-header">
-        <div class="dash-card-icon" style="background:var(--b3);">👤</div>
-        <div><div class="dash-card-title">Mi perfil</div><div class="dash-card-sub">Editar y compartir</div></div>
+        <div class="dash-card-icon" style="background:linear-gradient(135deg,#FFF8E7,#FFE9A0);">🌟</div>
+        <div><div class="dash-card-title">Mi trayectoria</div><div class="dash-card-sub">Historial y reconocimientos</div></div>
       </div>
-      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Actualizar perfil →</div></div>
+      <div class="dash-card-body"><div style="text-align:center;padding:14px;color:var(--txt2);font-size:13px;">Ver historial profesional →</div></div>
     </div>
   `;
 
-  // Activar listeners en tiempo real para menú y mercado del nana
   cargarMenuDash(hogarId);
   cargarMercadoDash(hogarId);
 }
@@ -3134,55 +3177,52 @@ function renderTareasNanaDemo() {
   const statTareas = document.getElementById('statNanaTareas');
   if (statTareas) statTareas.textContent = '0';
 
+  // Actualizar card estático "Mis tareas"
+  const subT = document.getElementById('subTareasNana');
+  const bodyT = document.getElementById('bodyTareasNana');
+  if (subT) subT.textContent = 'Sin tareas asignadas aún';
+  if (bodyT) bodyT.innerHTML = '<div style="text-align:center;padding:16px;color:#bbb;font-size:13px;">La familia te asignará tareas aquí</div>';
+
+  // Módulos secundarios en nanaGrid
   document.getElementById('nanaGrid').innerHTML = `
-    <div class="dash-card" onclick="location.href='/tareas.html'" style="cursor:pointer;">
-      <div class="dash-card-header">
-        <div class="dash-card-icon" style="background:var(--g3);">✅</div>
-        <div><div class="dash-card-title">Mis tareas</div><div class="dash-card-sub">Sin tareas asignadas aun</div></div>
-      </div>
-      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Ver tareas del dia</div></div>
-    </div>
     <div class="dash-card" onclick="location.href='/menu.html'" style="cursor:pointer;">
       <div class="dash-card-header">
-        <div class="dash-card-icon" style="background:var(--b3);">🍽️</div>
-        <div><div class="dash-card-title">Que cocinar hoy</div><div class="dash-card-sub">Ver menu del dia</div></div>
+        <div class="dash-card-icon" style="background:linear-gradient(135deg,#FBF3DC,#F5E6C0);">🍽️</div>
+        <div><div class="dash-card-title">Qué cocinar hoy</div><div class="dash-card-sub">Menú planificado del hogar</div></div>
       </div>
-      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Ver menu planificado</div></div>
+      <div class="dash-card-body"><div style="text-align:center;padding:16px;color:#bbb;font-size:13px;">Ver el menú del día →</div></div>
     </div>
     <div class="dash-card" onclick="location.href='/chat.html'" style="cursor:pointer;">
       <div class="dash-card-header">
-        <div class="dash-card-icon" style="background:var(--g3);">💬</div>
-        <div><div class="dash-card-title">Hablar con la familia</div><div class="dash-card-sub">Chat en tiempo real</div></div>
+        <div class="dash-card-icon" style="background:linear-gradient(135deg,#E0F0FF,#C8E0FF);">💬</div>
+        <div><div class="dash-card-title">Chat con la familia</div><div class="dash-card-sub">Comunicación en tiempo real</div></div>
       </div>
-      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Abrir chat</div></div>
-    </div>
-    <div class="dash-card" onclick="location.href='/tareas.html'" style="cursor:pointer;">
-      <div class="dash-card-header">
-        <div class="dash-card-icon" style="background:var(--b3);">📋</div>
-        <div><div class="dash-card-title">Mis rutinas</div><div class="dash-card-sub">Tareas recurrentes</div></div>
-      </div>
-      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Ver rutinas asignadas →</div></div>
-    </div>
-    <div class="dash-card" onclick="location.href='/nomina.html'" style="cursor:pointer;">
-      <div class="dash-card-header">
-        <div class="dash-card-icon" style="background:var(--g3);">💰</div>
-        <div><div class="dash-card-title">Mis pagos</div><div class="dash-card-sub">Historial y nomina</div></div>
-      </div>
-      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Ver historial</div></div>
+      <div class="dash-card-body"><div style="text-align:center;padding:14px;color:var(--g);font-size:13px;font-weight:500;">Abrir chat del hogar →</div></div>
     </div>
     <div class="dash-card" onclick="location.href='/videos.html'" style="cursor:pointer;">
       <div class="dash-card-header">
         <div class="dash-card-icon" style="background:var(--b3);">📚</div>
         <div><div class="dash-card-title">Centro de Conocimiento</div><div class="dash-card-sub">Guías prácticas del hogar</div></div>
       </div>
-      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:var(--txt2);font-size:13px;">Ver guías del hogar →</div></div>
+      <div class="dash-card-body">
+        <div class="task-item"><span style="font-size:14px;">🍲</span><span class="task-name">Sancocho de gallina</span><span class="task-hora" style="color:var(--g);">Cocina</span></div>
+        <div class="task-item"><span style="font-size:14px;">🧹</span><span class="task-name">Limpiar baños</span><span class="task-hora" style="color:var(--g);">Limpieza</span></div>
+        <div style="font-size:12px;color:var(--b2);text-align:center;margin-top:8px;padding-top:6px;border-top:1px solid var(--g4);">Ver todas las guías →</div>
+      </div>
+    </div>
+    <div class="dash-card" onclick="location.href='/nomina.html'" style="cursor:pointer;">
+      <div class="dash-card-header">
+        <div class="dash-card-icon" style="background:linear-gradient(135deg,#F3EDFB,#E5D6F5);">💰</div>
+        <div><div class="dash-card-title">Mis pagos</div><div class="dash-card-sub">Historial y nómina</div></div>
+      </div>
+      <div class="dash-card-body"><div style="text-align:center;padding:14px;color:var(--txt2);font-size:13px;">Ver historial de pagos →</div></div>
     </div>
     <div class="dash-card" onclick="location.href='/score.html'" style="cursor:pointer;">
       <div class="dash-card-header">
-        <div class="dash-card-icon" style="background:var(--b3);">⭐</div>
+        <div class="dash-card-icon" style="background:linear-gradient(135deg,#FFF8E7,#FFE9A0);">⭐</div>
         <div><div class="dash-card-title">Mi desempeño</div><div class="dash-card-sub">Evaluación y reconocimientos</div></div>
       </div>
-      <div class="dash-card-body"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Ver mi calificación →</div></div>
+      <div class="dash-card-body"><div style="text-align:center;padding:14px;color:var(--txt2);font-size:13px;">Ver mi calificación →</div></div>
     </div>
   `;
 }
