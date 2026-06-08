@@ -2413,7 +2413,7 @@ body.lang-es .es{display:initial !important;}
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, doc, setDoc, addDoc, getDoc, collection, updateDoc, arrayUnion, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getFirestore, doc, setDoc, addDoc, getDoc, collection, updateDoc, arrayUnion, serverTimestamp, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyDDJRJ8A8P507lllGRBOoXO30ESAH1GAnw",
@@ -2584,8 +2584,187 @@ window.unirseConCodigo = async function() {
 // ── WAITLIST NANAS — definida en el módulo para acceder a db directamente ──
 // (movida a script regular usando REST API — ver abajo)
 
+// ── REGISTRO — definido en el módulo para usar Firebase directamente ──────
+window.submitForm = async function submitForm() {
+  const nombre   = (document.getElementById('fieldNombre')?.value   || '').trim();
+  const apellido = (document.getElementById('fieldApellido')?.value  || '').trim();
+  const correo   = (document.getElementById('fieldCorreo')?.value    || '').trim();
+  const telefono = (document.getElementById('fieldTelefono')?.value  || '').trim();
+  const pass1    =  document.getElementById('fieldPassword')?.value  || '';
+  const pass2    =  document.getElementById('fieldPassword2')?.value || '';
+  const btn      =  document.getElementById('btnSubmit');
+  const errEl    =  document.getElementById('regError');
+  const esNana   =  window.tipoRegIndex === 'nana';
+
+  const showErr = (msg) => {
+    if (errEl) { errEl.textContent = msg; errEl.style.display = 'block'; }
+    if (btn)   { btn.disabled = false;
+      const es = btn.querySelector('.es');
+      if (es) es.textContent = 'Crear cuenta y empezar 🎉';
+    }
+  };
+
+  if (!nombre)                       return showErr('⚠️ Escribe tu nombre.');
+  if (!apellido && !esNana)          return showErr('⚠️ Escribe tu apellido.');
+  if (!correo || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo))
+                                     return showErr('⚠️ Correo inválido.');
+  if (!telefono && !esNana)          return showErr('⚠️ Agrega tu número de WhatsApp.');
+  if (pass1.length < 6)             return showErr('⚠️ La contraseña debe tener mínimo 6 caracteres.');
+  if (pass1 !== pass2)               return showErr('⚠️ Las contraseñas no coinciden.');
+  const consentEl = document.getElementById('familiaConsentimiento');
+  if (consentEl && !consentEl.checked) {
+    consentEl.style.outline = '2px solid #e05c5c';
+    setTimeout(() => consentEl.style.outline = '', 2000);
+    return showErr('⚠️ Debes aceptar los términos para continuar.');
+  }
+  if (errEl) errEl.style.display = 'none';
+  if (btn) {
+    btn.disabled = true;
+    const es = btn.querySelector('.es');
+    if (es) es.textContent = 'Creando cuenta...';
+  }
+
+  // ── REGISTRO NANA ──────────────────────────────────────────────────────────
+  if (esNana) {
+    let uid2;
+    try {
+      uid2 = (await createUserWithEmailAndPassword(auth, correo, pass1)).user.uid;
+    } catch(e) {
+      console.error('REGISTRO_ERROR [Nana Auth]:', e.code, e.message, e);
+      if (e.code === 'auth/email-already-in-use')
+        return showErr('⚠️ Este correo ya tiene una cuenta. Inicia sesión en mynana.app/app.html');
+      if (e.code === 'auth/weak-password')
+        return showErr('⚠️ La contraseña es muy débil. Usa mínimo 6 caracteres.');
+      if (e.code === 'auth/network-request-failed')
+        return showErr('❌ Sin conexión a internet. Verifica tu red e intenta.');
+      if (e.code === 'auth/too-many-requests')
+        return showErr('⚠️ Demasiados intentos. Espera unos minutos e intenta de nuevo.');
+      return showErr('❌ No se pudo crear la cuenta: ' + (e.message || e.code));
+    }
+    try {
+      const tipoNana = document.getElementById('fieldTipoNana')?.value || 'fija';
+      const cedula   = document.getElementById('fieldCedula')?.value?.trim() || null;
+      const codigoN  = document.getElementById('fieldCodigoNana')?.value?.trim().toUpperCase() || null;
+      await setDoc(doc(db, 'usuarios', uid2), {
+        nombre, apellido: apellido || null,
+        nombreCompleto: (nombre + ' ' + (apellido||'')).trim(),
+        email: correo, tipo: 'nana', subtipo: tipoNana,
+        cedula, telefono: telefono || null, uid: uid2,
+        fecha: new Date().toISOString(), creadoA: serverTimestamp(),
+      });
+      if (codigoN) {
+        try {
+          const codSnap = await getDoc(doc(db, 'codigos', codigoN));
+          if (codSnap.exists() && !codSnap.data().usado) {
+            const familiaUid2 = codSnap.data().familiaUid;
+            const qHogar2 = query(collection(db,'hogares'), where('participantes','array-contains',familiaUid2));
+            const snapH2  = await getDocs(qHogar2);
+            if (!snapH2.empty) {
+              const hogarRef2 = snapH2.docs[0].ref;
+              const parts2 = snapH2.docs[0].data().participantes || [];
+              if (!parts2.includes(uid2)) await updateDoc(hogarRef2, { participantes: [...parts2, uid2] });
+            }
+            await updateDoc(doc(db,'codigos',codigoN), { usado:true, nanaUid:uid2, usadoA:serverTimestamp() });
+          }
+        } catch(ce) { console.warn('Código nana no vinculado:', ce); }
+      }
+      try {
+        await fetch('/.netlify/functions/send-email', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ tipo:'nana', nombre, email:correo })
+        });
+      } catch(emailErr) { console.log('Email bienvenida no enviado:', emailErr); }
+    } catch(e) {
+      console.error('REGISTRO_ERROR [Nana Firestore]:', e.code, e.message, e);
+      if (e.code === 'permission-denied')
+        return showErr('❌ Error de permisos. Contacta soporte: hola@mynana.app');
+      return showErr('❌ Error guardando datos. Intenta de nuevo.');
+    }
+    document.getElementById('modalForm').style.display = 'none';
+    window.location.href = '/app.html';
+    return;
+  }
+
+  // ── REGISTRO FAMILIA ────────────────────────────────────────────────────────
+  const planMap = {
+    hogar:    { nombre:'Plan Hogar',    url:'https://checkout.paguelofacil.com/mynana/4b6eced6' },
+    eventual: { nombre:'Hogar Flexible',url:'https://checkout.paguelofacil.com/mynana/586d0e75' },
+    fija:     { nombre:'Hogar Completo',url:'https://checkout.paguelofacil.com/mynana/e089b39a' },
+  };
+  const tipoHogarActual = document.getElementById('fieldTipoHogar')?.value || window.tipoSeleccionado || 'fija';
+  const planActual = tipoHogarActual === 'hogar' ? 'hogar' : tipoHogarActual === 'eventual' ? 'eventual' : 'fija';
+  const plan = planMap[planActual] || planMap['fija'];
+  const hoy  = new Date(); hoy.setHours(0,0,0,0);
+  const fin  = new Date(hoy); fin.setDate(hoy.getDate()+15);
+  const fmt  = d => d.toISOString().split('T')[0];
+  const fechaStr = fin.toLocaleDateString('es-PA', { day:'numeric', month:'long', year:'numeric' });
+
+  let uid;
+  try {
+    uid = (await createUserWithEmailAndPassword(auth, correo, pass1)).user.uid;
+  } catch(e) {
+    console.error('REGISTRO_ERROR [Auth]:', e.code, e.message, e);
+    if (e.code === 'auth/email-already-in-use')
+      return showErr('⚠️ Este correo ya tiene una cuenta. Inicia sesión en mynana.app/app.html');
+    if (e.code === 'auth/weak-password')
+      return showErr('⚠️ La contraseña es muy débil. Usa mínimo 6 caracteres.');
+    if (e.code === 'auth/invalid-email')
+      return showErr('⚠️ El correo no es válido. Revísalo.');
+    if (e.code === 'auth/network-request-failed')
+      return showErr('❌ Sin conexión a internet. Verifica tu red e intenta.');
+    if (e.code === 'auth/too-many-requests')
+      return showErr('⚠️ Demasiados intentos. Espera unos minutos e intenta de nuevo.');
+    return showErr('❌ No se pudo crear la cuenta: ' + (e.message || e.code));
+  }
+
+  try {
+    const nombreCompleto = (nombre + ' ' + apellido).trim();
+    await setDoc(doc(db, 'usuarios', uid), {
+      nombre, apellido, nombreCompleto,
+      email: correo, tipo: 'familia', telefono: telefono || null, uid,
+      fecha: new Date().toISOString(), creadoA: serverTimestamp(),
+      suscripcion: {
+        estado: 'trial', plan: planActual, planNombre: plan.nombre,
+        fechaInicioTrial: fmt(hoy), fechaFinTrial: fmt(fin),
+        pagoUrl: plan.url, pagoConfirmado: null, pagoReferencia: null, pagoMonto: null,
+        actualizadoA: serverTimestamp(),
+      },
+    });
+    await addDoc(collection(db, 'hogares'), {
+      participantes: [uid], creadoPor: uid, creado: serverTimestamp(), tipoHogar: tipoHogarActual,
+    });
+    if (telefono) localStorage.setItem('mynana_tel_pendiente', telefono);
+    localStorage.setItem('mynana_tipoHogar', tipoHogarActual);
+    try {
+      await fetch('/.netlify/functions/send-email', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tipo:'familia', nombre: nombre+' '+(apellido||''), email:correo, plan:plan.nombre })
+      });
+    } catch(emailErr) { console.log('Email bienvenida no enviado:', emailErr); }
+  } catch(e) {
+    console.error('REGISTRO_ERROR [Firestore]:', e.code, e.message, e);
+    if (e.code === 'permission-denied')
+      return showErr('❌ Error de permisos. Contacta soporte: hola@mynana.app');
+    if (e.code === 'unavailable')
+      return showErr('❌ Error de conexión con la base de datos. Intenta nuevamente.');
+    return showErr('❌ Error guardando datos. Intenta de nuevo.');
+  }
+
+  document.getElementById('modalForm').style.display = 'none';
+  document.getElementById('successMsg').innerHTML =
+    '¡Cuenta creada! <strong>15 días de acceso gratis</strong>.<br><br>' +
+    'El plan <strong>'+plan.nombre+'</strong> comienza el <strong>'+fechaStr+'</strong>.<br><br>' +
+    '<span style="font-size:12px;background:#E8F4EF;color:#0F4D3A;padding:8px 12px;border-radius:8px;display:block;">' +
+    '✅ Entra con <strong>'+correo+'</strong> y tu contraseña</span>';
+  document.getElementById('modalSuccess').classList.add('visible');
+  const lnk = document.createElement('a');
+  lnk.href = '/app.html';
+  lnk.style.cssText = 'display:block;margin-top:16px;background:#1A6B52;color:#fff;text-align:center;padding:14px;border-radius:99px;font-weight:600;text-decoration:none;font-size:15px;';
+  lnk.textContent = 'Entrar a My Nana →';
+  document.getElementById('successMsg').appendChild(lnk);
+};
+
 </script>
-</head>
 <body>
 
 <!-- MODAL REGISTRO -->
@@ -4227,191 +4406,7 @@ function volverAlPaso1() {
 // ── SUBMIT FINAL ──
 // ── SUBMIT FINAL — crea cuenta Firebase + trial ──
 // ── SUBMIT — formulario único, crea Firebase Auth + trial ──
-async function submitForm() {
-  const nombre   = (document.getElementById('fieldNombre')?.value   || '').trim();
-  const apellido = (document.getElementById('fieldApellido')?.value  || '').trim();
-  const correo   = (document.getElementById('fieldCorreo')?.value    || '').trim();
-  const telefono = (document.getElementById('fieldTelefono')?.value  || '').trim();
-  const pass1    =  document.getElementById('fieldPassword')?.value  || '';
-  const pass2    =  document.getElementById('fieldPassword2')?.value || '';
-  const btn      =  document.getElementById('btnSubmit');
-  const errEl    =  document.getElementById('regError');
-
-  const esNana = tipoRegIndex === 'nana';
-
-  const showErr = (msg) => {
-    if (errEl) { errEl.textContent = msg; errEl.style.display = 'block'; }
-    if (btn)   { btn.disabled = false; if (btn.querySelector('.es')) btn.querySelector('.es').textContent = 'Crear cuenta y empezar 🎉'; }
-  };
-
-  if (!nombre)                         return showErr('⚠️ Escribe tu nombre.');
-  if (!apellido && !esNana)            return showErr('⚠️ Escribe tu apellido.');
-  if (!correo || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) return showErr('⚠️ Correo inválido.');
-  if (!telefono && !esNana)            return showErr('⚠️ Agrega tu número de WhatsApp.');
-  if (pass1.length < 6)               return showErr('⚠️ La contraseña debe tener mínimo 6 caracteres.');
-  if (pass1 !== pass2)                 return showErr('⚠️ Las contraseñas no coinciden.');
-  const consentEl = document.getElementById('familiaConsentimiento');
-  if (consentEl && !consentEl.checked) {
-    consentEl.style.outline = '2px solid #e05c5c';
-    setTimeout(() => consentEl.style.outline = '', 2000);
-    return showErr('⚠️ Debes aceptar los términos para continuar.');
-  }
-  if (errEl) errEl.style.display = 'none';
-  if (btn)  { btn.disabled = true; if (btn.querySelector('.es')) btn.querySelector('.es').textContent = 'Creando cuenta...'; }
-
-  // ── REGISTRO NANA ────────────────────────────────────────────────────────
-  if (esNana) {
-    let uid2;
-    try {
-      uid2 = (await window.__fbCreateUser(correo, pass1)).user.uid;
-    } catch(e) {
-      console.error('REGISTRO_ERROR [Nana Auth]:', e.code, e.message, e);
-      if (e.code === 'auth/email-already-in-use')
-        return showErr('⚠️ Este correo ya tiene una cuenta. Inicia sesión en mynana.app/app.html');
-      if (e.code === 'auth/weak-password')
-        return showErr('⚠️ La contraseña es muy débil. Usa mínimo 6 caracteres.');
-      if (e.code === 'auth/network-request-failed')
-        return showErr('❌ Sin conexión a internet. Verifica tu red e intenta.');
-      if (e.code === 'auth/too-many-requests')
-        return showErr('⚠️ Demasiados intentos. Espera unos minutos e intenta de nuevo.');
-      return showErr('❌ No se pudo crear la cuenta: ' + (e.message || e.code || 'Error desconocido'));
-    }
-    try {
-      const tipoNana = document.getElementById('fieldTipoNana')?.value || 'fija';
-      const cedula   = document.getElementById('fieldCedula')?.value?.trim() || null;
-      const codigoN  = document.getElementById('fieldCodigoNana')?.value?.trim().toUpperCase() || null;
-      await window.__fbSetDoc(window.__fbDoc('usuarios', uid2), {
-        nombre, apellido: apellido || null,
-        nombreCompleto: (nombre + ' ' + (apellido||'')).trim(),
-        email: correo, tipo: 'nana', subtipo: tipoNana,
-        cedula, telefono: telefono || null, uid: uid2,
-        fecha: new Date().toISOString(), creadoA: window.__fbTs(),
-      });
-      if (codigoN) {
-        // Vincular con familia si viene código
-        try {
-          const codSnap = await window.__fbGetDoc(window.__fbDoc('codigos', codigoN));
-          if (codSnap.exists() && !codSnap.data().usado) {
-            const familiaUid2 = codSnap.data().familiaUid;
-            const qHogar2 = window.__fbQuery(window.__fbCol('hogares'), window.__fbWhere('participantes','array-contains',familiaUid2));
-            const snapH2  = await window.__fbGetDocs(qHogar2);
-            if (!snapH2.empty) {
-              const hogarRef2 = snapH2.docs[0].ref;
-              const parts2    = snapH2.docs[0].data().participantes || [];
-              if (!parts2.includes(uid2)) await window.__fbUpdateDoc(hogarRef2, { participantes: [...parts2, uid2] });
-            }
-            await window.__fbUpdateDoc(window.__fbDoc('codigos', codigoN), { usado: true, nanaUid: uid2, usadoA: window.__fbTs() });
-          }
-        } catch(ce) { console.warn('Código nana no vinculado:', ce); }
-      }
-      try {
-        await fetch('/.netlify/functions/send-email', {
-          method:'POST', headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ tipo:'nana', nombre, email:correo })
-        });
-      } catch(e) { console.log('Email bienvenida no enviado:', e); }
-    } catch(e) {
-      console.error('REGISTRO_ERROR [Nana Firestore]:', e.code, e.message, e);
-      if (e.code === 'permission-denied')
-        return showErr('❌ Error de permisos. Contacta soporte: hola@mynana.app');
-      return showErr('❌ Error guardando datos. Intenta de nuevo.');
-    }
-    document.getElementById('modalForm').style.display = 'none';
-    window.location.href = '/app.html';
-    return;
-  }
-
-  // ── REGISTRO FAMILIA ─────────────────────────────────────────────────────
-  const planMap = {
-    hogar:    { nombre:'Plan Hogar',    url:'https://checkout.paguelofacil.com/mynana/4b6eced6' },
-    eventual: { nombre:'Hogar Flexible',url:'https://checkout.paguelofacil.com/mynana/586d0e75' },
-    fija:     { nombre:'Hogar Completo',url:'https://checkout.paguelofacil.com/mynana/e089b39a' },
-  };
-  // Leer tipo del selector nuevo (fieldTipoHogar) o fallback al selector antiguo
-  const tipoHogarActual = document.getElementById('fieldTipoHogar')?.value || tipoSeleccionado || 'fija';
-  const planActual      = tipoHogarActual === 'hogar' ? 'hogar' : tipoHogarActual === 'eventual' ? 'eventual' : 'fija';
-  const plan = planMap[planActual] || planMap['fija'];
-  const hoy  = new Date(); hoy.setHours(0,0,0,0);
-  const fin  = new Date(hoy); fin.setDate(hoy.getDate()+15);
-  const fmt  = d => d.toISOString().split('T')[0];
-  const fechaStr = fin.toLocaleDateString('es-PA', { day:'numeric', month:'long', year:'numeric' });
-
-  // Esperar hasta 10s a que el módulo Firebase esté listo (red lenta o primera visita)
-  let t = 0;
-  while (!window.__fbCreateUser && t < 100) { await new Promise(r=>setTimeout(r,100)); t++; }
-  if (!window.__fbCreateUser) {
-    console.error('REGISTRO_ERROR: Firebase module not ready after 10s');
-    return showErr('❌ Error de conexión. Recarga la página e intenta de nuevo.');
-  }
-
-  let uid;
-  try {
-    uid = (await window.__fbCreateUser(correo, pass1)).user.uid;
-  } catch(e) {
-    console.error('REGISTRO_ERROR [Auth]:', e.code, e.message, e);
-    if (e.code === 'auth/email-already-in-use')
-      return showErr('⚠️ Este correo ya tiene una cuenta. Inicia sesión en mynana.app/app.html');
-    if (e.code === 'auth/weak-password')
-      return showErr('⚠️ La contraseña es muy débil. Usa mínimo 6 caracteres.');
-    if (e.code === 'auth/invalid-email')
-      return showErr('⚠️ El correo no es válido. Revísalo.');
-    if (e.code === 'auth/network-request-failed')
-      return showErr('❌ Sin conexión a internet. Verifica tu red e intenta.');
-    if (e.code === 'auth/too-many-requests')
-      return showErr('⚠️ Demasiados intentos. Espera unos minutos e intenta de nuevo.');
-    return showErr('❌ No se pudo crear la cuenta: ' + (e.message || e.code || 'Error desconocido'));
-  }
-
-  try {
-    const nombreCompleto = (nombre + ' ' + apellido).trim();
-    await window.__fbSetDoc(window.__fbDoc('usuarios',uid),{
-      nombre, apellido, nombreCompleto,
-      email:correo, tipo:'familia', telefono:telefono||null, uid,
-      fecha:new Date().toISOString(), creadoA:window.__fbTs(),
-      suscripcion:{
-        estado:'trial', plan:planSeleccionado, planNombre:plan.nombre,
-        fechaInicioTrial:fmt(hoy), fechaFinTrial:fmt(fin),
-        pagoUrl:plan.url, pagoConfirmado:null, pagoReferencia:null, pagoMonto:null,
-        actualizadoA:window.__fbTs(),
-      },
-    });
-    const tipoH = tipoHogarActual;
-    await window.__fbAddDoc(window.__fbCol('hogares'),{
-      participantes:[uid], creadoPor:uid, creado:window.__fbTs(), tipoHogar:tipoH,
-    });
-    if (telefono) localStorage.setItem('mynana_tel_pendiente',telefono);
-    localStorage.setItem('mynana_tipoHogar', tipoH);
-    try {
-      await fetch('/.netlify/functions/send-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tipo: 'familia', nombre: nombre + ' ' + (apellido||''), email: correo, plan: plan.nombre })
-      });
-    } catch(e) { console.log('Email bienvenida no enviado:', e); }
-  } catch(e) {
-    console.error('REGISTRO_ERROR [Firestore]:', e.code, e.message, e);
-    if (e.code === 'permission-denied')
-      return showErr('❌ Error de permisos. Contacta soporte: hola@mynana.app');
-    if (e.code === 'unavailable' || e.name === 'FirebaseError')
-      return showErr('❌ Error de conexión con la base de datos. Intenta nuevamente.');
-    return showErr('❌ Error guardando datos. Intenta de nuevo.');
-  }
-
-  document.getElementById('modalForm').style.display = 'none';
-  document.getElementById('successMsg').innerHTML =
-    '\u00a1Cuenta creada! <strong>15 días de acceso gratis</strong>.<br><br>' +
-    'El plan <strong>'+plan.nombre+'</strong> comienza el <strong>'+fechaStr+'</strong>.<br><br>' +
-    '<span style="font-size:12px;background:#E8F4EF;color:#0F4D3A;padding:8px 12px;border-radius:8px;display:block;">' +
-    '\u2705 Entra con <strong>'+correo+'</strong> y tu contraseña</span>';
-  document.getElementById('modalSuccess').classList.add('visible');
-  const lnk = document.createElement('a');
-  lnk.href='/app.html';
-  lnk.style.cssText='display:block;margin-top:16px;background:#1A6B52;color:#fff;font-family:var(--font-body);font-size:15px;font-weight:500;padding:14px;border-radius:99px;text-decoration:none;text-align:center;';
-  lnk.textContent='\u2192 Ir a mi plataforma';
-  const sw=document.getElementById('modalSuccess');
-  const wa=sw?.querySelector('.success-whatsapp');
-  if(wa) sw.insertBefore(lnk,wa); else sw?.appendChild(lnk);
-}
+// submitForm definida en el módulo de Firebase arriba
 
 // ── MENÚ SEMANAL — datos de la demo ──
 const MENU = [
