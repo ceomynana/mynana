@@ -4029,11 +4029,11 @@ window.toggleInvitarMiembro = async () => {
     const snapHogar = await getDocs(qHogar);
     if (snapHogar.empty) { panel.innerHTML = `<div style="font-size:13px;color:var(--b2);">⚠️ Primero vincula a tu nana para activar el hogar</div>`; return; }
     const hogarId = snapHogar.docs[0].id;
-    const qCod = query(collection(db, 'codigos_familia'), where('familiaUid', '==', user.uid), where('tipo', '==', 'miembro_familia'), where('usado', '==', false));
+    const qCod = query(collection(db, 'codigos_familia'), where('titularUid', '==', user.uid), where('tipo', '==', 'miembro_familia'), where('usado', '==', false));
     const snapCod = await getDocs(qCod);
     let codigo = snapCod.empty ? 'F' + Math.random().toString(36).substring(2, 7).toUpperCase() : snapCod.docs[0].id;
     if (snapCod.empty) {
-      await setDoc(doc(db, 'codigos_familia', codigo), { familiaUid: user.uid, hogarId, tipo: 'miembro_familia', usado: false, creadoA: serverTimestamp() });
+      await setDoc(doc(db, 'codigos_familia', codigo), { codigo, titularUid: user.uid, hogarId, tipo: 'miembro_familia', usado: false, creadoEn: serverTimestamp() });
     }
     const msgWA = encodeURIComponent(`Hola! Te invito a ver nuestro hogar en My Nana 🏠
 
