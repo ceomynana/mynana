@@ -2584,8 +2584,8 @@ window.unirseConCodigo = async function() {
 // ── WAITLIST NANAS — definida en el módulo para acceder a db directamente ──
 // (movida a script regular usando REST API — ver abajo)
 
-// ── REGISTRO — definido en el módulo para usar Firebase directamente ──────
-window.submitForm = async function submitForm() {
+// ── REGISTRO — en el módulo para usar Firebase directamente, sin window.__fb ──
+window.submitForm = async function() {
   const nombre   = (document.getElementById('fieldNombre')?.value   || '').trim();
   const apellido = (document.getElementById('fieldApellido')?.value  || '').trim();
   const correo   = (document.getElementById('fieldCorreo')?.value    || '').trim();
@@ -2598,9 +2598,11 @@ window.submitForm = async function submitForm() {
 
   const showErr = (msg) => {
     if (errEl) { errEl.textContent = msg; errEl.style.display = 'block'; }
-    if (btn)   { btn.disabled = false;
+    if (btn) {
+      btn.disabled = false;
       const es = btn.querySelector('.es');
       if (es) es.textContent = 'Crear cuenta y empezar 🎉';
+      else btn.textContent = 'Crear cuenta y empezar 🎉';
     }
   };
 
@@ -2622,9 +2624,10 @@ window.submitForm = async function submitForm() {
     btn.disabled = true;
     const es = btn.querySelector('.es');
     if (es) es.textContent = 'Creando cuenta...';
+    else btn.textContent = 'Creando cuenta...';
   }
 
-  // ── REGISTRO NANA ──────────────────────────────────────────────────────────
+  // ── REGISTRO NANA ────────────────────────────────────────────────────────
   if (esNana) {
     let uid2;
     try {
@@ -2634,11 +2637,11 @@ window.submitForm = async function submitForm() {
       if (e.code === 'auth/email-already-in-use')
         return showErr('⚠️ Este correo ya tiene una cuenta. Inicia sesión en mynana.app/app.html');
       if (e.code === 'auth/weak-password')
-        return showErr('⚠️ La contraseña es muy débil. Usa mínimo 6 caracteres.');
+        return showErr('⚠️ Contraseña muy débil. Usa mínimo 6 caracteres.');
       if (e.code === 'auth/network-request-failed')
-        return showErr('❌ Sin conexión a internet. Verifica tu red e intenta.');
+        return showErr('❌ Sin conexión. Verifica tu red e intenta.');
       if (e.code === 'auth/too-many-requests')
-        return showErr('⚠️ Demasiados intentos. Espera unos minutos e intenta de nuevo.');
+        return showErr('⚠️ Demasiados intentos. Espera unos minutos.');
       return showErr('❌ No se pudo crear la cuenta: ' + (e.message || e.code));
     }
     try {
@@ -2685,7 +2688,7 @@ window.submitForm = async function submitForm() {
     return;
   }
 
-  // ── REGISTRO FAMILIA ────────────────────────────────────────────────────────
+  // ── REGISTRO FAMILIA ────────────────────────────────────────────────────
   const planMap = {
     hogar:    { nombre:'Plan Hogar',    url:'https://checkout.paguelofacil.com/mynana/4b6eced6' },
     eventual: { nombre:'Hogar Flexible',url:'https://checkout.paguelofacil.com/mynana/586d0e75' },
@@ -2707,20 +2710,19 @@ window.submitForm = async function submitForm() {
     if (e.code === 'auth/email-already-in-use')
       return showErr('⚠️ Este correo ya tiene una cuenta. Inicia sesión en mynana.app/app.html');
     if (e.code === 'auth/weak-password')
-      return showErr('⚠️ La contraseña es muy débil. Usa mínimo 6 caracteres.');
+      return showErr('⚠️ Contraseña muy débil. Usa mínimo 6 caracteres.');
     if (e.code === 'auth/invalid-email')
       return showErr('⚠️ El correo no es válido. Revísalo.');
     if (e.code === 'auth/network-request-failed')
-      return showErr('❌ Sin conexión a internet. Verifica tu red e intenta.');
+      return showErr('❌ Sin conexión. Verifica tu red e intenta.');
     if (e.code === 'auth/too-many-requests')
-      return showErr('⚠️ Demasiados intentos. Espera unos minutos e intenta de nuevo.');
+      return showErr('⚠️ Demasiados intentos. Espera unos minutos.');
     return showErr('❌ No se pudo crear la cuenta: ' + (e.message || e.code));
   }
 
   try {
-    const nombreCompleto = (nombre + ' ' + apellido).trim();
     await setDoc(doc(db, 'usuarios', uid), {
-      nombre, apellido, nombreCompleto,
+      nombre, apellido, nombreCompleto: (nombre+' '+apellido).trim(),
       email: correo, tipo: 'familia', telefono: telefono || null, uid,
       fecha: new Date().toISOString(), creadoA: serverTimestamp(),
       suscripcion: {
@@ -2737,8 +2739,8 @@ window.submitForm = async function submitForm() {
     localStorage.setItem('mynana_tipoHogar', tipoHogarActual);
     try {
       await fetch('/.netlify/functions/send-email', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tipo:'familia', nombre: nombre+' '+(apellido||''), email:correo, plan:plan.nombre })
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ tipo:'familia', nombre:nombre+' '+(apellido||''), email:correo, plan:plan.nombre })
       });
     } catch(emailErr) { console.log('Email bienvenida no enviado:', emailErr); }
   } catch(e) {
@@ -2899,7 +2901,7 @@ window.submitForm = async function submitForm() {
         </label>
       </div>
 
-      <button class="form-submit" id="btnSubmit" onclick="submitForm()">
+      <button class="form-submit" id="btnSubmit" onclick="window.submitForm()">
         <span class="es">Crear cuenta y empezar 🎉</span><span class="en">Create account &amp; start 🎉</span>
       </button>
       <div class="form-note">
@@ -3009,7 +3011,7 @@ window.submitForm = async function submitForm() {
       </div>
       <div style="display:flex;gap:10px;">
         <button onclick="volverAlPaso1()" style="flex:1;background:var(--cr);color:var(--txt2);font-family:var(--font-body);font-size:13px;padding:13px;border-radius:99px;border:1px solid var(--g4);cursor:pointer;"><span class="es">← Volver</span><span class="en">← Back</span></button>
-        <button class="form-submit" id="btnPlanSubmit" onclick="submitForm()" style="flex:2;margin-top:0;">
+        <button class="form-submit" id="btnPlanSubmit" onclick="window.submitForm()" style="flex:2;margin-top:0;">
           <span class="es">Crear cuenta gratis 🎉</span><span class="en">Create free account 🎉</span>
         </button>
       </div>
@@ -4406,7 +4408,7 @@ function volverAlPaso1() {
 // ── SUBMIT FINAL ──
 // ── SUBMIT FINAL — crea cuenta Firebase + trial ──
 // ── SUBMIT — formulario único, crea Firebase Auth + trial ──
-// submitForm definida en el módulo de Firebase arriba
+// window.submitForm definida en el módulo de Firebase
 
 // ── MENÚ SEMANAL — datos de la demo ──
 const MENU = [
