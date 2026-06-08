@@ -1602,6 +1602,7 @@ async function generarTareasRecurrentes(fecha) {
       hora:          rut.hora,
       cat:           rut.cat,
       prioridad:     rut.prioridad,
+      asignadoA:     rut.asignadoA || null,
       estado:        'pendiente',
       fotoUrl:       null,
       fecha,
@@ -1661,6 +1662,8 @@ function _resetFormRutina() {
   if (rutPrioridad) rutPrioridad.value = 'normal';
   const rutDiaMes = document.getElementById('rutDiaMes');
   if (rutDiaMes) rutDiaMes.value = '1';
+  const rutAsignadoA = document.getElementById('rutAsignadoA');
+  if (rutAsignadoA) rutAsignadoA.value = '';
   document.querySelectorAll('.dia-sem-btn').forEach(b => b.classList.remove('sel'));
   const btn = document.getElementById('btnGuardarRutina');
   if (btn) btn.textContent = '🔁 Guardar rutina';
@@ -1695,6 +1698,7 @@ window.guardarRutina = async () => {
       hora,
       cat:       document.getElementById('rutCat')?.value || '🏠 General',
       prioridad: document.getElementById('rutPrioridad')?.value || 'normal',
+      asignadoA: document.getElementById('rutAsignadoA')?.value || null,
       frecuencia: frec,
       diasSemana,
       diaDelMes:  parseInt(document.getElementById('rutDiaMes')?.value || 1),
@@ -1742,6 +1746,8 @@ window.editarRutina = (id) => {
   document.getElementById('rutFrecuencia').value = rut.frecuencia;
   document.getElementById('rutPrioridad').value  = rut.prioridad;
   document.getElementById('rutCat').value        = rut.cat;
+  const rutAsig = document.getElementById('rutAsignadoA');
+  if (rutAsig) rutAsig.value = rut.asignadoA || '';
   document.getElementById('rutFechaInicio').value = rut.fechaInicio || '';
   document.getElementById('rutFechaFin').value   = rut.fechaFin || '';
   document.getElementById('rutDiaMes').value     = rut.diaDelMes || 1;
@@ -1869,6 +1875,14 @@ function renderSelectorAsignado() {
     `<option value="${o.value}">${o.label}</option>`
   ).join('');
 
+  // Mismo selector para el formulario de rutinas
+  const rutSelect = document.getElementById('rutAsignadoA');
+  if (rutSelect) {
+    rutSelect.innerHTML = opciones.map(o =>
+      `<option value="${o.value}">${o.label}</option>`
+    ).join('');
+  }
+
   // Mostrar el selector si hay más de 1 opción real (no solo "Todos")
   wrap.style.display = opciones.length > 1 ? 'block' : 'none';
 }
@@ -1949,6 +1963,12 @@ document.getElementById('modalFoto')?.addEventListener('click', e => {
           <select id="rutPrioridad" class="form-select">
             <option value="normal">Normal</option>
             <option value="urgente">Urgente</option>
+          </select>
+        </div>
+        <div style="grid-column:1/-1;">
+          <label class="form-label">Asignado a</label>
+          <select id="rutAsignadoA" class="form-select">
+            <option value="">Todos</option>
           </select>
         </div>
         <div>
