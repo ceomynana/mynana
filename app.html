@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>My Nana Panama — Inicia sesión</title>
+<title>My Nana Panama — <span class="es">Inicia sesión</span><span class="en">Sign in</span></title>
 <meta name="description" content="Accede a tu cuenta de My Nana Panama. Gestiona tareas, chat y nómina de tu personal doméstico.">
 <meta name="robots" content="noindex">
 <meta property="og:title" content="My Nana Panama — App para tu hogar">
@@ -521,12 +521,12 @@ body.lang-es [data-en]{display:none !important;}
     <button onclick="cerrarModalPago()" style="position:absolute;top:14px;right:14px;background:rgba(255,255,255,.15);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px;z-index:10;">✕</button>
     <div class="modal-pago-header">
       <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:#fff;font-weight:500;margin-bottom:4px;">My Nana</div>
-      <div style="font-size:14px;color:rgba(255,255,255,.7);">15 días gratis · sin compromiso</div>
+      <div style="font-size:14px;color:rgba(255,255,255,.7);"><span class="es">15 días gratis · sin compromiso</span><span class="en">15 days free · no commitment</span></div>
     </div>
 
     <!-- PASO 1 -->
     <div class="modal-pago-body" id="modalPasoDatos">
-      <div style="font-size:13px;font-weight:600;color:var(--txt);margin-bottom:16px;">Elige tu plan después de los 15 días</div>
+      <div style="font-size:13px;font-weight:600;color:var(--txt);margin-bottom:16px;"><span class="es">Elige tu plan después de los 15 días</span><span class="en">Choose your plan after 15 days</span></div>
 
       <div class="modal-pago-plan selected" id="planFijaOpt" onclick="selectPlanPago('fija')">
         <div style="display:flex;align-items:center;justify-content:space-between;">
@@ -536,28 +536,28 @@ body.lang-es [data-en]{display:none !important;}
           </div>
           <div style="text-align:right;">
             <div style="font-size:18px;font-weight:600;color:var(--g);">$9.99</div>
-            <div style="font-size:10px;color:var(--txt2);">al mes</div>
+            <div style="font-size:10px;color:var(--txt2);"><span class="es">al mes</span><span class="en">/ mo</span></div>
           </div>
         </div>
-        <div style="font-size:11px;color:var(--txt2);margin-top:8px;padding-top:8px;border-top:1px solid var(--g4);">✓ Tareas ilimitadas &nbsp; ✓ Menú &nbsp; ✓ Nómina &nbsp; ✓ Contratos</div>
+        <div style="font-size:11px;color:var(--txt2);margin-top:8px;padding-top:8px;border-top:1px solid var(--g4);"><span class="es">✓ Tareas ilimitadas &nbsp; ✓ Menú &nbsp; ✓ Nómina &nbsp; ✓ Contratos</span><span class="en">✓ Unlimited tasks &nbsp; ✓ Menu &nbsp; ✓ Payroll &nbsp; ✓ Contracts</span></div>
       </div>
 
       <div class="modal-pago-plan" id="planEventualOpt" onclick="selectPlanPago('eventual')">
         <div style="display:flex;align-items:center;justify-content:space-between;">
           <div>
             <div style="font-size:13px;font-weight:600;color:var(--txt);">📅 Hogar Flexible</div>
-            <div style="font-size:11px;color:var(--txt2);margin-top:2px;">Para nana eventual · Por días</div>
+            <div style="font-size:11px;color:var(--txt2);margin-top:2px;"><span class="es">Para nana eventual · Por días</span><span class="en">For occasional help · By the day</span></div>
           </div>
           <div style="text-align:right;">
             <div style="font-size:18px;font-weight:600;color:var(--g);">$6.99</div>
-            <div style="font-size:10px;color:var(--txt2);">al mes</div>
+            <div style="font-size:10px;color:var(--txt2);"><span class="es">al mes</span><span class="en">/ mo</span></div>
           </div>
         </div>
-        <div style="font-size:11px;color:var(--txt2);margin-top:8px;padding-top:8px;border-top:1px solid var(--g4);">✓ Tareas por visita &nbsp; ✓ Pago por días &nbsp; ✓ Contrato legal</div>
+        <div style="font-size:11px;color:var(--txt2);margin-top:8px;padding-top:8px;border-top:1px solid var(--g4);"><span class="es">✓ Tareas por visita &nbsp; ✓ Pago por días &nbsp; ✓ Contrato legal</span><span class="en">✓ Tasks per visit &nbsp; ✓ Daily pay &nbsp; ✓ Legal contract</span></div>
       </div>
 
       <div style="background:#FAEEDA;border-radius:10px;padding:10px 14px;margin:14px 0;font-size:12px;color:#633806;line-height:1.5;">
-        ⏰ <strong>15 días gratis.</strong> El día 16 comenzará el cobro automático. Te avisaremos por correo 3 días antes.
+        <span class="es">⏰ <strong>15 días gratis.</strong> El día 16 comenzará el cobro automático. Te avisaremos por correo 3 días antes.</span><span class="en">⏰ <strong>15 days free.</strong> On day 16 billing starts automatically. We'll email you 3 days before.</span>
       </div>
 
       <button class="modal-pago-submit" onclick="irAPagueloFacil()">
@@ -654,7 +654,7 @@ service cloud.firestore {
 
     <!-- Log output -->
     <div style="background:rgba(0,0,0,.5);border-radius:12px;padding:14px;">
-      <div style="color:#D4A5A5;font-size:11px;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em;">Log de diagnóstico</div>
+      <div style="color:#D4A5A5;font-size:11px;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em;"><span class="es">Log de diagnóstico</span><span class="en">Diagnostic log</span></div>
       <div id="pwa-debug-log" style="font-size:12px;line-height:1.8;color:#fff;white-space:pre-wrap;word-break:break-all;max-height:300px;overflow-y:auto;"></div>
     </div>
   </div>
@@ -671,7 +671,7 @@ service cloud.firestore {
       <div style="font-size:11px;color:var(--txt2);line-height:1.4;" id="pwa-banner-sub">Agrega My Nana a tu pantalla de inicio para activar notificaciones.</div>
     </div>
     <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
-      <button onclick="abrirModalPWA()" style="background:var(--g);color:#fff;border:none;border-radius:99px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;" id="pwa-banner-btn">Ver cómo</button>
+      <button onclick="abrirModalPWA()" style="background:var(--g);color:#fff;border:none;border-radius:99px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;" id="pwa-banner-btn"><span class="es">Ver cómo</span><span class="en">How to</span></button>
       <button onclick="cerrarBannerPWA()" style="background:none;border:none;color:var(--txt2);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;padding:2px 0;">No ahora</button>
     </div>
   </div>
@@ -685,7 +685,7 @@ service cloud.firestore {
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
       <div>
         <div style="font-size:11px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">My Nana</div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--txt);" id="pwa-modal-title">Activar notificaciones</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--txt);" id="pwa-modal-title"><span class="es">Activar notificaciones</span><span class="en">Enable notifications</span></div>
       </div>
       <button onclick="cerrarModalPWA()" style="width:36px;height:36px;border-radius:50%;background:var(--g3);border:none;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
     </div>
@@ -696,8 +696,8 @@ service cloud.firestore {
       <div style="display:flex;gap:14px;align-items:flex-start;">
         <div style="width:32px;height:32px;border-radius:50%;background:var(--g);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0;">1</div>
         <div>
-          <div style="font-size:14px;font-weight:600;color:var(--txt);margin-bottom:3px;">Abre My Nana en Safari</div>
-          <div style="font-size:13px;color:var(--txt2);line-height:1.5;">Asegúrate de estar en Safari (no Chrome ni otro navegador). La URL debe ser <span style="color:var(--g);font-weight:500;">mynana.app</span></div>
+          <div style="font-size:14px;font-weight:600;color:var(--txt);margin-bottom:3px;"><span class="es">Abre My Nana en Safari</span><span class="en">Open My Nana in Safari</span></div>
+          <div style="font-size:13px;color:var(--txt2);line-height:1.5;"><span class="es">Asegúrate de estar en Safari (no Chrome ni otro navegador). La URL debe ser <span style="color:var(--g);font-weight:500;">mynana.app</span></span><span class="en">Make sure you're using Safari (not Chrome or other browser). The URL should be <span style="color:var(--g);font-weight:500;">mynana.app</span></span></div>
         </div>
       </div>
 
@@ -706,8 +706,8 @@ service cloud.firestore {
       <div style="display:flex;gap:14px;align-items:flex-start;">
         <div style="width:32px;height:32px;border-radius:50%;background:var(--g);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0;">2</div>
         <div>
-          <div style="font-size:14px;font-weight:600;color:var(--txt);margin-bottom:3px;">Toca Compartir → "Agregar a pantalla de inicio"</div>
-          <div style="font-size:13px;color:var(--txt2);line-height:1.5;">Toca el ícono <span style="background:var(--g3);padding:1px 6px;border-radius:4px;font-size:12px;">⬆️ Compartir</span> en la barra inferior de Safari, luego busca <strong>"Agregar a pantalla de inicio"</strong>.</div>
+          <div style="font-size:14px;font-weight:600;color:var(--txt);margin-bottom:3px;"><span class="es">Toca Compartir → "Agregar a pantalla de inicio"</span><span class="en">Tap Share → "Add to Home Screen"</span></div>
+          <div style="font-size:13px;color:var(--txt2);line-height:1.5;"><span class="es">Toca el ícono <span style="background:var(--g3);padding:1px 6px;border-radius:4px;font-size:12px;">⬆️ Compartir</span> en la barra inferior de Safari, luego busca <strong>"Agregar a pantalla de inicio"</strong>.</span><span class="en">Tap the <span style="background:var(--g3);padding:1px 6px;border-radius:4px;font-size:12px;">⬆️ Share</span> icon in Safari's bottom bar, then look for <strong>"Add to Home Screen"</strong>.</span></div>
         </div>
       </div>
 
@@ -716,8 +716,8 @@ service cloud.firestore {
       <div style="display:flex;gap:14px;align-items:flex-start;">
         <div style="width:32px;height:32px;border-radius:50%;background:var(--g);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0;">3</div>
         <div>
-          <div style="font-size:14px;font-weight:600;color:var(--txt);margin-bottom:3px;">Abre My Nana desde el ícono y activa notificaciones</div>
-          <div style="font-size:13px;color:var(--txt2);line-height:1.5;">Busca el ícono 🏠 en tu pantalla de inicio, ábrelo y acepta cuando te pida permiso para notificaciones.</div>
+          <div style="font-size:14px;font-weight:600;color:var(--txt);margin-bottom:3px;"><span class="es">Abre My Nana desde el ícono y activa notificaciones</span><span class="en">Open My Nana from the icon and enable notifications</span></div>
+          <div style="font-size:13px;color:var(--txt2);line-height:1.5;"><span class="es">Busca el ícono 🏠 en tu pantalla de inicio, ábrelo y acepta cuando te pida permiso para notificaciones.</span><span class="en">Find the 🏠 icon on your home screen, open it and accept when it asks for notification permission.</span></div>
         </div>
       </div>
 
@@ -729,10 +729,10 @@ service cloud.firestore {
         <span style="font-size:24px;">🔔</span>
         <div>
           <div style="font-size:14px;font-weight:600;color:var(--txt);margin-bottom:3px;">Activar notificaciones</div>
-          <div style="font-size:13px;color:var(--txt2);line-height:1.5;">Toca el botón de abajo para que My Nana pueda enviarte recordatorios de tareas, mensajes y alertas importantes.</div>
+          <div style="font-size:13px;color:var(--txt2);line-height:1.5;"><span class="es">Toca el botón de abajo para que My Nana pueda enviarte recordatorios de tareas, mensajes y alertas importantes.</span><span class="en">Tap the button below so My Nana can send you task reminders, messages and important alerts.</span></div>
         </div>
       </div>
-      <button onclick="solicitarPermisoNotificaciones()" style="background:var(--g);color:#fff;border:none;border-radius:99px;padding:14px 28px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;">🔔 Activar notificaciones</button>
+      <button onclick="solicitarPermisoNotificaciones()" style="background:var(--g);color:#fff;border:none;border-radius:99px;padding:14px 28px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;"><span class="es">🔔 Activar notificaciones</span><span class="en">🔔 Enable notifications</span></button>
     </div>
 
     <div style="text-align:center;font-size:11px;color:var(--txt2);line-height:1.5;">
@@ -754,7 +754,7 @@ service cloud.firestore {
     </div>
     <div class="login-body">
       <h2 class="login-title">Bienvenido/a de vuelta</h2>
-      <p class="login-sub">Inicia sesión para acceder a tu plataforma</p>
+      <p class="login-sub"><span class="es">Inicia sesión para acceder a tu plataforma</span><span class="en">Sign in to access your platform</span></p>
 
       <!-- Selector tipo usuario -->
       <div class="tab-selector">
@@ -764,17 +764,17 @@ service cloud.firestore {
 
       <div class="login-error" id="loginError"></div>
 
-      <label class="form-label">Correo electrónico</label>
+      <label class="form-label"><span class="es">Correo electrónico</span><span class="en">Email address</span></label>
       <input type="email" class="form-input" id="loginEmail" placeholder="tucorreo@email.com" />
 
-      <label class="form-label">Contraseña</label>
+      <label class="form-label"><span class="es">Contraseña</span><span class="en">Password</span></label>
       <input type="password" class="form-input" id="loginPass" placeholder="Tu contraseña" />
 
-      <button class="login-btn" id="loginBtn" onclick="iniciarSesion()">Iniciar sesión →</button>
+      <button class="login-btn" id="loginBtn" onclick="iniciarSesion()"><span class="es">Iniciar sesión →</span><span class="en">Sign in →</span></button>
 
-      <span class="login-forgot" onclick="recuperarPassword()">¿Olvidaste tu contraseña?</span>
+      <span class="login-forgot" onclick="recuperarPassword()"><span class="es">¿Olvidaste tu contraseña?</span><span class="en">Forgot your password?</span></span>
 
-      <div class="login-divider">¿No tienes cuenta?</div>
+      <div class="login-divider"><span class="es">¿No tienes cuenta?</span><span class="en">Don't have an account?</span></div>
       <button class="login-register" onclick="irARegistro()">Crear cuenta gratis</button>
     </div>
   </div>
@@ -809,12 +809,12 @@ service cloud.firestore {
 
       <!-- Campos adicionales nana -->
       <div id="regCamposNana" style="display:none;">
-        <label class="form-label">Cédula</label>
+        <label class="form-label"><span class="es">Cédula</span><span class="en">National ID</span></label>
         <input type="text" class="form-input" id="regCedula" placeholder="8-123-4567" />
 
         <!-- ¿Cómo trabajas? — solo para nanas -->
         <div style="margin-bottom:14px;">
-          <div style="font-size:12px;font-weight:600;color:var(--txt2);margin-bottom:8px;">¿Cómo trabajas actualmente?</div>
+          <div style="font-size:12px;font-weight:600;color:var(--txt2);margin-bottom:8px;"><span class="es">¿Cómo trabajas actualmente?</span><span class="en">How do you currently work?</span></div>
           <div style="display:flex;flex-direction:column;gap:6px;">
             <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid #1A6B52;border-radius:10px;cursor:pointer;background:#F0F7F4;" id="tnFija" onclick="selTipoNana('fija')">
               <span style="font-size:18px;">👩‍🍳</span>
@@ -827,58 +827,58 @@ service cloud.firestore {
               <span style="font-size:18px;">🤝</span>
               <div>
                 <div style="font-size:13px;font-weight:500;">Soy nana eventual</div>
-                <div style="font-size:11px;color:#888;">Trabajo por días o con varias familias</div>
+                <div style="font-size:11px;color:#888;"><span class="es">Trabajo por días o con varias familias</span><span class="en">I work by day or with multiple families</span></div>
               </div>
             </div>
           </div>
           <input type="hidden" id="regTipoNana" value="fija">
         </div>
 
-        <label class="form-label">Código de la familia</label>
+        <label class="form-label"><span class="es">Código de la familia</span><span class="en">Family code</span></label>
         <input type="text" class="form-input" id="regCodigo" placeholder="Código de 6 caracteres (ej: ABC123)" style="text-transform:uppercase;letter-spacing:4px;font-size:16px;text-align:center;" maxlength="6" />
-        <div style="font-size:11px;color:var(--txt2);margin-top:-10px;margin-bottom:14px;">Pídele este código a la familia que te contrató</div>
+        <div style="font-size:11px;color:var(--txt2);margin-top:-10px;margin-bottom:14px;"><span class="es">Pídele este código a la familia que te contrató</span><span class="en">Ask this code from the family that hired you</span></div>
       </div>
 
-      <label class="form-label">Correo electrónico *</label>
+      <label class="form-label"><span class="es">Correo electrónico *</span><span class="en">Email address *</span></label>
       <input type="email" class="form-input" id="regEmail" placeholder="tucorreo@email.com" autocomplete="email" />
 
-      <label class="form-label">WhatsApp / Teléfono *</label>
+      <label class="form-label"><span class="es">WhatsApp / Teléfono *</span><span class="en">WhatsApp / Phone *</span></label>
       <input type="tel" class="form-input" id="regTelefono" placeholder="Ej: 6000-0000" autocomplete="tel" />
 
-      <label class="form-label">Contraseña *</label>
+      <label class="form-label"><span class="es">Contraseña *</span><span class="en">Password *</span></label>
       <input type="password" class="form-input" id="regPass" placeholder="Mínimo 6 caracteres" autocomplete="new-password" />
 
-      <label class="form-label">Confirmar contraseña *</label>
+      <label class="form-label"><span class="es">Confirmar contraseña *</span><span class="en">Confirm password *</span></label>
       <input type="password" class="form-input" id="regPass2" placeholder="Repite tu contraseña" autocomplete="new-password" />
 
       <div id="regCamposFamilia">
         <!-- Tipo de hogar -->
         <div style="margin-bottom:14px;">
-          <div style="font-size:12px;font-weight:600;color:var(--txt2);margin-bottom:8px;">¿Cómo se organiza tu hogar?</div>
+          <div style="font-size:12px;font-weight:600;color:var(--txt2);margin-bottom:8px;"><span class="es">¿Cómo se organiza tu hogar?</span><span class="en">How is your home organized?</span></div>
           <div style="display:flex;flex-direction:column;gap:6px;">
             <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:10px;cursor:pointer;" id="thSinNana" onclick="selTipoHogar('sin_nana')">
               <span style="font-size:18px;">🏠</span>
-              <div><div style="font-size:13px;font-weight:500;">Me organizo sin nana</div><div style="font-size:11px;color:#888;">Gestiono el hogar en familia</div></div>
+              <div><div style="font-size:13px;font-weight:500;"><span class="es">Me organizo sin nana</span><span class="en">No nana needed</span></div><div style="font-size:11px;color:#888;"><span class="es">Gestiono el hogar en familia</span><span class="en">We manage ourselves</span></div></div>
             </div>
             <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:10px;cursor:pointer;" id="thEventual" onclick="selTipoHogar('con_ayuda')">
               <span style="font-size:18px;">🤝</span>
-              <div><div style="font-size:13px;font-weight:500;">Tengo ayuda por días</div><div style="font-size:11px;color:#888;">Nana eventual o ayuda ocasional</div></div>
+              <div><div style="font-size:13px;font-weight:500;"><span class="es">Tengo ayuda por días</span><span class="en">I have occasional help</span></div><div style="font-size:11px;color:#888;"><span class="es">Nana eventual o ayuda ocasional</span><span class="en">Occasional nana or help</span></div></div>
             </div>
             <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid #1A6B52;border-radius:10px;cursor:pointer;background:#F0F7F4;" id="thFija" onclick="selTipoHogar('con_nana')">
               <span style="font-size:18px;">👩‍🍳</span>
-              <div><div style="font-size:13px;font-weight:500;">Tengo nana fija</div><div style="font-size:11px;color:#888;">Empleada doméstica permanente</div></div>
+              <div><div style="font-size:13px;font-weight:500;"><span class="es">Tengo nana fija</span><span class="en">I have a full-time nana</span></div><div style="font-size:11px;color:#888;"><span class="es">Empleada doméstica permanente</span><span class="en">Full-time domestic employee</span></div></div>
             </div>
           </div>
           <input type="hidden" id="regTipoHogar" value="con_nana">
         </div>
 
         <div style="background:var(--b3);border-radius:10px;padding:12px 14px;margin-bottom:14px;cursor:pointer;" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
-          <div style="font-size:13px;font-weight:500;color:var(--b2);">👨‍👩‍👧 ¿Te invitó un familiar? Toca aquí</div>
-          <div style="font-size:11px;color:var(--txt2);margin-top:2px;">Si tu pareja ya tiene cuenta, ingresa su código familiar</div>
+          <div style="font-size:13px;font-weight:500;color:var(--b2);"><span class="es">👨‍👩‍👧 ¿Te invitó un familiar? Toca aquí</span><span class="en">👨‍👩‍👧 Invited by family? Tap here</span></div>
+          <div style="font-size:11px;color:var(--txt2);margin-top:2px;"><span class="es">Si tu pareja ya tiene cuenta, ingresa su código familiar</span><span class="en">If your partner has an account, enter their family code</span></div>
         </div>
         <div style="display:none;margin-bottom:14px;">
           <input type="text" class="form-input" id="regCodigoFamiliar" placeholder="Código familiar (empieza con F)" style="text-transform:uppercase;letter-spacing:4px;font-size:16px;text-align:center;" maxlength="7" />
-          <div style="font-size:11px;color:var(--txt2);margin-top:4px;text-align:center;">Tu familiar te envió este código por WhatsApp</div>
+          <div style="font-size:11px;color:var(--txt2);margin-top:4px;text-align:center;"><span class="es">Tu familiar te envió este código por WhatsApp</span><span class="en">Your family member sent you this code via WhatsApp</span></div>
         </div>
       </div>
 
@@ -886,7 +886,7 @@ service cloud.firestore {
       <div id="appConsentWrap" style="display:flex;align-items:flex-start;gap:10px;margin-bottom:14px;background:var(--g3);border:1px solid var(--g4);border-radius:10px;padding:12px 14px;">
         <input type="checkbox" id="appConsentimiento" style="margin-top:3px;accent-color:var(--g);width:16px;height:16px;flex-shrink:0;" />
         <label for="appConsentimiento" style="font-size:12px;color:var(--txt2);line-height:1.6;cursor:pointer;">
-          He leído y acepto la <a href="/privacidad.html" target="_blank" style="color:var(--g);text-decoration:underline;">Política de Privacidad</a> y los <a href="/terminos.html" target="_blank" style="color:var(--g);text-decoration:underline;">Términos de uso</a> de My Nana. Consiento el tratamiento de mis datos personales conforme a la Ley 81 de 2019 de Panamá.
+          <span class="es">He leído y acepto la <a href="/privacidad.html" target="_blank" style="color:var(--g);text-decoration:underline;">Política de Privacidad</a> y los <a href="/terminos.html" target="_blank" style="color:var(--g);text-decoration:underline;">Términos de uso</a> de My Nana. Consiento el tratamiento de mis datos personales conforme a la Ley 81 de 2019 de Panamá.</span><span class="en">I have read and accept My Nana's <a href="/privacidad.html" target="_blank" style="color:var(--g);text-decoration:underline;">Privacy Policy</a> and <a href="/terminos.html" target="_blank" style="color:var(--g);text-decoration:underline;">Terms of use</a>. I consent to the processing of my personal data under Panama's Law 81 of 2019.</span>
         </label>
       </div>
 
@@ -933,8 +933,8 @@ service cloud.firestore {
     <div class="notif-lista" id="notifLista">
       <div class="notif-empty">
         <div class="notif-empty-icon">🔔</div>
-        <div style="font-size:14px;font-weight:500;color:var(--txt);margin-bottom:4px;">Todo al día</div>
-        <div style="font-size:12px;color:var(--txt2);">Las notificaciones aparecerán aquí</div>
+        <div style="font-size:14px;font-weight:500;color:var(--txt);margin-bottom:4px;"><span class="es">Todo al día</span><span class="en">All up to date</span></div>
+        <div style="font-size:12px;color:var(--txt2);"><span class="es">Las notificaciones aparecerán aquí</span><span class="en">Notifications will appear here</span></div>
       </div>
     </div>
   </div>
@@ -953,7 +953,7 @@ service cloud.firestore {
     <div class="dash-hero-leaf">🌿</div>
     <div class="dash-hero-greeting">Tu hogar te espera</div>
     <div class="dash-hero-name" id="famHeroNombre">Tu hogar</div>
-    <div class="dash-hero-sub">Todo en orden. Aquí tienes tu resumen de hoy.</div>
+    <div class="dash-hero-sub"><span class="es">Todo en orden. Aquí tienes tu resumen de hoy.</span><span class="en">All good. Here's your summary for today.</span></div>
   </div>
 
   <!-- Stats flotantes sobre el hero -->
@@ -974,7 +974,7 @@ service cloud.firestore {
 
   <!-- Trial banner — se muestra/oculta por verificarSuscripcion() -->
   <div class="trial-banner" id="trialBanner">
-    <span id="trialBannerMsg">🌿 Tu período de prueba está activo</span>
+    <span id="trialBannerMsg"><span class="es">🌿 Tu período de prueba está activo</span><span class="en">🌿 Your trial period is active</span></span>
     <a href="javascript:void(0)" class="trial-banner-btn" id="trialBannerBtn"
        onclick="mostrarPaywall();return false;">Ver planes</a>
   </div>
@@ -982,7 +982,7 @@ service cloud.firestore {
   <!-- Paywall — aparece cuando el trial vence -->
   <div class="paywall" id="paywallScreen">
     <div class="paywall-emoji">🏠</div>
-    <div class="paywall-title">Tu prueba gratuita terminó</div>
+    <div class="paywall-title"><span class="es">Tu prueba gratuita terminó</span><span class="en">Your free trial has ended</span></div>
     <div class="paywall-sub" id="paywallSub">
       Activa tu plan para seguir organizando tu hogar con My Nana.
       Tu historial y datos están guardados.
@@ -1000,11 +1000,11 @@ service cloud.firestore {
       <div class="dash-card" style="grid-column:1/-1;background:linear-gradient(150deg,#FAFDF9 0%,#EEF7F2 100%);border:1.5px solid var(--g4);">
         <div class="dash-card-header">
           <div class="dash-card-icon" style="background:linear-gradient(135deg,var(--g3),var(--g4));box-shadow:0 4px 14px rgba(26,107,82,.15);ar(--g3);">🏠</div>
-          <div><div class="dash-card-title">Estado del Hogar</div><div class="dash-card-sub" id="subEstadoFam">Cargando resumen...</div></div>
+          <div><div class="dash-card-title"><span class="es">Estado del Hogar</span><span class="en">Home Status</span></div><div class="dash-card-sub" id="subEstadoFam"><span class="es">Cargando resumen...</span><span class="en">Loading summary...</span></div></div>
           <div style="margin-left:auto;font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;background:var(--g3);color:var(--g);" id="pctEstadoFam">—</div>
         </div>
         <div class="dash-card-body" id="bodyEstadoFam">
-          <div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Cargando...</div>
+          <div style="text-align:center;padding:12px;color:#bbb;font-size:13px;"><span class="es">Cargando...</span><span class="en">Loading...</span></div>
         </div>
         <div onclick="location.href='/estado.html'" style="padding:10px 16px;border-top:1px solid var(--g4);font-size:12px;color:var(--g);font-weight:500;cursor:pointer;text-align:center;">
           Ver estado completo del hogar →
@@ -1015,10 +1015,10 @@ service cloud.firestore {
       <div class="dash-card" id="cardTareas" onclick="location.href='/tareas.html'" style="cursor:pointer;">
         <div class="dash-card-header">
           <div class="dash-card-icon" style="background:linear-gradient(135deg,#E8F5EE,#D0EBDB);">✅</div>
-          <div><div class="dash-card-title">Tareas de hoy</div><div class="dash-card-sub" id="subTareas">Cargando...</div></div>
+          <div><div class="dash-card-title"><span class="es">Tareas de hoy</span><span class="en">Today's tasks</span></div><div class="dash-card-sub" id="subTareas"><span class="es">Cargando...</span><span class="en">Loading...</span></div></div>
         </div>
         <div class="dash-card-body" id="bodyTareas">
-          <div style="text-align:center;padding:20px;color:#bbb;font-size:13px;">Cargando...</div>
+          <div style="text-align:center;padding:20px;color:#bbb;font-size:13px;"><span class="es">Cargando...</span><span class="en">Loading...</span></div>
         </div>
       </div>
 
@@ -1026,10 +1026,10 @@ service cloud.firestore {
       <div class="dash-card" id="cardPlanificacion" onclick="location.href='/mantenimiento.html'" style="cursor:pointer;">
         <div class="dash-card-header">
           <div class="dash-card-icon" style="background:linear-gradient(135deg,#E8F4FA,#D0E8F2);">🔧</div>
-          <div><div class="dash-card-title">Mantenimiento del hogar</div><div class="dash-card-sub" id="subEventosFam">Cargando...</div></div>
+          <div><div class="dash-card-title"><span class="es">Mantenimiento del hogar</span><span class="en">Home maintenance</span></div><div class="dash-card-sub" id="subEventosFam"><span class="es">Cargando...</span><span class="en">Loading...</span></div></div>
         </div>
         <div class="dash-card-body" id="bodyEventosFam" style="padding:0;">
-          <div style="text-align:center;padding:16px;color:#bbb;font-size:13px;">Nada próximo</div>
+          <div style="text-align:center;padding:16px;color:#bbb;font-size:13px;"><span class="es">Nada próximo</span><span class="en">Nothing upcoming</span></div>
         </div>
       </div>
 
@@ -1037,10 +1037,10 @@ service cloud.firestore {
       <div class="dash-card" id="cardMenu" onclick="location.href='/menu.html'" style="cursor:pointer;">
         <div class="dash-card-header">
           <div class="dash-card-icon" style="background:linear-gradient(135deg,#FBF3DC,#F5E6C0);">🍽️</div>
-          <div><div class="dash-card-title">Menú de hoy</div><div class="dash-card-sub" id="subMenu">Cargando...</div></div>
+          <div><div class="dash-card-title"><span class="es">Menú de hoy</span><span class="en">Today's menu</span></div><div class="dash-card-sub" id="subMenu"><span class="es">Cargando...</span><span class="en">Loading...</span></div></div>
         </div>
         <div class="dash-card-body" id="bodyMenu">
-          <div style="text-align:center;padding:20px;color:#bbb;font-size:13px;">Cargando...</div>
+          <div style="text-align:center;padding:20px;color:#bbb;font-size:13px;"><span class="es">Cargando...</span><span class="en">Loading...</span></div>
         </div>
       </div>
 
@@ -1048,10 +1048,10 @@ service cloud.firestore {
       <div class="dash-card" id="cardChatNana" onclick="location.href='/chat.html'" style="cursor:pointer;">
         <div class="dash-card-header">
           <div class="dash-card-icon" style="background:linear-gradient(135deg,#E8F5EE,#D0EBDB);">💬</div>
-          <div><div class="dash-card-title">Chat con tu nana</div><div class="dash-card-sub" id="subChat">Cargando...</div></div>
+          <div><div class="dash-card-title">Chat con tu nana</div><div class="dash-card-sub" id="subChat"><span class="es">Cargando...</span><span class="en">Loading...</span></div></div>
         </div>
         <div class="dash-card-body" id="bodyChat">
-          <div style="text-align:center;padding:20px;color:#bbb;font-size:13px;">Cargando...</div>
+          <div style="text-align:center;padding:20px;color:#bbb;font-size:13px;"><span class="es">Cargando...</span><span class="en">Loading...</span></div>
         </div>
       </div>
 
@@ -1059,10 +1059,10 @@ service cloud.firestore {
       <div class="dash-card" id="cardScoreNana" onclick="location.href='/score.html'" style="cursor:pointer;">
         <div class="dash-card-header">
           <div class="dash-card-icon" style="background:var(--g3);">🌟</div>
-          <div><div class="dash-card-title">Confianza del hogar</div><div class="dash-card-sub" id="subScore">Cargando...</div></div>
+          <div><div class="dash-card-title">Confianza del hogar</div><div class="dash-card-sub" id="subScore"><span class="es">Cargando...</span><span class="en">Loading...</span></div></div>
         </div>
         <div class="dash-card-body" id="bodyScore">
-          <div style="text-align:center;padding:20px;color:#bbb;font-size:13px;">Cargando...</div>
+          <div style="text-align:center;padding:20px;color:#bbb;font-size:13px;"><span class="es">Cargando...</span><span class="en">Loading...</span></div>
         </div>
       </div>
 
@@ -1070,10 +1070,10 @@ service cloud.firestore {
       <div class="dash-card" id="cardMercado" onclick="location.href='/menu.html'" style="cursor:pointer;">
         <div class="dash-card-header">
           <div class="dash-card-icon" style="background:linear-gradient(135deg,#E3F4E8,#C8E8D2);">🛒</div>
-          <div><div class="dash-card-title">Lista del mercado</div><div class="dash-card-sub" id="subMercado">Cargando...</div></div>
+          <div><div class="dash-card-title">Lista del mercado</div><div class="dash-card-sub" id="subMercado"><span class="es">Cargando...</span><span class="en">Loading...</span></div></div>
         </div>
         <div class="dash-card-body" id="bodyMercado">
-          <div style="text-align:center;padding:20px;color:#bbb;font-size:13px;">Cargando...</div>
+          <div style="text-align:center;padding:20px;color:#bbb;font-size:13px;"><span class="es">Cargando...</span><span class="en">Loading...</span></div>
         </div>
       </div>
 
@@ -1081,7 +1081,7 @@ service cloud.firestore {
       <div class="dash-card" id="cardFamiliar" onclick="location.href='/familiar.html'" style="cursor:pointer;">
         <div class="dash-card-header">
           <div class="dash-card-icon" style="background:linear-gradient(135deg,#FDF0EC,#F5D9D2);">👨‍👩‍👧</div>
-          <div><div class="dash-card-title">Centro familiar</div><div class="dash-card-sub" id="subFamiliar">Responsabilidades y ranking</div></div>
+          <div><div class="dash-card-title"><span class="es">Centro familiar</span><span class="en">Family hub</span></div><div class="dash-card-sub" id="subFamiliar"><span class="es">Responsabilidades y ranking</span><span class="en">Responsibilities and ranking</span></div></div>
         </div>
         <div class="dash-card-body" id="bodyFamiliar">
           <div style="text-align:center;padding:16px;color:#bbb;font-size:13px;">
@@ -1095,13 +1095,13 @@ service cloud.firestore {
       <div class="dash-card" id="cardVideosNana" onclick="location.href='/videos.html'" style="cursor:pointer;">
         <div class="dash-card-header">
           <div class="dash-card-icon" style="background:var(--b3);">📚</div>
-          <div><div class="dash-card-title">Centro de Conocimiento</div><div class="dash-card-sub">Guías prácticas del hogar</div></div>
+          <div><div class="dash-card-title"><span class="es">Centro de Conocimiento</span><span class="en">Knowledge Center</span></div><div class="dash-card-sub"><span class="es">Guías prácticas del hogar</span><span class="en">Practical home guides</span></div></div>
         </div>
         <div class="dash-card-body">
-          <div class="task-item"><span style="font-size:14px;">🍲</span><span class="task-name">Recetas rápidas panameñas</span><span class="task-hora" style="color:var(--g);">Cocina</span></div>
+          <div class="task-item"><span style="font-size:14px;">🍲</span><span class="task-name"><span class="es">Recetas rápidas panameñas</span><span class="en">Quick Panamanian recipes</span></span><span class="task-hora" style="color:var(--g);">Cocina</span></div>
           <div class="task-item"><span style="font-size:14px;">🧹</span><span class="task-name">Limpieza eficiente por zona</span><span class="task-hora" style="color:var(--g);">Limpieza</span></div>
           <div class="task-item"><span style="font-size:14px;">📅</span><span class="task-name">Rutinas semanales del hogar</span><span class="task-hora" style="color:var(--g);">Rutinas</span></div>
-          <div style="margin-top:12px;background:var(--g3);color:var(--g);border-radius:8px;padding:9px;text-align:center;font-size:13px;font-weight:500;">Ver guías del hogar →</div>
+          <div style="margin-top:12px;background:var(--g3);color:var(--g);border-radius:8px;padding:9px;text-align:center;font-size:13px;font-weight:500;"><span class="es">Ver guías del hogar →</span><span class="en">View home guides →</span></div>
         </div>
       </div>
 
@@ -1109,10 +1109,10 @@ service cloud.firestore {
       <div class="dash-card" id="cardNomina" onclick="location.href='/nomina.html'" style="cursor:pointer;">
         <div class="dash-card-header">
           <div class="dash-card-icon" style="background:linear-gradient(135deg,#F3EDFB,#E5D6F5);">📋</div>
-          <div><div class="dash-card-title">Contratos y nómina</div><div class="dash-card-sub" id="subNomina">Según ley panameña</div></div>
+          <div><div class="dash-card-title"><span class="es">Contratos y nómina</span><span class="en">Contracts & payroll</span></div><div class="dash-card-sub" id="subNomina"><span class="es">Según ley panameña</span><span class="en">Per Panamanian law</span></div></div>
         </div>
         <div class="dash-card-body" id="bodyNomina">
-          <div style="text-align:center;padding:20px;color:#bbb;font-size:13px;">Cargando...</div>
+          <div style="text-align:center;padding:20px;color:#bbb;font-size:13px;"><span class="es">Cargando...</span><span class="en">Loading...</span></div>
         </div>
       </div>
 
@@ -1122,8 +1122,8 @@ service cloud.firestore {
     <div id="wrapBannerBuscar" style="background:linear-gradient(135deg,var(--g2),var(--g));border-radius:var(--r);padding:16px 18px;margin-bottom:12px;">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;">
         <div style="flex:1;min-width:120px;">
-          <div id="bannerBuscarNana" style="font-size:13px;font-weight:700;color:#fff;margin-bottom:3px;">👩 ¿Buscas una nana?</div>
-          <div style="font-size:12px;color:rgba(255,255,255,.75);line-height:1.4;">Encuentra personal doméstico de confianza</div>
+          <div id="bannerBuscarNana" style="font-size:13px;font-weight:700;color:#fff;margin-bottom:3px;"><span class="es">👩 ¿Buscas una nana?</span><span class="en">👩 Looking for a nana?</span></div>
+          <div style="font-size:12px;color:rgba(255,255,255,.75);line-height:1.4;"><span class="es">Encuentra personal doméstico de confianza</span><span class="en">Find trusted domestic staff</span></div>
         </div>
         <a href="/index.html#buscar" style="background:#fff;color:var(--g);font-size:12px;font-weight:700;padding:8px 14px;border-radius:99px;text-decoration:none;white-space:nowrap;flex-shrink:0;display:inline-block;margin-top:2px;">Buscar →</a>
       </div>
@@ -1136,7 +1136,7 @@ service cloud.firestore {
           <div id="bannerCompartirNana" style="font-size:13px;font-weight:700;color:#fff;margin-bottom:3px;">🔗 Comparte el acceso con tu nana</div>
           <div style="font-size:12px;color:rgba(255,255,255,.75);line-height:1.4;">mynana.app/app.html</div>
         </div>
-        <a href="https://wa.me/?text=Hola%2C%20te%20invito%20a%20My%20Nana%20%F0%9F%8F%A0%0Amynana.app%2Fapp.html" target="_blank" style="background:#25D366;color:#fff;font-size:12px;font-weight:700;padding:8px 14px;border-radius:99px;text-decoration:none;white-space:nowrap;flex-shrink:0;display:inline-block;margin-top:2px;">📲 Enviar código a mi nana</a>
+        <a href="https://wa.me/?text=Hola%2C%20te%20invito%20a%20My%20Nana%20%F0%9F%8F%A0%0Amynana.app%2Fapp.html" target="_blank" style="background:#25D366;color:#fff;font-size:12px;font-weight:700;padding:8px 14px;border-radius:99px;text-decoration:none;white-space:nowrap;flex-shrink:0;display:inline-block;margin-top:2px;"><span class="es">📲 Enviar código a mi nana</span><span class="en">📲 Send code to my nana</span></a>
       </div>
     </div>
 
@@ -1191,8 +1191,8 @@ service cloud.firestore {
     <div class="notif-lista" id="nanaNotifLista">
       <div class="notif-empty">
         <div class="notif-empty-icon">🔔</div>
-        <div style="font-size:14px;font-weight:500;color:var(--txt);margin-bottom:4px;">Todo al día</div>
-        <div style="font-size:12px;color:var(--txt2);">Las notificaciones aparecerán aquí</div>
+        <div style="font-size:14px;font-weight:500;color:var(--txt);margin-bottom:4px;"><span class="es">Todo al día</span><span class="en">All up to date</span></div>
+        <div style="font-size:12px;color:var(--txt2);"><span class="es">Las notificaciones aparecerán aquí</span><span class="en">Notifications will appear here</span></div>
       </div>
     </div>
   </div>
@@ -1209,8 +1209,8 @@ service cloud.firestore {
 
   <div class="dash-hero" style="background:linear-gradient(150deg,var(--b2) 0%,#D4917F 50%,var(--b) 100%);">
     <div class="dash-hero-leaf" style="opacity:.15;">🌸</div>
-    <div class="dash-hero-greeting" id="nanaGreeting">Buenos días</div>
-    <div class="dash-hero-name" id="nanaHeroNombre">Tu día</div>
+    <div class="dash-hero-greeting" id="nanaGreeting"><span class="es">Buenos días</span><span class="en">Good morning</span></div>
+    <div class="dash-hero-name" id="nanaHeroNombre"><span class="es">Tu día</span><span class="en">Your day</span></div>
     <div class="dash-hero-sub" id="nanaFecha"></div>
   </div>
 
@@ -1252,7 +1252,7 @@ service cloud.firestore {
         <div class="dash-card" id="cardVincularHogar" style="border:2px solid var(--b);display:none;">
           <div class="dash-card-header">
             <div class="dash-card-icon" style="background:var(--b3);font-size:20px;">🔗</div>
-            <div><div class="dash-card-title">Vincularme a un hogar</div><div class="dash-card-sub">Ingresa el código que te dio la familia</div></div>
+            <div><div class="dash-card-title"><span class="es">Vincularme a un hogar</span><span class="en">Link to a home</span></div><div class="dash-card-sub"><span class="es">Ingresa el código que te dio la familia</span><span class="en">Enter the code your family gave you</span></div></div>
           </div>
           <div class="dash-card-body">
             <div style="display:flex;gap:8px;">
@@ -1267,11 +1267,11 @@ service cloud.firestore {
         <div class="dash-card" id="cardEstadoNana" onclick="location.href='/estado.html'" style="background:linear-gradient(150deg,#FAFDF9 0%,#EEF7F2 100%);border:1.5px solid var(--g4);cursor:pointer;">
           <div class="dash-card-header">
             <div class="dash-card-icon" style="background:linear-gradient(135deg,var(--g3),var(--g4));box-shadow:0 4px 14px rgba(26,107,82,.15);">🏠</div>
-            <div><div class="dash-card-title">Estado del Hogar</div><div class="dash-card-sub" id="subEstadoNana">Tu resumen de hoy</div></div>
+            <div><div class="dash-card-title"><span class="es">Estado del Hogar</span><span class="en">Home Status</span></div><div class="dash-card-sub" id="subEstadoNana"><span class="es">Tu resumen de hoy</span><span class="en">Your summary for today</span></div></div>
             <div style="margin-left:auto;font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;background:var(--g3);color:var(--g);" id="pctEstadoNana">—</div>
           </div>
           <div class="dash-card-body" id="bodyEstadoNana">
-            <div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Cargando...</div>
+            <div style="text-align:center;padding:12px;color:#bbb;font-size:13px;"><span class="es">Cargando...</span><span class="en">Loading...</span></div>
           </div>
           <div style="padding:10px 16px;border-top:1px solid var(--g4);font-size:12px;color:var(--g);font-weight:500;text-align:center;">
             Ver estado completo del hogar →
@@ -1282,10 +1282,10 @@ service cloud.firestore {
         <div class="dash-card" id="cardMisTareasNana" onclick="location.href='/tareas.html'" style="border:1px solid var(--g4);cursor:pointer;">
           <div class="dash-card-header">
             <div class="dash-card-icon" style="background:linear-gradient(135deg,#E8F5EE,#D0EBDB);">✅</div>
-            <div><div class="dash-card-title">Mis tareas de hoy</div><div class="dash-card-sub" id="subTareasNana">Cargando...</div></div>
+            <div><div class="dash-card-title">Mis tareas de hoy</div><div class="dash-card-sub" id="subTareasNana"><span class="es">Cargando...</span><span class="en">Loading...</span></div></div>
           </div>
           <div class="dash-card-body" id="bodyTareasNana">
-            <div style="text-align:center;padding:16px;color:#bbb;font-size:13px;">Cargando...</div>
+            <div style="text-align:center;padding:16px;color:#bbb;font-size:13px;"><span class="es">Cargando...</span><span class="en">Loading...</span></div>
           </div>
         </div>
 
@@ -2165,7 +2165,7 @@ function mostrarFamilia(data) {
   // Notificación de bienvenida con resumen del día
   setTimeout(() => {
     const hora = new Date().getHours();
-    const saludo = hora < 12 ? 'Buenos días' : hora < 18 ? 'Buenas tardes' : 'Buenas noches';
+    const saludo = dashLang === 'en' ? (hora < 12 ? 'Good morning' : hora < 18 ? 'Good afternoon' : 'Good evening') : (hora < 12 ? 'Buenos días' : hora < 18 ? 'Buenas tardes' : 'Buenas noches');
     agregarNotificacion({
       id: `bienvenida-${Date.now()}`,
       tipo: 'sistema',
@@ -2936,7 +2936,7 @@ async function mostrarBannerVinculacion(uid, db) {
     </div>
     <div style="display:flex;gap:8px;">
       <button onclick="copiarCodigo('${codigo}')" style="flex:1;background:var(--g3);color:var(--g);border:none;border-radius:99px;padding:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">📋 Copiar código</button>
-      <a href="https://wa.me/?text=Hola%2C%20te%20invito%20a%20My%20Nana%20%F0%9F%8F%A0%0A%0APara%20vincularte%20conmigo%3A%0A1%EF%B8%8F%E2%83%A3%20Entra%20a%3A%20https%3A%2F%2Fmynana.app%2Fapp.html%0A2%EF%B8%8F%E2%83%A3%20Crea%20tu%20cuenta%20como%20Nana%0A3%EF%B8%8F%E2%83%A3%20En%20tu%20dashboard%20ingresa%20este%20c%C3%B3digo%3A%20*${codigo}*%0A%0A%C2%A1Nos%20vemos%20adentro!%20%F0%9F%92%9A" target="_blank" style="flex:1;background:#25D366;color:#fff;border:none;border-radius:99px;padding:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px;">📲 Enviar código a mi nana</a>
+      <a href="https://wa.me/?text=Hola%2C%20te%20invito%20a%20My%20Nana%20%F0%9F%8F%A0%0A%0APara%20vincularte%20conmigo%3A%0A1%EF%B8%8F%E2%83%A3%20Entra%20a%3A%20https%3A%2F%2Fmynana.app%2Fapp.html%0A2%EF%B8%8F%E2%83%A3%20Crea%20tu%20cuenta%20como%20Nana%0A3%EF%B8%8F%E2%83%A3%20En%20tu%20dashboard%20ingresa%20este%20c%C3%B3digo%3A%20*${codigo}*%0A%0A%C2%A1Nos%20vemos%20adentro!%20%F0%9F%92%9A" target="_blank" style="flex:1;background:#25D366;color:#fff;border:none;border-radius:99px;padding:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px;"><span class="es">📲 Enviar código a mi nana</span><span class="en">📲 Send code to my nana</span></a>
     </div>`;
 
   const dashContent = document.querySelector('#screen-familia .dash-content');
@@ -3093,7 +3093,7 @@ function mostrarNana(data) {
   // Se ocultará solo cuando la nana se vincule exitosamente
 
   const hora = new Date().getHours();
-  const saludo = hora < 12 ? 'Buenos días' : hora < 18 ? 'Buenas tardes' : 'Buenas noches';
+  const saludo = dashLang === 'en' ? (hora < 12 ? 'Good morning' : hora < 18 ? 'Good afternoon' : 'Good evening') : (hora < 12 ? 'Buenos días' : hora < 18 ? 'Buenas tardes' : 'Buenas noches');
   const saludoEl = document.getElementById('nanaGreeting');
   if (saludoEl) saludoEl.textContent = `${saludo}, ${nombre} 👋`;
   const heroNombre = document.getElementById('nanaHeroNombre');
@@ -3194,28 +3194,28 @@ function renderTarjetasNana(tareas, hogarId) {
     <div class="dash-card" onclick="location.href='/menu.html'" style="cursor:pointer;">
       <div class="dash-card-header">
         <div class="dash-card-icon" style="background:linear-gradient(135deg,#FBF3DC,#F5E6C0);">🍽️</div>
-        <div><div class="dash-card-title">Qué cocinar hoy</div><div class="dash-card-sub" id="subMenuNana">Cargando...</div></div>
+        <div><div class="dash-card-title">Qué cocinar hoy</div><div class="dash-card-sub" id="subMenuNana"><span class="es">Cargando...</span><span class="en">Loading...</span></div></div>
       </div>
-      <div class="dash-card-body" id="bodyMenuNana"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Cargando...</div></div>
+      <div class="dash-card-body" id="bodyMenuNana"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;"><span class="es">Cargando...</span><span class="en">Loading...</span></div></div>
     </div>
     <div class="dash-card" onclick="location.href='/menu.html'" style="cursor:pointer;">
       <div class="dash-card-header">
         <div class="dash-card-icon" style="background:linear-gradient(135deg,#E8F5EE,#C8E6D4);">🛒</div>
-        <div><div class="dash-card-title">Lista del mercado</div><div class="dash-card-sub" id="subMercadoNana">Cargando...</div></div>
+        <div><div class="dash-card-title">Lista del mercado</div><div class="dash-card-sub" id="subMercadoNana"><span class="es">Cargando...</span><span class="en">Loading...</span></div></div>
       </div>
-      <div class="dash-card-body" id="bodyMercadoNana"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;">Cargando...</div></div>
+      <div class="dash-card-body" id="bodyMercadoNana"><div style="text-align:center;padding:12px;color:#bbb;font-size:13px;"><span class="es">Cargando...</span><span class="en">Loading...</span></div></div>
     </div>
     <div class="dash-card" onclick="location.href='/chat.html'" style="cursor:pointer;">
       <div class="dash-card-header">
         <div class="dash-card-icon" style="background:linear-gradient(135deg,#E0F0FF,#C8E0FF);">💬</div>
-        <div><div class="dash-card-title">Chat con la familia</div><div class="dash-card-sub">Comunicación en tiempo real</div></div>
+        <div><div class="dash-card-title"><span class="es">Chat con la familia</span><span class="en">Family chat</span></div><div class="dash-card-sub"><span class="es">Comunicación en tiempo real</span><span class="en">Real-time communication</span></div></div>
       </div>
       <div class="dash-card-body"><div style="text-align:center;padding:14px;color:var(--g);font-size:13px;font-weight:500;">Abrir chat →</div></div>
     </div>
     <div class="dash-card" onclick="location.href='/videos.html'" style="cursor:pointer;">
       <div class="dash-card-header">
         <div class="dash-card-icon" style="background:var(--b3);">📚</div>
-        <div><div class="dash-card-title">Centro de Conocimiento</div><div class="dash-card-sub">Guías prácticas del hogar</div></div>
+        <div><div class="dash-card-title"><span class="es">Centro de Conocimiento</span><span class="en">Knowledge Center</span></div><div class="dash-card-sub"><span class="es">Guías prácticas del hogar</span><span class="en">Practical home guides</span></div></div>
       </div>
       <div class="dash-card-body">
         <div class="task-item"><span style="font-size:14px;">🍲</span><span class="task-name">Sancocho de gallina</span><span class="task-hora" style="color:var(--g);">Cocina</span></div>
@@ -3226,14 +3226,14 @@ function renderTarjetasNana(tareas, hogarId) {
     <div class="dash-card" onclick="location.href='/nomina.html'" style="cursor:pointer;">
       <div class="dash-card-header">
         <div class="dash-card-icon" style="background:linear-gradient(135deg,#F3EDFB,#E5D6F5);">💰</div>
-        <div><div class="dash-card-title">Mis pagos</div><div class="dash-card-sub">Historial y nómina</div></div>
+        <div><div class="dash-card-title"><span class="es">Mis pagos</span><span class="en">My payments</span></div><div class="dash-card-sub">Historial y nómina</div></div>
       </div>
       <div class="dash-card-body"><div style="text-align:center;padding:14px;color:var(--txt2);font-size:13px;">Ver historial de pagos →</div></div>
     </div>
     <div class="dash-card" onclick="location.href='/score.html'" style="cursor:pointer;">
       <div class="dash-card-header">
         <div class="dash-card-icon" style="background:linear-gradient(135deg,#FFF8E7,#FFE9A0);">🌟</div>
-        <div><div class="dash-card-title">Mi trayectoria</div><div class="dash-card-sub">Historial y reconocimientos</div></div>
+        <div><div class="dash-card-title"><span class="es">Mi trayectoria</span><span class="en">My journey</span></div><div class="dash-card-sub"><span class="es">Historial y reconocimientos</span><span class="en">History and achievements</span></div></div>
       </div>
       <div class="dash-card-body"><div style="text-align:center;padding:14px;color:var(--txt2);font-size:13px;">Ver historial profesional →</div></div>
     </div>
@@ -3260,21 +3260,21 @@ function renderTareasNanaDemo() {
     <div class="dash-card" onclick="location.href='/menu.html'" style="cursor:pointer;">
       <div class="dash-card-header">
         <div class="dash-card-icon" style="background:linear-gradient(135deg,#FBF3DC,#F5E6C0);">🍽️</div>
-        <div><div class="dash-card-title">Qué cocinar hoy</div><div class="dash-card-sub">Menú planificado del hogar</div></div>
+        <div><div class="dash-card-title"><span class="es">Qué cocinar hoy</span><span class="en">What to cook today</span></div><div class="dash-card-sub"><span class="es">Menú planificado del hogar</span><span class="en">Planned home menu</span></div></div>
       </div>
       <div class="dash-card-body"><div style="text-align:center;padding:16px;color:#bbb;font-size:13px;">Ver el menú del día →</div></div>
     </div>
     <div class="dash-card" onclick="location.href='/chat.html'" style="cursor:pointer;">
       <div class="dash-card-header">
         <div class="dash-card-icon" style="background:linear-gradient(135deg,#E0F0FF,#C8E0FF);">💬</div>
-        <div><div class="dash-card-title">Chat con la familia</div><div class="dash-card-sub">Comunicación en tiempo real</div></div>
+        <div><div class="dash-card-title"><span class="es">Chat con la familia</span><span class="en">Family chat</span></div><div class="dash-card-sub"><span class="es">Comunicación en tiempo real</span><span class="en">Real-time communication</span></div></div>
       </div>
       <div class="dash-card-body"><div style="text-align:center;padding:14px;color:var(--g);font-size:13px;font-weight:500;">Abrir chat del hogar →</div></div>
     </div>
     <div class="dash-card" onclick="location.href='/videos.html'" style="cursor:pointer;">
       <div class="dash-card-header">
         <div class="dash-card-icon" style="background:var(--b3);">📚</div>
-        <div><div class="dash-card-title">Centro de Conocimiento</div><div class="dash-card-sub">Guías prácticas del hogar</div></div>
+        <div><div class="dash-card-title"><span class="es">Centro de Conocimiento</span><span class="en">Knowledge Center</span></div><div class="dash-card-sub"><span class="es">Guías prácticas del hogar</span><span class="en">Practical home guides</span></div></div>
       </div>
       <div class="dash-card-body">
         <div class="task-item"><span style="font-size:14px;">🍲</span><span class="task-name">Sancocho de gallina</span><span class="task-hora" style="color:var(--g);">Cocina</span></div>
@@ -3285,14 +3285,14 @@ function renderTareasNanaDemo() {
     <div class="dash-card" onclick="location.href='/nomina.html'" style="cursor:pointer;">
       <div class="dash-card-header">
         <div class="dash-card-icon" style="background:linear-gradient(135deg,#F3EDFB,#E5D6F5);">💰</div>
-        <div><div class="dash-card-title">Mis pagos</div><div class="dash-card-sub">Historial y nómina</div></div>
+        <div><div class="dash-card-title"><span class="es">Mis pagos</span><span class="en">My payments</span></div><div class="dash-card-sub">Historial y nómina</div></div>
       </div>
       <div class="dash-card-body"><div style="text-align:center;padding:14px;color:var(--txt2);font-size:13px;">Ver historial de pagos →</div></div>
     </div>
     <div class="dash-card" onclick="location.href='/score.html'" style="cursor:pointer;">
       <div class="dash-card-header">
         <div class="dash-card-icon" style="background:linear-gradient(135deg,#FFF8E7,#FFE9A0);">⭐</div>
-        <div><div class="dash-card-title">Mi desempeño</div><div class="dash-card-sub">Evaluación y reconocimientos</div></div>
+        <div><div class="dash-card-title"><span class="es">Mi desempeño</span><span class="en">My performance</span></div><div class="dash-card-sub"><span class="es">Evaluación y reconocimientos</span><span class="en">Evaluation and achievements</span></div></div>
       </div>
       <div class="dash-card-body"><div style="text-align:center;padding:14px;color:var(--txt2);font-size:13px;">Ver mi calificación →</div></div>
     </div>
@@ -3802,7 +3802,7 @@ function renderTab(tab) {
 function renderTareas(c) {
   actualizarProgreso();
   const col={'Cocina':'var(--g3)','Limpieza':'#F0F0F7','Lavandería':'var(--b3)','Niños':'#FEF7EE'};
-  c.innerHTML=`<div class="sec-titulo">Tareas de hoy</div>`+tareasState.map(t=>`
+  c.innerHTML=`<div class="sec-titulo"><span class="es">Tareas de hoy</span><span class="en">Today's tasks</span></div>`+tareasState.map(t=>`
     <div class="tarea-card">
       <div class="tarea-top">
         <div class="tarea-emoji" style="background:${col[t.cat]||'var(--g3)'};">${t.emoji}</div>
@@ -5344,8 +5344,8 @@ window.serverTimestamp = serverTimestamp;
   <!-- SELECTOR DE HOGAR — nana eventual -->
   <div class="modal-hogar-sel" id="modalHogarSel">
     <div class="modal-hogar-box">
-      <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--txt);margin-bottom:4px;">¿Con quién trabajas hoy?</div>
-      <div style="font-size:12px;color:var(--txt2);margin-bottom:16px;">Selecciona la familia para ver sus tareas, menú y chat.</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--txt);margin-bottom:4px;"><span class="es">¿Con quién trabajas hoy?</span><span class="en">Who are you working with today?</span></div>
+      <div style="font-size:12px;color:var(--txt2);margin-bottom:16px;"><span class="es">Selecciona la familia para ver sus tareas, menú y chat.</span><span class="en">Select the family to see their tasks, menu and chat.</span></div>
       <div id="hogarSelLista"></div>
     </div>
   </div>
