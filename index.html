@@ -2582,43 +2582,7 @@ window.unirseConCodigo = async function() {
 };
 
 // ── WAITLIST NANAS — definida en el módulo para acceder a db directamente ──
-window.enviarWaitlist = async () => {
-  const nombre   = document.getElementById('wlNombre')?.value.trim();
-  const email    = document.getElementById('wlEmail')?.value.trim();
-  const whatsapp = document.getElementById('wlWhatsapp')?.value.trim();
-  const tipo     = document.getElementById('wlTipo')?.value;
-  const ciudad   = document.getElementById('wlCiudad')?.value.trim();
-
-  if (!nombre || !email) {
-    alert('Por favor ingresa tu nombre y correo.');
-    return;
-  }
-
-  const btn = document.querySelector('#waitlistForm button');
-  try {
-    if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
-
-    await addDoc(collection(db, 'waitlist_nanas'), {
-      nombre,
-      email,
-      whatsapp:     whatsapp     || null,
-      tipoAyuda:    tipo         || null,
-      ciudad:       ciudad       || null,
-      origen:       'landing_red_nanas',
-      estado:       'pendiente',
-      fechaRegistro: new Date().toISOString(),
-      creadoA:      serverTimestamp(),
-    });
-
-    document.getElementById('waitlistForm').style.display    = 'none';
-    document.getElementById('waitlistSuccess').style.display = 'block';
-
-  } catch(e) {
-    console.error('[waitlist] Error:', e?.code, e?.message);
-    alert('Error al guardar. Intenta de nuevo.');
-    if (btn) { btn.disabled = false; btn.textContent = '✓ Unirme a la lista'; }
-  }
-};
+// (movida a script regular usando REST API — ver abajo)
 
 </script>
 </head>
@@ -4507,7 +4471,7 @@ window.enviarWaitlist = async () => {
       <div style="margin-bottom:20px;">
         <input id="wlCiudad" type="text" placeholder="Ciudad (ej: Ciudad de Panamá)" style="width:100%;box-sizing:border-box;padding:12px 14px;border:1.5px solid #e0e0e0;border-radius:12px;font-size:14px;font-family:var(--font-body);outline:none;">
       </div>
-      <button onclick="window.enviarWaitlist()" style="width:100%;background:var(--g);color:#fff;border:none;border-radius:99px;padding:14px;font-size:15px;font-weight:600;font-family:var(--font-body);cursor:pointer;transition:background .2s;" onmouseover="this.style.background='var(--g2)'" onmouseout="this.style.background='var(--g)'">
+      <button onclick="enviarWaitlist()" style="width:100%;background:var(--g);color:#fff;border:none;border-radius:99px;padding:14px;font-size:15px;font-weight:600;font-family:var(--font-body);cursor:pointer;transition:background .2s;" onmouseover="this.style.background='var(--g2)'" onmouseout="this.style.background='var(--g)'">
         <span class="es">✓ Unirme a la lista</span><span class="en">✓ Join the waitlist</span>
       </button>
       <button onclick="cerrarWaitlist()" style="width:100%;margin-top:10px;background:none;border:none;color:var(--txt2);font-size:14px;cursor:pointer;padding:8px;font-family:var(--font-body);">
@@ -6045,7 +6009,62 @@ window.cerrarWaitlist = () => {
   });
   const sel = document.getElementById('wlTipo'); if (sel) sel.value = '';
 };
-// enviarWaitlist está definida en el <script type="module"> — usa db directamente
+// ── WAITLIST NANAS — REST API directa, sin depender del módulo de Firebase ──
+async function enviarWaitlist() {
+  const nombre   = document.getElementById('wlNombre')?.value.trim();
+  const email    = document.getElementById('wlEmail')?.value.trim();
+  const whatsapp = document.getElementById('wlWhatsapp')?.value.trim();
+  const tipo     = document.getElementById('wlTipo')?.value;
+  const ciudad   = document.getElementById('wlCiudad')?.value.trim();
+
+  if (!nombre || !email) {
+    alert('Por favor ingresa tu nombre y correo.');
+    return;
+  }
+
+  const btn = document.querySelector('#waitlistForm button');
+  if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
+
+  // Firestore REST API — funciona sin auth para colecciones con allow create: if true
+  const PROJECT = 'mynanapapp';
+  const url = `https://firestore.googleapis.com/v1/projects/${PROJECT}/databases/(default)/documents/waitlist_nanas`;
+
+  const body = {
+    fields: {
+      nombre:        { stringValue: nombre },
+      email:         { stringValue: email },
+      whatsapp:      { stringValue: whatsapp || '' },
+      tipoAyuda:     { stringValue: tipo     || '' },
+      ciudad:        { stringValue: ciudad   || '' },
+      origen:        { stringValue: 'landing_red_nanas' },
+      estado:        { stringValue: 'pendiente' },
+      fechaRegistro: { stringValue: new Date().toISOString() },
+    }
+  };
+
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      console.error('[waitlist] Firestore error:', err);
+      throw new Error(err.error?.message || 'Error ' + res.status);
+    }
+
+    document.getElementById('waitlistForm').style.display    = 'none';
+    document.getElementById('waitlistSuccess').style.display = 'block';
+
+  } catch(e) {
+    console.error('[waitlist]', e.message);
+    alert('Error al guardar. Intenta de nuevo.');
+    if (btn) { btn.disabled = false; btn.textContent = '✓ Unirme a la lista'; }
+  }
+}
+
 // ── WHATSAPP BUBBLE ──
 setTimeout(() => {
   const bubble = document.getElementById('waBubble');
