@@ -625,7 +625,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, onSnapshot, serverTimestamp, updateDoc, deleteDoc, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, onSnapshot, serverTimestamp, updateDoc, deleteDoc, where, getDocs, deleteField } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 const firebaseConfig = {
   apiKey:"AIzaSyDDJRJ8A8P507lllGRBOoXO30ESAH1GAnw",
@@ -1063,7 +1063,6 @@ let modoSaludable = false;
 let modoEconomico = false;
 let modoActual = 'tradicional'; // nuevo sistema de 6 modos
 let modoMenu  = 'compartido';   // 'compartido' | 'por_miembro'
-let miembroActivo = 'todos';    // uid del miembro seleccionado, o 'todos'
 let miembrosHogar = [];         // [{ uid, nombre, rol, color, avatarEmoji, perfil }]
 let miembroEditandoPerfil = null;
 
@@ -2204,17 +2203,17 @@ function renderMenuFamilia(contenedor, diaMenu, diaKey) {
     ${TIEMPOS.map(t => {
       const platoGlobal = diaMenu[t.id] || {};
 
-      // En modo por_miembro con miembro específico: mostrar su plato personalizado
-      // Fallback al plato global si no tiene personalizado
+      // En modo por_miembro con miembro específico: mostrar su plato personal o fallback global
       let plato = platoGlobal;
+      let esPersonal = false;
+      let esFallback = false;
       if (modoMenu === 'por_miembro' && miembroActivo !== 'todos') {
-        const platoPersonal = platoGlobal.porMiembro?.[miembroActivo];
-        if (platoPersonal?.nombre) {
-          // Tiene plato personalizado — usar ese
-          plato = { ...platoGlobal, ...platoPersonal, _esPersonal: true };
-        } else {
-          // Sin plato personal — mostrar global con indicador
-          plato = { ...platoGlobal, _esFallback: true };
+        const personal = platoGlobal.porMiembro?.[miembroActivo];
+        if (personal?.nombre) {
+          plato = { ...platoGlobal, nombre: personal.nombre, ingredientes: personal.ingredientes };
+          esPersonal = true;
+        } else if (platoGlobal.nombre) {
+          esFallback = true;
         }
       }
 
@@ -2225,12 +2224,8 @@ function renderMenuFamilia(contenedor, diaMenu, diaKey) {
           <div class="tiempo-info">
             <div class="tiempo-nombre">${t.nombre}</div>
             <div class="tiempo-plato ${tieneContenido ? '' : 'vacio'}">${plato.nombre || 'Toca para agregar plato...'}</div>
-            ${modoMenu === 'por_miembro' && miembroActivo !== 'todos' && tieneContenido && plato._esFallback
-              ? `<div style="font-size:10px;color:var(--txt2);margin-top:2px;">📋 Plato general del hogar</div>`
-              : ''}
-            ${modoMenu === 'por_miembro' && miembroActivo !== 'todos' && tieneContenido && plato._esPersonal
-              ? `<div style="font-size:10px;color:var(--g);margin-top:2px;">✨ Personalizado</div>`
-              : ''}
+            ${esPersonal ? `<div style="font-size:10px;color:var(--g);margin-top:2px;">✨ Personalizado</div>` : ''}
+            ${esFallback ? `<div style="font-size:10px;color:var(--txt2);margin-top:2px;">📋 Plato general del hogar</div>` : ''}
             <div class="tiempo-hora">${t.hora}</div>
             ${tieneContenido && platoTieneAlergia(plato.nombre) ? `<div class="alerta-alergia">⚠️ Contiene alergia del hogar</div>` : ''}
             ${tieneContenido && modoMenu === 'por_miembro' ? (() => {
@@ -2339,41 +2334,36 @@ window.guardarPlato = async (diaKey, tiempoId) => {
 
   if (!menuData[diaKey]) menuData[diaKey] = {};
 
-  // ── Modo por_miembro con miembro específico ────────────────────────────────
+  // ── Modo por_miembro con miembro específico ──
   // Guardar en porMiembro[uid] — NO tocar el plato global ni el de otros miembros
   if (modoMenu === 'por_miembro' && miembroActivo !== 'todos') {
     if (!menuData[diaKey][tiempoId]) menuData[diaKey][tiempoId] = {};
     if (!menuData[diaKey][tiempoId].porMiembro) menuData[diaKey][tiempoId].porMiembro = {};
-    const existentePersonal = menuData[diaKey][tiempoId].porMiembro[miembroActivo] || {};
+    const anterior = menuData[diaKey][tiempoId].porMiembro[miembroActivo] || {};
     const ings = getIngredientesActuales(nombre);
     menuData[diaKey][tiempoId].porMiembro[miembroActivo] = {
-      ...existentePersonal,
       nombre,
-      ingredientes: ings ? [...ings] : (existentePersonal.nombre !== nombre ? [] : existentePersonal.ingredientes || []),
+      ingredientes: ings ? [...ings] : (anterior.nombre !== nombre ? [] : anterior.ingredientes || []),
     };
     await guardarMenu();
     renderMenuDia();
-    const miembro = miembrosHogar.find(m => m.uid === miembroActivo);
-    showToast(`🍽️ "${nombre}" guardado para ${miembro?.nombre?.split(' ')[0] || 'miembro'}`);
+    const m = miembrosHogar.find(x => x.uid === miembroActivo);
+    showToast(`🍽️ "${nombre}" guardado para ${m?.nombre?.split(' ')[0] || 'miembro'}`);
     document.querySelectorAll('.form-plato').forEach(f => f.classList.remove('visible'));
     generarListaMercado();
     return;
   }
 
-  // ── Modo compartido o "Todos" ──────────────────────────────────────────────
-  // Preservar miembros asignados previamente — no sobreescribir
+  // ── Modo compartido / Todos ──
   const existente = menuData[diaKey][tiempoId] || {};
   const miembrosExistentes = existente.miembros || (modoMenu === 'por_miembro' ? ['todos'] : undefined);
 
   menuData[diaKey][tiempoId] = {
-    ...existente,                    // preservar todos los campos previos (incluyendo porMiembro)
+    ...existente,   // preservar porMiembro y otros campos
     nombre,
   };
-
-  // Preservar asignación de miembros
   if (miembrosExistentes) menuData[diaKey][tiempoId].miembros = miembrosExistentes;
 
-  // Auto-agregar ingredientes si existen en el diccionario
   const ings = getIngredientesActuales(nombre);
   if (ings) menuData[diaKey][tiempoId].ingredientes = [...ings];
   else if (existente.nombre !== nombre) menuData[diaKey][tiempoId].ingredientes = [];
@@ -2403,6 +2393,7 @@ const INTOLERANCIAS_COMUN = ['Lactosa','Fructosa','Gluten','Sorbitol'];
 const RESTRICCIONES_COMUN = ['Vegetariano','Vegano','Sin azúcar','Bajo en sal','Sin carne','Sin cerdo','Halal'];
 const OBJETIVOS_COMUN     = ['Alto en proteína','Bajo en carbohidratos','Alto en fibra','Bajo en grasa','Ganancia muscular','Control de peso'];
 
+let miembroActivo = 'todos'; // uid del miembro seleccionado o 'todos'
 let perfilEditandoData = {}; // datos del perfil en edición
 
 // Cargar miembros del hogar (con fallback desde participantes)
@@ -2627,26 +2618,28 @@ document.getElementById('modalPerfilMiembro')?.addEventListener('click', functio
 window.eliminarPlato = async (diaKey, tiempoId) => {
   if (!menuData[diaKey]) return;
 
-  // En modo por_miembro con miembro específico: solo eliminar su plato personal
+  // ── Modo por_miembro con miembro específico ──
+  // Solo eliminar el plato personal de ese miembro, no el global
   if (modoMenu === 'por_miembro' && miembroActivo !== 'todos') {
-    if (menuData[diaKey][tiempoId]?.porMiembro?.[miembroActivo]) {
-      delete menuData[diaKey][tiempoId].porMiembro[miembroActivo];
-      // Si no quedan platos personales y no hay plato global, limpiar el tiempo
-      const tieneGlobal = !!menuData[diaKey][tiempoId]?.nombre;
-      const quedanPersonales = Object.keys(menuData[diaKey][tiempoId].porMiembro || {}).length > 0;
-      if (!tieneGlobal && !quedanPersonales) delete menuData[diaKey][tiempoId];
-      await guardarMenu();
-      renderMenuDia();
-      generarListaMercado();
-      renderMercado();
-      showToast('🗑 Plato eliminado del miembro');
-    }
+    if (!menuData[diaKey][tiempoId]?.porMiembro?.[miembroActivo]) return;
+    delete menuData[diaKey][tiempoId].porMiembro[miembroActivo];
+    // Usar updateDoc con ruta de campo exacta para que Firestore realmente elimine el campo
+    await updateDoc(doc(db, 'hogares', hogarId, 'menus', semanaId), {
+      [`${diaKey}.${tiempoId}.porMiembro.${miembroActivo}`]: deleteField()
+    });
+    renderMenuDia();
+    generarListaMercado();
+    renderMercado();
+    showToast('🗑 Plato del miembro eliminado');
     return;
   }
 
-  // Modo compartido: eliminar plato global completo
+  // ── Modo compartido: eliminar plato global ──
+  // Debe usar updateDoc + deleteField para que Firestore realmente borre el campo
   delete menuData[diaKey][tiempoId];
-  await guardarMenu();
+  await updateDoc(doc(db, 'hogares', hogarId, 'menus', semanaId), {
+    [`${diaKey}.${tiempoId}`]: deleteField()
+  });
   renderMenuDia();
   generarListaMercado();
   renderMercado();
@@ -2863,45 +2856,51 @@ function generarListaMercado() {
     const diaMenu = menuData[`dia_${i}`] || {};
     TIEMPOS.forEach(t => {
       const plato = diaMenu[t.id];
-      if (!plato) return;
+      if (!plato?.nombre) return;
 
       const platosAConsolidar = [];
-
-      // Plato global (siempre incluir si existe)
-      if (plato.nombre) platosAConsolidar.push(plato);
-
-      // Platos personalizados por miembro — incluir sus ingredientes específicos
+      if (modoMenu === 'por_miembro' && plato.miembros && plato.miembros.length) {
+        platosAConsolidar.push(plato);
+      } else {
+        platosAConsolidar.push(plato);
+      }
+      // Siempre incluir platos personalizados por miembro
       if (plato.porMiembro) {
         Object.values(plato.porMiembro).forEach(pm => {
           if (pm?.nombre) platosAConsolidar.push(pm);
         });
       }
 
-      if (!platosAConsolidar.length) return;
-
       platosAConsolidar.forEach(p => {
-        let ingredientes = p.ingredientes || [];
-        if (!ingredientes.length) ingredientes = getIngredientesActuales(p.nombre) || [];
+      let ingredientes = p.ingredientes || [];
+      if (!ingredientes.length) ingredientes = getIngredientesActuales(p.nombre) || [];
 
-        ingredientes.forEach(ing => {
-          const key = ing.toLowerCase()
-            .replace(/\(.*?\)/g,'').replace(/[xX]\d+/g,'').trim()
-            .split(/\s+/).slice(0,2).join(' ');
+      ingredientes.forEach(ing => {
+        // Key limpio para deduplicar: primeras 2 palabras sin paréntesis
+        const key = ing.toLowerCase()
+          .replace(/\(.*?\)/g,'').replace(/[xX]\d+/g,'').trim()
+          .split(/\s+/).slice(0,2).join(' ');
 
-          if (!key) return;
+        if (!key) return;
 
-          if (consolidado[key]) {
-            if (!consolidado[key].dias.includes(i)) consolidado[key].dias.push(i);
-            consolidado[key].vecesEnSemana++;
-          } else {
-            consolidado[key] = {
-              ingOriginal: ing, key, dias: [i], vecesEnSemana: 1,
-              origen: 'menu', comprado: false,
-              tieneAlergia: ingredienteTieneAlergia(ing),
-            };
+        if (consolidado[key]) {
+          if (!consolidado[key].dias.includes(i)) {
+            consolidado[key].dias.push(i);
           }
-        });
-      });
+          consolidado[key].vecesEnSemana++;
+        } else {
+          consolidado[key] = {
+            ingOriginal: ing,
+            key,
+            dias: [i],
+            vecesEnSemana: 1,
+            origen: 'menu',
+            comprado: false,
+            tieneAlergia: ingredienteTieneAlergia(ing),
+          };
+        }
+      }); // ing
+      }); // platosAConsolidar
     });
   });
 
