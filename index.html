@@ -4356,20 +4356,25 @@ async function submitForm() {
 
   try {
     const nombreCompleto = (nombre + ' ' + apellido).trim();
+    const suscripcionData = {
+      estado:'trial', plan:planSeleccionado, planNombre:plan.nombre,
+      fechaInicioTrial:fmt(hoy), fechaFinTrial:fmt(fin),
+      pagoUrl:plan.url, pagoConfirmado:null, pagoReferencia:null, pagoMonto:null,
+      actualizadoA:window.__fbTs(),
+    };
     await window.__fbSetDoc(window.__fbDoc('usuarios',uid),{
       nombre, apellido, nombreCompleto,
       email:correo, tipo:'familia', telefono:telefono||null, uid,
       fecha:new Date().toISOString(), creadoA:window.__fbTs(),
-      suscripcion:{
-        estado:'trial', plan:planSeleccionado, planNombre:plan.nombre,
-        fechaInicioTrial:fmt(hoy), fechaFinTrial:fmt(fin),
-        pagoUrl:plan.url, pagoConfirmado:null, pagoReferencia:null, pagoMonto:null,
-        actualizadoA:window.__fbTs(),
-      },
+      suscripcion: suscripcionData,
     });
     const tipoH = tipoHogarActual;
     await window.__fbAddDoc(window.__fbCol('hogares'),{
       participantes:[uid], creadoPor:uid, creado:window.__fbTs(), tipoHogar:tipoH,
+      // Preparación arquitectura: copia de la suscripción a nivel de hogar.
+      // NO se usa todavía para control de acceso — el webhook de PagueloFácil
+      // actualizará hogares/{id}.suscripcion.estado a 'activa' en el futuro.
+      suscripcion: { ...suscripcionData, titularUid: uid },
     });
     if (telefono) localStorage.setItem('mynana_tel_pendiente',telefono);
     localStorage.setItem('mynana_tipoHogar', tipoH);
