@@ -838,8 +838,39 @@ function getFechaFromTask(t) {
 
 // ── RENDER TAREAS ──
 function renderTareas() {
-  // Filtro estricto por fecha seleccionada — no mezclar días
-  todasTareas = todasTareasCache.filter(t => getFechaFromTask(t) === fechaSeleccionada);
+  // Tareas manuales del día desde Firestore
+  const tareasFirestore = todasTareasCache.filter(t => getFechaFromTask(t) === fechaSeleccionada);
+
+  // Rutinas aplicables al día seleccionado — combinarlas en memoria sin esperar Firestore
+  const idsEnFirestore = new Set(tareasFirestore.map(t => t.recurrenciaId).filter(Boolean));
+  const tareasDeRutinas = rutinasCache
+    .filter(rut => {
+      if (!rut.activa) return false;
+      if (idsEnFirestore.has(rut.id)) return false; // ya materializada en Firestore
+      return rutinaAplicaAFecha(rut, fechaSeleccionada);
+    })
+    .map(rut => ({
+      id:           `rut_${rut.id}_${fechaSeleccionada}`,
+      nombre:       rut.nombre,
+      hora:         rut.hora,
+      cat:          rut.cat,
+      prioridad:    rut.prioridad,
+      asignadoA:    rut.asignadoA || null,
+      asignadoNombre: rut.asignadoNombre || null,
+      estado:       'pendiente',
+      fecha:        fechaSeleccionada,
+      recurrenciaId: rut.id,
+      generadaAuto: true,
+      _soloRender:  true, // flag: no existe aún en Firestore
+    }));
+
+  todasTareas = [...tareasFirestore, ...tareasDeRutinas];
+
+  // Materializar en Firestore en background (sin bloquear render)
+  if (tareasDeRutinas.length && perfilActual?.tipo === 'familia') {
+    generarTareasRecurrentes(fechaSeleccionada).catch(e => console.warn('[Rutinas]', e));
+  }
+
   const lista = filtrarTareas();
   const esNana = perfilActual.tipo === 'nana';
   const contenedor = document.getElementById(esNana ? 'listaNana' : 'listaFamilia');
@@ -1554,8 +1585,10 @@ function escucharRutinas() {
     snap => {
       rutinasCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       renderRutinasList();
-      // Generar tareas del día visible cuando cambian las rutinas
-      generarTareasRecurrentes(fechaSeleccionada).catch(e => console.warn('[Rutinas]', e));
+      // Re-renderizar tareas para incluir rutinas recién creadas/editadas
+      renderTareas();
+      actualizarStats();
+      actualizarProgreso();
     }
   );
 }
@@ -1596,18 +1629,11 @@ async function generarTareasRecurrentes(fecha) {
   if (!aplicables.length) return;
 
   for (const rut of aplicables) {
-    const docId  = `rut_${rut.id}_${fecha}`;
+    // ID determinístico → garantía de unicidad sin query previo
+    const docId = `rut_${rut.id}_${fecha}`;
     const docRef = doc(db, 'hogares', hogarId, 'tareas', docId);
-    const snap   = await getDoc(docRef);
-
-    if (snap.exists()) {
-      // Si cambió el asignado en la rutina, actualizar la tarea sin tocar estado ni foto
-      const existente = snap.data();
-      if ((existente.asignadoA ?? null) !== (rut.asignadoA || null)) {
-        await updateDoc(docRef, { asignadoA: rut.asignadoA || null });
-      }
-      continue;
-    }
+    const snap = await getDoc(docRef);
+    if (snap.exists()) continue; // ya generada → skip
 
     await setDoc(docRef, {
       nombre:        rut.nombre,
@@ -1737,14 +1763,14 @@ window.guardarRutina = async () => {
     }
     mostrarTabRutinas('lista');
     _resetFormRutina();
+    // Generar la instancia de hoy si aplica
+    await generarTareasRecurrentes(fechaSeleccionada);
   } catch(e) {
     console.error('guardarRutina:', e);
     showToast('❌ Error al guardar la rutina');
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = '🔁 Guardar rutina'; }
   }
-  // Generar instancias del día seleccionado — separado para no enmascarar errores del guardado
-  generarTareasRecurrentes(fechaSeleccionada).catch(e => console.warn('[Rutinas] generarTareas:', e));
 };
 
 // ── Editar rutina ──
