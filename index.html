@@ -3121,7 +3121,187 @@ window.unirseConCodigo = async function() {
   </div>
 </section>
 
-<!-- PRICING -->
+<!-- ANTES / DESPUÉS — bloque interactivo -->
+<section style="background:#fff;padding:72px 20px;" id="por-que">
+  <div class="section-inner" style="max-width:860px;margin:0 auto;">
+    <div style="text-align:center;margin-bottom:40px;" class="reveal">
+      <div class="section-tag"><span class="es">¿Vale la pena?</span><span class="en">Is it worth it?</span></div>
+      <h2 class="section-title">
+        <span class="es">Tu hogar, antes y después<br>de My Nana</span>
+        <span class="en">Your home, before and after<br>My Nana</span>
+      </h2>
+      <p class="section-sub"><span class="es">Toca cada escenario y ve la diferencia.</span><span class="en">Tap each scenario and see the difference.</span></p>
+    </div>
+
+    <div class="reveal">
+      <style>
+        .mn-tabs{display:flex;gap:8px;margin-bottom:1.5rem;flex-wrap:wrap;}
+        .mn-tab{padding:8px 16px;border-radius:99px;font-size:13px;cursor:pointer;border:1px solid #d1d5db;background:#fff;color:#6b7280;transition:all .15s;font-family:var(--font-body);}
+        .mn-tab.activo{background:#0F4A38;color:#fff;border-color:#0F4A38;}
+        .mn-sc{display:none;}
+        .mn-sc.visible{display:block;}
+        .mn-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+        .mn-col{border-radius:16px;border:1px solid #e5e7eb;overflow:hidden;}
+        .mn-head{padding:12px 16px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;}
+        .mn-head.antes{background:#f9fafb;color:#6b7280;}
+        .mn-head.despues{background:#0F4A38;color:#fff;}
+        .mn-items{padding:14px 16px;display:flex;flex-direction:column;gap:12px;}
+        .mn-item{display:flex;align-items:flex-start;gap:10px;font-size:13px;line-height:1.5;}
+        .mn-emoji{font-size:18px;flex-shrink:0;margin-top:1px;}
+        .mn-txt{color:#1a2e25;}
+        .mn-txt b{font-weight:600;}
+        .mn-sub{font-size:11px;color:#9ca3af;margin-top:2px;}
+        .mn-verdict{margin-top:16px;padding:12px 16px;border-radius:10px;background:#F0F7F4;border:1px solid #d1fae5;font-size:13px;color:#4b5563;line-height:1.6;text-align:center;}
+        .mn-verdict strong{color:#0F4A38;font-weight:600;}
+        @media(max-width:580px){.mn-cols{grid-template-columns:1fr;}}
+      </style>
+
+      <div class="mn-tabs" id="mnTabs">
+        <button class="mn-tab activo" onclick="mnShow('tareas',this)">📋 Tareas del día</button>
+        <button class="mn-tab" onclick="mnShow('menu',this)">🍽️ Menú semanal</button>
+        <button class="mn-tab" onclick="mnShow('nana',this)">👩‍👧 Con tu nana</button>
+        <button class="mn-tab" onclick="mnShow('compras',this)">🛒 Compras</button>
+        <button class="mn-tab" onclick="mnShow('familia',this)">👨‍👩‍👧 En familia</button>
+      </div>
+
+      <!-- TAREAS -->
+      <div id="mn-tareas" class="mn-sc visible">
+        <div class="mn-cols">
+          <div class="mn-col">
+            <div class="mn-head antes">😩 Sin My Nana</div>
+            <div class="mn-items">
+              <div class="mn-item"><span class="mn-emoji">📱</span><div><div class="mn-txt"><b>WhatsApp caótico</b></div><div class="mn-sub">Mensajes perdidos, sin confirmación</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">🗂️</span><div><div class="mn-txt"><b>Notas en el celular</b></div><div class="mn-sub">Nadie más las ve, se olvidan</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">😤</span><div><div class="mn-txt"><b>"¿Ya lo hiciste?"</b></div><div class="mn-sub">Preguntar todo el tiempo genera tensión</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">❌</span><div><div class="mn-txt"><b>Sin historial</b></div><div class="mn-sub">No sabes si se hizo ayer o no</div></div></div>
+            </div>
+          </div>
+          <div class="mn-col">
+            <div class="mn-head despues">✨ Con My Nana</div>
+            <div class="mn-items">
+              <div class="mn-item"><span class="mn-emoji">✅</span><div><div class="mn-txt"><b>Tareas asignadas y visibles</b></div><div class="mn-sub">Cada quien sabe qué le toca</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">🔔</span><div><div class="mn-txt"><b>Recordatorios automáticos</b></div><div class="mn-sub">Sin que nadie tenga que pedir nada</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">📸</span><div><div class="mn-txt"><b>Foto de evidencia</b></div><div class="mn-sub">La nana confirma con foto cuando termina</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">📊</span><div><div class="mn-txt"><b>Progreso en tiempo real</b></div><div class="mn-sub">Ves el % completado desde donde estés</div></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="mn-verdict">De <strong>10 mensajes de WhatsApp</strong> para coordinar el día → a <strong>0 mensajes</strong>. Todo está en la app.</div>
+      </div>
+
+      <!-- MENÚ -->
+      <div id="mn-menu" class="mn-sc">
+        <div class="mn-cols">
+          <div class="mn-col">
+            <div class="mn-head antes">😩 Sin My Nana</div>
+            <div class="mn-items">
+              <div class="mn-item"><span class="mn-emoji">🤔</span><div><div class="mn-txt"><b>"¿Qué cocinamos hoy?"</b></div><div class="mn-sub">La pregunta diaria sin respuesta</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">🏪</span><div><div class="mn-txt"><b>Ir al súper sin lista</b></div><div class="mn-sub">Compras duplicadas o incompletas</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">🗑️</span><div><div class="mn-txt"><b>Comida que se bota</b></div><div class="mn-sub">Compras sin planificación = desperdicio</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">😵</span><div><div class="mn-txt"><b>Sin considerar alergias</b></div><div class="mn-sub">Riesgo con niños o personas sensibles</div></div></div>
+            </div>
+          </div>
+          <div class="mn-col">
+            <div class="mn-head despues">✨ Con My Nana</div>
+            <div class="mn-items">
+              <div class="mn-item"><span class="mn-emoji">🗓️</span><div><div class="mn-txt"><b>Menú semanal planificado</b></div><div class="mn-sub">7 días listos de un solo toque</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">🛒</span><div><div class="mn-txt"><b>Lista del súper automática</b></div><div class="mn-sub">Se genera sola desde el menú</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">🤖</span><div><div class="mn-txt"><b>Planificador con IA</b></div><div class="mn-sub">Sugiere platos según tu perfil</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">🥗</span><div><div class="mn-txt"><b>Perfil de alergias por miembro</b></div><div class="mn-sub">El sistema avisa si algo no aplica</div></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="mn-verdict">De <strong>20 minutos decidiendo qué comer</strong> cada día → a <strong>planificar toda la semana en 2 minutos</strong>.</div>
+      </div>
+
+      <!-- NANA -->
+      <div id="mn-nana" class="mn-sc">
+        <div class="mn-cols">
+          <div class="mn-col">
+            <div class="mn-head antes">😩 Sin My Nana</div>
+            <div class="mn-items">
+              <div class="mn-item"><span class="mn-emoji">📞</span><div><div class="mn-txt"><b>Llamar para dar instrucciones</b></div><div class="mn-sub">Interrumpes tu día de trabajo</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">💸</span><div><div class="mn-txt"><b>Pagos sin registro</b></div><div class="mn-sub">¿Cuánto se pagó el mes pasado?</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">😕</span><div><div class="mn-txt"><b>Sin evaluar el desempeño</b></div><div class="mn-sub">Difícil dar feedback constructivo</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">📄</span><div><div class="mn-txt"><b>Sin contrato formal</b></div><div class="mn-sub">Desprotección para ambas partes</div></div></div>
+            </div>
+          </div>
+          <div class="mn-col">
+            <div class="mn-head despues">✨ Con My Nana</div>
+            <div class="mn-items">
+              <div class="mn-item"><span class="mn-emoji">📲</span><div><div class="mn-txt"><b>La nana ve su agenda sola</b></div><div class="mn-sub">Sin llamadas, sin mensajes de voz</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">💰</span><div><div class="mn-txt"><b>Nómina automatizada</b></div><div class="mn-sub">Historial de pagos y días trabajados</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">⭐</span><div><div class="mn-txt"><b>Score de desempeño</b></div><div class="mn-sub">Retroalimentación justa y transparente</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">📝</span><div><div class="mn-txt"><b>Contratos digitales</b></div><div class="mn-sub">Todo documentado, ambas protegidas</div></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="mn-verdict">Tu nana tiene <strong>su propio dashboard</strong>. Ve tareas, marca progreso y recibe instrucciones — sin que tú tengas que estar presente.</div>
+      </div>
+
+      <!-- COMPRAS -->
+      <div id="mn-compras" class="mn-sc">
+        <div class="mn-cols">
+          <div class="mn-col">
+            <div class="mn-head antes">😩 Sin My Nana</div>
+            <div class="mn-items">
+              <div class="mn-item"><span class="mn-emoji">📒</span><div><div class="mn-txt"><b>Lista en papel o en notas</b></div><div class="mn-sub">Se pierde, nadie más puede verla</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">🔁</span><div><div class="mn-txt"><b>Compras duplicadas</b></div><div class="mn-sub">Varias personas compran lo mismo</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">🏃</span><div><div class="mn-txt"><b>Vueltas extra al súper</b></div><div class="mn-sub">Se olvidó algo, hay que volver</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">💸</span><div><div class="mn-txt"><b>Sin control de presupuesto</b></div><div class="mn-sub">No sabes cuánto gastaste ni en qué</div></div></div>
+            </div>
+          </div>
+          <div class="mn-col">
+            <div class="mn-head despues">✨ Con My Nana</div>
+            <div class="mn-items">
+              <div class="mn-item"><span class="mn-emoji">📱</span><div><div class="mn-txt"><b>Lista compartida en tiempo real</b></div><div class="mn-sub">Toda la familia la ve y edita</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">🏷️</span><div><div class="mn-txt"><b>Organizada por categoría</b></div><div class="mn-sub">Lácteos, vegetales, limpieza — todo ordenado</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">✔️</span><div><div class="mn-txt"><b>Marcar mientras compras</b></div><div class="mn-sub">Sin olvidar nada, sin volver</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">📈</span><div><div class="mn-txt"><b>Historial de compras</b></div><div class="mn-sub">Sabes exactamente en qué se gasta</div></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="mn-verdict">La lista del súper se genera <strong>automáticamente desde el menú semanal</strong>. Menos tiempo en el súper, menos desperdicio.</div>
+      </div>
+
+      <!-- FAMILIA -->
+      <div id="mn-familia" class="mn-sc">
+        <div class="mn-cols">
+          <div class="mn-col">
+            <div class="mn-head antes">😩 Sin My Nana</div>
+            <div class="mn-items">
+              <div class="mn-item"><span class="mn-emoji">🌀</span><div><div class="mn-txt"><b>Caos de coordinación</b></div><div class="mn-sub">Cada quien por su lado, nada sincronizado</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">😮‍💨</span><div><div class="mn-txt"><b>Una persona carga con todo</b></div><div class="mn-sub">Generalmente mamá, generalmente agotada</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">🗣️</span><div><div class="mn-txt"><b>Discusiones por olvidos</b></div><div class="mn-sub">"Te dije que había que comprar..."</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">😴</span><div><div class="mn-txt"><b>Sin tiempo para descansar</b></div><div class="mn-sub">La gestión del hogar nunca termina</div></div></div>
+            </div>
+          </div>
+          <div class="mn-col">
+            <div class="mn-head despues">✨ Con My Nana</div>
+            <div class="mn-items">
+              <div class="mn-item"><span class="mn-emoji">👨‍👩‍👧</span><div><div class="mn-txt"><b>Todos conectados al mismo hogar</b></div><div class="mn-sub">Papá, mamá, la nana — un solo lugar</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">⚖️</span><div><div class="mn-txt"><b>Tareas distribuidas</b></div><div class="mn-sub">Cada quien sabe qué le corresponde</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">💬</span><div><div class="mn-txt"><b>Chat familiar integrado</b></div><div class="mn-sub">Comunicación clara, todo documentado</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">😌</span><div><div class="mn-txt"><b>Tranquilidad real</b></div><div class="mn-sub">El hogar funciona aunque no estés</div></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="mn-verdict">My Nana no es solo para la nana. Es para <strong>toda la familia</strong> — tengas ayuda doméstica o no.</div>
+      </div>
+
+      <script>
+        function mnShow(id, btn) {
+          document.querySelectorAll('.mn-sc').forEach(s => s.classList.remove('visible'));
+          document.querySelectorAll('.mn-tab').forEach(b => b.classList.remove('activo'));
+          document.getElementById('mn-' + id).classList.add('visible');
+          btn.classList.add('activo');
+        }
+      </script>
+    </div>
+  </div>
+</section>
+
+
 <!-- PARA QUIÉN ES MY NANA -->
 <section style="background:#fff;padding:64px 20px;" id="pricing">
   <div class="section-inner" style="max-width:900px;margin:0 auto;">
