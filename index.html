@@ -3013,6 +3013,114 @@ window.unirseConCodigo = async function() {
   </div>
 </div>
 
+<!-- FEATURES -->
+<section class="features-section" id="features">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-tag"><span class="es">Tu tranquilidad diaria</span><span class="en">Your daily peace</span></div>
+      <h2 class="section-title"><span class="es">Todo lo que necesitas<br>para descansar tranquila</span><span class="en">Everything you need<br>to truly rest easy</span></h2>
+      <p class="section-sub"><span class="es">Deja de coordinar por WhatsApp. My Nana centraliza todo tu hogar para que tu mente quede libre.</span><span class="en">Stop coordinating on WhatsApp. My Nana centralizes your entire home so your mind is free.</span></p>
+    </div>
+
+    <div class="reveal" style="margin-top:40px;">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px;" id="featTabs">
+        <button class="feat-tab feat-tab-activo" onclick="mostrarFeat('tareas',this)">✅ <span class="es">Tareas</span><span class="en">Tasks</span></button>
+        <button class="feat-tab" onclick="mostrarFeat('menu',this)">🍽️ <span class="es">Menú</span><span class="en">Menu</span></button>
+        <button class="feat-tab" onclick="mostrarFeat('chat',this)">💬 Chat</button>
+        <button class="feat-tab" onclick="mostrarFeat('mercado',this)">🛒 <span class="es">Mercado</span><span class="en">Groceries</span></button>
+        <button class="feat-tab" onclick="mostrarFeat('score',this)">🌟 <span class="es">Confianza</span><span class="en">Trust</span></button>
+        <button class="feat-tab" onclick="mostrarFeat('contrato',this)">📋 <span class="es">Contratos</span><span class="en">Contracts</span></button>
+        <button class="feat-tab" onclick="mostrarFeat('nomina',this)">💰 <span class="es">Nómina</span><span class="en">Payroll</span></button>
+        <button class="feat-tab" onclick="mostrarFeat('fotos',this)">📸 <span class="es">Fotos</span><span class="en">Photos</span></button>
+        <button class="feat-tab" onclick="mostrarFeat('ayudas',this)">🏠 <span class="es">Ayudas rápidas</span><span class="en">Quick guides</span></button>
+        <button class="feat-tab" onclick="mostrarFeat('planificador',this)">✨ <span class="es">Planificador IA</span><span class="en">AI Planner</span></button>
+        <button class="feat-tab" onclick="mostrarFeat('buscador',this)">🔍 <span class="es">Buscador</span><span class="en">Search</span></button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:flex-start;background:var(--cr);border-radius:20px;padding:32px;border:1px solid var(--g4);">
+        <div id="featTexto"></div>
+        <div id="featDemo" style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(26,107,82,.08);border:1px solid var(--g4);min-height:340px;"></div>
+      </div>
+    </div>
+
+    <!-- GRID DE BENEFICIOS RÁPIDOS -->
+    <div class="reveal" style="margin-top:48px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;">
+      <div style="text-align:center;padding:24px 16px;background:var(--cr);border-radius:16px;border:1px solid var(--g4);">
+        <div style="font-size:32px;margin-bottom:10px;">🧘</div>
+        <div style="font-size:15px;font-weight:600;color:var(--txt);margin-bottom:6px;"><span class="es">Menos supervisión</span><span class="en">Less oversight</span></div>
+        <div style="font-size:13px;color:var(--txt2);line-height:1.6;"><span class="es">Tu nana sabe qué hacer. Tú solo verificas cuando quieres</span><span class="en">Your nana knows what to do. You check in only when you want</span></div>
+      </div>
+      <div style="text-align:center;padding:24px 16px;background:var(--cr);border-radius:16px;border:1px solid var(--g4);">
+        <div style="font-size:32px;margin-bottom:10px;">🔒</div>
+        <div style="font-size:15px;font-weight:600;color:var(--txt);margin-bottom:6px;"><span class="es">Solo para tu hogar</span><span class="en">Just for your home</span></div>
+        <div style="font-size:13px;color:var(--txt2);line-height:1.6;"><span class="es">Tus datos privados. Solo tú y tu nana tienen acceso a tu espacio</span><span class="en">Your private data. Only you and your nana access your space</span></div>
+      </div>
+      <div style="text-align:center;padding:24px 16px;background:var(--cr);border-radius:16px;border:1px solid var(--g4);">
+        <div style="font-size:32px;margin-bottom:10px;">📱</div>
+        <div style="font-size:15px;font-weight:600;color:var(--txt);margin-bottom:6px;"><span class="es">Desde cualquier celular</span><span class="en">From any phone</span></div>
+        <div style="font-size:13px;color:var(--txt2);line-height:1.6;"><span class="es">Tu nana no necesita instalar nada. Solo abre el link y ya está</span><span class="en">Your nana doesn't need to install anything. Just open the link</span></div>
+      </div>
+      <div style="text-align:center;padding:24px 16px;background:var(--cr);border-radius:16px;border:1px solid var(--g4);">
+        <div style="font-size:32px;margin-bottom:10px;">🇵🇦</div>
+        <div style="font-size:15px;font-weight:600;color:var(--txt);margin-bottom:6px;"><span class="es">Hecho para Panamá</span><span class="en">Made for Panama</span></div>
+        <div style="font-size:13px;color:var(--txt2);line-height:1.6;"><span class="es">Platos locales, leyes panameñas, soporte humano en español</span><span class="en">Local dishes, Panamanian law, human support in Spanish</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-section" id="how">
+  <div class="section-inner" style="position:relative;z-index:1;">
+    <div class="reveal">
+      <div class="section-tag"><span class="es">Así de simple</span><span class="en">That simple</span></div>
+      <h2 class="section-title"><span class="es">Tu hogar organizado<br>en menos de 3 minutos</span><span class="en">Your home organized<br>in under 3 minutes</span></h2>
+      <p class="section-sub"><span class="es">Sin formularios complejos. Sin manuales. Solo crea tu cuenta, invita a tu nana y empieza a organizar tu hogar.</span><span class="en">No complex forms. No manuals. Just create your account, invite your nana and start organizing your home.</span></p>
+    </div>
+    <div class="steps-grid">
+
+      <div class="step-card reveal">
+        <div class="step-num">01</div>
+        <div class="step-title"><span class="es">Crea tu cuenta</span><span class="en">Create your account</span></div>
+        <div class="step-desc"><span class="es">Regístrate como familia, elige cómo se organiza tu hogar y accede a tu dashboard.</span><span class="en">Sign up as a family, choose how your home is organized and access your dashboard.</span></div>
+      </div>
+
+      <div class="step-card reveal">
+        <div class="step-num">02</div>
+        <div class="step-title"><span class="es">Invita a tu nana</span><span class="en">Invite your nana</span></div>
+        <div class="step-desc"><span class="es">Desde tu dashboard copia el código de vinculación o envíaselo directamente por WhatsApp.</span><span class="en">From your dashboard, copy the linking code or send it directly via WhatsApp.</span></div>
+        <div style="margin-top:16px;background:rgba(255,255,255,.08);border-radius:10px;padding:12px 14px;">
+          <div style="font-size:10px;color:rgba(255,255,255,.5);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;"><span class="es">Envíale el código por</span><span class="en">Send the code via</span></div>
+          <a href="https://wa.me/?text=Hola%2C%20te%20invito%20a%20My%20Nana%20%F0%9F%8F%A0%0APara%20vincularte%3A%0A1%EF%B8%8F%E2%83%A3%20Entra%20a%20mynana.app%2Fapp.html%0A2%EF%B8%8F%E2%83%A3%20Crea%20tu%20cuenta%20como%20Nana%0A3%EF%B8%8F%E2%83%A3%20Ingresa%20el%20c%C3%B3digo%20que%20encontrar%C3%A1s%20en%20tu%20dashboard" target="_blank" style="display:block;background:#25D366;color:#fff;font-size:12px;font-weight:500;padding:10px 14px;border-radius:8px;text-decoration:none;text-align:center;">📲 <span class="es">Enviar por WhatsApp</span><span class="en">Send via WhatsApp</span></a>
+        </div>
+      </div>
+
+      <div class="step-card reveal">
+        <div class="step-num">03</div>
+        <div class="step-title"><span class="es">Tu nana crea su cuenta</span><span class="en">Your nana creates her account</span></div>
+        <div class="step-desc"><span class="es">Ella entra a My Nana desde su celular, selecciona "Nana" y completa su registro. No necesita descargar nada.</span><span class="en">She opens My Nana on her phone, selects "Nana" and completes her registration. No download needed.</span></div>
+      </div>
+
+      <div class="step-card reveal">
+        <div class="step-num">04</div>
+        <div class="step-title"><span class="es">Ingresa el código de vinculación</span><span class="en">Enter the linking code</span></div>
+        <div class="step-desc"><span class="es">La nana coloca el código que recibió y queda conectada automáticamente a tu hogar. Listo.</span><span class="en">The nana enters the code she received and is automatically connected to your home. Done.</span></div>
+      </div>
+
+      <div class="step-card reveal">
+        <div class="step-num">05</div>
+        <div class="step-title"><span class="es">Empiezan a organizarse</span><span class="en">Start organizing together</span></div>
+        <div class="step-desc"><span class="es">Ya puedes asignar tareas, crear menús, gestionar compras, comunicarte y darle seguimiento al hogar desde un solo lugar.</span><span class="en">Assign tasks, create menus, manage shopping, communicate and track your home — all in one place.</span></div>
+        <div style="margin-top:14px;background:rgba(255,255,255,.07);border-radius:8px;padding:10px 12px;font-size:11px;color:rgba(255,255,255,.55);line-height:1.6;">
+          <span class="es">💡 La nana no necesita descargar nada. Solo entra desde su celular y crea su cuenta.</span>
+          <span class="en">💡 The nana doesn't need to download anything. She just opens the site on her phone and signs up.</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
 <!-- PRICING -->
 <!-- PARA QUIÉN ES MY NANA -->
 <section style="background:#fff;padding:64px 20px;" id="pricing">
