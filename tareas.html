@@ -474,7 +474,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import { getFirestore, doc, getDoc, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, updateDoc, deleteDoc, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, updateDoc, deleteDoc, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 const firebaseConfig = {
   apiKey:"AIzaSyDDJRJ8A8P507lllGRBOoXO30ESAH1GAnw",
@@ -841,32 +841,38 @@ function renderTareas() {
   // Tareas manuales del día desde Firestore
   const tareasFirestore = todasTareasCache.filter(t => getFechaFromTask(t) === fechaSeleccionada);
 
-  // Rutinas aplicables al día seleccionado — combinarlas en memoria sin esperar Firestore
-  const idsEnFirestore = new Set(tareasFirestore.map(t => t.recurrenciaId).filter(Boolean));
+  // IDs de rutinas ya materializadas en Firestore (anti-duplicado)
+  const idsRutinaEnFirestore = new Set(
+    tareasFirestore.filter(t => t.recurrenciaId).map(t => t.recurrenciaId)
+  );
+
+  // Rutinas aplicables al día que aún no están en Firestore → mostrar en memoria
   const tareasDeRutinas = rutinasCache
     .filter(rut => {
       if (!rut.activa) return false;
-      if (idsEnFirestore.has(rut.id)) return false; // ya materializada en Firestore
+      if (idsRutinaEnFirestore.has(rut.id)) return false;
       return rutinaAplicaAFecha(rut, fechaSeleccionada);
     })
     .map(rut => ({
-      id:           `rut_${rut.id}_${fechaSeleccionada}`,
-      nombre:       rut.nombre,
-      hora:         rut.hora,
-      cat:          rut.cat,
-      prioridad:    rut.prioridad,
-      asignadoA:    rut.asignadoA || null,
+      id:            `rut_${rut.id}_${fechaSeleccionada}`,
+      nombre:        rut.nombre,
+      hora:          rut.hora,
+      cat:           rut.cat,
+      prioridad:     rut.prioridad,
+      asignadoA:     rut.asignadoA     || null,
       asignadoNombre: rut.asignadoNombre || null,
-      estado:       'pendiente',
-      fecha:        fechaSeleccionada,
+      estado:        'pendiente',
+      fecha:         fechaSeleccionada,
       recurrenciaId: rut.id,
-      generadaAuto: true,
-      _soloRender:  true, // flag: no existe aún en Firestore
+      generadaAuto:  true,
+      _soloRender:   true,
     }));
 
-  todasTareas = [...tareasFirestore, ...tareasDeRutinas];
+  // Combinar y ordenar por hora (HH:MM string — orden lexicográfico correcto)
+  todasTareas = [...tareasFirestore, ...tareasDeRutinas]
+    .sort((a, b) => (a.hora || '00:00').localeCompare(b.hora || '00:00'));
 
-  // Materializar en Firestore en background (sin bloquear render)
+  // Materializar en Firestore en background sin bloquear el render
   if (tareasDeRutinas.length && perfilActual?.tipo === 'familia') {
     generarTareasRecurrentes(fechaSeleccionada).catch(e => console.warn('[Rutinas]', e));
   }
@@ -919,7 +925,7 @@ function renderTareas() {
             ${t.asignadoNombre ? `<span class="chip-asignado">👤 ${t.asignadoNombre}</span>` : ''}
           </div>
         </div>
-        <div style="width:28px;height:28px;border-radius:50%;border:2px solid ${hecha ? '#1A6B52' : '#d1d5db'};background:${hecha ? '#1A6B52' : 'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;" onclick="${esNana ? `marcarHecha('${t.id}', ${hecha})` : ''}">
+        <div style="width:28px;height:28px;border-radius:50%;border:2px solid ${hecha ? '#1A6B52' : '#d1d5db'};background:${hecha ? '#1A6B52' : 'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;" onclick="marcarHecha('${t.id}', ${hecha})">
           ${hecha ? '<svg width="12" height="10" viewBox="0 0 12 10" fill="none"><polyline points="1,5 4,9 11,1" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>' : ''}
         </div>
       </div>
@@ -932,10 +938,10 @@ function renderTareas() {
 
       ${hecha && !t.fotoUrl ? `<div style="padding:6px 14px 12px;font-size:12px;color:#6b7280;">✅ Completada ${t.completadaA||''}</div>` : ''}
 
-      ${!hecha && esNana ? `
+      ${!hecha ? `
         <div style="margin:0 12px 12px;display:flex;gap:8px;">
           <button onclick="marcarHecha('${t.id}', false)" style="flex:1;background:#1A6B52;color:#fff;border:none;border-radius:10px;padding:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;">✅ Marcar lista</button>
-          <button onclick="abrirModalFoto('${t.id}')" style="background:#F0F7F4;color:#1A6B52;border:none;border-radius:10px;padding:10px 12px;font-size:18px;cursor:pointer;">📷</button>
+          ${esNana ? `<button onclick="abrirModalFoto('${t.id}')" style="background:#F0F7F4;color:#1A6B52;border:none;border-radius:10px;padding:10px 12px;font-size:18px;cursor:pointer;">📷</button>` : ''}
         </div>` : ''}
 
       ${!esNana ? `
@@ -1043,6 +1049,29 @@ window.crearTarea = async () => {
 
 // ── MARCAR HECHA ──
 window.marcarHecha = async (id, estaHecha) => {
+  // Si la tarea es solo-render (rutina en memoria sin materializar en Firestore), crearla primero
+  const tareaLocal = todasTareas.find(t => t.id === id);
+  if (tareaLocal?._soloRender) {
+    try {
+      await setDoc(doc(db, 'hogares', hogarId, 'tareas', id), {
+        nombre:        tareaLocal.nombre,
+        hora:          tareaLocal.hora,
+        cat:           tareaLocal.cat,
+        prioridad:     tareaLocal.prioridad,
+        asignadoA:     tareaLocal.asignadoA || null,
+        asignadoNombre: tareaLocal.asignadoNombre || null,
+        estado:        'pendiente',
+        fotoUrl:       null,
+        fecha:         tareaLocal.fecha,
+        creadoPor:     usuarioActual?.uid || '',
+        creadoA:       serverTimestamp(),
+        completadaA:   null,
+        recurrenciaId: tareaLocal.recurrenciaId,
+        generadaAuto:  true,
+      });
+    } catch(e) { console.warn('[marcarHecha] Error materializando rutina:', e); }
+  }
+
   if (estaHecha) {
     await updateDoc(doc(db, 'hogares', hogarId, 'tareas', id), {
       estado: 'pendiente', completadaA: null
@@ -1050,7 +1079,6 @@ window.marcarHecha = async (id, estaHecha) => {
     return;
   }
 
-  // Animación de celebración
   showToast('✅ ¡Tarea completada! Buen trabajo 🎉');
   if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
 
@@ -1059,7 +1087,6 @@ window.marcarHecha = async (id, estaHecha) => {
     estado: 'completa', completadaA: hora
   });
 
-  // Notificar push a la familia
   const tarea = todasTareas.find(t => t.id === id);
   _pushAParticipantes(hogarId, usuarioActual.uid, {
     titulo: '✅ Tarea completada',
@@ -1068,7 +1095,6 @@ window.marcarHecha = async (id, estaHecha) => {
     tipo: 'tarea-completada',
   });
 
-  // Notificar al chat del hogar
   await enviarMensajeAlChat({
     tipo: 'texto',
     texto: `✅ ${tarea?.nombre || 'Tarea'} — completada a las ${hora}`
@@ -1585,7 +1611,7 @@ function escucharRutinas() {
     snap => {
       rutinasCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       renderRutinasList();
-      // Re-renderizar tareas para incluir rutinas recién creadas/editadas
+      // Re-renderizar tareas inmediatamente — incluye rutinas recién creadas/editadas
       renderTareas();
       actualizarStats();
       actualizarProgreso();
