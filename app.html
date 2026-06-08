@@ -2013,36 +2013,24 @@ window.registrarse = async () => {
     if (tipoReg === 'familia') {
       const codigoFam = document.getElementById('regCodigoFamiliar')?.value?.trim().toUpperCase();
       if (codigoFam && codigoFam.startsWith('F')) {
-        const resultado = await procesarCodigoFamiliar(codigoFam, cred.user.uid);
-        if (resultado?.ok) {
-          // Marcar como miembro invitado — hereda suscripción del titular, nunca paga por separado
-          await updateDoc(doc(db, 'usuarios', cred.user.uid), {
-            esInvitado:  true,
-            titularUid:  resultado.titularUid,
-            hogarId:     resultado.hogarId,
-            rol:         'miembro',
-          });
-          showToast('✅ Conectado al hogar familiar');
-        } else {
-          showToast('⚠️ Código inválido — se creó hogar propio');
-          // Sin código válido → hogar propio + suscripción propia (flujo normal)
+        const vinculado = await procesarCodigoFamiliar(codigoFam, cred.user.uid);
+        showToast(vinculado ? '✅ Conectado al hogar familiar' : '⚠️ Código inválido — se creó hogar propio');
+        if (!vinculado) {
           await addDoc(collection(db, 'hogares'), {
             participantes: [cred.user.uid],
             creadoPor: cred.user.uid,
             creado: serverTimestamp(),
             tipoHogar: document.getElementById('regTipoHogar')?.value || 'con_nana'
           });
-          await crearSuscripcionTrial(cred.user.uid);
         }
       } else {
-        // Sin código — titular independiente → hogar propio + suscripción propia
+        // Sin código — crear hogar propio nuevo e independiente
         await addDoc(collection(db, 'hogares'), {
           participantes: [cred.user.uid],
           creadoPor: cred.user.uid,
           creado: serverTimestamp(),
           tipoHogar: document.getElementById('regTipoHogar')?.value || 'con_nana'
         });
-        await crearSuscripcionTrial(cred.user.uid);
       }
     }
 
@@ -3314,37 +3302,6 @@ let _planPagoSeleccionado = 'fija';
 //  DASHBOARD INTELIGENTE — visibilidad por tipo de hogar
 // ══════════════════════════════════════════════════════
 
-// ── Crear suscripción trial para un titular (nunca para miembros invitados) ──
-async function crearSuscripcionTrial(uid) {
-  const PLANES = {
-    sin_nana:  { planId:'hogar',          planNombre:'Plan Hogar',    precio:4.99, pagoUrl:'https://checkout.paguelofacil.com/mynana/4b6eced6' },
-    con_ayuda: { planId:'hogar_flexible', planNombre:'Hogar Flexible', precio:6.99, pagoUrl:'https://checkout.paguelofacil.com/mynana/586d0e75' },
-    con_nana:  { planId:'hogar_completo', planNombre:'Hogar Completo', precio:9.99, pagoUrl:'https://checkout.paguelofacil.com/mynana/e089b39a' },
-  };
-  const tipoHogar = document.getElementById('regTipoHogar')?.value || 'con_nana';
-  const plan = PLANES[tipoHogar] || PLANES['con_nana'];
-  const hoy = new Date(); hoy.setHours(0,0,0,0);
-  const finTrial = new Date(hoy); finTrial.setDate(finTrial.getDate() + 15);
-  const fmt = d => d.toISOString().split('T')[0];
-  try {
-    await updateDoc(doc(db, 'usuarios', uid), {
-      suscripcion: {
-        estado:               'trial',
-        planId:               plan.planId,
-        planNombre:           plan.planNombre,
-        precio:               plan.precio,
-        pagoUrl:              plan.pagoUrl,
-        fechaInicioTrial:     fmt(hoy),
-        fechaFinTrial:        fmt(finTrial),
-        fechaInicioMembresia: null,
-        fechaFinMembresia:    null,
-        ultimoPagoId:         null,
-        actualizadoEn:        serverTimestamp(),
-      }
-    });
-  } catch(e) { console.warn('crearSuscripcionTrial:', e); }
-}
-
 // ══════════════════════════════════════════════════════
 //  SISTEMA DE TRIAL — verificación y UI
 // ══════════════════════════════════════════════════════
@@ -3371,56 +3328,123 @@ async function verificarSuscripcion(user) {
 
     const datos = snap.data();
 
-    // ── MIEMBRO INVITADO — hereda acceso del titular, nunca paga por separado ──
-    if (datos.esInvitado === true) {
-      ocultarBannerTrial(); // sin banner, sin paywall, sin trial propio
-      console.log('[suscripcion] Usuario invitado — acceso heredado del titular:', datos.titularUid);
-      return;
-    }
-
-    const sus = datos.suscripcion;
-
-    // Usuarios existentes sin campo suscripcion → acceso completo permanente
-    if (!sus) return;
-
-    const hoy       = new Date(); hoy.setHours(0,0,0,0);
-    const finTrial  = sus.fechaFinTrial ? new Date(sus.fechaFinTrial + 'T00:00:00') : null;
-
-    if (sus.estado === 'activa') {
-      // Acceso completo — ocultar banner
+    // ── CASO 4: Nana — nunca entra en paywall de familia ──────────────────────
+    if (datos.tipo === 'nana') {
       ocultarBannerTrial();
       return;
     }
 
-    if (sus.estado === 'trial' && finTrial) {
-      const diffMs   = finTrial - hoy;
-      const diasRest = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    // ── CASOS 2 & 3 & 5 & 6: Miembro invitado ─────────────────────────────────
+    // Hereda la suscripción del hogar/titular. Nunca paga por separado.
+    if (datos.esInvitado === true && datos.titularUid) {
+      console.log('[suscripcion] Invitado — leyendo suscripción del titular:', datos.titularUid);
 
-      if (diasRest > 0) {
-        // Trial activo — mostrar banner con días restantes
-        mostrarBannerTrial(diasRest, sus.pagoUrl);
-      } else {
-        // Trial vencido — marcar en Firestore y mostrar paywall
+      const snapTitular = await getDoc(doc(db, 'usuarios', datos.titularUid));
+      if (!snapTitular.exists()) {
+        // Titular no encontrado → fail open, no bloquear al invitado
+        ocultarBannerTrial();
+        return;
+      }
+
+      const susTitular = snapTitular.data().suscripcion;
+      if (!susTitular) {
+        // Titular sin suscripción (cuenta legacy) → acceso completo para todos
+        ocultarBannerTrial();
+        return;
+      }
+
+      const hoy     = new Date(); hoy.setHours(0,0,0,0);
+      const finTrial = susTitular.fechaFinTrial    ? new Date(susTitular.fechaFinTrial    + 'T00:00:00') : null;
+      const finMemb  = susTitular.fechaFinMembresia ? new Date(susTitular.fechaFinMembresia + 'T00:00:00') : null;
+
+      // CASO 3: Titular activo → invitado tiene acceso completo, sin banner
+      if (susTitular.estado === 'activa' && finMemb && hoy <= finMemb) {
+        ocultarBannerTrial();
+        return;
+      }
+
+      // CASO 3: Titular en trial vigente → invitado accede, sin banner de pago
+      if (susTitular.estado === 'trial' && finTrial && hoy <= finTrial) {
+        ocultarBannerTrial();
+        return;
+      }
+
+      // CASO 5: Titular vencido → todos los invitados pierden acceso
+      // Mostrar pantalla informativa (sin botón de pago — el invitado no paga)
+      const pw = document.getElementById('paywallScreen');
+      if (pw) {
+        const btn = document.getElementById('paywallBtn');
+        const sub = document.getElementById('paywallSub');
+        if (sub) sub.textContent = 'El titular del hogar debe renovar su plan para continuar. Contacta a quien administra el hogar.';
+        if (btn) {
+          btn.textContent = 'Contactar al titular';
+          btn.href        = `https://wa.me/?text=Hola%2C%20nuestro%20acceso%20a%20My%20Nana%20está%20pausado.%20Por%20favor%20renueva%20el%20plan.`;
+          btn.target      = '_blank';
+        }
+        pw.classList.add('visible');
+      }
+      return;
+    }
+
+    // ── CASO 1: Titular del hogar — lógica completa de suscripción ─────────────
+    const sus = datos.suscripcion;
+
+    // Sin campo suscripcion → cuenta legacy, acceso completo
+    if (!sus) { ocultarBannerTrial(); return; }
+
+    const hoy     = new Date(); hoy.setHours(0,0,0,0);
+    const finTrial = sus.fechaFinTrial    ? new Date(sus.fechaFinTrial    + 'T00:00:00') : null;
+    const finMemb  = sus.fechaFinMembresia ? new Date(sus.fechaFinMembresia + 'T00:00:00') : null;
+
+    // Membresía activa y vigente
+    if (sus.estado === 'activa') {
+      if (finMemb && hoy > finMemb) {
+        // Membresía expiró → marcar vencida y bloquear
         await updateDoc(doc(db, 'usuarios', user.uid), {
           'suscripcion.estado':      'vencida',
-          'suscripcion.actualizadoA': serverTimestamp(),
+          'suscripcion.actualizadoEn': serverTimestamp(),
+        });
+        mostrarPaywall(sus.pagoUrl, sus.planNombre);
+        return;
+      }
+      // Membresía vigente — aviso si quedan ≤7 días
+      if (finMemb) {
+        const dias = Math.ceil((finMemb - hoy) / 86400000);
+        if (dias <= 7) mostrarBannerTrial(dias, sus.pagoUrl, true);
+        else ocultarBannerTrial();
+      } else {
+        ocultarBannerTrial();
+      }
+      return;
+    }
+
+    // Trial
+    if (sus.estado === 'trial' && finTrial) {
+      const diasRest = Math.ceil((finTrial - hoy) / 86400000);
+      if (diasRest > 0) {
+        mostrarBannerTrial(diasRest, sus.pagoUrl, false);
+      } else {
+        await updateDoc(doc(db, 'usuarios', user.uid), {
+          'suscripcion.estado':      'vencida',
+          'suscripcion.actualizadoEn': serverTimestamp(),
         });
         mostrarPaywall(sus.pagoUrl, sus.planNombre);
       }
       return;
     }
 
+    // Vencida o cancelada
     if (sus.estado === 'vencida' || sus.estado === 'cancelada') {
       mostrarPaywall(sus.pagoUrl, sus.planNombre);
     }
 
   } catch(e) {
-    console.warn('verificarSuscripcion:', e);
-    // Si falla la verificación → no bloquear (fail open)
+    console.warn('[verificarSuscripcion] Error:', e);
+    // Fail open — si hay error de red no bloqueamos
   }
 }
 
-function mostrarBannerTrial(diasRestantes, pagoUrl) {
+function mostrarBannerTrial(diasRestantes, pagoUrl, esMembresia = false) {
   const banner = document.getElementById('trialBanner');
   const msg    = document.getElementById('trialBannerMsg');
   const btn    = document.getElementById('trialBannerBtn');
@@ -4122,9 +4146,9 @@ window.eliminarMiembroFamiliar = async (uid, nombre, hogarId) => {
 async function procesarCodigoFamiliar(codigo, nuevoUid) {
   try {
     const codSnap = await getDoc(doc(db, 'codigos_familia', codigo));
-    if (!codSnap.exists()) return null;
+    if (!codSnap.exists()) return false;
     const data = codSnap.data();
-    if (data.usado || data.tipo !== 'miembro_familia') return null;
+    if (data.usado || data.tipo !== 'miembro_familia') return false;
     const hogarSnap = await getDoc(doc(db, 'hogares', data.hogarId));
     if (hogarSnap.exists()) {
       const participantes = hogarSnap.data().participantes || [];
@@ -4133,9 +4157,8 @@ async function procesarCodigoFamiliar(codigo, nuevoUid) {
       }
     }
     await updateDoc(doc(db, 'codigos_familia', codigo), { usado: true, usadoPor: nuevoUid, usadoA: serverTimestamp() });
-    // Retornar titularUid para que el registro pueda marcar al usuario como invitado
-    return { ok: true, titularUid: data.familiaUid, hogarId: data.hogarId };
-  } catch(e) { console.error('Error código familiar:', e); return null; }
+    return true;
+  } catch(e) { console.error('Error código familiar:', e); return false; }
 }
 
 // ══ FIN MIEMBROS FAMILIARES ══
