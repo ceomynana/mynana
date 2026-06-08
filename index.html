@@ -2598,13 +2598,18 @@ window.unirseConCodigo = async function() {
       <div class="modal-sub"><span class="es">Prueba My Nana completo. Después del período de prueba, continúa con el plan que elijas.</span><span class="en">Try My Nana in full. After the trial period, continue with the plan of your choice.</span></div>
     </div>
 
-    <!-- REGISTRO: FORMULARIO ÚNICO -->
+    <!-- REGISTRO: FORMULARIO IGUAL AL APP -->
     <div class="modal-body" id="modalForm">
 
-      <div style="font-size:13px;font-weight:600;color:var(--txt);margin-bottom:16px;">
-        <span class="es">Crea tu cuenta gratis</span><span class="en">Create your free account</span>
+      <!-- Tabs Familia / Nana — igual que app -->
+      <div class="tab-selector" style="margin-bottom:20px;">
+        <button class="tab-opt activo" id="tabFamiliaIndex" onclick="setTipoRegIndex('familia',this)">👨‍👩‍👧 Familia</button>
+        <button class="tab-opt" id="tabNanaIndex" onclick="setTipoRegIndex('nana',this)">👩 Nana</button>
       </div>
 
+      <div id="regError" style="display:none;font-size:12px;color:#e05c5c;margin-bottom:10px;padding:8px 12px;background:#FEF2F2;border-radius:8px;"></div>
+
+      <!-- Nombre + Apellido -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
         <div class="form-group">
           <label class="form-label"><span class="es">Nombre *</span><span class="en">First name *</span></label>
@@ -2615,45 +2620,87 @@ window.unirseConCodigo = async function() {
           <input type="text" class="form-input" id="fieldApellido" placeholder="Casanova" autocomplete="family-name" />
         </div>
       </div>
+
+      <!-- Campos solo para nana -->
+      <div id="indexCamposNana" style="display:none;">
+        <div class="form-group">
+          <label class="form-label">Cédula</label>
+          <input type="text" class="form-input" id="fieldCedula" placeholder="8-123-4567" />
+        </div>
+        <div style="margin-bottom:14px;">
+          <div style="font-size:12px;font-weight:600;color:var(--txt2);margin-bottom:8px;">¿Cómo trabajas actualmente?</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid #1A6B52;border-radius:10px;cursor:pointer;background:#F0F7F4;" id="itnFija" onclick="selTipoNanaIndex('fija')">
+              <span style="font-size:18px;">👩‍🍳</span>
+              <div><div style="font-size:13px;font-weight:500;">Soy nana fija</div><div style="font-size:11px;color:#888;">Trabajo regularmente con una familia</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:10px;cursor:pointer;" id="itnEventual" onclick="selTipoNanaIndex('eventual')">
+              <span style="font-size:18px;">🤝</span>
+              <div><div style="font-size:13px;font-weight:500;">Soy nana eventual</div><div style="font-size:11px;color:#888;">Trabajo por días o con varias familias</div></div>
+            </div>
+          </div>
+          <input type="hidden" id="fieldTipoNana" value="fija">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Código de la familia</label>
+          <input type="text" class="form-input" id="fieldCodigoNana" placeholder="Código de 6 caracteres (ej: ABC123)" style="text-transform:uppercase;letter-spacing:4px;font-size:16px;text-align:center;" maxlength="6" />
+          <div style="font-size:11px;color:var(--txt2);margin-top:4px;">Pídele este código a la familia que te contrató</div>
+        </div>
+      </div>
+
+      <!-- Campos comunes -->
       <div class="form-group">
         <label class="form-label"><span class="es">Correo electrónico *</span><span class="en">Email *</span></label>
         <input type="email" class="form-input" id="fieldCorreo" placeholder="tucorreo@email.com" autocomplete="email" />
       </div>
-      <div class="form-group">
+      <div class="form-group" id="indexWrapTelefono">
         <label class="form-label"><span class="es">WhatsApp / Teléfono *</span><span class="en">WhatsApp / Phone *</span></label>
         <input type="tel" class="form-input" id="fieldTelefono" placeholder="Ej: 6000-0000" autocomplete="tel" />
       </div>
       <div class="form-group">
-        <label class="form-label"><span class="es">Contraseña</span><span class="en">Password</span></label>
+        <label class="form-label"><span class="es">Contraseña *</span><span class="en">Password *</span></label>
         <input type="password" class="form-input" id="fieldPassword" placeholder="Mínimo 6 caracteres" autocomplete="new-password" />
       </div>
       <div class="form-group">
         <label class="form-label"><span class="es">Confirmar contraseña</span><span class="en">Confirm password</span></label>
         <input type="password" class="form-input" id="fieldPassword2" placeholder="Repite tu contraseña" autocomplete="new-password" />
       </div>
-      <div class="form-group">
-        <label class="form-label"><span class="es">¿Cómo es tu hogar?</span><span class="en">What's your home setup?</span></label>
-        <div class="type-selector">
-          <div class="type-option" id="tipoHogar" onclick="selectTipo('hogar')">
-            <div class="type-option-icon">🏠</div>
-            <div class="type-option-name"><span class="es">Sin nana</span><span class="en">No nana</span></div>
-            <div class="type-option-desc"><span class="es">Organizo el hogar</span><span class="en">Self-organized</span></div>
+
+      <!-- Campos solo para familia -->
+      <div id="indexCamposFamilia">
+        <!-- Tipo de hogar — igual que app -->
+        <div style="margin-bottom:14px;">
+          <div style="font-size:12px;font-weight:600;color:var(--txt2);margin-bottom:8px;"><span class="es">¿Cómo se organiza tu hogar?</span><span class="en">How is your home organized?</span></div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:10px;cursor:pointer;" id="ithSinNana" onclick="selectTipoHogarIndex('hogar')">
+              <span style="font-size:18px;">🏠</span>
+              <div><div style="font-size:13px;font-weight:500;"><span class="es">Me organizo sin nana</span><span class="en">No nana</span></div><div style="font-size:11px;color:#888;"><span class="es">Gestiono el hogar en familia</span><span class="en">Self-organized</span></div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:10px;cursor:pointer;" id="ithEventual" onclick="selectTipoHogarIndex('eventual')">
+              <span style="font-size:18px;">🤝</span>
+              <div><div style="font-size:13px;font-weight:500;"><span class="es">Tengo ayuda por días</span><span class="en">Occasional help</span></div><div style="font-size:11px;color:#888;"><span class="es">Nana eventual o ayuda ocasional</span><span class="en">By the day · Flexible</span></div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid #1A6B52;border-radius:10px;cursor:pointer;background:#F0F7F4;" id="ithFija" onclick="selectTipoHogarIndex('fija')">
+              <span style="font-size:18px;">👩‍🍳</span>
+              <div><div style="font-size:13px;font-weight:500;"><span class="es">Tengo nana fija</span><span class="en">Full-time nana</span></div><div style="font-size:11px;color:#888;"><span class="es">Empleada doméstica permanente</span><span class="en">Full-time</span></div></div>
+            </div>
           </div>
-          <div class="type-option" id="tipoEventual" onclick="selectTipo('eventual')">
-            <div class="type-option-icon">🤝</div>
-            <div class="type-option-name"><span class="es">Eventual</span><span class="en">Occasional</span></div>
-            <div class="type-option-desc"><span class="es">Por días · Flexible</span><span class="en">By the day · Flex</span></div>
-          </div>
-          <div class="type-option selected" id="tipoFija" onclick="selectTipo('fija')">
-            <div class="type-option-icon">👩‍👧</div>
-            <div class="type-option-name"><span class="es">Nana Fija</span><span class="en">Full-time</span></div>
-            <div class="type-option-desc"><span class="es">Tiempo completo</span><span class="en">Full-time</span></div>
-          </div>
+          <input type="hidden" id="fieldTipoHogar" value="fija">
+        </div>
+
+        <!-- Código familiar invitado — igual que app -->
+        <div style="background:var(--b3);border-radius:10px;padding:12px 14px;margin-bottom:14px;cursor:pointer;" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+          <div style="font-size:13px;font-weight:500;color:var(--b2);">👨‍👩‍👧 <span class="es">¿Te invitó un familiar? Toca aquí</span><span class="en">Invited by family? Tap here</span></div>
+          <div style="font-size:11px;color:var(--txt2);margin-top:2px;"><span class="es">Si tu pareja ya tiene cuenta, ingresa su código familiar</span><span class="en">If your partner has an account, enter their code</span></div>
+        </div>
+        <div style="display:none;margin-bottom:14px;">
+          <input type="text" class="form-input" id="fieldCodigoFamiliar" placeholder="Código familiar (empieza con F)" style="text-transform:uppercase;letter-spacing:4px;font-size:16px;text-align:center;" maxlength="7" />
+          <div style="font-size:11px;color:var(--txt2);margin-top:4px;text-align:center;"><span class="es">Tu familiar te envió este código por WhatsApp</span><span class="en">Your family member sent this code via WhatsApp</span></div>
         </div>
       </div>
 
-      <!-- Banner plan / trial -->
-      <div style="background:var(--g3);border-radius:10px;padding:10px 14px;margin-bottom:14px;display:flex;gap:10px;align-items:center;border:1px solid var(--g4);">
+      <!-- Banner trial — solo familia -->
+      <div id="indexBannerTrial" style="background:var(--g3);border-radius:10px;padding:10px 14px;margin-bottom:14px;display:flex;gap:10px;align-items:center;border:1px solid var(--g4);">
         <div style="font-size:20px;flex-shrink:0;">🎁</div>
         <div>
           <div style="font-size:12px;font-weight:600;color:var(--g);margin-bottom:1px;"><span class="es">15 días de acceso completo gratis</span><span class="en">15 days full access free</span></div>
@@ -2661,9 +2708,7 @@ window.unirseConCodigo = async function() {
         </div>
       </div>
 
-      <div id="regError" style="display:none;font-size:12px;color:#e05c5c;margin-bottom:10px;padding:8px 12px;background:#FEF2F2;border-radius:8px;"></div>
-
-      <!-- Consentimiento datos — requerido por Ley 81 de 2019 -->
+      <!-- Consentimiento — igual que app -->
       <div id="consentFamiliaWrap" style="display:flex;align-items:flex-start;gap:10px;margin-bottom:14px;background:var(--g3);border:1px solid var(--g4);border-radius:10px;padding:12px 14px;">
         <input type="checkbox" id="familiaConsentimiento" style="margin-top:3px;accent-color:var(--g);width:16px;height:16px;flex-shrink:0;" />
         <label for="familiaConsentimiento" style="font-size:12px;color:var(--txt2);line-height:1.6;cursor:pointer;">
@@ -2673,49 +2718,12 @@ window.unirseConCodigo = async function() {
       </div>
 
       <button class="form-submit" id="btnSubmit" onclick="submitForm()">
-        <span class="es">Crear cuenta y empezar 15 días gratis 🎉</span><span class="en">Create account &amp; start free 🎉</span>
+        <span class="es">Crear cuenta y empezar 🎉</span><span class="en">Create account &amp; start 🎉</span>
       </button>
       <div class="form-note">
         🔒 <span class="es">Sin cobro hoy. Al finalizar los 15 días podrás activar tu plan.</span><span class="en">No charge today. After 15 days you can activate your plan.</span>
       </div>
 
-      <!-- Código familiar -->
-      <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--g4);">
-        <button onclick="toggleCodigoFamiliar()" id="btnToggleCodigo"
-          style="width:100%;background:transparent;border:1.5px solid var(--g4);border-radius:99px;padding:12px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--txt2);cursor:pointer;transition:all .2s;">
-          <span class="es">👨‍👩‍👧 ¿Tienes un código familiar? Únete sin plan</span>
-          <span class="en">👨‍👩‍👧 Have a family code? Join without a plan</span>
-        </button>
-        <div id="formCodigoFamiliar" style="display:none;margin-top:14px;">
-          <div style="font-size:12px;color:var(--txt2);margin-bottom:14px;background:var(--g3);padding:10px 12px;border-radius:8px;">
-            <span class="es">Un miembro de tu familia compartió este hogar contigo. Ingresa tus datos y el código para unirte.</span>
-            <span class="en">A family member shared this home with you. Enter your details and the code to join.</span>
-          </div>
-          <div class="form-group">
-            <label class="form-label"><span class="es">Tu nombre</span><span class="en">Your name</span></label>
-            <input type="text" class="form-input" id="cfNombre" placeholder="¿Cómo te llamas?" />
-          </div>
-          <div class="form-group">
-            <label class="form-label"><span class="es">Correo electrónico</span><span class="en">Email address</span></label>
-            <input type="email" class="form-input" id="cfCorreo" placeholder="tucorreo@email.com" />
-          </div>
-          <div class="form-group">
-            <label class="form-label"><span class="es">Contraseña</span><span class="en">Password</span></label>
-            <input type="password" class="form-input" id="cfPassword" placeholder="Mínimo 6 caracteres" />
-          </div>
-          <div class="form-group">
-            <label class="form-label"><span class="es">Código familiar</span><span class="en">Family code</span></label>
-            <input type="text" class="form-input" id="cfCodigo" placeholder="Ej: FG2QD0"
-              style="text-transform:uppercase;letter-spacing:.1em;font-weight:600;font-size:16px;" />
-          </div>
-          <div id="cfError" style="display:none;font-size:12px;color:#e05c5c;margin-bottom:10px;padding:8px 12px;background:#FEF2F2;border-radius:8px;"></div>
-          <button onclick="unirseConCodigo()"
-            style="width:100%;background:var(--g);color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;padding:14px;border-radius:99px;border:none;cursor:pointer;transition:all .2s;"
-            id="btnUnirse">
-            <span class="es">Unirme al hogar →</span><span class="en">Join home →</span>
-          </button>
-        </div>
-      </div>
     </div><!-- /modalForm -->
 
     <!-- Paso 2 desactivado — ya no se usa en el flujo de registro -->
@@ -4884,6 +4892,49 @@ document.querySelectorAll('a[href="#"], .btn-primary, .pricing-btn, .nav-cta').f
   }
 });
 
+// ── TABS FAMILIA / NANA EN INDEX ──
+let tipoRegIndex = 'familia';
+
+window.setTipoRegIndex = function(tipo, btn) {
+  tipoRegIndex = tipo;
+  document.querySelectorAll('#modalForm .tab-opt').forEach(b => b.classList.remove('activo'));
+  if (btn) btn.classList.add('activo');
+  document.getElementById('indexCamposNana').style.display    = tipo === 'nana'    ? 'block' : 'none';
+  document.getElementById('indexCamposFamilia').style.display = tipo === 'familia' ? 'block' : 'none';
+  document.getElementById('indexBannerTrial').style.display   = tipo === 'familia' ? 'flex'  : 'none';
+  document.getElementById('indexWrapTelefono').style.display  = tipo === 'familia' ? 'block' : 'none';
+};
+
+window.selTipoNanaIndex = function(tipo) {
+  const activo   = { border:'1.5px solid #1A6B52', background:'#F0F7F4' };
+  const inactivo = { border:'1.5px solid #e0e0e0', background:'' };
+  const isFija   = tipo === 'fija';
+  const elFija     = document.getElementById('itnFija');
+  const elEventual = document.getElementById('itnEventual');
+  if (elFija)     { elFija.style.border = isFija ? activo.border : inactivo.border; elFija.style.background = isFija ? activo.background : ''; }
+  if (elEventual) { elEventual.style.border = !isFija ? activo.border : inactivo.border; elEventual.style.background = !isFija ? activo.background : ''; }
+  const h = document.getElementById('fieldTipoNana');
+  if (h) h.value = tipo;
+};
+
+window.selectTipoHogarIndex = function(tipo) {
+  tipoSeleccionado = tipo;
+  planSeleccionado = tipo;
+  const map = { hogar:'ithSinNana', eventual:'ithEventual', fija:'ithFija' };
+  const activo   = { border:'1.5px solid #1A6B52', background:'#F0F7F4' };
+  const inactivo = { border:'1.5px solid #e0e0e0', background:'' };
+  Object.entries(map).forEach(([t, id]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const sel = t === tipo;
+    el.style.border     = sel ? activo.border : inactivo.border;
+    el.style.background = sel ? activo.background : '';
+  });
+  const h = document.getElementById('fieldTipoHogar');
+  if (h) h.value = tipo;
+  actualizarPlanVisual();
+};
+
 // ── SELECTOR TIPO NANA ──
 function selectTipo(tipo) {
   tipoSeleccionado = tipo;
@@ -4982,36 +5033,93 @@ async function submitForm() {
   const btn      =  document.getElementById('btnSubmit');
   const errEl    =  document.getElementById('regError');
 
+  const esNana = tipoRegIndex === 'nana';
+
   const showErr = (msg) => {
     if (errEl) { errEl.textContent = msg; errEl.style.display = 'block'; }
-    if (btn)   { btn.disabled = false; if (btn.querySelector('.es')) btn.querySelector('.es').textContent = 'Crear cuenta y empezar 15 días gratis 🎉'; }
+    if (btn)   { btn.disabled = false; if (btn.querySelector('.es')) btn.querySelector('.es').textContent = 'Crear cuenta y empezar 🎉'; }
   };
 
-  if (!nombre)            return showErr('⚠️ Escribe tu nombre.');
-  if (!apellido)          return showErr('⚠️ Escribe tu apellido.');
+  if (!nombre)                         return showErr('⚠️ Escribe tu nombre.');
+  if (!apellido && !esNana)            return showErr('⚠️ Escribe tu apellido.');
   if (!correo || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) return showErr('⚠️ Correo inválido.');
-  if (!telefono)          return showErr('⚠️ Agrega tu número de WhatsApp.');
-  if (pass1.length < 6)  return showErr('⚠️ La contraseña debe tener mínimo 6 caracteres.');
-  if (pass1 !== pass2)   return showErr('⚠️ Las contraseñas no coinciden.');
-  const consentFamilia = document.getElementById('familiaConsentimiento');
-  if (consentFamilia && !consentFamilia.checked) {
-    consentFamilia.style.outline = '2px solid #e05c5c';
-    setTimeout(() => consentFamilia.style.outline = '', 2000);
+  if (!telefono && !esNana)            return showErr('⚠️ Agrega tu número de WhatsApp.');
+  if (pass1.length < 6)               return showErr('⚠️ La contraseña debe tener mínimo 6 caracteres.');
+  if (pass1 !== pass2)                 return showErr('⚠️ Las contraseñas no coinciden.');
+  const consentEl = document.getElementById('familiaConsentimiento');
+  if (consentEl && !consentEl.checked) {
+    consentEl.style.outline = '2px solid #e05c5c';
+    setTimeout(() => consentEl.style.outline = '', 2000);
     return showErr('⚠️ Debes aceptar la Política de Privacidad y los Términos de uso para continuar.');
   }
   if (errEl) errEl.style.display = 'none';
   if (btn)  { btn.disabled = true; if (btn.querySelector('.es')) btn.querySelector('.es').textContent = 'Creando cuenta...'; }
 
+  // ── REGISTRO NANA ────────────────────────────────────────────────────────
+  if (esNana) {
+    let uid2;
+    try {
+      uid2 = (await window.__fbCreateUser(correo, pass1)).user.uid;
+    } catch(e) {
+      if (e.code==='auth/email-already-in-use') return showErr('⚠️ Este correo ya tiene cuenta. Entra en mynana.app/app.html');
+      if (e.code==='auth/weak-password')        return showErr('⚠️ Contraseña muy débil.');
+      return showErr('✕ ' + (e.message||'Error al crear cuenta.'));
+    }
+    try {
+      const tipoNana = document.getElementById('fieldTipoNana')?.value || 'fija';
+      const cedula   = document.getElementById('fieldCedula')?.value?.trim() || null;
+      const codigoN  = document.getElementById('fieldCodigoNana')?.value?.trim().toUpperCase() || null;
+      await window.__fbSetDoc(window.__fbDoc('usuarios', uid2), {
+        nombre, apellido: apellido || null,
+        nombreCompleto: (nombre + ' ' + (apellido||'')).trim(),
+        email: correo, tipo: 'nana', subtipo: tipoNana,
+        cedula, telefono: telefono || null, uid: uid2,
+        fecha: new Date().toISOString(), creadoA: window.__fbTs(),
+      });
+      if (codigoN) {
+        // Vincular con familia si viene código
+        try {
+          const codSnap = await window.__fbGetDoc(window.__fbDoc('codigos', codigoN));
+          if (codSnap.exists() && !codSnap.data().usado) {
+            const familiaUid2 = codSnap.data().familiaUid;
+            const qHogar2 = window.__fbQuery(window.__fbCol('hogares'), window.__fbWhere('participantes','array-contains',familiaUid2));
+            const snapH2  = await window.__fbGetDocs(qHogar2);
+            if (!snapH2.empty) {
+              const hogarRef2 = snapH2.docs[0].ref;
+              const parts2    = snapH2.docs[0].data().participantes || [];
+              if (!parts2.includes(uid2)) await window.__fbUpdateDoc(hogarRef2, { participantes: [...parts2, uid2] });
+            }
+            await window.__fbUpdateDoc(window.__fbDoc('codigos', codigoN), { usado: true, nanaUid: uid2, usadoA: window.__fbTs() });
+          }
+        } catch(ce) { console.warn('Código nana no vinculado:', ce); }
+      }
+      try {
+        await fetch('/.netlify/functions/send-email', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ tipo:'nana', nombre, email:correo })
+        });
+      } catch(e) { console.log('Email bienvenida no enviado:', e); }
+    } catch(e) {
+      console.error(e); return showErr('✕ Error guardando datos. Intenta de nuevo.');
+    }
+    document.getElementById('modalForm').style.display = 'none';
+    window.location.href = '/app.html';
+    return;
+  }
+
+  // ── REGISTRO FAMILIA ─────────────────────────────────────────────────────
   const planMap = {
     hogar:    { nombre:'Plan Hogar',    url:'https://checkout.paguelofacil.com/mynana/4b6eced6' },
     eventual: { nombre:'Hogar Flexible',url:'https://checkout.paguelofacil.com/mynana/586d0e75' },
     fija:     { nombre:'Hogar Completo',url:'https://checkout.paguelofacil.com/mynana/e089b39a' },
   };
-  const plan = planMap[planSeleccionado] || planMap['fija'];
+  // Leer tipo del selector nuevo (fieldTipoHogar) o fallback al selector antiguo
+  const tipoHogarActual = document.getElementById('fieldTipoHogar')?.value || tipoSeleccionado || 'fija';
+  const planActual      = tipoHogarActual === 'hogar' ? 'hogar' : tipoHogarActual === 'eventual' ? 'eventual' : 'fija';
+  const plan = planMap[planActual] || planMap['fija'];
   const hoy  = new Date(); hoy.setHours(0,0,0,0);
   const fin  = new Date(hoy); fin.setDate(hoy.getDate()+15);
   const fmt  = d => d.toISOString().split('T')[0];
-  const fechaStr = fin.toLocaleDateString('es-PA',{day:'numeric',month:'long',year:'numeric'});
 
   let t = 0;
   while (!window.__fbCreateUser && t<30) { await new Promise(r=>setTimeout(r,100)); t++; }
@@ -5040,7 +5148,7 @@ async function submitForm() {
         actualizadoA:window.__fbTs(),
       },
     });
-    const tipoH = tipoSeleccionado||'fija';
+    const tipoH = tipoHogarActual;
     await window.__fbAddDoc(window.__fbCol('hogares'),{
       participantes:[uid], creadoPor:uid, creado:window.__fbTs(), tipoHogar:tipoH,
     });
