@@ -1136,7 +1136,7 @@ service cloud.firestore {
           <div id="bannerCompartirNana" style="font-size:13px;font-weight:700;color:#fff;margin-bottom:3px;">🔗 Comparte el acceso con tu nana</div>
           <div style="font-size:12px;color:rgba(255,255,255,.75);line-height:1.4;">mynana.app/app.html</div>
         </div>
-        <a href="https://wa.me/?text=Hola%2C%20te%20invito%20a%20My%20Nana%20%F0%9F%8F%A0%0Amynana.app%2Fapp.html" target="_blank" style="background:#25D366;color:#fff;font-size:12px;font-weight:700;padding:8px 14px;border-radius:99px;text-decoration:none;white-space:nowrap;flex-shrink:0;display:inline-block;margin-top:2px;">📲 Enviar código a mi nana</a>
+        <a href="https://wa.me/?text=Hola%2C%20te%20invito%20a%20My%20Nana%20%F0%9F%8F%A0%0Amynana.app%2Fapp.html" target="_blank" style="background:#25D366;color:#fff;font-size:12px;font-weight:700;padding:8px 14px;border-radius:99px;text-decoration:none;white-space:nowrap;flex-shrink:0;display:inline-block;margin-top:2px;">💬 WhatsApp</a>
       </div>
     </div>
 
@@ -2925,18 +2925,9 @@ async function mostrarBannerVinculacion(uid, db) {
       <div style="font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:600;color:var(--g);letter-spacing:8px;">${codigo}</div>
       <div style="font-size:11px;color:#bbb;margin-top:4px;">De un solo uso · La vinculación es permanente</div>
     </div>
-    <div style="background:#F9F5F0;border-radius:10px;padding:12px 14px;margin-bottom:12px;border:1px solid var(--g4);">
-      <div style="font-size:12px;font-weight:600;color:var(--txt);margin-bottom:8px;">Vincula a tu nana en 3 pasos:</div>
-      <div style="font-size:12px;color:var(--txt2);line-height:2;">
-        1️⃣ Copia este código<br>
-        2️⃣ Envíalo a tu nana por WhatsApp<br>
-        3️⃣ Tu nana debe crear su cuenta e ingresar este código
-      </div>
-      <div style="font-size:12px;color:var(--g);font-weight:500;margin-top:8px;">🎉 Una vez lo haga, quedarán conectadas automáticamente.</div>
-    </div>
     <div style="display:flex;gap:8px;">
       <button onclick="copiarCodigo('${codigo}')" style="flex:1;background:var(--g3);color:var(--g);border:none;border-radius:99px;padding:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">📋 Copiar código</button>
-      <a href="https://wa.me/?text=Hola%2C%20te%20invito%20a%20My%20Nana%20%F0%9F%8F%A0%0A%0APara%20vincularte%20conmigo%3A%0A1%EF%B8%8F%E2%83%A3%20Entra%20a%3A%20https%3A%2F%2Fmynana.app%2Fapp.html%0A2%EF%B8%8F%E2%83%A3%20Crea%20tu%20cuenta%20como%20Nana%0A3%EF%B8%8F%E2%83%A3%20En%20tu%20dashboard%20ingresa%20este%20c%C3%B3digo%3A%20*${codigo}*%0A%0A%C2%A1Nos%20vemos%20adentro!%20%F0%9F%92%9A" target="_blank" style="flex:1;background:#25D366;color:#fff;border:none;border-radius:99px;padding:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px;">📲 Enviar código a mi nana</a>
+      <a href="https://wa.me/?text=Hola%2C%20te%20invito%20a%20My%20Nana%20%F0%9F%8F%A0%0A%0APara%20vincularte%20conmigo%3A%0A1%EF%B8%8F%E2%83%A3%20Entra%20a%3A%20https%3A%2F%2Fmynana.app%2Fapp.html%0A2%EF%B8%8F%E2%83%A3%20Crea%20tu%20cuenta%20como%20Nana%0A3%EF%B8%8F%E2%83%A3%20En%20tu%20dashboard%20ingresa%20este%20c%C3%B3digo%3A%20*${codigo}*%0A%0A%C2%A1Nos%20vemos%20adentro!%20%F0%9F%92%9A" target="_blank" style="flex:1;background:#25D366;color:#fff;border:none;border-radius:99px;padding:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px;">💬 WhatsApp</a>
     </div>`;
 
   const dashContent = document.querySelector('#screen-familia .dash-content');
