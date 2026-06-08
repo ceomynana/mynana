@@ -570,16 +570,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
               <button class="modo-btn activo" id="modoBtnCompartido" onclick="cambiarModoMenu('compartido')" style="font-size:11px;padding:5px 9px;">🍽 Todos</button>
               <button class="modo-btn" id="modoBtnMiembro"    onclick="cambiarModoMenu('por_miembro')"  style="font-size:11px;padding:5px 9px;">👥 Por miembro</button>
             </div>
-            <!-- Toggle saludable -->
-            <div style="display:flex;align-items:center;gap:6px;background:var(--cr);border-radius:99px;padding:4px 10px;border:1px solid var(--g4);">
-              <span style="font-size:14px;">🥗</span>
-              <span style="font-size:12px;color:var(--txt2);font-weight:500;">Saludable</span>
-              <label style="position:relative;width:36px;height:20px;flex-shrink:0;">
-                <input type="checkbox" id="toggleSaludable" onchange="cambiarModo(this.checked)" style="opacity:0;width:0;height:0;"/>
-                <span id="sliderSaludable" style="position:absolute;inset:0;background:#ddd;border-radius:99px;cursor:pointer;transition:.3s;"></span>
-                <span id="knobSaludable" style="position:absolute;width:14px;height:14px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.3s;"></span>
-              </label>
-            </div>
             <div id="menuDiaAcciones"></div>
           </div>
         </div>
@@ -2335,7 +2325,7 @@ window.guardarPlato = async (diaKey, tiempoId) => {
   if (!menuData[diaKey]) menuData[diaKey] = {};
 
   // ── Modo por_miembro con miembro específico ──
-  // Guardar en porMiembro[uid] — NO tocar el plato global ni el de otros miembros
+  // Escribe en porMiembro[uid] — NO toca el plato global ni el de otros miembros
   if (modoMenu === 'por_miembro' && miembroActivo !== 'todos') {
     if (!menuData[diaKey][tiempoId]) menuData[diaKey][tiempoId] = {};
     if (!menuData[diaKey][tiempoId].porMiembro) menuData[diaKey][tiempoId].porMiembro = {};
@@ -2357,13 +2347,8 @@ window.guardarPlato = async (diaKey, tiempoId) => {
   // ── Modo compartido / Todos ──
   const existente = menuData[diaKey][tiempoId] || {};
   const miembrosExistentes = existente.miembros || (modoMenu === 'por_miembro' ? ['todos'] : undefined);
-
-  menuData[diaKey][tiempoId] = {
-    ...existente,   // preservar porMiembro y otros campos
-    nombre,
-  };
+  menuData[diaKey][tiempoId] = { ...existente, nombre };
   if (miembrosExistentes) menuData[diaKey][tiempoId].miembros = miembrosExistentes;
-
   const ings = getIngredientesActuales(nombre);
   if (ings) menuData[diaKey][tiempoId].ingredientes = [...ings];
   else if (existente.nombre !== nombre) menuData[diaKey][tiempoId].ingredientes = [];
@@ -2377,10 +2362,31 @@ window.guardarPlato = async (diaKey, tiempoId) => {
 
 window.usarSugerencia = async (tiempoId, plato, diaKey) => {
   if (!menuData[diaKey]) menuData[diaKey] = {};
+
+  // En modo por_miembro con miembro específico: guardar en porMiembro[uid]
+  if (modoMenu === 'por_miembro' && miembroActivo !== 'todos') {
+    if (!menuData[diaKey][tiempoId]) menuData[diaKey][tiempoId] = {};
+    if (!menuData[diaKey][tiempoId].porMiembro) menuData[diaKey][tiempoId].porMiembro = {};
+    const ings = getIngredientesActuales(plato);
+    menuData[diaKey][tiempoId].porMiembro[miembroActivo] = {
+      nombre: plato,
+      ingredientes: ings ? [...ings] : [],
+    };
+    await guardarMenu();
+    renderMenuDia();
+    generarListaMercado();
+    const m = miembrosHogar.find(x => x.uid === miembroActivo);
+    showToast(`✅ ${plato} guardado para ${m?.nombre?.split(' ')[0] || 'miembro'}`);
+    return;
+  }
+
+  // Modo compartido
   if (!menuData[diaKey][tiempoId]) menuData[diaKey][tiempoId] = {};
   menuData[diaKey][tiempoId].nombre = plato;
   if (getIngredientesActuales(plato)) menuData[diaKey][tiempoId].ingredientes = [...getIngredientesActuales(plato)];
   await guardarMenu();
+  renderMenuDia();
+  generarListaMercado();
   showToast(`✅ ${plato} seleccionado`);
 };
 
@@ -2618,12 +2624,10 @@ document.getElementById('modalPerfilMiembro')?.addEventListener('click', functio
 window.eliminarPlato = async (diaKey, tiempoId) => {
   if (!menuData[diaKey]) return;
 
-  // ── Modo por_miembro con miembro específico ──
-  // Solo eliminar el plato personal de ese miembro, no el global
+  // ── Modo por_miembro con miembro específico: solo borra su plato personal ──
   if (modoMenu === 'por_miembro' && miembroActivo !== 'todos') {
     if (!menuData[diaKey][tiempoId]?.porMiembro?.[miembroActivo]) return;
     delete menuData[diaKey][tiempoId].porMiembro[miembroActivo];
-    // Usar updateDoc con ruta de campo exacta para que Firestore realmente elimine el campo
     await updateDoc(doc(db, 'hogares', hogarId, 'menus', semanaId), {
       [`${diaKey}.${tiempoId}.porMiembro.${miembroActivo}`]: deleteField()
     });
@@ -2634,8 +2638,7 @@ window.eliminarPlato = async (diaKey, tiempoId) => {
     return;
   }
 
-  // ── Modo compartido: eliminar plato global ──
-  // Debe usar updateDoc + deleteField para que Firestore realmente borre el campo
+  // ── Modo compartido: eliminar plato global con deleteField ──
   delete menuData[diaKey][tiempoId];
   await updateDoc(doc(db, 'hogares', hogarId, 'menus', semanaId), {
     [`${diaKey}.${tiempoId}`]: deleteField()
@@ -2858,13 +2861,15 @@ function generarListaMercado() {
       const plato = diaMenu[t.id];
       if (!plato?.nombre) return;
 
+      // Modo por_miembro: recopilar ingredientes de todos los miembros asignados
+      // Modo compartido: usar plato principal (compatibilidad total con menús existentes)
       const platosAConsolidar = [];
       if (modoMenu === 'por_miembro' && plato.miembros && plato.miembros.length) {
         platosAConsolidar.push(plato);
       } else {
         platosAConsolidar.push(plato);
       }
-      // Siempre incluir platos personalizados por miembro
+      // Incluir platos personalizados por miembro en la lista del mercado
       if (plato.porMiembro) {
         Object.values(plato.porMiembro).forEach(pm => {
           if (pm?.nombre) platosAConsolidar.push(pm);
