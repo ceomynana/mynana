@@ -3312,6 +3312,136 @@ window.unirseConCodigo = async function() {
   </div>
 </section>
 
+<!-- ══ PRECIOS ══ -->
+<section class="pricing-section" id="pricing">
+  <div class="section-inner">
+    <div class="reveal" style="text-align:center;max-width:580px;margin:0 auto;">
+      <div class="section-tag"><span class="es">Precios</span><span class="en">Pricing</span></div>
+      <h2 class="section-title"><span class="es">Un plan para cada hogar.</span><span class="en">A plan for every home.</span></h2>
+      <p class="section-sub"><span class="es">Empieza con 15 días gratis. Sin tarjeta, sin compromiso, cancela cuando quieras.</span><span class="en">Start with a 15-day free trial. No card, no commitment, cancel anytime.</span></p>
+
+      <!-- INTERACTIVO: selector de tipo de hogar -->
+      <div class="plan-chips" role="group" aria-label="Tipo de hogar">
+        <button type="button" class="plan-chip" onclick="resaltarPlan('hogar', this)">
+          <span style="font-size:16px;">🏠</span> <span class="es">Sin nana</span><span class="en">No nana</span>
+        </button>
+        <button type="button" class="plan-chip" onclick="resaltarPlan('eventual', this)">
+          <span style="font-size:16px;">🤝</span> <span class="es">Ayuda ocasional</span><span class="en">Occasional help</span>
+        </button>
+        <button type="button" class="plan-chip activo" onclick="resaltarPlan('fija', this)">
+          <span style="font-size:16px;">👩‍👧</span> <span class="es">Nana fija</span><span class="en">Full-time nana</span>
+        </button>
+      </div>
+      <div class="plan-chips-hint"><span class="es">Toca tu situación y te mostramos el plan ideal.</span><span class="en">Tap your situation and we'll highlight the right plan.</span></div>
+    </div>
+
+    <div class="pricing-grid">
+
+      <!-- PLAN HOGAR -->
+      <div class="pricing-card reveal" id="pcHogar">
+        <div class="pricing-top">
+          <div class="pricing-name"><span class="es">Plan Hogar</span><span class="en">Home Plan</span></div>
+          <div class="pricing-target"><span class="es">Sin nana · Organiza tu hogar en familia</span><span class="en">No nana · Family home organization</span></div>
+          <div class="pricing-amount">$4.99</div>
+          <div class="pricing-period"><span class="es">al mes</span><span class="en">per month</span></div>
+        </div>
+        <ul class="pricing-feats">
+          <li class="pricing-feat"><span class="es">Tareas del hogar y rutinas</span><span class="en">Home tasks and routines</span></li>
+          <li class="pricing-feat"><span class="es">Menú semanal + lista del súper</span><span class="en">Weekly menu + grocery list</span></li>
+          <li class="pricing-feat"><span class="es">Planificador IA semanal</span><span class="en">AI weekly planner</span></li>
+          <li class="pricing-feat"><span class="es">Eventos y recordatorios del hogar</span><span class="en">Home events and reminders</span></li>
+          <li class="pricing-feat"><span class="es">Miembros de la familia incluidos</span><span class="en">Family members included</span></li>
+        </ul>
+        <button class="pricing-btn" onclick="abrirFormWithPlan('hogar')"><span class="es">Empezar gratis →</span><span class="en">Start free →</span></button>
+      </div>
+
+      <!-- NANA EVENTUAL -->
+      <div class="pricing-card reveal" id="pcEventual">
+        <div class="pricing-top">
+          <div class="pricing-name"><span class="es">Nana Eventual</span><span class="en">Occasional Help</span></div>
+          <div class="pricing-target"><span class="es">Ayuda ocasional o por días</span><span class="en">Occasional or daily help</span></div>
+          <div class="pricing-amount">$6.99</div>
+          <div class="pricing-period"><span class="es">al mes</span><span class="en">per month</span></div>
+        </div>
+        <ul class="pricing-feats">
+          <li class="pricing-feat"><span class="es">Todo lo del Plan Hogar</span><span class="en">Everything in Home Plan</span></li>
+          <li class="pricing-feat"><span class="es">Asignación de tareas por visita</span><span class="en">Task assignment per visit</span></li>
+          <li class="pricing-feat"><span class="es">Multi-familia para la ayuda</span><span class="en">Multi-family for the helper</span></li>
+          <li class="pricing-feat"><span class="es">Recordatorios de visitas</span><span class="en">Visit reminders</span></li>
+          <li class="pricing-feat"><span class="es">Comunicación por hogar</span><span class="en">Communication per home</span></li>
+        </ul>
+        <button class="pricing-btn" onclick="abrirFormWithPlan('eventual')"><span class="es">Empezar gratis →</span><span class="en">Start free →</span></button>
+      </div>
+
+      <!-- NANA FIJA — DESTACADO -->
+      <div class="pricing-card featured reveal" id="pcFija">
+        <div class="pricing-top">
+          <div class="pricing-name"><span class="es">Nana Fija</span><span class="en">Full-time Nana</span></div>
+          <div class="pricing-target"><span class="es">Para empleada doméstica permanente</span><span class="en">For a full-time housekeeper</span></div>
+          <div class="pricing-amount">$9.99</div>
+          <div class="pricing-period"><span class="es">al mes · todo incluido</span><span class="en">per month · all inclusive</span></div>
+        </div>
+        <ul class="pricing-feats">
+          <li class="pricing-feat"><span class="es">Todo lo de Nana Eventual</span><span class="en">Everything in Occasional Help</span></li>
+          <li class="pricing-feat"><span class="es">Portal completo de la nana</span><span class="en">Full nana portal</span></li>
+          <li class="pricing-feat"><span class="es">Chat familiar con fotos y audios</span><span class="en">Family chat with photos and audio</span></li>
+          <li class="pricing-feat"><span class="es">Score de confianza · Nómina · Décimo</span><span class="en">Trust score · Payroll · Bonus</span></li>
+          <li class="pricing-feat"><span class="es">Contratos digitales · Ley panameña</span><span class="en">Digital contracts · Panamanian law</span></li>
+        </ul>
+        <button class="pricing-btn" onclick="abrirFormWithPlan('fija')"><span class="es">Empezar gratis →</span><span class="en">Start free →</span></button>
+      </div>
+
+    </div>
+
+    <div class="reveal" style="display:inline-flex;align-items:center;gap:8px;background:var(--g3);border-radius:99px;padding:9px 18px;margin:36px auto 0;border:1px solid var(--g4);">
+      <span style="font-size:15px;">🛡️</span>
+      <span style="font-size:13px;color:var(--g);font-weight:500;"><span class="es">Garantía de satisfacción · Sin contrato de permanencia</span><span class="en">Satisfaction guarantee · No lock-in contract</span></span>
+    </div>
+  </div>
+
+  <!-- CSS local: chips interactivos + estado recomendado -->
+  <style>
+    #pricing .section-inner { text-align:center; }
+    .plan-chips { display:inline-flex; flex-wrap:wrap; justify-content:center; gap:8px; background:#fff; border:1px solid var(--g4); border-radius:99px; padding:6px; margin-top:28px; }
+    .plan-chip { display:inline-flex; align-items:center; gap:7px; border:none; background:transparent; color:var(--txt2); font-family:var(--font-body); font-size:13px; font-weight:500; padding:9px 18px; border-radius:99px; cursor:pointer; transition:var(--transition); white-space:nowrap; }
+    .plan-chip:hover { color:var(--g); }
+    .plan-chip.activo { background:var(--g); color:#fff; box-shadow:0 4px 14px rgba(26,107,82,.25); }
+    .plan-chips-hint { font-size:12px; color:var(--txt2); margin-top:12px; }
+    .pricing-card { scroll-margin-top:90px; }
+    .pricing-card.recomendado { border-color:var(--g); box-shadow:var(--shadow-lg); transform:translateY(-4px); }
+    .pricing-card.recomendado .pricing-btn { background:var(--g); color:#fff; }
+    .pricing-grid { margin-top:40px; }
+    @media(max-width:640px){ .plan-chips{ width:100%; flex-direction:column; border-radius:18px; } .plan-chip{ justify-content:center; } }
+  </style>
+
+  <script>
+    (function(){
+      var MAP = { hogar:'pcHogar', eventual:'pcEventual', fija:'pcFija' };
+      window.resaltarPlan = function(tipo, btn){
+        // chips
+        document.querySelectorAll('#pricing .plan-chip').forEach(function(c){ c.classList.remove('activo'); });
+        if (btn) btn.classList.add('activo');
+        // cards
+        Object.values(MAP).forEach(function(id){
+          var el = document.getElementById(id);
+          if (el) el.classList.remove('recomendado');
+        });
+        var target = document.getElementById(MAP[tipo]);
+        if (target){
+          target.classList.add('recomendado');
+          target.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
+        }
+      };
+      // Estado inicial: Nana Fija recomendada (coincide con el destacado)
+      document.addEventListener('DOMContentLoaded', function(){
+        var f = document.getElementById('pcFija');
+        if (f) f.classList.add('recomendado');
+      });
+    })();
+  </script>
+</section>
+
+
 <!-- PARA LA NANA — bloque unificado -->
 <section id="soy-nana" style="background:var(--b3);padding:100px 40px;">
   <div class="section-inner">
