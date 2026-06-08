@@ -4254,7 +4254,7 @@ async function submitForm() {
   if (consentEl && !consentEl.checked) {
     consentEl.style.outline = '2px solid #e05c5c';
     setTimeout(() => consentEl.style.outline = '', 2000);
-    return showErr('⚠️ Debes aceptar la Política de Privacidad y los Términos de uso para continuar.');
+    return showErr('⚠️ Debes aceptar los términos para continuar.');
   }
   if (errEl) errEl.style.display = 'none';
   if (btn)  { btn.disabled = true; if (btn.querySelector('.es')) btn.querySelector('.es').textContent = 'Creando cuenta...'; }
@@ -4265,9 +4265,16 @@ async function submitForm() {
     try {
       uid2 = (await window.__fbCreateUser(correo, pass1)).user.uid;
     } catch(e) {
-      if (e.code==='auth/email-already-in-use') return showErr('⚠️ Este correo ya tiene cuenta. Entra en mynana.app/app.html');
-      if (e.code==='auth/weak-password')        return showErr('⚠️ Contraseña muy débil.');
-      return showErr('✕ ' + (e.message||'Error al crear cuenta.'));
+      console.error('REGISTRO_ERROR [Nana Auth]:', e.code, e.message, e);
+      if (e.code === 'auth/email-already-in-use')
+        return showErr('⚠️ Este correo ya tiene una cuenta. Inicia sesión en mynana.app/app.html');
+      if (e.code === 'auth/weak-password')
+        return showErr('⚠️ La contraseña es muy débil. Usa mínimo 6 caracteres.');
+      if (e.code === 'auth/network-request-failed')
+        return showErr('❌ Sin conexión a internet. Verifica tu red e intenta.');
+      if (e.code === 'auth/too-many-requests')
+        return showErr('⚠️ Demasiados intentos. Espera unos minutos e intenta de nuevo.');
+      return showErr('❌ No se pudo crear la cuenta: ' + (e.message || e.code || 'Error desconocido'));
     }
     try {
       const tipoNana = document.getElementById('fieldTipoNana')?.value || 'fija';
@@ -4304,7 +4311,10 @@ async function submitForm() {
         });
       } catch(e) { console.log('Email bienvenida no enviado:', e); }
     } catch(e) {
-      console.error(e); return showErr('✕ Error guardando datos. Intenta de nuevo.');
+      console.error('REGISTRO_ERROR [Nana Firestore]:', e.code, e.message, e);
+      if (e.code === 'permission-denied')
+        return showErr('❌ Error de permisos. Contacta soporte: hola@mynana.app');
+      return showErr('❌ Error guardando datos. Intenta de nuevo.');
     }
     document.getElementById('modalForm').style.display = 'none';
     window.location.href = '/app.html';
@@ -4324,19 +4334,32 @@ async function submitForm() {
   const hoy  = new Date(); hoy.setHours(0,0,0,0);
   const fin  = new Date(hoy); fin.setDate(hoy.getDate()+15);
   const fmt  = d => d.toISOString().split('T')[0];
+  const fechaStr = fin.toLocaleDateString('es-PA', { day:'numeric', month:'long', year:'numeric' });
 
+  // Esperar hasta 10s a que el módulo Firebase esté listo (red lenta o primera visita)
   let t = 0;
-  while (!window.__fbCreateUser && t<30) { await new Promise(r=>setTimeout(r,100)); t++; }
-  if (!window.__fbCreateUser) return showErr('\u274c Error de conexión. Recarga e intenta.');
+  while (!window.__fbCreateUser && t < 100) { await new Promise(r=>setTimeout(r,100)); t++; }
+  if (!window.__fbCreateUser) {
+    console.error('REGISTRO_ERROR: Firebase module not ready after 10s');
+    return showErr('❌ Error de conexión. Recarga la página e intenta de nuevo.');
+  }
 
   let uid;
   try {
     uid = (await window.__fbCreateUser(correo, pass1)).user.uid;
   } catch(e) {
-    if (e.code==='auth/email-already-in-use') return showErr('\u26a0\ufe0f Este correo ya tiene cuenta. Entra en mynana.app/app.html');
-    if (e.code==='auth/weak-password')        return showErr('\u26a0\ufe0f Contraseña muy débil.');
-    if (e.code==='auth/invalid-email')        return showErr('\u26a0\ufe0f Correo inválido.');
-    return showErr('\u274c ' + (e.message||'Error al crear cuenta.'));
+    console.error('REGISTRO_ERROR [Auth]:', e.code, e.message, e);
+    if (e.code === 'auth/email-already-in-use')
+      return showErr('⚠️ Este correo ya tiene una cuenta. Inicia sesión en mynana.app/app.html');
+    if (e.code === 'auth/weak-password')
+      return showErr('⚠️ La contraseña es muy débil. Usa mínimo 6 caracteres.');
+    if (e.code === 'auth/invalid-email')
+      return showErr('⚠️ El correo no es válido. Revísalo.');
+    if (e.code === 'auth/network-request-failed')
+      return showErr('❌ Sin conexión a internet. Verifica tu red e intenta.');
+    if (e.code === 'auth/too-many-requests')
+      return showErr('⚠️ Demasiados intentos. Espera unos minutos e intenta de nuevo.');
+    return showErr('❌ No se pudo crear la cuenta: ' + (e.message || e.code || 'Error desconocido'));
   }
 
   try {
@@ -4366,7 +4389,12 @@ async function submitForm() {
       });
     } catch(e) { console.log('Email bienvenida no enviado:', e); }
   } catch(e) {
-    console.error(e); return showErr('\u274c Error guardando datos. Intenta de nuevo.');
+    console.error('REGISTRO_ERROR [Firestore]:', e.code, e.message, e);
+    if (e.code === 'permission-denied')
+      return showErr('❌ Error de permisos. Contacta soporte: hola@mynana.app');
+    if (e.code === 'unavailable' || e.name === 'FirebaseError')
+      return showErr('❌ Error de conexión con la base de datos. Intenta nuevamente.');
+    return showErr('❌ Error guardando datos. Intenta de nuevo.');
   }
 
   document.getElementById('modalForm').style.display = 'none';
