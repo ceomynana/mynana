@@ -2413,7 +2413,7 @@ body.lang-es .es{display:initial !important;}
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, doc, setDoc, addDoc, getDoc, collection, updateDoc, arrayUnion, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getFirestore, doc, setDoc, addDoc, getDoc, getDocs, collection, query, where, updateDoc, arrayUnion, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyDDJRJ8A8P507lllGRBOoXO30ESAH1GAnw",
@@ -2443,6 +2443,11 @@ window.__fbAddDoc  = (c,d) => addDoc(c,d);
 window.__fbDoc     = (...a) => doc(db,...a);
 window.__fbCol     = (...a) => collection(db,...a);
 window.__fbTs      = () => serverTimestamp();
+window.__fbGetDoc    = (r)      => getDoc(r);
+window.__fbGetDocs   = (q)      => getDocs(q);
+window.__fbUpdateDoc = (r,d)    => updateDoc(r,d);
+window.__fbQuery     = (...a)   => query(...a);
+window.__fbWhere     = (...a)   => where(...a);
 
 // Función para generar email interno si la nana no tiene
 function generarEmailInterno(nombre, apellido) {
