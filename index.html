@@ -2409,14 +2409,11 @@ body.lang-es .es{display:initial !important;}
   #guiaNana > div:first-child{grid-template-columns:1fr !important;}
 }
 </style>
+<script src="https://cdn.jsdelivr<!-- Firebase SDK -->
 <script type="module">
-console.log('FIREBASE_MODULE_START');
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-console.log('FIREBASE_APP_IMPORTED');
 import { getAuth, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-console.log('FIREBASE_AUTH_IMPORTED');
 import { getFirestore, doc, setDoc, addDoc, getDoc, collection, updateDoc, arrayUnion, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-console.log('FIREBASE_FIRESTORE_IMPORTED');
 
 const firebaseConfig = {
   apiKey: "AIzaSyDDJRJ8A8P507lllGRBOoXO30ESAH1GAnw",
@@ -2430,29 +2427,22 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-console.log('FIREBASE_INITIALIZED');
 
 // Exponer funciones para submitForm() en <script> regular
 window.__fbCreateUser = (e,p) => createUserWithEmailAndPassword(auth,e,p);
-window.__fbSetDoc     = (r,d) => setDoc(r,d);
-window.__fbAddDoc     = (c,d) => addDoc(c,d);
-window.__fbDoc        = (...a) => doc(db,...a);
-window.__fbCol        = (...a) => collection(db,...a);
-window.__fbTs         = ()    => serverTimestamp();
-window.__fbGetDoc     = (r)   => getDoc(r);
-window.__fbUpdateDoc  = (r,d) => updateDoc(r,d);
-window.__fbQuery      = (...a) => query(...a);
-window.__fbWhere      = (...a) => where(...a);
-window.__fbGetDocs    = (q)   => getDocs(q);
-console.log('FIREBASE_HELPERS_READY', {
-  __fbCreateUser: typeof window.__fbCreateUser,
-  __fbSetDoc:     typeof window.__fbSetDoc,
-  __fbAddDoc:     typeof window.__fbAddDoc,
-});
-['btnSubmit','btnPlanSubmit'].forEach(id => {
-  const btn = document.getElementById(id);
-  if (btn) { btn.disabled = false; btn.style.opacity = ''; btn.style.cursor = ''; }
-});
+window.__fbSetDoc  = (r,d)   => setDoc(r,d);
+window.__fbAddDoc  = (c,d)   => addDoc(c,d);
+window.__fbDoc     = (...a)  => doc(db,...a);
+window.__fbCol     = (...a)  => collection(db,...a);
+window.__fbTs      = ()      => serverTimestamp();
+
+// Exponer para submitForm (vive en <script> regular, no module)
+window.__fbCreateUser = (e,p) => createUserWithEmailAndPassword(auth,e,p);
+window.__fbSetDoc  = (r,d) => setDoc(r,d);
+window.__fbAddDoc  = (c,d) => addDoc(c,d);
+window.__fbDoc     = (...a) => doc(db,...a);
+window.__fbCol     = (...a) => collection(db,...a);
+window.__fbTs      = () => serverTimestamp();
 
 // Función para generar email interno si la nana no tiene
 function generarEmailInterno(nombre, apellido) {
@@ -4334,6 +4324,7 @@ async function submitForm() {
   const hoy  = new Date(); hoy.setHours(0,0,0,0);
   const fin  = new Date(hoy); fin.setDate(hoy.getDate()+15);
   const fmt  = d => d.toISOString().split('T')[0];
+  const fechaStr = fin.toLocaleDateString('es-PA', { day:'numeric', month:'long', year:'numeric' });
 
   let t = 0;
   while (!window.__fbCreateUser && t<30) { await new Promise(r=>setTimeout(r,100)); t++; }
@@ -4394,31 +4385,6 @@ async function submitForm() {
   const wa=sw?.querySelector('.success-whatsapp');
   if(wa) sw.insertBefore(lnk,wa); else sw?.appendChild(lnk);
 }
-
-// Capturar errores de módulo y promesas rechazadas — diagnóstico
-window.addEventListener('error', e => {
-  console.error('GLOBAL_JS_ERROR', e.message, e.filename, 'line:', e.lineno, e.error);
-});
-window.addEventListener('unhandledrejection', e => {
-  console.error('PROMISE_ERROR', e.reason);
-});
-
-// Guardia 10s: si Firebase no cargó, habilitar botón con mensaje claro
-setTimeout(() => {
-  if (typeof window.__fbCreateUser !== 'function') {
-    console.error('FIREBASE_TIMEOUT: helpers no cargaron en 10s');
-    ['btnSubmit','btnPlanSubmit'].forEach(id => {
-      const btn = document.getElementById(id);
-      if (btn && btn.disabled) {
-        btn.disabled = false; btn.style.opacity = ''; btn.style.cursor = '';
-        btn.onclick = () => {
-          const errEl = document.getElementById('regError');
-          if (errEl) { errEl.textContent = '❌ No pudimos cargar el registro. Revisa tu conexión e intenta nuevamente.'; errEl.style.display = 'block'; }
-        };
-      }
-    });
-  }
-}, 10000);
 
 // ── MENÚ SEMANAL — datos de la demo ──
 const MENU = [
