@@ -2413,7 +2413,7 @@ body.lang-es .es{display:initial !important;}
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, doc, setDoc, addDoc, getDoc, collection, updateDoc, arrayUnion, serverTimestamp, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getFirestore, doc, setDoc, addDoc, getDoc, collection, updateDoc, arrayUnion, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyDDJRJ8A8P507lllGRBOoXO30ESAH1GAnw",
@@ -2428,21 +2428,21 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Exponer helpers para submitForm() — dentro de DOMContentLoaded
-// para garantizar que Firebase ya inicializó antes de asignarlos
-document.addEventListener('DOMContentLoaded', () => {
-  window.__fbCreateUser = (e,p)   => createUserWithEmailAndPassword(auth,e,p);
-  window.__fbSetDoc     = (r,d)   => setDoc(r,d);
-  window.__fbAddDoc     = (c,d)   => addDoc(c,d);
-  window.__fbDoc        = (...a)  => doc(db,...a);
-  window.__fbCol        = (...a)  => collection(db,...a);
-  window.__fbTs         = ()      => serverTimestamp();
-  window.__fbGetDoc     = (r)     => getDoc(r);
-  window.__fbUpdateDoc  = (r,d)   => updateDoc(r,d);
-  window.__fbQuery      = (...a)  => query(...a);
-  window.__fbWhere      = (...a)  => where(...a);
-  window.__fbGetDocs    = (q)     => getDocs(q);
-});
+// Exponer funciones para submitForm() en <script> regular
+window.__fbCreateUser = (e,p) => createUserWithEmailAndPassword(auth,e,p);
+window.__fbSetDoc  = (r,d)   => setDoc(r,d);
+window.__fbAddDoc  = (c,d)   => addDoc(c,d);
+window.__fbDoc     = (...a)  => doc(db,...a);
+window.__fbCol     = (...a)  => collection(db,...a);
+window.__fbTs      = ()      => serverTimestamp();
+
+// Exponer para submitForm (vive en <script> regular, no module)
+window.__fbCreateUser = (e,p) => createUserWithEmailAndPassword(auth,e,p);
+window.__fbSetDoc  = (r,d) => setDoc(r,d);
+window.__fbAddDoc  = (c,d) => addDoc(c,d);
+window.__fbDoc     = (...a) => doc(db,...a);
+window.__fbCol     = (...a) => collection(db,...a);
+window.__fbTs      = () => serverTimestamp();
 
 // Función para generar email interno si la nana no tiene
 function generarEmailInterno(nombre, apellido) {
@@ -4228,6 +4228,8 @@ function volverAlPaso1() {
 // ── SUBMIT FINAL — crea cuenta Firebase + trial ──
 // ── SUBMIT — formulario único, crea Firebase Auth + trial ──
 async function submitForm() {
+  console.log('REGISTRO_CLICK');
+
   const nombre   = (document.getElementById('fieldNombre')?.value   || '').trim();
   const apellido = (document.getElementById('fieldApellido')?.value  || '').trim();
   const correo   = (document.getElementById('fieldCorreo')?.value    || '').trim();
@@ -4238,6 +4240,17 @@ async function submitForm() {
   const errEl    =  document.getElementById('regError');
 
   const esNana = tipoRegIndex === 'nana';
+
+  console.log('TIPO_CUENTA:', esNana ? 'nana' : 'familia');
+  console.log('EMAIL:', correo);
+  console.log('HELPERS_LISTOS:', {
+    __fbCreateUser: typeof window.__fbCreateUser,
+    __fbSetDoc:     typeof window.__fbSetDoc,
+    __fbAddDoc:     typeof window.__fbAddDoc,
+    __fbDoc:        typeof window.__fbDoc,
+    __fbCol:        typeof window.__fbCol,
+    __fbTs:         typeof window.__fbTs,
+  });
 
   const showErr = (msg) => {
     if (errEl) { errEl.textContent = msg; errEl.style.display = 'block'; }
@@ -4262,13 +4275,18 @@ async function submitForm() {
   // ── REGISTRO NANA ────────────────────────────────────────────────────────
   if (esNana) {
     let uid2;
+    console.log('ANTES_FIREBASE_AUTH (nana)');
     try {
-      uid2 = (await window.__fbCreateUser(correo, pass1)).user.uid;
+      const cred2 = await window.__fbCreateUser(correo, pass1);
+      uid2 = cred2.user.uid;
+      console.log('AUTH_OK:', uid2);
     } catch(e) {
+      console.error('REGISTRO_ERROR_REAL:', e.code, e.message, e);
       if (e.code==='auth/email-already-in-use') return showErr('⚠️ Este correo ya tiene cuenta. Entra en mynana.app/app.html');
       if (e.code==='auth/weak-password')        return showErr('⚠️ Contraseña muy débil.');
-      return showErr('✕ ' + (e.message||'Error al crear cuenta.'));
+      return showErr((e.code || 'ERROR') + ' - ' + (e.message || 'Error al crear cuenta.'));
     }
+    console.log('ANTES_FIRESTORE (nana)');
     try {
       const tipoNana = document.getElementById('fieldTipoNana')?.value || 'fija';
       const cedula   = document.getElementById('fieldCedula')?.value?.trim() || null;
@@ -4280,8 +4298,8 @@ async function submitForm() {
         cedula, telefono: telefono || null, uid: uid2,
         fecha: new Date().toISOString(), creadoA: window.__fbTs(),
       });
+      console.log('FIRESTORE_OK (nana usuario)');
       if (codigoN) {
-        // Vincular con familia si viene código
         try {
           const codSnap = await window.__fbGetDoc(window.__fbDoc('codigos', codigoN));
           if (codSnap.exists() && !codSnap.data().usado) {
@@ -4304,7 +4322,8 @@ async function submitForm() {
         });
       } catch(e) { console.log('Email bienvenida no enviado:', e); }
     } catch(e) {
-      console.error(e); return showErr('✕ Error guardando datos. Intenta de nuevo.');
+      console.error('REGISTRO_ERROR_REAL:', e.code, e.message, e);
+      return showErr((e.code || 'ERROR') + ' - ' + (e.message || 'Error guardando datos.'));
     }
     document.getElementById('modalForm').style.display = 'none';
     window.location.href = '/app.html';
@@ -4317,29 +4336,33 @@ async function submitForm() {
     eventual: { nombre:'Hogar Flexible',url:'https://checkout.paguelofacil.com/mynana/586d0e75' },
     fija:     { nombre:'Hogar Completo',url:'https://checkout.paguelofacil.com/mynana/e089b39a' },
   };
-  // Leer tipo del selector nuevo (fieldTipoHogar) o fallback al selector antiguo
   const tipoHogarActual = document.getElementById('fieldTipoHogar')?.value || tipoSeleccionado || 'fija';
   const planActual      = tipoHogarActual === 'hogar' ? 'hogar' : tipoHogarActual === 'eventual' ? 'eventual' : 'fija';
   const plan = planMap[planActual] || planMap['fija'];
   const hoy  = new Date(); hoy.setHours(0,0,0,0);
   const fin  = new Date(hoy); fin.setDate(hoy.getDate()+15);
   const fmt  = d => d.toISOString().split('T')[0];
-  const fechaStr = fin.toLocaleDateString('es-PA', { day:'numeric', month:'long', year:'numeric' });
 
   let t = 0;
-  while (!window.__fbCreateUser && t < 100) { await new Promise(r=>setTimeout(r,100)); t++; }
-  if (!window.__fbCreateUser) return showErr('❌ Error de conexión. Recarga la página e intenta de nuevo.');
+  while (!window.__fbCreateUser && t<30) { await new Promise(r=>setTimeout(r,100)); t++; }
+  console.log('HELPERS_CHECK_DESPUES_WAIT:', typeof window.__fbCreateUser, 't=', t);
+  if (!window.__fbCreateUser) return showErr('❌ Error de conexión. Recarga e intenta.');
 
+  console.log('ANTES_FIREBASE_AUTH (familia)');
   let uid;
   try {
-    uid = (await window.__fbCreateUser(correo, pass1)).user.uid;
+    const cred = await window.__fbCreateUser(correo, pass1);
+    uid = cred.user.uid;
+    console.log('AUTH_OK:', uid);
   } catch(e) {
-    if (e.code==='auth/email-already-in-use') return showErr('\u26a0\ufe0f Este correo ya tiene cuenta. Entra en mynana.app/app.html');
-    if (e.code==='auth/weak-password')        return showErr('\u26a0\ufe0f Contraseña muy débil.');
-    if (e.code==='auth/invalid-email')        return showErr('\u26a0\ufe0f Correo inválido.');
-    return showErr('\u274c ' + (e.message||'Error al crear cuenta.'));
+    console.error('REGISTRO_ERROR_REAL:', e.code, e.message, e);
+    if (e.code==='auth/email-already-in-use') return showErr('⚠️ Este correo ya tiene cuenta. Entra en mynana.app/app.html');
+    if (e.code==='auth/weak-password')        return showErr('⚠️ Contraseña muy débil.');
+    if (e.code==='auth/invalid-email')        return showErr('⚠️ Correo inválido.');
+    return showErr((e.code || 'ERROR') + ' - ' + (e.message || 'Error al crear cuenta.'));
   }
 
+  console.log('ANTES_FIRESTORE (familia)');
   try {
     const nombreCompleto = (nombre + ' ' + apellido).trim();
     await window.__fbSetDoc(window.__fbDoc('usuarios',uid),{
@@ -4353,10 +4376,12 @@ async function submitForm() {
         actualizadoA:window.__fbTs(),
       },
     });
+    console.log('FIRESTORE_OK (usuario)');
     const tipoH = tipoHogarActual;
     await window.__fbAddDoc(window.__fbCol('hogares'),{
       participantes:[uid], creadoPor:uid, creado:window.__fbTs(), tipoHogar:tipoH,
     });
+    console.log('FIRESTORE_OK (hogar)');
     if (telefono) localStorage.setItem('mynana_tel_pendiente',telefono);
     localStorage.setItem('mynana_tipoHogar', tipoH);
     try {
@@ -4367,7 +4392,8 @@ async function submitForm() {
       });
     } catch(e) { console.log('Email bienvenida no enviado:', e); }
   } catch(e) {
-    console.error(e); return showErr('\u274c Error guardando datos. Intenta de nuevo.');
+    console.error('REGISTRO_ERROR_REAL:', e.code, e.message, e);
+    return showErr((e.code || 'ERROR') + ' - ' + (e.message || 'Error guardando datos.'));
   }
 
   document.getElementById('modalForm').style.display = 'none';
