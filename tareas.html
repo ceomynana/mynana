@@ -556,6 +556,9 @@ async function encontrarHogar() {
 
   iniciarPaneles();
   escucharTareas();
+  escucharEventos();
+  escucharRutinas();
+  cargarMiembrosHogar();
 }
 
 function iniciarPaneles() {
@@ -1551,6 +1554,9 @@ function escucharRutinas() {
     snap => {
       rutinasCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       renderRutinasList();
+      // Generar tareas del día seleccionado cuando cambien las rutinas
+      // (cubre crear rutina nueva, editar, activar/pausar)
+      generarTareasRecurrentes(fechaSeleccionada).catch(e => console.warn('[Rutinas]', e));
     }
   );
 }
@@ -1591,19 +1597,11 @@ async function generarTareasRecurrentes(fecha) {
   if (!aplicables.length) return;
 
   for (const rut of aplicables) {
-    const docId  = `rut_${rut.id}_${fecha}`;
+    // ID determinístico → garantía de unicidad sin query previo
+    const docId = `rut_${rut.id}_${fecha}`;
     const docRef = doc(db, 'hogares', hogarId, 'tareas', docId);
-    const snap   = await getDoc(docRef);
-
-    if (snap.exists()) {
-      // Tarea ya generada — pero si le falta asignadoA (rutina editada después),
-      // actualizar solo ese campo sin tocar el resto (estado, foto, etc.)
-      const existente = snap.data();
-      if ((existente.asignadoA ?? null) !== (rut.asignadoA || null)) {
-        await updateDoc(docRef, { asignadoA: rut.asignadoA || null });
-      }
-      continue;
-    }
+    const snap = await getDoc(docRef);
+    if (snap.exists()) continue; // ya generada → skip
 
     await setDoc(docRef, {
       nombre:        rut.nombre,
