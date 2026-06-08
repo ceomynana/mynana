@@ -3121,7 +3121,7 @@ window.unirseConCodigo = async function() {
   </div>
 </section>
 
-<!-- ANTES / DESPUÉS — bloque interactivo -->
+<!-- ANTES / DESPUÉS — bloque interactivo, i18n completo -->
 <section style="background:#fff;padding:72px 20px;" id="por-que">
   <div class="section-inner" style="max-width:860px;margin:0 auto;">
     <div style="text-align:center;margin-bottom:40px;" class="reveal">
@@ -3138,18 +3138,15 @@ window.unirseConCodigo = async function() {
         .mn-tabs{display:flex;gap:8px;margin-bottom:1.5rem;flex-wrap:wrap;}
         .mn-tab{padding:8px 16px;border-radius:99px;font-size:13px;cursor:pointer;border:1px solid #d1d5db;background:#fff;color:#6b7280;transition:all .15s;font-family:var(--font-body);}
         .mn-tab.activo{background:#0F4A38;color:#fff;border-color:#0F4A38;}
-        .mn-sc{display:none;}
-        .mn-sc.visible{display:block;}
+        .mn-sc{display:none;} .mn-sc.visible{display:block;}
         .mn-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
         .mn-col{border-radius:16px;border:1px solid #e5e7eb;overflow:hidden;}
         .mn-head{padding:12px 16px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;}
-        .mn-head.antes{background:#f9fafb;color:#6b7280;}
-        .mn-head.despues{background:#0F4A38;color:#fff;}
+        .mn-head.antes{background:#f9fafb;color:#6b7280;} .mn-head.despues{background:#0F4A38;color:#fff;}
         .mn-items{padding:14px 16px;display:flex;flex-direction:column;gap:12px;}
         .mn-item{display:flex;align-items:flex-start;gap:10px;font-size:13px;line-height:1.5;}
         .mn-emoji{font-size:18px;flex-shrink:0;margin-top:1px;}
-        .mn-txt{color:#1a2e25;}
-        .mn-txt b{font-weight:600;}
+        .mn-txt{color:#1a2e25;} .mn-txt b{font-weight:600;}
         .mn-sub{font-size:11px;color:#9ca3af;margin-top:2px;}
         .mn-verdict{margin-top:16px;padding:12px 16px;border-radius:10px;background:#F0F7F4;border:1px solid #d1fae5;font-size:13px;color:#4b5563;line-height:1.6;text-align:center;}
         .mn-verdict strong{color:#0F4A38;font-weight:600;}
@@ -3157,136 +3154,136 @@ window.unirseConCodigo = async function() {
       </style>
 
       <div class="mn-tabs" id="mnTabs">
-        <button class="mn-tab activo" onclick="mnShow('tareas',this)">📋 Tareas del día</button>
-        <button class="mn-tab" onclick="mnShow('menu',this)">🍽️ Menú semanal</button>
-        <button class="mn-tab" onclick="mnShow('nana',this)">👩‍👧 Con tu nana</button>
-        <button class="mn-tab" onclick="mnShow('compras',this)">🛒 Compras</button>
-        <button class="mn-tab" onclick="mnShow('familia',this)">👨‍👩‍👧 En familia</button>
+        <button class="mn-tab activo" onclick="mnShow('tareas',this)">📋 <span class="es">Tareas del día</span><span class="en">Daily tasks</span></button>
+        <button class="mn-tab" onclick="mnShow('menu',this)">🍽️ <span class="es">Menú semanal</span><span class="en">Weekly menu</span></button>
+        <button class="mn-tab" onclick="mnShow('nana',this)">👩‍👧 <span class="es">Con tu nana</span><span class="en">With your nana</span></button>
+        <button class="mn-tab" onclick="mnShow('compras',this)">🛒 <span class="es">Compras</span><span class="en">Shopping</span></button>
+        <button class="mn-tab" onclick="mnShow('familia',this)">👨‍👩‍👧 <span class="es">En familia</span><span class="en">As a family</span></button>
       </div>
 
       <!-- TAREAS -->
       <div id="mn-tareas" class="mn-sc visible">
         <div class="mn-cols">
           <div class="mn-col">
-            <div class="mn-head antes">😩 Sin My Nana</div>
+            <div class="mn-head antes">😩 <span class="es">Sin My Nana</span><span class="en">Without My Nana</span></div>
             <div class="mn-items">
-              <div class="mn-item"><span class="mn-emoji">📱</span><div><div class="mn-txt"><b>WhatsApp caótico</b></div><div class="mn-sub">Mensajes perdidos, sin confirmación</div></div></div>
-              <div class="mn-item"><span class="mn-emoji">🗂️</span><div><div class="mn-txt"><b>Notas en el celular</b></div><div class="mn-sub">Nadie más las ve, se olvidan</div></div></div>
-              <div class="mn-item"><span class="mn-emoji">😤</span><div><div class="mn-txt"><b>"¿Ya lo hiciste?"</b></div><div class="mn-sub">Preguntar todo el tiempo genera tensión</div></div></div>
-              <div class="mn-item"><span class="mn-emoji">❌</span><div><div class="mn-txt"><b>Sin historial</b></div><div class="mn-sub">No sabes si se hizo ayer o no</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">📱</span><div><div class="mn-txt"><b><span class="es">WhatsApp caótico</span><span class="en">Chaotic WhatsApp</span></b></div><div class="mn-sub"><span class="es">Mensajes perdidos, sin confirmación</span><span class="en">Lost messages, no confirmation</span></div></div></div>
+              <div class="mn-item"><span class="mn-emoji">🗂️</span><div><div class="mn-txt"><b><span class="es">Notas en el celular</span><span class="en">Notes on your phone</span></b></div><div class="mn-sub"><span class="es">Nadie más las ve, se olvidan</span><span class="en">Nobody else sees them, they get forgotten</span></div></div></div>
+              <div class="mn-item"><span class="mn-emoji">😤</span><div><div class="mn-txt"><b><span class="es">"¿Ya lo hiciste?"</span><span class="en">"Did you do it yet?"</span></b></div><div class="mn-sub"><span class="es">Preguntar todo el tiempo genera tensión</span><span class="en">Constantly asking creates tension</span></div></div></div>
+              <div class="mn-item"><span class="mn-emoji">❌</span><div><div class="mn-txt"><b><span class="es">Sin historial</span><span class="en">No history</span></b></div><div class="mn-sub"><span class="es">No sabes si se hizo ayer o no</span><span class="en">You don't know if it was done yesterday</span></div></div></div>
             </div>
           </div>
           <div class="mn-col">
-            <div class="mn-head despues">✨ Con My Nana</div>
+            <div class="mn-head despues">✨ <span class="es">Con My Nana</span><span class="en">With My Nana</span></div>
             <div class="mn-items">
-              <div class="mn-item"><span class="mn-emoji">✅</span><div><div class="mn-txt"><b>Tareas asignadas y visibles</b></div><div class="mn-sub">Cada quien sabe qué le toca</div></div></div>
-              <div class="mn-item"><span class="mn-emoji">🔔</span><div><div class="mn-txt"><b>Recordatorios automáticos</b></div><div class="mn-sub">Sin que nadie tenga que pedir nada</div></div></div>
-              <div class="mn-item"><span class="mn-emoji">📸</span><div><div class="mn-txt"><b>Foto de evidencia</b></div><div class="mn-sub">La nana confirma con foto cuando termina</div></div></div>
-              <div class="mn-item"><span class="mn-emoji">📊</span><div><div class="mn-txt"><b>Progreso en tiempo real</b></div><div class="mn-sub">Ves el % completado desde donde estés</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">✅</span><div><div class="mn-txt"><b><span class="es">Tareas asignadas y visibles</span><span class="en">Tasks assigned and visible</span></b></div><div class="mn-sub"><span class="es">Cada quien sabe qué le toca</span><span class="en">Everyone knows what they need to do</span></div></div></div>
+              <div class="mn-item"><span class="mn-emoji">🔔</span><div><div class="mn-txt"><b><span class="es">Recordatorios automáticos</span><span class="en">Automatic reminders</span></b></div><div class="mn-sub"><span class="es">Sin que nadie tenga que pedir nada</span><span class="en">No one has to ask for anything</span></div></div></div>
+              <div class="mn-item"><span class="mn-emoji">📸</span><div><div class="mn-txt"><b><span class="es">Foto de evidencia</span><span class="en">Photo evidence</span></b></div><div class="mn-sub"><span class="es">La nana confirma con foto cuando termina</span><span class="en">Your nana confirms with a photo when done</span></div></div></div>
+              <div class="mn-item"><span class="mn-emoji">📊</span><div><div class="mn-txt"><b><span class="es">Progreso en tiempo real</span><span class="en">Real-time progress</span></b></div><div class="mn-sub"><span class="es">Ves el % completado desde donde estés</span><span class="en">See completion % from anywhere</span></div></div></div>
             </div>
           </div>
         </div>
-        <div class="mn-verdict">De <strong>10 mensajes de WhatsApp</strong> para coordinar el día → a <strong>0 mensajes</strong>. Todo está en la app.</div>
+        <div class="mn-verdict"><span class="es">De <strong>10 mensajes de WhatsApp</strong> para coordinar el día → a <strong>0 mensajes</strong>. Todo está en la app.</span><span class="en">From <strong>10 WhatsApp messages</strong> to coordinate the day → to <strong>0 messages</strong>. Everything is in the app.</span></div>
       </div>
 
       <!-- MENÚ -->
       <div id="mn-menu" class="mn-sc">
         <div class="mn-cols">
           <div class="mn-col">
-            <div class="mn-head antes">😩 Sin My Nana</div>
+            <div class="mn-head antes">😩 <span class="es">Sin My Nana</span><span class="en">Without My Nana</span></div>
             <div class="mn-items">
-              <div class="mn-item"><span class="mn-emoji">🤔</span><div><div class="mn-txt"><b>"¿Qué cocinamos hoy?"</b></div><div class="mn-sub">La pregunta diaria sin respuesta</div></div></div>
-              <div class="mn-item"><span class="mn-emoji">🏪</span><div><div class="mn-txt"><b>Ir al súper sin lista</b></div><div class="mn-sub">Compras duplicadas o incompletas</div></div></div>
-              <div class="mn-item"><span class="mn-emoji">🗑️</span><div><div class="mn-txt"><b>Comida que se bota</b></div><div class="mn-sub">Compras sin planificación = desperdicio</div></div></div>
-              <div class="mn-item"><span class="mn-emoji">😵</span><div><div class="mn-txt"><b>Sin considerar alergias</b></div><div class="mn-sub">Riesgo con niños o personas sensibles</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">🤔</span><div><div class="mn-txt"><b><span class="es">"¿Qué cocinamos hoy?"</span><span class="en">"What do we cook today?"</span></b></div><div class="mn-sub"><span class="es">La pregunta diaria sin respuesta</span><span class="en">The daily question with no answer</span></div></div></div>
+              <div class="mn-item"><span class="mn-emoji">🏪</span><div><div class="mn-txt"><b><span class="es">Ir al súper sin lista</span><span class="en">Going to the store without a list</span></b></div><div class="mn-sub"><span class="es">Compras duplicadas o incompletas</span><span class="en">Duplicate or incomplete shopping</span></div></div></div>
+              <div class="mn-item"><span class="mn-emoji">🗑️</span><div><div class="mn-txt"><b><span class="es">Comida que se bota</span><span class="en">Food that gets wasted</span></b></div><div class="mn-sub"><span class="es">Compras sin planificación = desperdicio</span><span class="en">Unplanned shopping = waste</span></div></div></div>
+              <div class="mn-item"><span class="mn-emoji">😵</span><div><div class="mn-txt"><b><span class="es">Sin considerar alergias</span><span class="en">Allergies not considered</span></b></div><div class="mn-sub"><span class="es">Riesgo con niños o personas sensibles</span><span class="en">Risk for children or sensitive individuals</span></div></div></div>
             </div>
           </div>
           <div class="mn-col">
-            <div class="mn-head despues">✨ Con My Nana</div>
+            <div class="mn-head despues">✨ <span class="es">Con My Nana</span><span class="en">With My Nana</span></div>
             <div class="mn-items">
-              <div class="mn-item"><span class="mn-emoji">🗓️</span><div><div class="mn-txt"><b>Menú semanal planificado</b></div><div class="mn-sub">7 días listos de un solo toque</div></div></div>
-              <div class="mn-item"><span class="mn-emoji">🛒</span><div><div class="mn-txt"><b>Lista del súper automática</b></div><div class="mn-sub">Se genera sola desde el menú</div></div></div>
-              <div class="mn-item"><span class="mn-emoji">🤖</span><div><div class="mn-txt"><b>Planificador con IA</b></div><div class="mn-sub">Sugiere platos según tu perfil</div></div></div>
-              <div class="mn-item"><span class="mn-emoji">🥗</span><div><div class="mn-txt"><b>Perfil de alergias por miembro</b></div><div class="mn-sub">El sistema avisa si algo no aplica</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">🗓️</span><div><div class="mn-txt"><b><span class="es">Menú semanal planificado</span><span class="en">Weekly menu planned</span></b></div><div class="mn-sub"><span class="es">7 días listos de un solo toque</span><span class="en">7 days ready with one tap</span></div></div></div>
+              <div class="mn-item"><span class="mn-emoji">🛒</span><div><div class="mn-txt"><b><span class="es">Lista del súper automática</span><span class="en">Automatic shopping list</span></b></div><div class="mn-sub"><span class="es">Se genera sola desde el menú</span><span class="en">Generated automatically from the menu</span></div></div></div>
+              <div class="mn-item"><span class="mn-emoji">🤖</span><div><div class="mn-txt"><b><span class="es">Planificador con IA</span><span class="en">AI-powered planner</span></b></div><div class="mn-sub"><span class="es">Sugiere platos según tu perfil</span><span class="en">Suggests dishes based on your profile</span></div></div></div>
+              <div class="mn-item"><span class="mn-emoji">🥗</span><div><div class="mn-txt"><b><span class="es">Perfil de alergias por miembro</span><span class="en">Allergy profile per member</span></b></div><div class="mn-sub"><span class="es">El sistema avisa si algo no aplica</span><span class="en">System alerts if something doesn't apply</span></div></div></div>
             </div>
           </div>
         </div>
-        <div class="mn-verdict">De <strong>20 minutos decidiendo qué comer</strong> cada día → a <strong>planificar toda la semana en 2 minutos</strong>.</div>
+        <div class="mn-verdict"><span class="es">De <strong>20 minutos decidiendo qué comer</strong> cada día → a <strong>planificar toda la semana en 2 minutos</strong>.</span><span class="en">From <strong>20 minutes deciding what to eat</strong> every day → to <strong>planning the whole week in 2 minutes</strong>.</span></div>
       </div>
 
       <!-- NANA -->
       <div id="mn-nana" class="mn-sc">
         <div class="mn-cols">
           <div class="mn-col">
-            <div class="mn-head antes">😩 Sin My Nana</div>
+            <div class="mn-head antes">😩 <span class="es">Sin My Nana</span><span class="en">Without My Nana</span></div>
             <div class="mn-items">
-              <div class="mn-item"><span class="mn-emoji">📞</span><div><div class="mn-txt"><b>Llamar para dar instrucciones</b></div><div class="mn-sub">Interrumpes tu día de trabajo</div></div></div>
-              <div class="mn-item"><span class="mn-emoji">💸</span><div><div class="mn-txt"><b>Pagos sin registro</b></div><div class="mn-sub">¿Cuánto se pagó el mes pasado?</div></div></div>
-              <div class="mn-item"><span class="mn-emoji">😕</span><div><div class="mn-txt"><b>Sin evaluar el desempeño</b></div><div class="mn-sub">Difícil dar feedback constructivo</div></div></div>
-              <div class="mn-item"><span class="mn-emoji">📄</span><div><div class="mn-txt"><b>Sin contrato formal</b></div><div class="mn-sub">Desprotección para ambas partes</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">📞</span><div><div class="mn-txt"><b><span class="es">Llamar para dar instrucciones</span><span class="en">Calling to give instructions</span></b></div><div class="mn-sub"><span class="es">Interrumpes tu día de trabajo</span><span class="en">Interrupts your workday</span></div></div></div>
+              <div class="mn-item"><span class="mn-emoji">💸</span><div><div class="mn-txt"><b><span class="es">Pagos sin registro</span><span class="en">Payments without records</span></b></div><div class="mn-sub"><span class="es">¿Cuánto se pagó el mes pasado?</span><span class="en">How much was paid last month?</span></div></div></div>
+              <div class="mn-item"><span class="mn-emoji">😕</span><div><div class="mn-txt"><b><span class="es">Sin evaluar el desempeño</span><span class="en">No performance evaluation</span></b></div><div class="mn-sub"><span class="es">Difícil dar feedback constructivo</span><span class="en">Hard to give constructive feedback</span></div></div></div>
+              <div class="mn-item"><span class="mn-emoji">📄</span><div><div class="mn-txt"><b><span class="es">Sin contrato formal</span><span class="en">No formal contract</span></b></div><div class="mn-sub"><span class="es">Desprotección para ambas partes</span><span class="en">No protection for either party</span></div></div></div>
             </div>
           </div>
           <div class="mn-col">
-            <div class="mn-head despues">✨ Con My Nana</div>
+            <div class="mn-head despues">✨ <span class="es">Con My Nana</span><span class="en">With My Nana</span></div>
             <div class="mn-items">
-              <div class="mn-item"><span class="mn-emoji">📲</span><div><div class="mn-txt"><b>La nana ve su agenda sola</b></div><div class="mn-sub">Sin llamadas, sin mensajes de voz</div></div></div>
-              <div class="mn-item"><span class="mn-emoji">💰</span><div><div class="mn-txt"><b>Nómina automatizada</b></div><div class="mn-sub">Historial de pagos y días trabajados</div></div></div>
-              <div class="mn-item"><span class="mn-emoji">⭐</span><div><div class="mn-txt"><b>Score de desempeño</b></div><div class="mn-sub">Retroalimentación justa y transparente</div></div></div>
-              <div class="mn-item"><span class="mn-emoji">📝</span><div><div class="mn-txt"><b>Contratos digitales</b></div><div class="mn-sub">Todo documentado, ambas protegidas</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">📲</span><div><div class="mn-txt"><b><span class="es">La nana ve su agenda sola</span><span class="en">Your nana sees her schedule independently</span></b></div><div class="mn-sub"><span class="es">Sin llamadas, sin mensajes de voz</span><span class="en">No calls, no voice messages</span></div></div></div>
+              <div class="mn-item"><span class="mn-emoji">💰</span><div><div class="mn-txt"><b><span class="es">Nómina automatizada</span><span class="en">Automated payroll</span></b></div><div class="mn-sub"><span class="es">Historial de pagos y días trabajados</span><span class="en">Payment history and days worked</span></div></div></div>
+              <div class="mn-item"><span class="mn-emoji">⭐</span><div><div class="mn-txt"><b><span class="es">Score de desempeño</span><span class="en">Performance score</span></b></div><div class="mn-sub"><span class="es">Retroalimentación justa y transparente</span><span class="en">Fair and transparent feedback</span></div></div></div>
+              <div class="mn-item"><span class="mn-emoji">📝</span><div><div class="mn-txt"><b><span class="es">Contratos digitales</span><span class="en">Digital contracts</span></b></div><div class="mn-sub"><span class="es">Todo documentado, ambas protegidas</span><span class="en">Everything documented, both parties protected</span></div></div></div>
             </div>
           </div>
         </div>
-        <div class="mn-verdict">Tu nana tiene <strong>su propio dashboard</strong>. Ve tareas, marca progreso y recibe instrucciones — sin que tú tengas que estar presente.</div>
+        <div class="mn-verdict"><span class="es">Tu nana tiene <strong>su propio dashboard</strong>. Ve tareas, marca progreso y recibe instrucciones — sin que tú tengas que estar presente.</span><span class="en">Your nana has <strong>her own dashboard</strong>. She sees tasks, tracks progress and receives instructions — without you needing to be there.</span></div>
       </div>
 
       <!-- COMPRAS -->
       <div id="mn-compras" class="mn-sc">
         <div class="mn-cols">
           <div class="mn-col">
-            <div class="mn-head antes">😩 Sin My Nana</div>
+            <div class="mn-head antes">😩 <span class="es">Sin My Nana</span><span class="en">Without My Nana</span></div>
             <div class="mn-items">
-              <div class="mn-item"><span class="mn-emoji">📒</span><div><div class="mn-txt"><b>Lista en papel o en notas</b></div><div class="mn-sub">Se pierde, nadie más puede verla</div></div></div>
-              <div class="mn-item"><span class="mn-emoji">🔁</span><div><div class="mn-txt"><b>Compras duplicadas</b></div><div class="mn-sub">Varias personas compran lo mismo</div></div></div>
-              <div class="mn-item"><span class="mn-emoji">🏃</span><div><div class="mn-txt"><b>Vueltas extra al súper</b></div><div class="mn-sub">Se olvidó algo, hay que volver</div></div></div>
-              <div class="mn-item"><span class="mn-emoji">💸</span><div><div class="mn-txt"><b>Sin control de presupuesto</b></div><div class="mn-sub">No sabes cuánto gastaste ni en qué</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">📒</span><div><div class="mn-txt"><b><span class="es">Lista en papel o en notas</span><span class="en">List on paper or notes</span></b></div><div class="mn-sub"><span class="es">Se pierde, nadie más puede verla</span><span class="en">Gets lost, nobody else can see it</span></div></div></div>
+              <div class="mn-item"><span class="mn-emoji">🔁</span><div><div class="mn-txt"><b><span class="es">Compras duplicadas</span><span class="en">Duplicate purchases</span></b></div><div class="mn-sub"><span class="es">Varias personas compran lo mismo</span><span class="en">Multiple people buy the same thing</span></div></div></div>
+              <div class="mn-item"><span class="mn-emoji">🏃</span><div><div class="mn-txt"><b><span class="es">Vueltas extra al súper</span><span class="en">Extra trips to the store</span></b></div><div class="mn-sub"><span class="es">Se olvidó algo, hay que volver</span><span class="en">Something was forgotten, you have to go back</span></div></div></div>
+              <div class="mn-item"><span class="mn-emoji">💸</span><div><div class="mn-txt"><b><span class="es">Sin control de presupuesto</span><span class="en">No budget control</span></b></div><div class="mn-sub"><span class="es">No sabes cuánto gastaste ni en qué</span><span class="en">You don't know how much you spent or on what</span></div></div></div>
             </div>
           </div>
           <div class="mn-col">
-            <div class="mn-head despues">✨ Con My Nana</div>
+            <div class="mn-head despues">✨ <span class="es">Con My Nana</span><span class="en">With My Nana</span></div>
             <div class="mn-items">
-              <div class="mn-item"><span class="mn-emoji">📱</span><div><div class="mn-txt"><b>Lista compartida en tiempo real</b></div><div class="mn-sub">Toda la familia la ve y edita</div></div></div>
-              <div class="mn-item"><span class="mn-emoji">🏷️</span><div><div class="mn-txt"><b>Organizada por categoría</b></div><div class="mn-sub">Lácteos, vegetales, limpieza — todo ordenado</div></div></div>
-              <div class="mn-item"><span class="mn-emoji">✔️</span><div><div class="mn-txt"><b>Marcar mientras compras</b></div><div class="mn-sub">Sin olvidar nada, sin volver</div></div></div>
-              <div class="mn-item"><span class="mn-emoji">📈</span><div><div class="mn-txt"><b>Historial de compras</b></div><div class="mn-sub">Sabes exactamente en qué se gasta</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">📱</span><div><div class="mn-txt"><b><span class="es">Lista compartida en tiempo real</span><span class="en">Real-time shared list</span></b></div><div class="mn-sub"><span class="es">Toda la familia la ve y edita</span><span class="en">The whole family can view and edit it</span></div></div></div>
+              <div class="mn-item"><span class="mn-emoji">🏷️</span><div><div class="mn-txt"><b><span class="es">Organizada por categoría</span><span class="en">Organized by category</span></b></div><div class="mn-sub"><span class="es">Lácteos, vegetales, limpieza — todo ordenado</span><span class="en">Dairy, vegetables, cleaning — all sorted</span></div></div></div>
+              <div class="mn-item"><span class="mn-emoji">✔️</span><div><div class="mn-txt"><b><span class="es">Marcar mientras compras</span><span class="en">Check off while shopping</span></b></div><div class="mn-sub"><span class="es">Sin olvidar nada, sin volver</span><span class="en">Forget nothing, no return trips</span></div></div></div>
+              <div class="mn-item"><span class="mn-emoji">📈</span><div><div class="mn-txt"><b><span class="es">Historial de compras</span><span class="en">Purchase history</span></b></div><div class="mn-sub"><span class="es">Sabes exactamente en qué se gasta</span><span class="en">Know exactly what you're spending on</span></div></div></div>
             </div>
           </div>
         </div>
-        <div class="mn-verdict">La lista del súper se genera <strong>automáticamente desde el menú semanal</strong>. Menos tiempo en el súper, menos desperdicio.</div>
+        <div class="mn-verdict"><span class="es">La lista del súper se genera <strong>automáticamente desde el menú semanal</strong>. Menos tiempo en el súper, menos desperdicio.</span><span class="en">The shopping list is generated <strong>automatically from the weekly menu</strong>. Less time at the store, less waste.</span></div>
       </div>
 
       <!-- FAMILIA -->
       <div id="mn-familia" class="mn-sc">
         <div class="mn-cols">
           <div class="mn-col">
-            <div class="mn-head antes">😩 Sin My Nana</div>
+            <div class="mn-head antes">😩 <span class="es">Sin My Nana</span><span class="en">Without My Nana</span></div>
             <div class="mn-items">
-              <div class="mn-item"><span class="mn-emoji">🌀</span><div><div class="mn-txt"><b>Caos de coordinación</b></div><div class="mn-sub">Cada quien por su lado, nada sincronizado</div></div></div>
-              <div class="mn-item"><span class="mn-emoji">😮‍💨</span><div><div class="mn-txt"><b>Una persona carga con todo</b></div><div class="mn-sub">Generalmente mamá, generalmente agotada</div></div></div>
-              <div class="mn-item"><span class="mn-emoji">🗣️</span><div><div class="mn-txt"><b>Discusiones por olvidos</b></div><div class="mn-sub">"Te dije que había que comprar..."</div></div></div>
-              <div class="mn-item"><span class="mn-emoji">😴</span><div><div class="mn-txt"><b>Sin tiempo para descansar</b></div><div class="mn-sub">La gestión del hogar nunca termina</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">🌀</span><div><div class="mn-txt"><b><span class="es">Caos de coordinación</span><span class="en">Coordination chaos</span></b></div><div class="mn-sub"><span class="es">Cada quien por su lado, nada sincronizado</span><span class="en">Everyone on their own, nothing synced</span></div></div></div>
+              <div class="mn-item"><span class="mn-emoji">😮‍💨</span><div><div class="mn-txt"><b><span class="es">Una persona carga con todo</span><span class="en">One person carries everything</span></b></div><div class="mn-sub"><span class="es">Generalmente mamá, generalmente agotada</span><span class="en">Usually mom, usually exhausted</span></div></div></div>
+              <div class="mn-item"><span class="mn-emoji">🗣️</span><div><div class="mn-txt"><b><span class="es">Discusiones por olvidos</span><span class="en">Arguments over forgotten things</span></b></div><div class="mn-sub"><span class="es">"Te dije que había que comprar..."</span><span class="en">"I told you we needed to buy..."</span></div></div></div>
+              <div class="mn-item"><span class="mn-emoji">😴</span><div><div class="mn-txt"><b><span class="es">Sin tiempo para descansar</span><span class="en">No time to rest</span></b></div><div class="mn-sub"><span class="es">La gestión del hogar nunca termina</span><span class="en">Home management never ends</span></div></div></div>
             </div>
           </div>
           <div class="mn-col">
-            <div class="mn-head despues">✨ Con My Nana</div>
+            <div class="mn-head despues">✨ <span class="es">Con My Nana</span><span class="en">With My Nana</span></div>
             <div class="mn-items">
-              <div class="mn-item"><span class="mn-emoji">👨‍👩‍👧</span><div><div class="mn-txt"><b>Todos conectados al mismo hogar</b></div><div class="mn-sub">Papá, mamá, la nana — un solo lugar</div></div></div>
-              <div class="mn-item"><span class="mn-emoji">⚖️</span><div><div class="mn-txt"><b>Tareas distribuidas</b></div><div class="mn-sub">Cada quien sabe qué le corresponde</div></div></div>
-              <div class="mn-item"><span class="mn-emoji">💬</span><div><div class="mn-txt"><b>Chat familiar integrado</b></div><div class="mn-sub">Comunicación clara, todo documentado</div></div></div>
-              <div class="mn-item"><span class="mn-emoji">😌</span><div><div class="mn-txt"><b>Tranquilidad real</b></div><div class="mn-sub">El hogar funciona aunque no estés</div></div></div>
+              <div class="mn-item"><span class="mn-emoji">👨‍👩‍👧</span><div><div class="mn-txt"><b><span class="es">Todos conectados al mismo hogar</span><span class="en">Everyone connected to the same home</span></b></div><div class="mn-sub"><span class="es">Papá, mamá, la nana — un solo lugar</span><span class="en">Dad, mom, the nana — one place</span></div></div></div>
+              <div class="mn-item"><span class="mn-emoji">⚖️</span><div><div class="mn-txt"><b><span class="es">Tareas distribuidas</span><span class="en">Tasks distributed</span></b></div><div class="mn-sub"><span class="es">Cada quien sabe qué le corresponde</span><span class="en">Everyone knows what they're responsible for</span></div></div></div>
+              <div class="mn-item"><span class="mn-emoji">💬</span><div><div class="mn-txt"><b><span class="es">Chat familiar integrado</span><span class="en">Integrated family chat</span></b></div><div class="mn-sub"><span class="es">Comunicación clara, todo documentado</span><span class="en">Clear communication, everything documented</span></div></div></div>
+              <div class="mn-item"><span class="mn-emoji">😌</span><div><div class="mn-txt"><b><span class="es">Tranquilidad real</span><span class="en">Real peace of mind</span></b></div><div class="mn-sub"><span class="es">El hogar funciona aunque no estés</span><span class="en">Home runs smoothly even when you're away</span></div></div></div>
             </div>
           </div>
         </div>
-        <div class="mn-verdict">My Nana no es solo para la nana. Es para <strong>toda la familia</strong> — tengas ayuda doméstica o no.</div>
+        <div class="mn-verdict"><span class="es">My Nana no es solo para la nana. Es para <strong>toda la familia</strong> — tengas ayuda doméstica o no.</span><span class="en">My Nana isn't just for the nana. It's for <strong>the whole family</strong> — with or without domestic help.</span></div>
       </div>
 
       <script>
@@ -3298,98 +3295,6 @@ window.unirseConCodigo = async function() {
         }
       </script>
     </div>
-  </div>
-</section>
-
-
-<!-- PARA QUIÉN ES MY NANA -->
-<section style="background:#fff;padding:64px 20px;" id="pricing">
-  <div class="section-inner" style="max-width:900px;margin:0 auto;">
-    <div style="text-align:center;margin-bottom:40px;">
-      <div class="section-tag"><span class="es">Para todos los hogares</span><span class="en">For every home</span></div>
-      <h2 class="section-title" style="font-size:clamp(26px,4vw,36px);">
-        <span class="es">My Nana es para ti,<br>tengas nana o no.</span>
-        <span class="en">My Nana is for you,<br>with or without a nana.</span>
-      </h2>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;" class="quienes-grid">
-      <!-- Para familias sin nana -->
-      <div style="background:#F8FBF9;border:1.5px solid var(--g4);border-radius:20px;padding:24px 20px;text-align:center;">
-        <div style="font-size:36px;margin-bottom:12px;">🏠</div>
-        <div style="font-family:Georgia,serif;font-size:17px;font-weight:500;color:var(--txt);margin-bottom:8px;">
-          <span class="es">Parejas y familias sin nana</span><span class="en">Couples & families without a nana</span>
-        </div>
-        <div style="font-size:13px;color:var(--txt2);line-height:1.6;">
-          <span class="es">Organiza tareas, menús y compras del hogar entre todos. Sin depender de nadie externo.</span>
-          <span class="en">Organize tasks, menus and shopping together. Without depending on outside help.</span>
-        </div>
-        <div style="margin:16px 0 8px;">
-          <span style="font-family:Georgia,serif;font-size:28px;font-weight:600;color:var(--g);">$4.99</span>
-          <span style="font-size:12px;color:var(--txt2);margin-left:4px;"><span class="es">/ mes</span><span class="en">/ mo</span></span>
-        </div>
-        <div style="margin-top:8px;display:flex;flex-direction:column;gap:6px;text-align:left;">
-          <div style="font-size:12px;color:var(--g);">✓ <span class="es">Tareas y rutinas del hogar</span><span class="en">Home tasks & routines</span></div>
-          <div style="font-size:12px;color:var(--g);">✓ <span class="es">Menú semanal y lista del súper</span><span class="en">Weekly menu & grocery list</span></div>
-          <div style="font-size:12px;color:var(--g);">✓ <span class="es">Recordatorios automáticos</span><span class="en">Automatic reminders</span></div>
-        </div>
-        <a href="#" onclick="abrirFormWithPlan('hogar');return false;" style="display:block;margin-top:20px;background:var(--g3);color:var(--g);border-radius:99px;padding:10px;font-size:13px;font-weight:600;text-decoration:none;">
-          <span class="es">Empezar gratis →</span><span class="en">Start free →</span>
-        </a>
-      </div>
-
-      <!-- Para hogares con ayuda ocasional -->
-      <div style="background:#F8FBF9;border:1.5px solid var(--g4);border-radius:20px;padding:24px 20px;text-align:center;">
-        <div style="font-size:36px;margin-bottom:12px;">🤝</div>
-        <div style="font-family:Georgia,serif;font-size:17px;font-weight:500;color:var(--txt);margin-bottom:8px;">
-          <span class="es">Hogares con ayuda ocasional</span><span class="en">Homes with occasional help</span>
-        </div>
-        <div style="font-size:13px;color:var(--txt2);line-height:1.6;">
-          <span class="es">Gestiona visitas, asigna tareas y mantén el historial de cada persona que te ayuda.</span>
-          <span class="en">Manage visits, assign tasks and keep records for each helper.</span>
-        </div>
-        <div style="margin:16px 0 8px;">
-          <span style="font-family:Georgia,serif;font-size:28px;font-weight:600;color:var(--g);">$6.99</span>
-          <span style="font-size:12px;color:var(--txt2);margin-left:4px;"><span class="es">/ mes</span><span class="en">/ mo</span></span>
-        </div>
-        <div style="margin-top:8px;display:flex;flex-direction:column;gap:6px;text-align:left;">
-          <div style="font-size:12px;color:var(--g);">✓ <span class="es">Asignación de tareas por visita</span><span class="en">Tasks assigned per visit</span></div>
-          <div style="font-size:12px;color:var(--g);">✓ <span class="es">Cambio entre familias para la ayuda</span><span class="en">Family switch for the helper</span></div>
-          <div style="font-size:12px;color:var(--g);">✓ <span class="es">Historial y recordatorios</span><span class="en">History & reminders</span></div>
-        </div>
-        <a href="#" onclick="abrirFormWithPlan('eventual');return false;" style="display:block;margin-top:20px;background:var(--g3);color:var(--g);border-radius:99px;padding:10px;font-size:13px;font-weight:600;text-decoration:none;">
-          <span class="es">Empezar gratis →</span><span class="en">Start free →</span>
-        </a>
-      </div>
-
-      <!-- Para hogares con nana fija -->
-      <div style="background:linear-gradient(135deg,#F0F7F4,#FFF8EE);border:1.5px solid var(--g);border-radius:20px;padding:24px 20px;text-align:center;position:relative;">
-        <div style="position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--g);color:#fff;font-size:10px;font-weight:700;padding:3px 14px;border-radius:0 0 10px 10px;letter-spacing:.06em;">
-          <span class="es">MÁS COMPLETO</span><span class="en">MOST COMPLETE</span>
-        </div>
-        <div style="font-size:36px;margin-bottom:12px;">👩‍👧</div>
-        <div style="font-family:Georgia,serif;font-size:17px;font-weight:500;color:var(--txt);margin-bottom:8px;">
-          <span class="es">Hogares con nana fija</span><span class="en">Homes with a full-time nana</span>
-        </div>
-        <div style="font-size:13px;color:var(--txt2);line-height:1.6;">
-          <span class="es">La plataforma completa de gestión del hogar. Chat, nómina, contratos y evaluación de desempeño.</span>
-          <span class="en">The complete home management platform. Chat, payroll, contracts and performance review.</span>
-        </div>
-        <div style="margin:16px 0 8px;">
-          <span style="font-family:Georgia,serif;font-size:28px;font-weight:600;color:var(--g);">$9.99</span>
-          <span style="font-size:12px;color:var(--txt2);margin-left:4px;"><span class="es">/ mes</span><span class="en">/ mo</span></span>
-        </div>
-        <div style="margin-top:8px;display:flex;flex-direction:column;gap:6px;text-align:left;">
-          <div style="font-size:12px;color:var(--g);">✓ <span class="es">Portal completo de la nana</span><span class="en">Full nana portal</span></div>
-          <div style="font-size:12px;color:var(--g);">✓ <span class="es">Chat · Score · Nómina · Contratos</span><span class="en">Chat · Score · Payroll · Contracts</span></div>
-          <div style="font-size:12px;color:var(--g);">✓ <span class="es">Evaluación de desempeño</span><span class="en">Performance evaluation</span></div>
-        </div>
-        <a href="#" onclick="abrirFormWithPlan('fija');return false;" style="display:block;margin-top:20px;background:var(--g);color:#fff;border-radius:99px;padding:10px;font-size:13px;font-weight:600;text-decoration:none;">
-          <span class="es">Empezar gratis →</span><span class="en">Start free →</span>
-        </a>
-      </div>
-    </div>
-    <!-- Responsive -->
-    <style>@media(max-width:700px){.quienes-grid{grid-template-columns:1fr!important;}}</style>
   </div>
 </section>
 
