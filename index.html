@@ -4324,7 +4324,7 @@ async function submitForm() {
   const hoy  = new Date(); hoy.setHours(0,0,0,0);
   const fin  = new Date(hoy); fin.setDate(hoy.getDate()+15);
   const fmt  = d => d.toISOString().split('T')[0];
-  const fechaStr = fin.toLocaleDateString('es-PA', { day:'numeric', month:'long', year:'numeric' });
+  const fechaStr = fin.toLocaleDateString('es-PA',{day:'numeric',month:'long',year:'numeric'});
 
   let t = 0;
   while (!window.__fbCreateUser && t<30) { await new Promise(r=>setTimeout(r,100)); t++; }
