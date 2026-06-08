@@ -1554,8 +1554,7 @@ function escucharRutinas() {
     snap => {
       rutinasCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       renderRutinasList();
-      // Generar tareas del día seleccionado cuando cambien las rutinas
-      // (cubre crear rutina nueva, editar, activar/pausar)
+      // Generar tareas del día visible cuando cambian las rutinas
       generarTareasRecurrentes(fechaSeleccionada).catch(e => console.warn('[Rutinas]', e));
     }
   );
@@ -1597,11 +1596,18 @@ async function generarTareasRecurrentes(fecha) {
   if (!aplicables.length) return;
 
   for (const rut of aplicables) {
-    // ID determinístico → garantía de unicidad sin query previo
-    const docId = `rut_${rut.id}_${fecha}`;
+    const docId  = `rut_${rut.id}_${fecha}`;
     const docRef = doc(db, 'hogares', hogarId, 'tareas', docId);
-    const snap = await getDoc(docRef);
-    if (snap.exists()) continue; // ya generada → skip
+    const snap   = await getDoc(docRef);
+
+    if (snap.exists()) {
+      // Si cambió el asignado en la rutina, actualizar la tarea sin tocar estado ni foto
+      const existente = snap.data();
+      if ((existente.asignadoA ?? null) !== (rut.asignadoA || null)) {
+        await updateDoc(docRef, { asignadoA: rut.asignadoA || null });
+      }
+      continue;
+    }
 
     await setDoc(docRef, {
       nombre:        rut.nombre,
@@ -1731,14 +1737,14 @@ window.guardarRutina = async () => {
     }
     mostrarTabRutinas('lista');
     _resetFormRutina();
-    // Generar la instancia de hoy si aplica
-    await generarTareasRecurrentes(fechaSeleccionada);
   } catch(e) {
     console.error('guardarRutina:', e);
     showToast('❌ Error al guardar la rutina');
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = '🔁 Guardar rutina'; }
   }
+  // Generar instancias del día seleccionado — separado para no enmascarar errores del guardado
+  generarTareasRecurrentes(fechaSeleccionada).catch(e => console.warn('[Rutinas] generarTareas:', e));
 };
 
 // ── Editar rutina ──
