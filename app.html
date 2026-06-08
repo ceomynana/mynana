@@ -1105,7 +1105,7 @@ service cloud.firestore {
           <div id="bannerCompartirNana" style="font-size:13px;font-weight:700;color:#fff;margin-bottom:3px;">🔗 Comparte el acceso con tu nana</div>
           <div style="font-size:12px;color:rgba(255,255,255,.75);line-height:1.4;">mynana.app/app.html</div>
         </div>
-        <a href="https://wa.me/?text=Hola%2C%20te%20invito%20a%20My%20Nana%20%F0%9F%8F%A0%0Amynana.app%2Fapp.html" target="_blank" style="background:#25D366;color:#fff;font-size:12px;font-weight:700;padding:8px 14px;border-radius:99px;text-decoration:none;white-space:nowrap;flex-shrink:0;display:inline-block;margin-top:2px;">📲 Enviar código a mi nana</a>
+        <a href="https://wa.me/?text=Hola%2C%20te%20invito%20a%20My%20Nana%20%F0%9F%8F%A0%0Amynana.app%2Fapp.html" target="_blank" style="background:#25D366;color:#fff;font-size:12px;font-weight:700;padding:8px 14px;border-radius:99px;text-decoration:none;white-space:nowrap;flex-shrink:0;display:inline-block;margin-top:2px;">💬 WhatsApp</a>
       </div>
     </div>
 
@@ -2013,24 +2013,36 @@ window.registrarse = async () => {
     if (tipoReg === 'familia') {
       const codigoFam = document.getElementById('regCodigoFamiliar')?.value?.trim().toUpperCase();
       if (codigoFam && codigoFam.startsWith('F')) {
-        const vinculado = await procesarCodigoFamiliar(codigoFam, cred.user.uid);
-        showToast(vinculado ? '✅ Conectado al hogar familiar' : '⚠️ Código inválido — se creó hogar propio');
-        if (!vinculado) {
+        const resultado = await procesarCodigoFamiliar(codigoFam, cred.user.uid);
+        if (resultado?.ok) {
+          // Marcar como miembro invitado — hereda suscripción del titular, nunca paga por separado
+          await updateDoc(doc(db, 'usuarios', cred.user.uid), {
+            esInvitado:  true,
+            titularUid:  resultado.titularUid,
+            hogarId:     resultado.hogarId,
+            rol:         'miembro',
+          });
+          showToast('✅ Conectado al hogar familiar');
+        } else {
+          showToast('⚠️ Código inválido — se creó hogar propio');
+          // Sin código válido → hogar propio + suscripción propia (flujo normal)
           await addDoc(collection(db, 'hogares'), {
             participantes: [cred.user.uid],
             creadoPor: cred.user.uid,
             creado: serverTimestamp(),
             tipoHogar: document.getElementById('regTipoHogar')?.value || 'con_nana'
           });
+          await crearSuscripcionTrial(cred.user.uid);
         }
       } else {
-        // Sin código — crear hogar propio nuevo e independiente
+        // Sin código — titular independiente → hogar propio + suscripción propia
         await addDoc(collection(db, 'hogares'), {
           participantes: [cred.user.uid],
           creadoPor: cred.user.uid,
           creado: serverTimestamp(),
           tipoHogar: document.getElementById('regTipoHogar')?.value || 'con_nana'
         });
+        await crearSuscripcionTrial(cred.user.uid);
       }
     }
 
@@ -2862,20 +2874,9 @@ async function mostrarBannerVinculacion(uid, db) {
       <div style="font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:600;color:var(--g);letter-spacing:8px;">${codigo}</div>
       <div style="font-size:11px;color:#bbb;margin-top:4px;">De un solo uso · La vinculación es permanente</div>
     </div>
-
-    <div style="background:#F9F5F0;border-radius:10px;padding:12px 14px;margin-bottom:12px;border:1px solid var(--g4);">
-      <div style="font-size:12px;font-weight:600;color:var(--txt);margin-bottom:8px;">Vincula a tu nana en 3 pasos:</div>
-      <div style="font-size:12px;color:var(--txt2);line-height:2;">
-        1️⃣ Copia este código<br>
-        2️⃣ Envíalo a tu nana por WhatsApp<br>
-        3️⃣ Tu nana debe crear su cuenta e ingresar este código
-      </div>
-      <div style="font-size:12px;color:var(--g);font-weight:500;margin-top:8px;">🎉 Una vez lo haga, quedarán conectadas automáticamente.</div>
-    </div>
-
     <div style="display:flex;gap:8px;">
       <button onclick="copiarCodigo('${codigo}')" style="flex:1;background:var(--g3);color:var(--g);border:none;border-radius:99px;padding:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">📋 Copiar código</button>
-      <a href="https://wa.me/?text=Hola%2C%20te%20invito%20a%20My%20Nana%20%F0%9F%8F%A0%0A%0APara%20vincularte%20conmigo%3A%0A1%EF%B8%8F%E2%83%A3%20Entra%20a%3A%20https%3A%2F%2Fmynana.app%2Fapp.html%0A2%EF%B8%8F%E2%83%A3%20Crea%20tu%20cuenta%20como%20Nana%0A3%EF%B8%8F%E2%83%A3%20En%20tu%20dashboard%20ingresa%20este%20c%C3%B3digo%3A%20*${codigo}*%0A%0A%C2%A1Nos%20vemos%20adentro!%20%F0%9F%92%9A" target="_blank" style="flex:1;background:#25D366;color:#fff;border:none;border-radius:99px;padding:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px;">📲 Enviar código a mi nana</a>
+      <a href="https://wa.me/?text=Hola%2C%20te%20invito%20a%20My%20Nana%20%F0%9F%8F%A0%0A%0APara%20vincularte%20conmigo%3A%0A1%EF%B8%8F%E2%83%A3%20Entra%20a%3A%20https%3A%2F%2Fmynana.app%2Fapp.html%0A2%EF%B8%8F%E2%83%A3%20Crea%20tu%20cuenta%20como%20Nana%0A3%EF%B8%8F%E2%83%A3%20En%20tu%20dashboard%20ingresa%20este%20c%C3%B3digo%3A%20*${codigo}*%0A%0A%C2%A1Nos%20vemos%20adentro!%20%F0%9F%92%9A" target="_blank" style="flex:1;background:#25D366;color:#fff;border:none;border-radius:99px;padding:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px;">💬 WhatsApp</a>
     </div>`;
 
   const dashContent = document.querySelector('#screen-familia .dash-content');
@@ -3313,6 +3314,37 @@ let _planPagoSeleccionado = 'fija';
 //  DASHBOARD INTELIGENTE — visibilidad por tipo de hogar
 // ══════════════════════════════════════════════════════
 
+// ── Crear suscripción trial para un titular (nunca para miembros invitados) ──
+async function crearSuscripcionTrial(uid) {
+  const PLANES = {
+    sin_nana:  { planId:'hogar',          planNombre:'Plan Hogar',    precio:4.99, pagoUrl:'https://checkout.paguelofacil.com/mynana/4b6eced6' },
+    con_ayuda: { planId:'hogar_flexible', planNombre:'Hogar Flexible', precio:6.99, pagoUrl:'https://checkout.paguelofacil.com/mynana/586d0e75' },
+    con_nana:  { planId:'hogar_completo', planNombre:'Hogar Completo', precio:9.99, pagoUrl:'https://checkout.paguelofacil.com/mynana/e089b39a' },
+  };
+  const tipoHogar = document.getElementById('regTipoHogar')?.value || 'con_nana';
+  const plan = PLANES[tipoHogar] || PLANES['con_nana'];
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const finTrial = new Date(hoy); finTrial.setDate(finTrial.getDate() + 15);
+  const fmt = d => d.toISOString().split('T')[0];
+  try {
+    await updateDoc(doc(db, 'usuarios', uid), {
+      suscripcion: {
+        estado:               'trial',
+        planId:               plan.planId,
+        planNombre:           plan.planNombre,
+        precio:               plan.precio,
+        pagoUrl:              plan.pagoUrl,
+        fechaInicioTrial:     fmt(hoy),
+        fechaFinTrial:        fmt(finTrial),
+        fechaInicioMembresia: null,
+        fechaFinMembresia:    null,
+        ultimoPagoId:         null,
+        actualizadoEn:        serverTimestamp(),
+      }
+    });
+  } catch(e) { console.warn('crearSuscripcionTrial:', e); }
+}
+
 // ══════════════════════════════════════════════════════
 //  SISTEMA DE TRIAL — verificación y UI
 // ══════════════════════════════════════════════════════
@@ -3338,7 +3370,15 @@ async function verificarSuscripcion(user) {
     if (!snap.exists()) return;
 
     const datos = snap.data();
-    const sus   = datos.suscripcion;
+
+    // ── MIEMBRO INVITADO — hereda acceso del titular, nunca paga por separado ──
+    if (datos.esInvitado === true) {
+      ocultarBannerTrial(); // sin banner, sin paywall, sin trial propio
+      console.log('[suscripcion] Usuario invitado — acceso heredado del titular:', datos.titularUid);
+      return;
+    }
+
+    const sus = datos.suscripcion;
 
     // Usuarios existentes sin campo suscripcion → acceso completo permanente
     if (!sus) return;
@@ -4082,9 +4122,9 @@ window.eliminarMiembroFamiliar = async (uid, nombre, hogarId) => {
 async function procesarCodigoFamiliar(codigo, nuevoUid) {
   try {
     const codSnap = await getDoc(doc(db, 'codigos_familia', codigo));
-    if (!codSnap.exists()) return false;
+    if (!codSnap.exists()) return null;
     const data = codSnap.data();
-    if (data.usado || data.tipo !== 'miembro_familia') return false;
+    if (data.usado || data.tipo !== 'miembro_familia') return null;
     const hogarSnap = await getDoc(doc(db, 'hogares', data.hogarId));
     if (hogarSnap.exists()) {
       const participantes = hogarSnap.data().participantes || [];
@@ -4093,8 +4133,9 @@ async function procesarCodigoFamiliar(codigo, nuevoUid) {
       }
     }
     await updateDoc(doc(db, 'codigos_familia', codigo), { usado: true, usadoPor: nuevoUid, usadoA: serverTimestamp() });
-    return true;
-  } catch(e) { console.error('Error código familiar:', e); return false; }
+    // Retornar titularUid para que el registro pueda marcar al usuario como invitado
+    return { ok: true, titularUid: data.familiaUid, hogarId: data.hogarId };
+  } catch(e) { console.error('Error código familiar:', e); return null; }
 }
 
 // ══ FIN MIEMBROS FAMILIARES ══
