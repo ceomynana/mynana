@@ -321,9 +321,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);over
 <div class="modal-overlay oculto" id="modalIng">
   <div class="modal-box">
     <div class="modal-title">Agregar ingrediente</div>
-    <div class="modal-sub">Escribe el ingrediente y toca agregar</div>
+    <div class="modal-sub">Escribe el ingrediente y la cantidad</div>
     <div style="display:flex;flex-direction:column;gap:10px;">
       <input class="form-input" id="modalIngInput" placeholder="Ej: Pollo, arroz, tomate..." />
+      <input class="form-input" id="modalIngCantidad" placeholder="Cantidad (Ej: 200g, 2 tazas, 1 lata...)" />
       <button class="btn-guardar" style="width:100%;padding:12px;" onclick="guardarIngrediente()">Agregar →</button>
     </div>
     <button class="modal-cancel" onclick="cerrarModalIng()">Cancelar</button>
@@ -2230,8 +2231,6 @@ function renderMenuFamilia(contenedor, diaMenu, diaKey) {
             </button>
           </div>
         </div>
-        ${tieneContenido ? renderQuienCome(diaKey, t.id, plato) : ''}
-
         ${tieneContenido && plato.ingredientes?.length ? `
           <div class="ingredientes-wrap">
             <div class="ingredientes-titulo">Ingredientes</div>
@@ -2477,22 +2476,6 @@ window.seleccionarMiembro = (uid) => {
 };
 
 // ── Selector ¿Quiénes comen este plato? ──
-function renderQuienCome(diaKey, tiempoId, platoData) {
-  if (modoMenu !== 'por_miembro' || !miembrosHogar.length) return '';
-  const asignados = platoData.miembros || ['todos'];
-  const opciones  = [{ uid:'todos', nombre:'Todos', emoji:'🏠' },
-    ...miembrosHogar.map(m => ({ uid: m.uid, nombre: m.nombre.split(' ')[0], emoji: m.avatarEmoji || '👤' }))
-  ];
-  return `<div class="quien-come-wrap">
-    <span class="quien-come-label">¿Quiénes comen este plato?</span>
-    ${opciones.map(o => `
-      <button class="quien-chip ${asignados.includes(o.uid) ? 'sel' : ''}"
-              onclick="toggleMiembroPlato('${diaKey}','${tiempoId}','${o.uid}')">
-        ${o.emoji} ${o.nombre}
-      </button>`).join('')}
-  </div>`;
-}
-
 window.toggleMiembroPlato = async (diaKey, tiempoId, uid) => {
   if (!menuData[diaKey]?.[tiempoId]) return;
   let actual = menuData[diaKey][tiempoId].miembros || ['todos'];
@@ -2653,30 +2636,70 @@ window.abrirModalIng = (diaKey, tiempoId) => {
   ingModalTiempoId = { diaKey, tiempoId };
   document.getElementById('modalIng').classList.remove('oculto');
   document.getElementById('modalIngInput').value = '';
+  const cant = document.getElementById('modalIngCantidad');
+  if (cant) cant.value = '';
   document.getElementById('modalIngInput').focus();
 };
 
 window.cerrarModalIng = () => {
   document.getElementById('modalIng').classList.add('oculto');
   ingModalTiempoId = null;
+  const cant = document.getElementById('modalIngCantidad');
+  if (cant) cant.value = '';
 };
 
 window.guardarIngrediente = async () => {
-  const val = document.getElementById('modalIngInput').value.trim();
-  if (!val || !ingModalTiempoId) return;
+  const nombre = document.getElementById('modalIngInput').value.trim();
+  const cantidad = document.getElementById('modalIngCantidad')?.value.trim() || '';
+  if (!nombre || !ingModalTiempoId) return;
+
+  // Combinar nombre + cantidad en un string limpio para la lista del mercado
+  const val = cantidad ? `${nombre} (${cantidad})` : nombre;
+
   const { diaKey, tiempoId } = ingModalTiempoId;
   if (!menuData[diaKey]) menuData[diaKey] = {};
   if (!menuData[diaKey][tiempoId]) menuData[diaKey][tiempoId] = {};
-  if (!menuData[diaKey][tiempoId].ingredientes) menuData[diaKey][tiempoId].ingredientes = [];
-  menuData[diaKey][tiempoId].ingredientes.push(val);
+
+  // En modo por_miembro con miembro específico: agregar al plato personal del miembro
+  if (modoMenu === 'por_miembro' && miembroActivo !== 'todos') {
+    if (!menuData[diaKey][tiempoId].porMiembro) menuData[diaKey][tiempoId].porMiembro = {};
+    if (!menuData[diaKey][tiempoId].porMiembro[miembroActivo]) {
+      menuData[diaKey][tiempoId].porMiembro[miembroActivo] = { nombre: menuData[diaKey][tiempoId].nombre || '', ingredientes: [] };
+    }
+    if (!menuData[diaKey][tiempoId].porMiembro[miembroActivo].ingredientes) {
+      menuData[diaKey][tiempoId].porMiembro[miembroActivo].ingredientes = [];
+    }
+    menuData[diaKey][tiempoId].porMiembro[miembroActivo].ingredientes.push(val);
+  } else {
+    if (!menuData[diaKey][tiempoId].ingredientes) menuData[diaKey][tiempoId].ingredientes = [];
+    menuData[diaKey][tiempoId].ingredientes.push(val);
+  }
+
   await guardarMenu();
   cerrarModalIng();
+  renderMenuDia();
+  generarListaMercado();
   showToast(`✅ "${val}" agregado`);
 };
 
 window.eliminarIngrediente = async (diaKey, tiempoId, idx) => {
+  if (!menuData[diaKey]?.[tiempoId]) return;
+
+  if (modoMenu === 'por_miembro' && miembroActivo !== 'todos') {
+    const ings = menuData[diaKey][tiempoId].porMiembro?.[miembroActivo]?.ingredientes;
+    if (ings) {
+      ings.splice(idx, 1);
+      await guardarMenu();
+      renderMenuDia();
+      generarListaMercado();
+    }
+    return;
+  }
+
   menuData[diaKey][tiempoId].ingredientes.splice(idx, 1);
   await guardarMenu();
+  renderMenuDia();
+  generarListaMercado();
 };
 
 window.enviarSugerencia = async (diaKey, tiempoId) => {
