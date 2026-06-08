@@ -841,12 +841,12 @@ function renderTareas() {
   // Tareas manuales del día desde Firestore
   const tareasFirestore = todasTareasCache.filter(t => getFechaFromTask(t) === fechaSeleccionada);
 
-  // IDs de rutinas ya materializadas en Firestore (anti-duplicado)
+  // IDs de rutinas ya materializadas (anti-duplicado)
   const idsRutinaEnFirestore = new Set(
     tareasFirestore.filter(t => t.recurrenciaId).map(t => t.recurrenciaId)
   );
 
-  // Rutinas aplicables al día que aún no están en Firestore → mostrar en memoria
+  // Rutinas aplicables al día no materializadas → mostrar en memoria con nombre resuelto
   const tareasDeRutinas = rutinasCache
     .filter(rut => {
       if (!rut.activa) return false;
@@ -854,25 +854,25 @@ function renderTareas() {
       return rutinaAplicaAFecha(rut, fechaSeleccionada);
     })
     .map(rut => ({
-      id:            `rut_${rut.id}_${fechaSeleccionada}`,
-      nombre:        rut.nombre,
-      hora:          rut.hora,
-      cat:           rut.cat,
-      prioridad:     rut.prioridad,
-      asignadoA:     rut.asignadoA     || null,
-      asignadoNombre: rut.asignadoNombre || null,
-      estado:        'pendiente',
-      fecha:         fechaSeleccionada,
-      recurrenciaId: rut.id,
-      generadaAuto:  true,
-      _soloRender:   true,
+      id:             `rut_${rut.id}_${fechaSeleccionada}`,
+      nombre:         rut.nombre,
+      hora:           rut.hora,
+      cat:            rut.cat,
+      prioridad:      rut.prioridad,
+      asignadoA:      rut.asignadoA || null,
+      asignadoNombre: rut.asignadoNombre || resolverNombreAsignado(rut.asignadoA) || null,
+      estado:         'pendiente',
+      fecha:          fechaSeleccionada,
+      recurrenciaId:  rut.id,
+      generadaAuto:   true,
+      _soloRender:    true,
     }));
 
-  // Combinar y ordenar por hora (HH:MM string — orden lexicográfico correcto)
+  // Combinar y ordenar cronológicamente
   todasTareas = [...tareasFirestore, ...tareasDeRutinas]
     .sort((a, b) => (a.hora || '00:00').localeCompare(b.hora || '00:00'));
 
-  // Materializar en Firestore en background sin bloquear el render
+  // Materializar en Firestore en background
   if (tareasDeRutinas.length && perfilActual?.tipo === 'familia') {
     generarTareasRecurrentes(fechaSeleccionada).catch(e => console.warn('[Rutinas]', e));
   }
@@ -1049,25 +1049,25 @@ window.crearTarea = async () => {
 
 // ── MARCAR HECHA ──
 window.marcarHecha = async (id, estaHecha) => {
-  // Si la tarea es solo-render (rutina en memoria sin materializar en Firestore), crearla primero
+  // Si es rutina solo en memoria, materializarla en Firestore primero
   const tareaLocal = todasTareas.find(t => t.id === id);
   if (tareaLocal?._soloRender) {
     try {
       await setDoc(doc(db, 'hogares', hogarId, 'tareas', id), {
-        nombre:        tareaLocal.nombre,
-        hora:          tareaLocal.hora,
-        cat:           tareaLocal.cat,
-        prioridad:     tareaLocal.prioridad,
-        asignadoA:     tareaLocal.asignadoA || null,
-        asignadoNombre: tareaLocal.asignadoNombre || null,
-        estado:        'pendiente',
-        fotoUrl:       null,
-        fecha:         tareaLocal.fecha,
-        creadoPor:     usuarioActual?.uid || '',
-        creadoA:       serverTimestamp(),
-        completadaA:   null,
-        recurrenciaId: tareaLocal.recurrenciaId,
-        generadaAuto:  true,
+        nombre:         tareaLocal.nombre,
+        hora:           tareaLocal.hora,
+        cat:            tareaLocal.cat,
+        prioridad:      tareaLocal.prioridad,
+        asignadoA:      tareaLocal.asignadoA      || null,
+        asignadoNombre: tareaLocal.asignadoNombre  || null,
+        estado:         'pendiente',
+        fotoUrl:        null,
+        fecha:          tareaLocal.fecha,
+        creadoPor:      usuarioActual?.uid || '',
+        creadoA:        serverTimestamp(),
+        completadaA:    null,
+        recurrenciaId:  tareaLocal.recurrenciaId,
+        generadaAuto:   true,
       });
     } catch(e) { console.warn('[marcarHecha] Error materializando rutina:', e); }
   }
@@ -1611,7 +1611,6 @@ function escucharRutinas() {
     snap => {
       rutinasCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       renderRutinasList();
-      // Re-renderizar tareas inmediatamente — incluye rutinas recién creadas/editadas
       renderTareas();
       actualizarStats();
       actualizarProgreso();
@@ -1655,26 +1654,39 @@ async function generarTareasRecurrentes(fecha) {
   if (!aplicables.length) return;
 
   for (const rut of aplicables) {
-    // ID determinístico → garantía de unicidad sin query previo
-    const docId = `rut_${rut.id}_${fecha}`;
+    const docId  = `rut_${rut.id}_${fecha}`;
     const docRef = doc(db, 'hogares', hogarId, 'tareas', docId);
-    const snap = await getDoc(docRef);
-    if (snap.exists()) continue; // ya generada → skip
+    const snap   = await getDoc(docRef);
 
+    if (snap.exists()) {
+      // Actualizar asignadoA/asignadoNombre si cambió en la rutina
+      const existente = snap.data();
+      const nombreResuelto = rut.asignadoNombre || resolverNombreAsignado(rut.asignadoA) || null;
+      if ((existente.asignadoA ?? null) !== (rut.asignadoA || null)) {
+        await updateDoc(docRef, {
+          asignadoA:      rut.asignadoA || null,
+          asignadoNombre: nombreResuelto,
+        });
+      }
+      continue;
+    }
+
+    const nombreResuelto = rut.asignadoNombre || resolverNombreAsignado(rut.asignadoA) || null;
     await setDoc(docRef, {
-      nombre:        rut.nombre,
-      hora:          rut.hora,
-      cat:           rut.cat,
-      prioridad:     rut.prioridad,
-      asignadoA:     rut.asignadoA || null,
-      estado:        'pendiente',
-      fotoUrl:       null,
+      nombre:         rut.nombre,
+      hora:           rut.hora,
+      cat:            rut.cat,
+      prioridad:      rut.prioridad,
+      asignadoA:      rut.asignadoA      || null,
+      asignadoNombre: nombreResuelto,
+      estado:         'pendiente',
+      fotoUrl:        null,
       fecha,
-      creadoPor:     usuarioActual?.uid || '',
-      creadoA:       serverTimestamp(),
-      completadaA:   null,
-      recurrenciaId: rut.id,
-      generadaAuto:  true,
+      creadoPor:      usuarioActual?.uid || '',
+      creadoA:        serverTimestamp(),
+      completadaA:    null,
+      recurrenciaId:  rut.id,
+      generadaAuto:   true,
     });
   }
 }
