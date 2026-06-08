@@ -2540,7 +2540,14 @@ window.unirseConCodigo = async function() {
     if (!codigoSnap.exists()) {
       return mostrarError('❌ Código no encontrado. Pídele al titular que lo comparta desde su perfil.');
     }
-    const hogarId = codigoSnap.data().hogarId;
+    const codigoData = codigoSnap.data();
+    if (codigoData.tipo && codigoData.tipo !== 'miembro_familia') {
+      return mostrarError('❌ Código inválido. Solicita uno nuevo al titular.');
+    }
+    if (codigoData.usado) {
+      return mostrarError('❌ Este código ya fue usado. Pídele uno nuevo al titular.');
+    }
+    const hogarId = codigoData.hogarId;
     if (!hogarId) return mostrarError('❌ Código inválido. Solicita uno nuevo.');
 
     btn.textContent = 'Creando cuenta...';
@@ -2553,6 +2560,8 @@ window.unirseConCodigo = async function() {
     });
 
     await updateDoc(doc(db, 'hogares', hogarId), { participantes: arrayUnion(uid) });
+
+    await updateDoc(doc(db, 'codigos_familia', codigo), { usado: true, usadoPor: uid, usadoEn: serverTimestamp() });
 
     try {
       await fetch('/.netlify/functions/send-email', {
