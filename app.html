@@ -811,29 +811,6 @@ service cloud.firestore {
       <div id="regCamposNana" style="display:none;">
         <label class="form-label">Cédula</label>
         <input type="text" class="form-input" id="regCedula" placeholder="8-123-4567" />
-
-        <!-- ¿Cómo trabajas? — solo para nanas -->
-        <div style="margin-bottom:14px;">
-          <div style="font-size:12px;font-weight:600;color:var(--txt2);margin-bottom:8px;">¿Cómo trabajas actualmente?</div>
-          <div style="display:flex;flex-direction:column;gap:6px;">
-            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid #1A6B52;border-radius:10px;cursor:pointer;background:#F0F7F4;" id="tnFija" onclick="selTipoNana('fija')">
-              <span style="font-size:18px;">👩‍🍳</span>
-              <div>
-                <div style="font-size:13px;font-weight:500;">Soy nana fija</div>
-                <div style="font-size:11px;color:#888;">Trabajo regularmente con una familia</div>
-              </div>
-            </div>
-            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:10px;cursor:pointer;" id="tnEventual" onclick="selTipoNana('eventual')">
-              <span style="font-size:18px;">🤝</span>
-              <div>
-                <div style="font-size:13px;font-weight:500;">Soy nana eventual</div>
-                <div style="font-size:11px;color:#888;">Trabajo por días o con varias familias</div>
-              </div>
-            </div>
-          </div>
-          <input type="hidden" id="regTipoNana" value="fija">
-        </div>
-
         <label class="form-label">Código de la familia</label>
         <input type="text" class="form-input" id="regCodigo" placeholder="Código de 6 caracteres (ej: ABC123)" style="text-transform:uppercase;letter-spacing:4px;font-size:16px;text-align:center;" maxlength="6" />
         <div style="font-size:11px;color:var(--txt2);margin-top:-10px;margin-bottom:14px;">Pídele este código a la familia que te contrató</div>
@@ -880,14 +857,6 @@ service cloud.firestore {
           <input type="text" class="form-input" id="regCodigoFamiliar" placeholder="Código familiar (empieza con F)" style="text-transform:uppercase;letter-spacing:4px;font-size:16px;text-align:center;" maxlength="7" />
           <div style="font-size:11px;color:var(--txt2);margin-top:4px;text-align:center;">Tu familiar te envió este código por WhatsApp</div>
         </div>
-      </div>
-
-      <!-- Consentimiento — Ley 81 de 2019 — requerido para ambos tipos -->
-      <div id="appConsentWrap" style="display:flex;align-items:flex-start;gap:10px;margin-bottom:14px;background:var(--g3);border:1px solid var(--g4);border-radius:10px;padding:12px 14px;">
-        <input type="checkbox" id="appConsentimiento" style="margin-top:3px;accent-color:var(--g);width:16px;height:16px;flex-shrink:0;" />
-        <label for="appConsentimiento" style="font-size:12px;color:var(--txt2);line-height:1.6;cursor:pointer;">
-          He leído y acepto la <a href="/privacidad.html" target="_blank" style="color:var(--g);text-decoration:underline;">Política de Privacidad</a> y los <a href="/terminos.html" target="_blank" style="color:var(--g);text-decoration:underline;">Términos de uso</a> de My Nana. Consiento el tratamiento de mis datos personales conforme a la Ley 81 de 2019 de Panamá.
-        </label>
       </div>
 
       <button class="reg-btn" id="regBtn" onclick="registrarse()">Crear mi cuenta →</button>
@@ -1136,7 +1105,7 @@ service cloud.firestore {
           <div id="bannerCompartirNana" style="font-size:13px;font-weight:700;color:#fff;margin-bottom:3px;">🔗 Comparte el acceso con tu nana</div>
           <div style="font-size:12px;color:rgba(255,255,255,.75);line-height:1.4;">mynana.app/app.html</div>
         </div>
-        <a href="https://wa.me/?text=Hola%2C%20te%20invito%20a%20My%20Nana%20%F0%9F%8F%A0%0Amynana.app%2Fapp.html" target="_blank" style="background:#25D366;color:#fff;font-size:12px;font-weight:700;padding:8px 14px;border-radius:99px;text-decoration:none;white-space:nowrap;flex-shrink:0;display:inline-block;margin-top:2px;">💬 WhatsApp</a>
+        <a href="https://wa.me/?text=Hola%2C%20te%20invito%20a%20My%20Nana%20%F0%9F%8F%A0%0Amynana.app%2Fapp.html" target="_blank" style="background:#25D366;color:#fff;font-size:12px;font-weight:700;padding:8px 14px;border-radius:99px;text-decoration:none;white-space:nowrap;flex-shrink:0;display:inline-block;margin-top:2px;">📲 Enviar código a mi nana</a>
       </div>
     </div>
 
@@ -1906,30 +1875,7 @@ window.setTipoReg = (tipo, btn) => {
   tipoReg = tipo;
   document.querySelectorAll('#screen-registro .tab-opt').forEach(b => b.classList.remove('activo'));
   btn.classList.add('activo');
-  document.getElementById('regCamposNana').style.display    = tipo === 'nana'    ? 'block' : 'none';
-  document.getElementById('regCamposFamilia').style.display = tipo === 'familia' ? 'block' : 'none';
-};
-
-// Selección de tipo de trabajo para nanas (fija / eventual)
-window.selTipoNana = (tipo) => {
-  const activo   = { border: '1.5px solid #1A6B52', background: '#F0F7F4' };
-  const inactivo = { border: '1.5px solid #e0e0e0', background: '' };
-  const isFija   = tipo === 'fija';
-
-  const tnFija     = document.getElementById('tnFija');
-  const tnEventual = document.getElementById('tnEventual');
-
-  if (tnFija) {
-    tnFija.style.border      = isFija ? activo.border : inactivo.border;
-    tnFija.style.background  = isFija ? activo.background : inactivo.background;
-  }
-  if (tnEventual) {
-    tnEventual.style.border     = !isFija ? activo.border : inactivo.border;
-    tnEventual.style.background = !isFija ? activo.background : inactivo.background;
-  }
-
-  const hidden = document.getElementById('regTipoNana');
-  if (hidden) hidden.value = tipo; // guarda 'fija' o 'eventual' — lo lee registrarse()
+  document.getElementById('regCamposNana').style.display = tipo === 'nana' ? 'block' : 'none';
 };
 
 // ── LOGIN ──
@@ -1990,15 +1936,6 @@ window.registrarse = async () => {
   if (pass.length < 6) { mostrarError(err, '⚠️ La contraseña debe tener mínimo 6 caracteres.'); return; }
   if (tipoReg === 'familia' && pass2 && pass !== pass2) { mostrarError(err, '⚠️ Las contraseñas no coinciden.'); return; }
 
-  // Validar consentimiento — obligatorio para familia y nana
-  const consentEl = document.getElementById('appConsentimiento');
-  if (consentEl && !consentEl.checked) {
-    consentEl.style.outline = '2px solid #e05c5c';
-    setTimeout(() => consentEl.style.outline = '', 2000);
-    mostrarError(err, '⚠️ Debes aceptar la Política de Privacidad y los Términos de uso para continuar.');
-    return;
-  }
-
   btn.textContent = 'Creando cuenta...';
   btn.disabled = true;
   err.classList.remove('visible');
@@ -2022,8 +1959,8 @@ window.registrarse = async () => {
       datos.apellido  = apellido || document.getElementById('regApellido')?.value.trim() || null;
       datos.cedula    = document.getElementById('regCedula').value.trim();
       datos.telefono  = telefono;
-      // Subtipo: leer de la selección visible (fija/eventual) — guardada en regTipoNana
-      datos.subtipo = document.getElementById('regTipoNana')?.value || 'fija';
+      // Subtipo: eventual (múltiples familias) o fija (1 familia)
+      datos.subtipo = 'fija'; // default — se puede actualizar en perfil
 
       // Vincular con familia via código
       const codigo = document.getElementById('regCodigo').value.trim().toUpperCase();
@@ -2925,9 +2862,20 @@ async function mostrarBannerVinculacion(uid, db) {
       <div style="font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:600;color:var(--g);letter-spacing:8px;">${codigo}</div>
       <div style="font-size:11px;color:#bbb;margin-top:4px;">De un solo uso · La vinculación es permanente</div>
     </div>
+
+    <div style="background:#F9F5F0;border-radius:10px;padding:12px 14px;margin-bottom:12px;border:1px solid var(--g4);">
+      <div style="font-size:12px;font-weight:600;color:var(--txt);margin-bottom:8px;">Vincula a tu nana en 3 pasos:</div>
+      <div style="font-size:12px;color:var(--txt2);line-height:2;">
+        1️⃣ Copia este código<br>
+        2️⃣ Envíalo a tu nana por WhatsApp<br>
+        3️⃣ Tu nana debe crear su cuenta e ingresar este código
+      </div>
+      <div style="font-size:12px;color:var(--g);font-weight:500;margin-top:8px;">🎉 Una vez lo haga, quedarán conectadas automáticamente.</div>
+    </div>
+
     <div style="display:flex;gap:8px;">
       <button onclick="copiarCodigo('${codigo}')" style="flex:1;background:var(--g3);color:var(--g);border:none;border-radius:99px;padding:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">📋 Copiar código</button>
-      <a href="https://wa.me/?text=Hola%2C%20te%20invito%20a%20My%20Nana%20%F0%9F%8F%A0%0A%0APara%20vincularte%20conmigo%3A%0A1%EF%B8%8F%E2%83%A3%20Entra%20a%3A%20https%3A%2F%2Fmynana.app%2Fapp.html%0A2%EF%B8%8F%E2%83%A3%20Crea%20tu%20cuenta%20como%20Nana%0A3%EF%B8%8F%E2%83%A3%20En%20tu%20dashboard%20ingresa%20este%20c%C3%B3digo%3A%20*${codigo}*%0A%0A%C2%A1Nos%20vemos%20adentro!%20%F0%9F%92%9A" target="_blank" style="flex:1;background:#25D366;color:#fff;border:none;border-radius:99px;padding:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px;">💬 WhatsApp</a>
+      <a href="https://wa.me/?text=Hola%2C%20te%20invito%20a%20My%20Nana%20%F0%9F%8F%A0%0A%0APara%20vincularte%20conmigo%3A%0A1%EF%B8%8F%E2%83%A3%20Entra%20a%3A%20https%3A%2F%2Fmynana.app%2Fapp.html%0A2%EF%B8%8F%E2%83%A3%20Crea%20tu%20cuenta%20como%20Nana%0A3%EF%B8%8F%E2%83%A3%20En%20tu%20dashboard%20ingresa%20este%20c%C3%B3digo%3A%20*${codigo}*%0A%0A%C2%A1Nos%20vemos%20adentro!%20%F0%9F%92%9A" target="_blank" style="flex:1;background:#25D366;color:#fff;border:none;border-radius:99px;padding:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px;">📲 Enviar código a mi nana</a>
     </div>`;
 
   const dashContent = document.querySelector('#screen-familia .dash-content');
