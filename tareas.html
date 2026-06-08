@@ -566,15 +566,31 @@ function iniciarPaneles() {
     document.getElementById('tipsContent').innerHTML = `
       <div style="display:flex;gap:10px;align-items:flex-start;">
         <div style="width:28px;height:28px;border-radius:50%;background:var(--g3);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--g);flex-shrink:0;">1</div>
-        <div><div style="font-size:13px;font-weight:500;color:var(--txt);margin-bottom:2px;">Crea una tarea arriba</div><div style="font-size:12px;color:var(--txt2);">Ponle nombre, hora y categoría.</div></div>
+        <div>
+          <div style="font-size:13px;font-weight:500;color:var(--txt);margin-bottom:2px;">Crea una tarea</div>
+          <div style="font-size:12px;color:var(--txt2);">Ponle nombre, hora, categoría y prioridad. Tu nana la ve al instante — Firebase sincroniza en tiempo real sin recargar. La barra de progreso arriba sube conforme se completan.</div>
+        </div>
       </div>
       <div style="display:flex;gap:10px;align-items:flex-start;">
         <div style="width:28px;height:28px;border-radius:50%;background:var(--g3);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--g);flex-shrink:0;">2</div>
-        <div><div style="font-size:13px;font-weight:500;color:var(--txt);margin-bottom:2px;">Tu nana la ve al instante</div><div style="font-size:12px;color:var(--txt2);">Firebase sincroniza en tiempo real — sin recargar.</div></div>
+        <div>
+          <div style="font-size:13px;font-weight:500;color:var(--txt);margin-bottom:2px;">🔁 Rutinas del hogar</div>
+          <div style="font-size:12px;color:var(--txt2);">Crea tareas que se repiten automáticamente cada semana — limpieza, cocina, lavandería. Se asignan solas sin que tengas que crearlas de nuevo cada lunes.</div>
+        </div>
       </div>
       <div style="display:flex;gap:10px;align-items:flex-start;">
         <div style="width:28px;height:28px;border-radius:50%;background:var(--g3);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--g);flex-shrink:0;">3</div>
-        <div><div style="font-size:13px;font-weight:500;color:var(--txt);margin-bottom:2px;">Ves el progreso aquí</div><div style="font-size:12px;color:var(--txt2);">La barra de arriba sube cuando tu nana completa tareas.</div></div>
+        <div>
+          <div style="font-size:13px;font-weight:500;color:var(--txt);margin-bottom:2px;">📅 Eventos del hogar</div>
+          <div style="font-size:12px;color:var(--txt2);">Agrega eventos especiales — cumpleaños, visitas, citas médicas. La nana puede ver en qué días hay algo importante y prepararse con anticipación.</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <div style="width:28px;height:28px;border-radius:50%;background:var(--g3);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--g);flex-shrink:0;">4</div>
+        <div>
+          <div style="font-size:13px;font-weight:500;color:var(--txt);margin-bottom:2px;">✨ Planificar semana con IA</div>
+          <div style="font-size:12px;color:var(--txt2);">My Nana analiza tu historial y genera automáticamente las tareas de la semana según tus rutinas y preferencias del hogar. Un solo toque y la semana queda organizada.</div>
+        </div>
       </div>
       <div style="background:var(--b3);border-radius:8px;padding:10px 12px;">
         <div style="font-size:12px;color:var(--b2);">💡 Comparte el link de tareas con tu nana: <strong>mynana.app/tareas.html</strong></div>
