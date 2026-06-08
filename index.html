@@ -2581,6 +2581,45 @@ window.unirseConCodigo = async function() {
   }
 };
 
+// ── WAITLIST NANAS — definida en el módulo para acceder a db directamente ──
+window.enviarWaitlist = async () => {
+  const nombre   = document.getElementById('wlNombre')?.value.trim();
+  const email    = document.getElementById('wlEmail')?.value.trim();
+  const whatsapp = document.getElementById('wlWhatsapp')?.value.trim();
+  const tipo     = document.getElementById('wlTipo')?.value;
+  const ciudad   = document.getElementById('wlCiudad')?.value.trim();
+
+  if (!nombre || !email) {
+    alert('Por favor ingresa tu nombre y correo.');
+    return;
+  }
+
+  const btn = document.querySelector('#waitlistForm button');
+  try {
+    if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
+
+    await addDoc(collection(db, 'waitlist_nanas'), {
+      nombre,
+      email,
+      whatsapp:     whatsapp     || null,
+      tipoAyuda:    tipo         || null,
+      ciudad:       ciudad       || null,
+      origen:       'landing_red_nanas',
+      estado:       'pendiente',
+      fechaRegistro: new Date().toISOString(),
+      creadoA:      serverTimestamp(),
+    });
+
+    document.getElementById('waitlistForm').style.display    = 'none';
+    document.getElementById('waitlistSuccess').style.display = 'block';
+
+  } catch(e) {
+    console.error('[waitlist] Error:', e?.code, e?.message);
+    alert('Error al guardar. Intenta de nuevo.');
+    if (btn) { btn.disabled = false; btn.textContent = '✓ Unirme a la lista'; }
+  }
+};
+
 </script>
 </head>
 <body>
@@ -4479,11 +4518,10 @@ window.unirseConCodigo = async function() {
     <div id="waitlistSuccess" style="display:none;text-align:center;padding:20px 0;">
       <div style="font-size:48px;margin-bottom:12px;">🎉</div>
       <h4 style="font-family:var(--font-title);font-size:20px;color:var(--g);margin:0 0 8px;">
-        <span class="es">¡Listo! Te avisaremos cuando la red de nanas verificadas esté disponible.</span><span class="en">Done! We'll notify you when the verified nana network is available.</span>
+        <span class="es">¡Listo! Estás en la lista.</span><span class="en">Done! You're on the list.</span>
       </h4>
       <p style="font-size:14px;color:var(--txt2);line-height:1.5;">
-        <span class="es">Cuando la red esté lista en tu ciudad, serás de las primeras en saberlo.</span>
-        <span class="en">When the network is ready in your city, you'll be among the first to know.</span>
+        <span class="es">Te avisaremos por WhatsApp y correo cuando la red de nanas verificadas esté disponible en tu ciudad.</span>
         <span class="en">We'll notify you by WhatsApp and email when the verified nana network is available in your city.</span>
       </p>
     </div>
@@ -6007,47 +6045,7 @@ window.cerrarWaitlist = () => {
   });
   const sel = document.getElementById('wlTipo'); if (sel) sel.value = '';
 };
-window.enviarWaitlist = async () => {
-  const nombre   = document.getElementById('wlNombre')?.value.trim();
-  const email    = document.getElementById('wlEmail')?.value.trim();
-  const whatsapp = document.getElementById('wlWhatsapp')?.value.trim();
-  const tipo     = document.getElementById('wlTipo')?.value;
-  const ciudad   = document.getElementById('wlCiudad')?.value.trim();
-  if (!nombre || !email) {
-    alert('Por favor ingresa tu nombre y correo.');
-    return;
-  }
-  const btn = document.querySelector('#waitlistForm button');
-  try {
-    if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
-
-    // Guardar en waitlist_nanas — reglas Firestore permiten create:true (sin auth)
-    await window.__fbAddDoc(window.__fbCol('waitlist_nanas'), {
-      nombre,
-      email,
-      whatsapp:     whatsapp || null,
-      tipoAyuda:    tipo     || null,
-      ciudad:       ciudad   || null,
-      origen:       'landing_red_nanas',
-      estado:       'pendiente',
-      fechaRegistro: new Date().toISOString(),
-      creadoA:      window.__fbTs(),
-    });
-
-    document.getElementById('waitlistForm').style.display = 'none';
-    document.getElementById('waitlistSuccess').style.display = 'block';
-
-  } catch(e) {
-    console.error('[waitlist] Error:', e?.code, e?.message);
-    // Si el error es de permisos, orientar al admin a revisar las reglas de Firestore
-    if (e?.code === 'permission-denied') {
-      alert('Error de configuración. Por favor contacta a soporte: hola@mynana.app');
-    } else {
-      alert('Error al guardar. Intenta de nuevo.');
-    }
-    if (btn) { btn.disabled = false; btn.textContent = '✓ Unirme a la lista'; }
-  }
-};
+// enviarWaitlist está definida en el <script type="module"> — usa db directamente
 // ── WHATSAPP BUBBLE ──
 setTimeout(() => {
   const bubble = document.getElementById('waBubble');
