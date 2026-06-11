@@ -980,16 +980,20 @@ async function _pushAParticipantes(hogarId, excludeUid, { titulo, cuerpo, url, t
         query(collection(db, 'usuarios', uid, 'pushSubscriptions'), where('active', '==', true))
       );
       if (subsSnap.empty) continue;
-      const s = subsSnap.docs[0].data();
-      if (!s.endpoint || !s.keys) continue;
-      fetch('/.netlify/functions/send-push', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          subscription: { endpoint: s.endpoint, keys: s.keys },
-          notification: { title: titulo, body: cuerpo, url: url || '/app.html', tipo, tag: tipo }
-        })
-      }).catch(e => console.warn('[Push]', e.message));
+      // Enviar a TODAS las suscripciones activas del usuario (no solo la primera),
+      // para no fallar si docs[0] es una suscripción vieja/caducada.
+      for (const subDoc of subsSnap.docs) {
+        const s = subDoc.data();
+        if (!s.endpoint || !s.keys) continue;
+        fetch('/.netlify/functions/send-push', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            subscription: { endpoint: s.endpoint, keys: s.keys },
+            notification: { title: titulo, body: cuerpo, url: url || '/app.html', tipo, tag: tipo }
+          })
+        }).catch(e => console.warn('[Push]', e.message));
+      }
     }
   } catch(e) { console.warn('[Push]', e.message); }
 }
