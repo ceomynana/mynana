@@ -112,7 +112,7 @@ async function getPushSubsDeHogar(hogarId) {
       limit: 3,
     });
     for (const s of snapSubs) {
-      if (s.endpoint && s.keys) subs.push({ uid, endpoint: s.endpoint, keys: s.keys, subPath: `usuarios/${uid}/pushSubscriptions/${s.id}` });
+      if (s.endpoint && s.keys) subs.push({ uid, endpoint: s.endpoint, keys: s.keys });
     }
   }
   return subs;
@@ -135,21 +135,9 @@ async function enviarPush(sub, notification) {
     );
     return true;
   } catch(e) {
-    // 410 = subscription expirada | 404 = endpoint no encontrado → auto-sanar
-    if (e.statusCode === 410 || e.statusCode === 404) {
-      console.log(`[PUSH] Suscripción expirada (${e.statusCode}): ${sub.endpoint.slice(-20)}`);
-      // Marcar la suscripción muerta como inactiva para que no se vuelva a usar
-      if (sub.subPath) {
-        try {
-          await firestorePatch(sub.subPath, { active: false });
-          console.log(`[PUSH] Suscripción desactivada: ${sub.subPath}`);
-        } catch(patchErr) {
-          console.warn(`[PUSH] No se pudo desactivar la suscripción: ${patchErr.message}`);
-        }
-      }
-    } else {
-      console.warn(`[PUSH] Error: ${e.message}`);
-    }
+    // 410 = subscription expirada
+    if (e.statusCode === 410) console.log(`[PUSH] Suscripción expirada: ${sub.endpoint.slice(-20)}`);
+    else console.warn(`[PUSH] Error: ${e.message}`);
     return false;
   }
 }
