@@ -4402,6 +4402,16 @@ async function guardarSuscripcionFirestore(subscription, logFn) {
 
   // Intento 1: ruta subcollection usuarios/{uid}/pushSubscriptions/{docId}
   try {
+    // Desactivar suscripciones anteriores del propio usuario para no acumular
+    // duplicados/fantasmas (el dueño sí tiene permiso sobre sus pushSubscriptions).
+    try {
+      const prevSnap = await getDocs(query(collection(db, 'usuarios', user.uid, 'pushSubscriptions'), where('active', '==', true)));
+      for (const prev of prevSnap.docs) {
+        if (prev.id !== docId) await updateDoc(prev.ref, { active: false });
+      }
+    } catch(cleanupErr) {
+      console.warn('[PWA] No se pudieron desactivar suscripciones previas:', cleanupErr.message);
+    }
     const docRef = doc(db, 'usuarios', user.uid, 'pushSubscriptions', docId);
     await setDoc(docRef, payload, { merge: true });
     localStorage.setItem('mynana_push_active', '1');
