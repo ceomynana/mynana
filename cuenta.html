@@ -134,7 +134,7 @@
     <!-- 2. MI HOGAR (solo lectura) -->
     <div class="card c-hogar">
       <div class="card-tt"><span class="ic">🏠</span> Mi hogar</div>
-      <div class="card-desc">Información de tu hogar (solo lectura).</div>
+      <div class="card-desc">Puedes editar el nombre de tu hogar. El resto es informativo.</div>
       <div id="hogarBox">
         <!-- Se llena por JS, o muestra mensaje controlado -->
       </div>
@@ -184,6 +184,7 @@ const WHATSAPP = '50760243324'; // +507 6024-3324
 
 let currentUser = null;
 let userData    = null;
+let currentHogarId = null;
 
 // ── Utilidades UI ──
 function toast(msg, isErr) {
@@ -241,9 +242,10 @@ async function cargarHogar(uid) {
       return;
     }
     const hogar = snap.docs[0].data();
+    currentHogarId = snap.docs[0].id;
 
-    // Nombre del hogar (si existe)
-    const nombreHogar = val(hogar.nombre, 'Sin nombre');
+    // Nombre del hogar (puede no existir todavía)
+    const nombreHogar = val(hogar.nombre, '');
     // Tipo de hogar
     const tipoMap = { con_nana:'Con nana', fija:'Nana fija', eventual:'Nana eventual', hogar:'Plan Hogar', sin_nana:'Sin nana' };
     const tipoHogar = tipoMap[hogar.tipoHogar] || val(hogar.tipoHogar, 'No especificado');
@@ -265,10 +267,18 @@ async function cargarHogar(uid) {
     })();
 
     box.innerHTML =
-      '<div class="row"><span class="k">Nombre del hogar</span><span class="v">' + escapeHtml(nombreHogar) + '</span></div>' +
-      '<div class="row"><span class="k">Tipo de hogar</span><span class="v">' + escapeHtml(tipoHogar) + '</span></div>' +
+      '<div class="field">' +
+        '<label for="fNombreHogar">Nombre del hogar</label>' +
+        '<input type="text" id="fNombreHogar" placeholder="Ej: Casa Yamal" maxlength="60">' +
+        '<button class="btn btn-primary" id="btnGuardarHogar" style="margin-top:12px;" onclick="guardarNombreHogar()">Guardar nombre</button>' +
+      '</div>' +
+      '<div class="row" style="margin-top:6px;"><span class="k">Tipo de hogar</span><span class="v">' + escapeHtml(tipoHogar) + '</span></div>' +
       '<div class="row"><span class="k">Miembros</span><span class="v">' + numMiembros + '</span></div>' +
       '<div class="row"><span class="k">Suscripción</span><span class="v">' + susPill + '</span></div>';
+
+    // Setear el valor de forma segura (sin inyección)
+    const inp = document.getElementById('fNombreHogar');
+    if (inp) inp.value = nombreHogar;
   } catch(e) {
     console.warn('[cuenta] hogar no disponible:', e);
     box.innerHTML = '<div class="empty">No se pudo cargar la información del hogar.</div>';
@@ -308,6 +318,31 @@ window.guardarPerfil = async () => {
 };
 
 // ── Cambiar contraseña (flujo existente: reset por correo) ──
+// ── Guardar nombre del hogar (FASE 2A — solo hogares/{hogarId}.nombre) ──
+window.guardarNombreHogar = async () => {
+  if (!currentHogarId) { toast('No encontramos tu hogar.', true); return; }
+  const inp = document.getElementById('fNombreHogar');
+  const btn = document.getElementById('btnGuardarHogar');
+  if (!inp) return;
+  const nombre = inp.value.trim();
+  if (!nombre) { toast('Escribe un nombre para tu hogar', true); return; }
+
+  btn.disabled = true;
+  const original = btn.textContent;
+  btn.textContent = 'Guardando…';
+  try {
+    // Escribe ÚNICAMENTE el campo nombre. No toca participantes, nana, suscripción, ni nada más.
+    await updateDoc(doc(db, 'hogares', currentHogarId), { nombre });
+    toast('✅ Nombre del hogar actualizado');
+  } catch(e) {
+    console.error('[cuenta] guardar nombre hogar:', e);
+    toast('No se pudo guardar el nombre. Intenta de nuevo.', true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = original;
+  }
+};
+
 window.cambiarPassword = async () => {
   const email = (userData && userData.email) || (currentUser && currentUser.email);
   if (!email) { toast('No encontramos tu correo.', true); return; }
