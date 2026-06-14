@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Mi Cuenta · My Nana</title>
+<link rel="manifest" href="/manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Cormorant+Garamond:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --g:#1A6B52; --g2:#0F4A38; --g3:#EAF5EE; --g4:#D6EDDF;
+    --b:#E8BFB5; --b2:#C9907E; --b3:#FDF0EC; --b4:#F5D9D2;
+    --gold:#C9A84C; --gold2:#F5E6C0; --gold3:#FBF3DC;
+    --cr:#FAF7F3; --cr2:#F3EDE6;
+    --txt:#1A2E25; --txt2:#5A7060; --txt3:#8FA396;
+    --white:#fff; --r:18px;
+    --shadow:0 4px 28px rgba(15,74,56,.10);
+    --shadow-card:0 2px 16px rgba(26,107,82,.07), 0 0 0 1px rgba(26,107,82,.05);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--txt);min-height:100vh;min-height:100dvh;}
+
+  /* HEADER */
+  .top{background:linear-gradient(155deg,#0F4A38 0%,#1A6B52 60%,#2E8B6A 100%);color:#fff;padding:18px 20px 22px;position:relative;overflow:hidden;}
+  .top::after{content:'';position:absolute;width:200px;height:200px;border-radius:50%;top:-80px;right:-50px;background:radial-gradient(circle,rgba(201,168,76,.30),transparent 65%);pointer-events:none;}
+  .top-row{display:flex;align-items:center;gap:12px;position:relative;}
+  .back{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);color:#fff;width:38px;height:38px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .back:hover{background:rgba(255,255,255,.24);}
+  .top h1{font-family:'Cormorant Garamond',serif;font-size:27px;font-weight:600;line-height:1;}
+  .top .sub{font-size:12.5px;opacity:.8;margin-top:3px;}
+
+  /* LAYOUT */
+  .wrap{max-width:560px;margin:0 auto;padding:18px 16px 60px;}
+  .card{background:#fff;border-radius:22px;box-shadow:var(--shadow-card);border:1px solid rgba(26,107,82,.05);padding:20px;margin-bottom:16px;position:relative;overflow:hidden;}
+  .card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--acc,var(--g)),color-mix(in srgb,var(--acc,var(--g)) 50%,#fff));}
+  .card.c-perfil{--acc:var(--g);}
+  .card.c-hogar{--acc:var(--gold);}
+  .card.c-seg{--acc:var(--b2);}
+  .card.c-sop{--acc:var(--g2);}
+  .card-tt{display:flex;align-items:center;gap:9px;font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:600;color:var(--txt);margin-bottom:4px;}
+  .card-tt .ic{font-size:20px;}
+  .card-desc{font-size:12.5px;color:var(--txt2);margin-bottom:16px;}
+
+  /* FORM */
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt2);margin-bottom:6px;}
+  .field input{width:100%;border:1.5px solid var(--g4);border-radius:12px;padding:12px 14px;font-size:15px;font-family:'DM Sans',sans-serif;color:var(--txt);background:#fff;transition:border-color .2s;}
+  .field input:focus{outline:none;border-color:var(--g);}
+  .field input:disabled{background:var(--cr2);color:var(--txt2);cursor:not-allowed;}
+  .field .hint{font-size:11px;color:var(--txt3);margin-top:5px;}
+
+  .btn{width:100%;border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .btn-primary{background:var(--g);color:#fff;box-shadow:0 4px 14px rgba(26,107,82,.25);}
+  .btn-primary:hover{background:var(--g2);}
+  .btn-primary:disabled{opacity:.6;cursor:not-allowed;}
+  .btn-sec{background:var(--b3);color:var(--b2);border:1px solid var(--b);}
+  .btn-sec:hover{background:var(--b4);}
+  .btn-ghost{background:var(--cr2);color:var(--txt);border:1px solid var(--g4);margin-bottom:10px;}
+  .btn-ghost:hover{background:var(--g3);}
+
+  /* READ-ONLY ROWS (hogar) */
+  .row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--cr2);font-size:14px;}
+  .row:last-child{border-bottom:none;}
+  .row .k{color:var(--txt2);}
+  .row .v{font-weight:600;color:var(--txt);text-align:right;}
+  .pill{display:inline-block;font-size:12px;font-weight:600;padding:3px 11px;border-radius:99px;}
+  .pill.trial{background:var(--gold3);color:#8a6d12;}
+  .pill.activa{background:var(--g3);color:var(--g);}
+  .pill.vencida{background:var(--b3);color:var(--b2);}
+  .pill.na{background:var(--cr2);color:var(--txt3);}
+
+  .empty{background:var(--cr2);border-radius:12px;padding:16px;font-size:13px;color:var(--txt2);text-align:center;}
+
+  /* TOAST */
+  .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;background:var(--txt);color:#fff;padding:13px 20px;border-radius:14px;font-size:14px;font-weight:500;box-shadow:0 8px 28px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .25s, transform .25s;z-index:100;max-width:90%;text-align:center;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .toast.err{background:#9a3434;}
+
+  .loading{text-align:center;padding:60px 20px;color:var(--txt2);}
+  .spin{width:34px;height:34px;border:3px solid var(--g4);border-top-color:var(--g);border-radius:50%;animation:sp 1s linear infinite;margin:0 auto 14px;}
+  @keyframes sp{to{transform:rotate(360deg);}}
+
+  .foot{text-align:center;font-size:11px;color:var(--txt3);margin-top:8px;}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="top-row">
+    <button class="back" onclick="volver()" aria-label="Volver">←</button>
+    <div>
+      <h1>Mi Cuenta</h1>
+      <div class="sub">Gestiona tu información personal</div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <!-- Estado de carga -->
+  <div id="loading" class="loading">
+    <div class="spin"></div>
+    Cargando tu información…
+  </div>
+
+  <!-- Contenido (oculto hasta cargar) -->
+  <div id="contenido" style="display:none;">
+
+    <!-- 1. DATOS PERSONALES -->
+    <div class="card c-perfil">
+      <div class="card-tt"><span class="ic">👤</span> Datos personales</div>
+      <div class="card-desc">Tu correo no se puede cambiar desde aquí.</div>
+
+      <div class="field">
+        <label for="fNombre">Nombre</label>
+        <input type="text" id="fNombre" placeholder="Tu nombre" autocomplete="given-name">
+      </div>
+      <div class="field">
+        <label for="fApellido">Apellido</label>
+        <input type="text" id="fApellido" placeholder="Tu apellido" autocomplete="family-name">
+      </div>
+      <div class="field">
+        <label for="fEmail">Correo electrónico</label>
+        <input type="email" id="fEmail" disabled>
+        <div class="hint">El correo es fijo. Para cambiarlo, contacta a soporte.</div>
+      </div>
+      <div class="field">
+        <label for="fTelefono">WhatsApp / Teléfono</label>
+        <input type="tel" id="fTelefono" placeholder="Ej: 6000-0000" autocomplete="tel">
+      </div>
+
+      <button class="btn btn-primary" id="btnGuardar" onclick="guardarPerfil()">Guardar cambios</button>
+    </div>
+
+    <!-- 2. MI HOGAR (solo lectura) -->
+    <div class="card c-hogar">
+      <div class="card-tt"><span class="ic">🏠</span> Mi hogar</div>
+      <div class="card-desc">Información de tu hogar (solo lectura).</div>
+      <div id="hogarBox">
+        <!-- Se llena por JS, o muestra mensaje controlado -->
+      </div>
+    </div>
+
+    <!-- 3. SEGURIDAD -->
+    <div class="card c-seg">
+      <div class="card-tt"><span class="ic">🔒</span> Seguridad</div>
+      <div class="card-desc">Te enviaremos un enlace a tu correo para crear una nueva contraseña.</div>
+      <button class="btn btn-sec" id="btnPass" onclick="cambiarPassword()">Cambiar contraseña</button>
+    </div>
+
+    <!-- 4. SOPORTE -->
+    <div class="card c-sop">
+      <div class="card-tt"><span class="ic">💬</span> Soporte</div>
+      <div class="card-desc">Te atendemos por WhatsApp. Ninguna de estas opciones ejecuta acciones automáticas.</div>
+      <button class="btn btn-ghost" onclick="soporte('eliminar')">Solicitar eliminación de cuenta</button>
+      <button class="btn btn-ghost" onclick="soporte('cancelar')">Solicitar cancelación de plan</button>
+      <button class="btn btn-ghost" onclick="soporte('problema')">Reportar un problema</button>
+    </div>
+
+    <div class="foot">My Nana · Tu hogar, organizado</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { getAuth, onAuthStateChanged, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import { getFirestore, doc, getDoc, updateDoc, collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDDJRJ8A8P507lllGRBOoXO30ESAH1GAnw",
+  authDomain: "mynanapapp.firebaseapp.com",
+  projectId: "mynanapapp",
+  storageBucket: "mynanapapp.firebasestorage.app",
+  messagingSenderId: "124180779437",
+  appId: "1:124180779437:web:d217743000b0f1fedfd124",
+};
+
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+const WHATSAPP = '50760243324'; // +507 6024-3324
+
+let currentUser = null;
+let userData    = null;
+
+// ── Utilidades UI ──
+function toast(msg, isErr) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isErr ? ' err' : '');
+  setTimeout(() => { t.className = 'toast'; }, 3200);
+}
+function val(x, fallback) { return (x === undefined || x === null || x === '') ? (fallback || '') : x; }
+
+window.volver = () => {
+  // Volver al dashboard; si no hay historial, ir directo
+  if (document.referrer && document.referrer.includes('app.html')) history.back();
+  else location.href = '/app.html';
+};
+
+// ── Auth gate ──
+onAuthStateChanged(auth, async (user) => {
+  if (!user) { location.href = '/index.html'; return; }
+  currentUser = user;
+  try {
+    await cargarTodo(user);
+  } catch(e) {
+    console.error('[cuenta] error cargando:', e);
+    document.getElementById('loading').innerHTML = 'No se pudo cargar tu información. Recarga la página.';
+  }
+});
+
+// ── Carga de datos ──
+async function cargarTodo(user) {
+  // 1. Datos personales desde usuarios/{uid}
+  const uSnap = await getDoc(doc(db, 'usuarios', user.uid));
+  userData = uSnap.exists() ? uSnap.data() : {};
+
+  document.getElementById('fNombre').value   = val(userData.nombre);
+  document.getElementById('fApellido').value = val(userData.apellido);
+  document.getElementById('fEmail').value    = val(userData.email, user.email || '');
+  document.getElementById('fTelefono').value = val(userData.telefono);
+
+  // 2. Hogar (solo lectura) — resolver por participantes
+  await cargarHogar(user.uid);
+
+  // Mostrar contenido
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('contenido').style.display = 'block';
+}
+
+async function cargarHogar(uid) {
+  const box = document.getElementById('hogarBox');
+  try {
+    const qHogar = query(collection(db, 'hogares'), where('participantes', 'array-contains', uid));
+    const snap = await getDocs(qHogar);
+    if (snap.empty) {
+      box.innerHTML = '<div class="empty">Aún no tienes un hogar vinculado.</div>';
+      return;
+    }
+    const hogar = snap.docs[0].data();
+
+    // Nombre del hogar (si existe)
+    const nombreHogar = val(hogar.nombre, 'Sin nombre');
+    // Tipo de hogar
+    const tipoMap = { con_nana:'Con nana', fija:'Nana fija', eventual:'Nana eventual', hogar:'Plan Hogar', sin_nana:'Sin nana' };
+    const tipoHogar = tipoMap[hogar.tipoHogar] || val(hogar.tipoHogar, 'No especificado');
+    // Cantidad de miembros
+    const numMiembros = Array.isArray(hogar.participantes) ? hogar.participantes.length : '—';
+
+    // Estado de suscripción: vive en usuarios/{uid}.suscripcion del titular o en hogar.suscripcion
+    let estadoSus = null;
+    if (userData && userData.suscripcion && userData.suscripcion.estado) estadoSus = userData.suscripcion.estado;
+    else if (hogar.suscripcion && hogar.suscripcion.estado)              estadoSus = hogar.suscripcion.estado;
+
+    const susPill = (() => {
+      if (!estadoSus) return '<span class="pill na">No disponible</span>';
+      if (estadoSus === 'trial')   return '<span class="pill trial">Período de prueba</span>';
+      if (estadoSus === 'activa')  return '<span class="pill activa">Activa</span>';
+      if (estadoSus === 'vencida') return '<span class="pill vencida">Vencida</span>';
+      if (estadoSus === 'cancelada') return '<span class="pill vencida">Cancelada</span>';
+      return '<span class="pill na">' + estadoSus + '</span>';
+    })();
+
+    box.innerHTML =
+      '<div class="row"><span class="k">Nombre del hogar</span><span class="v">' + escapeHtml(nombreHogar) + '</span></div>' +
+      '<div class="row"><span class="k">Tipo de hogar</span><span class="v">' + escapeHtml(tipoHogar) + '</span></div>' +
+      '<div class="row"><span class="k">Miembros</span><span class="v">' + numMiembros + '</span></div>' +
+      '<div class="row"><span class="k">Suscripción</span><span class="v">' + susPill + '</span></div>';
+  } catch(e) {
+    console.warn('[cuenta] hogar no disponible:', e);
+    box.innerHTML = '<div class="empty">No se pudo cargar la información del hogar.</div>';
+  }
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// ── Guardar perfil (solo nombre, apellido, telefono) ──
+window.guardarPerfil = async () => {
+  if (!currentUser) return;
+  const btn = document.getElementById('btnGuardar');
+  const nombre   = document.getElementById('fNombre').value.trim();
+  const apellido = document.getElementById('fApellido').value.trim();
+  const telefono = document.getElementById('fTelefono').value.trim();
+
+  if (!nombre) { toast('El nombre no puede estar vacío', true); return; }
+
+  btn.disabled = true;
+  const original = btn.textContent;
+  btn.textContent = 'Guardando…';
+  try {
+    await updateDoc(doc(db, 'usuarios', currentUser.uid), {
+      nombre, apellido, telefono,
+    });
+    // Mantener nombreCompleto coherente si tu sistema lo usa (solo si ya existía el campo)
+    toast('✅ Cambios guardados');
+  } catch(e) {
+    console.error('[cuenta] guardar:', e);
+    toast('No se pudieron guardar los cambios. Intenta de nuevo.', true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = original;
+  }
+};
+
+// ── Cambiar contraseña (flujo existente: reset por correo) ──
+window.cambiarPassword = async () => {
+  const email = (userData && userData.email) || (currentUser && currentUser.email);
+  if (!email) { toast('No encontramos tu correo.', true); return; }
+  const btn = document.getElementById('btnPass');
+  btn.disabled = true;
+  try {
+    await sendPasswordResetEmail(auth, email);
+    toast('📧 Te enviamos un enlace a ' + email);
+  } catch(e) {
+    console.error('[cuenta] reset pass:', e);
+    toast('No se pudo enviar el correo. Intenta más tarde.', true);
+  } finally {
+    btn.disabled = false;
+  }
+};
+
+// ── Soporte (abre WhatsApp, sin acciones automáticas) ──
+window.soporte = (tipo) => {
+  const nombre = (userData && userData.nombre) || '';
+  const email  = (userData && userData.email) || (currentUser && currentUser.email) || '';
+  let msg = '';
+  if (tipo === 'eliminar')      msg = `Hola, soy ${nombre} (${email}). Quiero solicitar la *eliminación de mi cuenta* de My Nana.`;
+  else if (tipo === 'cancelar') msg = `Hola, soy ${nombre} (${email}). Quiero solicitar la *cancelación de mi plan* en My Nana.`;
+  else                          msg = `Hola, soy ${nombre} (${email}). Quiero *reportar un problema* en My Nana: `;
+  const urlWa = 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(msg);
+  window.open(urlWa, '_blank');
+};
+</script>
+</body>
+</html>
