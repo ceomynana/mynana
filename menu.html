@@ -2884,17 +2884,17 @@ function generarListaMercado() {
     const diaMenu = menuData[`dia_${i}`] || {};
     TIEMPOS.forEach(t => {
       const plato = diaMenu[t.id];
-      if (!plato?.nombre) return;
+      if (!plato) return;
 
-      // Modo por_miembro: recopilar ingredientes de todos los miembros asignados
-      // Modo compartido: usar plato principal (compatibilidad total con menús existentes)
+      // ¿Hay algún plato por miembro con nombre?
+      const tienePorMiembro = plato.porMiembro && Object.values(plato.porMiembro).some(pm => pm?.nombre);
+      // Saltar el tiempo solo si NO hay plato global NI platos por miembro
+      if (!plato.nombre && !tienePorMiembro) return;
+
+      // Consolidar: incluir el plato global SOLO si tiene nombre,
+      // y siempre los platos por miembro que tengan nombre.
       const platosAConsolidar = [];
-      if (modoMenu === 'por_miembro' && plato.miembros && plato.miembros.length) {
-        platosAConsolidar.push(plato);
-      } else {
-        platosAConsolidar.push(plato);
-      }
-      // Incluir platos personalizados por miembro en la lista del mercado
+      if (plato.nombre) platosAConsolidar.push(plato);
       if (plato.porMiembro) {
         Object.values(plato.porMiembro).forEach(pm => {
           if (pm?.nombre) platosAConsolidar.push(pm);
@@ -2954,10 +2954,20 @@ function generarListaMercado() {
   // Mantener estado de comprados y manuales
   const manuales     = mercadoItems.filter(i => i.origen === 'manual');
   const recurrentes  = mercadoItems.filter(i => i.origen === 'recurrente');
-  const autoItems    = nuevosItems.map(ni => {
-    const existente = mercadoItems.find(m => m.key === ni.key ||
-      m.nombre.toLowerCase().split('(')[0].trim().split(' ').slice(0,2).join(' ') === ni.key);
-    return existente ? { ...ni, comprado: existente.comprado } : ni;
+
+  // Mapa robusto de comprados previos: por key y por nombre normalizado.
+  // Así, al regenerar, un ítem que sigue en la lista NO pierde su marca de comprado
+  // aunque su texto/cantidad cambie levemente.
+  const norm = (s) => (s || '').toLowerCase().split('(')[0].trim().split(/\s+/).slice(0,2).join(' ');
+  const compradosPrevios = {};
+  mercadoItems.filter(i => i.origen === 'menu' && i.comprado).forEach(i => {
+    if (i.key) compradosPrevios[i.key] = true;
+    compradosPrevios[norm(i.nombre)] = true;
+  });
+
+  const autoItems = nuevosItems.map(ni => {
+    const yaComprado = compradosPrevios[ni.key] || compradosPrevios[norm(ni.nombre)] || false;
+    return yaComprado ? { ...ni, comprado: true } : ni;
   });
 
   // Consumibles recurrentes: anti-dup contra menú + preservar estado comprado
