@@ -2194,7 +2194,8 @@ function renderMenuFamilia(contenedor, diaMenu, diaKey) {
     ${TIEMPOS.map(t => {
       const platoGlobal = diaMenu[t.id] || {};
 
-      // En modo por_miembro con miembro específico: mostrar su plato personal o fallback global
+      // En modo por_miembro con miembro específico: mostrar SOLO su plato personal.
+      // Sin fallback al plato global, para que el menú de un miembro NO aparezca en los demás.
       let plato = platoGlobal;
       let esPersonal = false;
       let esFallback = false;
@@ -2203,8 +2204,9 @@ function renderMenuFamilia(contenedor, diaMenu, diaKey) {
         if (personal?.nombre) {
           plato = { ...platoGlobal, nombre: personal.nombre, ingredientes: personal.ingredientes };
           esPersonal = true;
-        } else if (platoGlobal.nombre) {
-          esFallback = true;
+        } else {
+          // Este miembro no tiene plato propio → mostrar vacío (no el plato general)
+          plato = {};
         }
       }
 
