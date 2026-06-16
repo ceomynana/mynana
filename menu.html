@@ -2672,6 +2672,7 @@ document.getElementById('modalPerfilMiembro')?.addEventListener('click', functio
 
 window.eliminarPlato = async (diaKey, tiempoId) => {
   if (!menuData[diaKey]) return;
+  const semanaId = getSemanaId();
 
   // ── Modo por_miembro con miembro específico: solo borra su plato personal ──
   if (modoMenu === 'por_miembro' && miembroActivo !== 'todos') {
@@ -2785,16 +2786,19 @@ window.enviarSugerencia = async (diaKey, tiempoId) => {
 function renderSemanaGrid() {
   const grid = document.getElementById('semanaGrid');
   let diasConMenu = 0;
+  // Un tiempo cuenta como planificado si tiene plato global O algún plato por miembro
+  const tienePlato = (celda) => !!(celda && (celda.nombre ||
+    (celda.porMiembro && Object.values(celda.porMiembro).some(pm => pm?.nombre))));
   grid.innerHTML = DIAS.map((d, i) => {
     const diaMenu = menuData[`dia_${i}`] || {};
-    const tiemposConPlato = TIEMPOS.filter(t => diaMenu[t.id]?.nombre);
+    const tiemposConPlato = TIEMPOS.filter(t => tienePlato(diaMenu[t.id]));
     if (tiemposConPlato.length > 0) diasConMenu++;
     return `<div class="semana-dia ${i === diaSeleccionado ? 'activo' : ''}" onclick="seleccionarDia(${i})">
       <div class="semana-dia-nombre">${DIAS_CORTO[i]}</div>
       <div class="semana-dia-num">${tiemposConPlato.length}</div>
       <div class="semana-dia-dot">
         ${TIEMPOS.slice(0,5).map((t, ti) => `
-          <div class="sdot" style="background:${diaMenu[t.id]?.nombre ? 'var(--g)' : 'var(--g4)'};"></div>`).join('')}
+          <div class="sdot" style="background:${tienePlato(diaMenu[t.id]) ? 'var(--g)' : 'var(--g4)'};"></div>`).join('')}
       </div>
     </div>`;
   }).join('');
