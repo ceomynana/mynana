@@ -1925,17 +1925,36 @@ window.autoPlanificar = async () => {
     else if (perfilAlimentario.objetivos.includes('rapido')) platos = PLATOS_RAPIDOS;
   }
 
+  const porMiembroActivo = (modoMenu === 'por_miembro' && miembroActivo !== 'todos');
+
   DIAS.forEach((_, i) => {
     if (!menuData[`dia_${i}`]) menuData[`dia_${i}`] = {};
     TIEMPOS.forEach(t => {
-      if (menuData[`dia_${i}`][t.id]?.nombre) return;
+      const celda = menuData[`dia_${i}`][t.id];
+      // En miembro específico: revisar el plato de ESE miembro; en Todos: el global
+      const yaTiene = porMiembroActivo
+        ? celda?.porMiembro?.[miembroActivo]?.nombre
+        : celda?.nombre;
+      if (yaTiene) return;
+
       const listaFiltrada = filtrarPlatosSeguros(platos[t.id] || [])
         .filter(p => getIngredientesActuales(p) !== null); // solo platos con ingredientes
       if (!listaFiltrada.length) return;
       const plato = listaFiltrada[Math.floor(Math.random() * listaFiltrada.length)];
-      menuData[`dia_${i}`][t.id] = { nombre: plato };
       const ings = getIngredientesActuales(plato);
-      if (ings) menuData[`dia_${i}`][t.id].ingredientes = [...ings];
+
+      if (porMiembroActivo) {
+        // Escribir SOLO en el menú de este miembro, sin tocar el global ni a otros
+        if (!menuData[`dia_${i}`][t.id]) menuData[`dia_${i}`][t.id] = {};
+        if (!menuData[`dia_${i}`][t.id].porMiembro) menuData[`dia_${i}`][t.id].porMiembro = {};
+        menuData[`dia_${i}`][t.id].porMiembro[miembroActivo] = {
+          nombre: plato,
+          ingredientes: ings ? [...ings] : [],
+        };
+      } else {
+        menuData[`dia_${i}`][t.id] = { nombre: plato };
+        if (ings) menuData[`dia_${i}`][t.id].ingredientes = [...ings];
+      }
     });
   });
   await guardarMenu();
@@ -1953,14 +1972,30 @@ window.autoPlanificar = async () => {
 
 window.modoSemanaOcupada = async () => {
   if (!confirm('¿Llenar la semana completa con comidas rápidas y simples?')) return;
+  const porMiembroActivo = (modoMenu === 'por_miembro' && miembroActivo !== 'todos');
   DIAS.forEach((_, i) => {
-    menuData[`dia_${i}`] = {};
+    if (!porMiembroActivo) {
+      // Modo Todos: reemplaza el menú global del día (comportamiento original)
+      menuData[`dia_${i}`] = {};
+    } else if (!menuData[`dia_${i}`]) {
+      menuData[`dia_${i}`] = {};
+    }
     TIEMPOS.forEach(t => {
       const lista = PLATOS_RAPIDOS[t.id] || [];
       if (!lista.length) return;
       const nombre = lista[Math.floor(Math.random() * lista.length)];
       const ings = getIngredientesActuales(nombre);
-      menuData[`dia_${i}`][t.id] = { nombre, ...(ings ? { ingredientes: [...ings] } : {}) };
+      if (porMiembroActivo) {
+        // Escribir SOLO en el menú de este miembro, sin borrar el global ni a otros
+        if (!menuData[`dia_${i}`][t.id]) menuData[`dia_${i}`][t.id] = {};
+        if (!menuData[`dia_${i}`][t.id].porMiembro) menuData[`dia_${i}`][t.id].porMiembro = {};
+        menuData[`dia_${i}`][t.id].porMiembro[miembroActivo] = {
+          nombre,
+          ingredientes: ings ? [...ings] : [],
+        };
+      } else {
+        menuData[`dia_${i}`][t.id] = { nombre, ...(ings ? { ingredientes: [...ings] } : {}) };
+      }
     });
   });
   await guardarMenu();
@@ -1986,7 +2021,36 @@ window.copiarSemanaAnterior = async () => {
     let semanaAnt = null;
     snap.forEach(d => { if (d.id === sid) semanaAnt = d.data(); });
     if (!semanaAnt) { showToast('No hay menú de la semana anterior'); return; }
-    menuData = { ...semanaAnt };
+
+    const porMiembroActivo = (modoMenu === 'por_miembro' && miembroActivo !== 'todos');
+    if (!porMiembroActivo) {
+      // Modo Todos: copiar la semana completa tal cual (comportamiento original)
+      menuData = { ...semanaAnt };
+    } else {
+      // Miembro específico: copiar SOLO lo que ese miembro tenía la semana pasada
+      // (su plato personal; si no tenía, se usa el global de esa semana como su base)
+      DIAS.forEach((_, i) => {
+        const diaKey = `dia_${i}`;
+        const diaAnt = semanaAnt[diaKey];
+        if (!diaAnt) return;
+        if (!menuData[diaKey]) menuData[diaKey] = {};
+        TIEMPOS.forEach(t => {
+          const celdaAnt = diaAnt[t.id];
+          if (!celdaAnt) return;
+          // Fuente: el plato personal del miembro la semana pasada; si no, el global de esa semana
+          const fuente = celdaAnt.porMiembro?.[miembroActivo]?.nombre
+            ? celdaAnt.porMiembro[miembroActivo]
+            : (celdaAnt.nombre ? { nombre: celdaAnt.nombre, ingredientes: celdaAnt.ingredientes || [] } : null);
+          if (!fuente) return;
+          if (!menuData[diaKey][t.id]) menuData[diaKey][t.id] = {};
+          if (!menuData[diaKey][t.id].porMiembro) menuData[diaKey][t.id].porMiembro = {};
+          menuData[diaKey][t.id].porMiembro[miembroActivo] = {
+            nombre: fuente.nombre,
+            ingredientes: Array.isArray(fuente.ingredientes) ? [...fuente.ingredientes] : [],
+          };
+        });
+      });
+    }
     await guardarMenu();
     showToast('🔄 Semana anterior copiada');
     if (hogarId && usuarioActual) {
