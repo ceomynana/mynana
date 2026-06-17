@@ -2541,7 +2541,17 @@ function cargarMenuDash(hogarId) {
   ];
 
   function renderMenu(menuDia) {
-    const conPlato = TIEMPOS.filter(t => menuDia[t.id]?.nombre);
+    const uidActual = auth.currentUser?.uid;
+    // Opción C: mostrar el menú del miembro que ve el dashboard.
+    // 1) su plato propio (porMiembro[uid]); 2) el global; 3) "Menús personalizados"; 4) nada.
+    const platoDe = (celda) => {
+      if (!celda) return null;
+      if (uidActual && celda.porMiembro?.[uidActual]?.nombre) return celda.porMiembro[uidActual].nombre;
+      if (celda.nombre) return celda.nombre;
+      if (celda.porMiembro && Object.values(celda.porMiembro).some(pm => pm?.nombre)) return 'Menús personalizados';
+      return null;
+    };
+    const conPlato = TIEMPOS.filter(t => platoDe(menuDia[t.id]));
     const subTxt = conPlato.length ? `${conPlato.length} tiempos planificados hoy` : 'Sin menú planificado hoy';
     ['subMenu','subMenuNana'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=subTxt; });
 
@@ -2549,7 +2559,7 @@ function cargarMenuDash(hogarId) {
       ? conPlato.slice(0,3).map(t => `
           <div class="task-item">
             <span style="font-size:16px;">${t.emoji}</span>
-            <span class="task-name">${menuDia[t.id].nombre}</span>
+            <span class="task-name">${platoDe(menuDia[t.id])}</span>
             <span class="task-hora">${t.hora}</span>
           </div>`).join('') +
           (conPlato.length > 3 ? `<div style="font-size:12px;color:#bbb;text-align:center;margin-top:8px;">+${conPlato.length-3} más →</div>` : '')
