@@ -2530,7 +2530,7 @@ function cargarMenuDash(hogarId) {
   const lunes = new Date(hoy);
   lunes.setDate(hoy.getDate() - diaSemana);
   lunes.setHours(0,0,0,0);
-  const semanaId = `${lunes.getFullYear()}-W${String(Math.ceil(lunes.getDate() / 7)).padStart(2,'0')}`;
+  const semanaId = `${lunes.getFullYear()}-${String(lunes.getMonth()+1).padStart(2,'0')}-${String(lunes.getDate()).padStart(2,'0')}`;
 
   const TIEMPOS = [
     { id:'desayuno', hora:'7:00 am',  emoji:'🍳' },
@@ -2725,7 +2725,7 @@ function cargarMercadoDash(hogarId) {
   const lunes  = new Date(hoy);
   lunes.setDate(hoy.getDate() - diaIdx);
   lunes.setHours(0,0,0,0);
-  const semanaId = `${lunes.getFullYear()}-W${String(Math.ceil(lunes.getDate() / 7)).padStart(2,'0')}`;
+  const semanaId = `${lunes.getFullYear()}-${String(lunes.getMonth()+1).padStart(2,'0')}-${String(lunes.getDate()).padStart(2,'0')}`;
 
   onSnapshot(collection(db, 'hogares', hogarId, 'mercado'), (snap) => {
     // Solo el documento exacto de esta semana — sin fallback a semanas anteriores
