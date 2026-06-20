@@ -2681,13 +2681,14 @@ async function cargarScoreDash(hogarId, uid) {
     return;
   }
 
-  const [nanaSnap, scoreSnap] = await Promise.all([
-    getDoc(doc(db, 'usuarios', nanaUid)),
-    getDoc(doc(db, 'scores', nanaUid))
-  ]);
+  const nanaSnap = await getDoc(doc(db, 'usuarios', nanaUid));
+  let scoreData = {};
+  try {
+    const scoreSnap = await getDoc(doc(db, 'scores', nanaUid));
+    scoreData = scoreSnap.exists() ? scoreSnap.data() : {};
+  } catch(e) { /* score no legible (nana privada sin hogarId aún): mostrar sin score */ }
 
   const nana = nanaSnap.exists() ? nanaSnap.data() : null;
-  const scoreData = scoreSnap.exists() ? scoreSnap.data() : {};
   const score = scoreData.scoreActual || 0;
   const inicial = nana?.nombre?.[0]?.toUpperCase() || 'N';
   const stars = score > 0 ? '★'.repeat(Math.round(score)) + '☆'.repeat(5 - Math.round(score)) : '☆☆☆☆☆';
