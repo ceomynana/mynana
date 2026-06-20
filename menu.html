@@ -1476,7 +1476,8 @@ function calcularProximaCompra(frecuencia, diaCompra) {
   if (frecuencia === 'mensual') diasHasta += 21;
   const prox = new Date(hoy);
   prox.setDate(hoy.getDate() + diasHasta);
-  return prox.toISOString().split('T')[0];
+  // Fecha local (Panamá UTC-5) — NO toISOString(), que desfasa el día de noche
+  return `${prox.getFullYear()}-${String(prox.getMonth()+1).padStart(2,'0')}-${String(prox.getDate()).padStart(2,'0')}`;
 }
 
 function formatFechaCompra(fechaStr) {
