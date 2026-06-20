@@ -189,6 +189,7 @@ const db   = getFirestore(app);
 let me = null, nanaUid = null, nanaData = null;
 let hogarId = null;
 let yaCalificadoEstaSemana = false;
+let esNana = false;  // true si quien ve la trayectoria es la propia nana (modo lectura)
 
 // Categorías de evaluación
 const CATEGORIAS = [
@@ -223,36 +224,51 @@ onAuthStateChanged(auth, async user => {
   if (!user) { location.href = '/app.html'; return; }
   const perfil = await getDoc(doc(db, 'usuarios', user.uid));
   if (!perfil.exists()) { location.href = '/app.html'; return; }
-  if (perfil.data().tipo !== 'familia') { location.href = '/app.html'; return; }
+  const tipo = perfil.data().tipo;
+  // Familia: modo calificación. Nana: modo lectura de su propia trayectoria.
+  if (tipo === 'familia') {
+    esNana = false;
+  } else if (tipo === 'nana') {
+    esNana = true;
+    nanaData = perfil.data();   // la nana ES la persona del score
+  } else {
+    location.href = '/app.html'; return;
+  }
   me = user;
   await cargarDatos();
 });
 
 async function cargarDatos() {
-  // Buscar hogar y nana
-  const qHogar = query(collection(db,'hogares'), where('participantes','array-contains', me.uid));
-  const snapHogar = await getDocs(qHogar);
-  if (snapHogar.empty) { mostrarSinNana(); return; }
+  if (esNana) {
+    // La nana ve SU propia trayectoria. Ella es el sujeto del score.
+    nanaUid = me.uid;
+    // nanaData ya se cargó en el guard
+  } else {
+    // Familia: buscar su hogar y la nana vinculada
+    const qHogar = query(collection(db,'hogares'), where('participantes','array-contains', me.uid));
+    const snapHogar = await getDocs(qHogar);
+    if (snapHogar.empty) { mostrarSinNana(); return; }
 
-  hogarId = snapHogar.docs[0].id;
-  const participantes = snapHogar.docs[0].data().participantes || [];
+    hogarId = snapHogar.docs[0].id;
+    const participantes = snapHogar.docs[0].data().participantes || [];
 
-  for (const uid of participantes) {
-    if (uid === me.uid) continue;
-    const p = await getDoc(doc(db,'usuarios',uid));
-    if (p.exists() && p.data().tipo === 'nana') {
-      nanaUid = uid;
-      nanaData = p.data();
-      break;
+    for (const uid of participantes) {
+      if (uid === me.uid) continue;
+      const p = await getDoc(doc(db,'usuarios',uid));
+      if (p.exists() && p.data().tipo === 'nana') {
+        nanaUid = uid;
+        nanaData = p.data();
+        break;
+      }
     }
-  }
 
-  if (!nanaUid) { mostrarSinNana(); return; }
+    if (!nanaUid) { mostrarSinNana(); return; }
+  }
 
   // Hero
   const inicial = nanaData.nombre?.[0]?.toUpperCase() || 'N';
   document.getElementById('heroAv').textContent     = inicial;
-  document.getElementById('heroNombre').textContent = nanaData.nombre || 'Tu nana';
+  document.getElementById('heroNombre').textContent = nanaData.nombre || (esNana ? 'Mi trayectoria' : 'Tu nana');
 
   // Score actual
   const scoreSnap = await getDoc(doc(db,'scores',nanaUid));
@@ -267,10 +283,12 @@ async function cargarDatos() {
   document.getElementById('mnReviews').textContent = reviews;
   document.getElementById('mnRacha').textContent   = racha > 0 ? `${racha} sem.` : '—';
 
-  // Verificar si ya calificó esta semana
-  const semanaId = getSemanaId();
-  const calSnap = await getDoc(doc(db,'scores',nanaUid,'calificaciones_semana',`${semanaId}_${me.uid}`));
-  yaCalificadoEstaSemana = calSnap.exists();
+  // Verificar si ya calificó esta semana (solo aplica a la familia)
+  if (!esNana) {
+    const semanaId = getSemanaId();
+    const calSnap = await getDoc(doc(db,'scores',nanaUid,'calificaciones_semana',`${semanaId}_${me.uid}`));
+    yaCalificadoEstaSemana = calSnap.exists();
+  }
 
   // Renderizar bloque principal
   renderMainBlock();
@@ -306,6 +324,27 @@ function mostrarSinNana() {
 function renderMainBlock() {
   const semanaId = getSemanaId();
   const semLabel = semanaLabel(semanaId);
+
+  // MODO NANA — solo lectura: ve su desempeño, no se autocalifica.
+  if (esNana) {
+    document.getElementById('mainBlock').innerHTML = `
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon" style="background:var(--g3);">🌟</div>
+          <div>
+            <div class="card-title">Mi trayectoria</div>
+            <div class="card-sub">Tu desempeño en My Nana</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <p style="font-size:13px;color:var(--txt2);line-height:1.5;">
+            Este es tu historial de confianza. Tu calificación la dan las familias para las que trabajas;
+            mientras más constante y dedicado sea tu trabajo, más crece tu score y tu reputación en la plataforma.
+          </p>
+        </div>
+      </div>`;
+    return;
+  }
 
   if (yaCalificadoEstaSemana) {
     document.getElementById('mainBlock').innerHTML = `
