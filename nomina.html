@@ -531,7 +531,9 @@ function showToast(msg) {
 }
 
 function hoy() {
-  return new Date().toISOString().split('T')[0];
+  // Fecha local (Panamá UTC-5) — NO toISOString(), que devuelve UTC y desfasa el día de noche
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
 function formatFecha(str) {
