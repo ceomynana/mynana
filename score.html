@@ -263,6 +263,12 @@ async function cargarDatos() {
     }
 
     if (!nanaUid) { mostrarSinNana(); return; }
+
+    // Asegurar que el doc de score tenga el hogarId (para que las reglas permitan
+    // a la familia leerlo aunque la nana no sea pública). La familia puede escribir.
+    try {
+      await setDoc(doc(db,'scores',nanaUid), { hogarId, nanaUid }, { merge: true });
+    } catch(e) { console.warn('[Score] no se pudo asegurar hogarId:', e.message); }
   }
 
   // Hero
@@ -270,9 +276,12 @@ async function cargarDatos() {
   document.getElementById('heroAv').textContent     = inicial;
   document.getElementById('heroNombre').textContent = nanaData.nombre || (esNana ? 'Mi trayectoria' : 'Tu nana');
 
-  // Score actual
-  const scoreSnap = await getDoc(doc(db,'scores',nanaUid));
-  const scoreData  = scoreSnap.exists() ? scoreSnap.data() : {};
+  // Score actual (lectura blindada: si se deniega/falla, mostrar vacío sin romper)
+  let scoreData = {};
+  try {
+    const scoreSnap = await getDoc(doc(db,'scores',nanaUid));
+    scoreData = scoreSnap.exists() ? scoreSnap.data() : {};
+  } catch(e) { console.warn('[Score] lectura de score:', e.message); }
   const scoreActual = scoreData.scoreActual || 0;
   const semanas     = scoreData.semanasTrabajadas || 0;
   const reviews     = scoreData.totalReviews || 0;
@@ -475,6 +484,7 @@ window.enviarCalificacion = async () => {
         semanasTrabajadas: increment(1),
         rachaActual:       increment(1),
         ultimaCalificacion: serverTimestamp(),
+        hogarId,
       });
       actualizarHero(nuevo);
     } else {
@@ -485,6 +495,7 @@ window.enviarCalificacion = async () => {
         rachaActual:       1,
         ultimaCalificacion: serverTimestamp(),
         nanaUid,
+        hogarId,
       });
       actualizarHero(promedio);
     }
