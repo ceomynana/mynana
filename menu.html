@@ -2182,7 +2182,20 @@ function escucharMenu() {
   const semanaId = getSemanaId();
   if (unsubMenu) unsubMenu();
   let initialLoad = true;
-  unsubMenu = onSnapshot(doc(db, 'hogares', hogarId, 'menus', semanaId), (snap) => {
+  unsubMenu = onSnapshot(doc(db, 'hogares', hogarId, 'menus', semanaId), async (snap) => {
+    // Migración única: si no existe en el formato nuevo pero sí en el viejo, copiarlo
+    if (!snap.exists()) {
+      try {
+        const legacyId = getSemanaIdLegacy();
+        if (legacyId !== semanaId) {
+          const legacySnap = await getDoc(doc(db, 'hogares', hogarId, 'menus', legacyId));
+          if (legacySnap.exists()) {
+            await setDoc(doc(db, 'hogares', hogarId, 'menus', semanaId), legacySnap.data(), { merge: true });
+            return; // el listener se re-disparará con los datos ya migrados
+          }
+        }
+      } catch(e) { console.warn('[menu] migración semanaId:', e.message); }
+    }
     menuData = snap.exists() ? (snap.data() || {}) : {};
     modoMenu  = menuData.modoMenu || 'compartido';
     renderModoMenuUI();
@@ -2215,6 +2228,12 @@ function getLunesMenu(offset) {
 }
 
 function getSemanaId() {
+  const lunes = getLunesMenu(semanaOffset);
+  // ID único por semana: fecha del lunes en YYYY-MM-DD (evita colisiones entre meses)
+  return `${lunes.getFullYear()}-${String(lunes.getMonth()+1).padStart(2,'0')}-${String(lunes.getDate()).padStart(2,'0')}`;
+}
+// Formato anterior (YYYY-WXX) — solo para migrar menús guardados antes del cambio
+function getSemanaIdLegacy() {
   const lunes = getLunesMenu(semanaOffset);
   return `${lunes.getFullYear()}-W${String(Math.ceil(lunes.getDate() / 7)).padStart(2,'0')}`;
 }
