@@ -205,7 +205,7 @@ function getSemanaId() {
   const lunes = new Date(hoy);
   lunes.setDate(hoy.getDate() - dia);
   lunes.setHours(0,0,0,0);
-  return `${lunes.getFullYear()}-W${String(Math.ceil(lunes.getDate()/7)).padStart(2,'0')}`;
+  return `${lunes.getFullYear()}-${String(lunes.getMonth()+1).padStart(2,'0')}-${String(lunes.getDate()).padStart(2,'0')}`;
 }
 function formatHora(h24) {
   if (!h24) return '';
