@@ -3105,6 +3105,7 @@ function mostrarNana(data) {
 
   setFechaHoy();
   cargarTareasNana();
+  cargarScoreNana();
 
   // Iniciar notificaciones de nana
   setTimeout(async () => {
@@ -3122,6 +3123,25 @@ function mostrarNana(data) {
       }
     } catch(e) { console.error(e); }
   }, 1000);
+}
+
+async function cargarScoreNana() {
+  try {
+    const user = auth.currentUser;
+    if (!user) return;
+    const el = document.getElementById('statNanaScore');
+    if (!el) return;
+    const snap = await getDoc(doc(db, 'scores', user.uid));
+    if (!snap.exists()) { el.textContent = '—'; return; }
+    const d = snap.data();
+    let score = d.scoreActual || 0;
+    // Respaldo: si aún no hay scoreActual calculado, promediar las calificaciones por categoría
+    if (!score && d.calificaciones && typeof d.calificaciones === 'object') {
+      const vals = Object.values(d.calificaciones).filter(v => typeof v === 'number');
+      if (vals.length) score = Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 10) / 10;
+    }
+    el.textContent = score > 0 ? score : '—';
+  } catch (e) { console.error('cargarScoreNana:', e); }
 }
 
 async function cargarTareasNana() {
