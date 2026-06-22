@@ -61,6 +61,11 @@ body{font-family:'DM Sans',sans-serif;background:#F0F4F0;color:var(--txt);min-he
                border-radius:99px;padding:11px;font-size:13px;font-weight:500;
                cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
 .btn-secondary:hover{border-color:var(--g);color:var(--g);}
+body.solo-lectura .editor-only{display:none!important;}
+.aviso-lectura{display:none;background:#E1F5EE;border:1px solid #0F6E56;color:#0F6E56;
+  border-radius:14px;padding:12px 14px;margin:0 0 14px;font-size:13px;line-height:1.4;
+  align-items:center;gap:8px;}
+body.solo-lectura .aviso-lectura{display:flex;}
 .form-label{font-size:11px;font-weight:600;color:var(--txt2);margin-bottom:5px;display:block;}
 .form-input{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;
             font-size:13px;font-family:'DM Sans',sans-serif;color:var(--txt);
@@ -148,6 +153,8 @@ body{font-family:'DM Sans',sans-serif;background:#F0F4F0;color:var(--txt);min-he
 
 <div class="content">
 
+  <div class="aviso-lectura">👀 Estás viendo tu información de nómina en modo lectura. El contrato, los pagos y los días de trabajo los gestiona la familia.</div>
+
   <!-- ══ TAB CONTRATOS ══ -->
   <div class="panel activo" id="panel-contratos">
     <div class="sec-label" id="contLabelActivo">Acuerdo activo</div>
@@ -172,7 +179,7 @@ body{font-family:'DM Sans',sans-serif;background:#F0F4F0;color:var(--txt);min-he
     </div>
 
     <button class="btn-primary" onclick="imprimirContrato()">🖨️ Ver contrato para imprimir</button>
-    <button class="btn-secondary" onclick="mostrarFormContrato()">✏️ Editar acuerdo</button>
+    <button class="btn-secondary editor-only" onclick="mostrarFormContrato()">✏️ Editar acuerdo</button>
 
     <!-- Formulario nuevo/editar contrato -->
     <div id="formContrato" style="display:none;margin-top:14px;">
@@ -255,8 +262,8 @@ body{font-family:'DM Sans',sans-serif;background:#F0F4F0;color:var(--txt);min-he
 
   <!-- ══ TAB PAGOS ══ -->
   <div class="panel" id="panel-pagos">
-    <div class="sec-label">Registrar pago</div>
-    <div class="card">
+    <div class="sec-label editor-only">Registrar pago</div>
+    <div class="card editor-only">
       <div class="card-body">
         <div class="form-row-2">
           <div>
@@ -397,8 +404,8 @@ body{font-family:'DM Sans',sans-serif;background:#F0F4F0;color:var(--txt);min-he
             <textarea class="form-input" id="notaTexto" rows="2"
                       placeholder="Ej: Llegó tarde, avisó con anticipación..."></textarea>
           </div>
-          <button class="btn-primary" onclick="guardarNotaDia()">💾 Guardar nota</button>
-          <button class="btn-secondary" style="margin-top:8px;" onclick="eliminarVisitaDia()">
+          <button class="btn-primary editor-only" onclick="guardarNotaDia()">💾 Guardar nota</button>
+          <button class="btn-secondary editor-only" style="margin-top:8px;" onclick="eliminarVisitaDia()">
             🗑 Eliminar este día
           </button>
         </div>
@@ -408,8 +415,8 @@ body{font-family:'DM Sans',sans-serif;background:#F0F4F0;color:var(--txt);min-he
 
     <!-- ── EVENTUAL: formulario original ── -->
     <div id="vistaFormEventual" style="display:none;">
-      <div class="sec-label">Registrar visita</div>
-      <div class="card">
+      <div class="sec-label editor-only">Registrar visita</div>
+      <div class="card editor-only">
         <div class="card-body">
           <div class="form-row-2">
             <div>
@@ -513,6 +520,7 @@ const db    = getFirestore(fbApp);
 
 // ── Globals ──
 let hogarId   = null;
+let soloLectura = false; // true cuando el usuario es nana → no puede editar nómina
 let tipoHogar = localStorage.getItem('mynana_tipoHogar') || 'con_nana';
 let contratoActual = null;
 let pagosCache = [];
@@ -558,6 +566,16 @@ window.cambiarTab = (tab, el) => {
 };
 
 // ── Aplicar tipo de hogar ──
+function aplicarSoloLectura() {
+  if (!soloLectura) return;
+  document.body.classList.add('solo-lectura');
+  // Deshabilitar los campos del modal de día para que la nana pueda leer pero no editar
+  ['notaIncidencia','notaCalif','notaTexto'].forEach(id => {
+    const el = $(id);
+    if (el) el.disabled = true;
+  });
+}
+
 function aplicarTipoHogar() {
   const esEventual = tipoHogar !== 'con_nana';
   const navTipo = $('navTipo');
@@ -712,6 +730,19 @@ window.navMesFija = (delta) => {
 window.toggleDiaFija = async (fecha) => {
   if (!hogarId) return;
   const visita = visitasFija[fecha];
+  if (soloLectura) {
+    // La nana solo puede ver. Si el día tiene registro, abre el modal en modo lectura; si no, avisa.
+    if (!visita) { showToast('👀 Día sin registro'); return; }
+    diaEditando = fecha;
+    const [y,m,d] = fecha.split('-');
+    const tit = $('notaDiaTitulo');
+    if (tit) tit.textContent = `${MESES_FULL[parseInt(m)-1]} ${parseInt(d)}, ${y}`;
+    const inc = $('notaIncidencia'); if (inc) inc.value = visita.incidencia || '';
+    const cal = $('notaCalif');      if (cal) cal.value = visita.calificacion || '';
+    const nota = $('notaTexto');     if (nota) nota.value = visita.nota || '';
+    const modal = $('modalNotaDia'); if (modal) modal.style.display = 'flex';
+    return;
+  }
   if (!visita) {
     // Crear visita "trabajó" directamente
     try {
@@ -754,6 +785,7 @@ window.cerrarNotaDia = () => {
 };
 
 window.guardarNotaDia = async () => {
+  if (soloLectura) { showToast('👀 Solo lectura — esto lo gestiona la familia'); return; }
   if (!diaEditando || !hogarId) return;
   const visita = visitasFija[diaEditando];
   if (!visita) return;
@@ -776,6 +808,7 @@ window.guardarNotaDia = async () => {
 };
 
 window.eliminarVisitaDia = async () => {
+  if (soloLectura) { showToast('👀 Solo lectura — esto lo gestiona la familia'); return; }
   if (!diaEditando || !hogarId) return;
   const visita = visitasFija[diaEditando];
   if (!visita) return;
@@ -876,6 +909,7 @@ function renderContratoVacio() {
 
 // ── Formulario contrato ──
 window.mostrarFormContrato = () => {
+  if (soloLectura) { showToast('👀 Solo lectura — el acuerdo lo gestiona la familia'); return; }
   $('formContrato').style.display = 'block';
   $('formContratoTitulo').textContent = contratoActual ? 'Editar acuerdo' : 'Crear acuerdo';
   if (contratoActual) {
@@ -902,6 +936,7 @@ window.cancelarFormContrato = () => {
 };
 
 window.guardarContrato = async () => {
+  if (soloLectura) { showToast('👀 Solo lectura — esto lo gestiona la familia'); return; }
   const nombre = $('cNombre').value.trim();
   if (!nombre) { showToast('⚠️ Escribe el nombre de la persona'); return; }
   const esEventual = tipoHogar !== 'con_nana';
@@ -967,6 +1002,7 @@ function renderPagos() {
 }
 
 window.registrarPago = async () => {
+  if (soloLectura) { showToast('👀 Solo lectura — los pagos los registra la familia'); return; }
   const monto = parseFloat($('pMonto').value);
   const fecha = $('pFecha').value;
   if (!monto || !fecha) { showToast('⚠️ Completa monto y fecha'); return; }
@@ -1023,6 +1059,7 @@ function renderVisitas() {
 }
 
 window.registrarVisita = async () => {
+  if (soloLectura) { showToast('👀 Solo lectura — esto lo registra la familia'); return; }
   const fecha = $('vFecha').value;
   if (!fecha) { showToast('⚠️ Selecciona la fecha de la visita'); return; }
   try {
@@ -1166,6 +1203,11 @@ onAuthStateChanged(auth, async user => {
       tipoHogar = hogarDoc.data().tipoHogar || 'con_nana';
       localStorage.setItem('mynana_tipoHogar', tipoHogar);
     }
+
+    // Detectar rol: si el usuario es nana → modo solo lectura en nómina
+    const meDoc = await getDoc(doc(db, 'usuarios', user.uid));
+    soloLectura = meDoc.exists() && meDoc.data().tipo === 'nana';
+    aplicarSoloLectura();
 
     aplicarTipoHogar();
 
